@@ -1,0 +1,42 @@
+<form [formGroup]="form" (ngSubmit)="onSubmit()">
+  <div>
+    <label>Nombre</label>
+    <input formControlName="name" placeholder="Tu nombre" />
+    @if (submitted() && name?.invalid) {
+      @if (name?.errors?.['required']) {
+        <p>El nombre es obligatorio</p>
+      }
+      @if (name?.errors?.['minlength']) {
+        <p>Mínimo 3 caracteres</p>
+      }
+    }
+  </div>
+
+  <div>
+    <label>Email</label>
+    <input formControlName="email" placeholder="tu@email.com" />
+    @if (submitted() && email?.invalid) {
+      @if (email?.errors?.['required']) {
+        <p>El email es obligatorio</p>
+      }
+      @if (email?.errors?.['email']) {
+        <p>El email no es válido</p>
+      }
+    }
+  </div>
+
+  <div>
+    <label>Contraseña</label>
+    <input formControlName="password" type="password" placeholder="Mínimo 6 caracteres"/>
+    @if (submitted() && password?.invalid) {
+      @if (password?.errors?.['required']) {
+        <p>La contraseña es obligatoria</p>
+      }
+      @if (password?.errors?.['minlength']) {
+        <p>Mínimo 6 caracteres</p>
+      }
+    }
+  </div>
+
+  <button type="submit">Registrarse</button>
+</form>

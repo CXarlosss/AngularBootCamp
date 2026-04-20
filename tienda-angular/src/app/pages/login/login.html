@@ -1,0 +1,40 @@
+<div class="login-container">
+  <h2>Iniciar sesión</h2>
+  <p class="hint">Usa: admin@tienda.com / 123456</p>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div>
+      <label>Email</label>
+      <input formControlName="email" type="email" placeholder="admin@tienda.com"/>
+      @if (submitted() && email?.invalid) {
+        @if (email?.errors?.['required']) {
+          <p class="error">El email es obligatorio</p>
+        }
+        @if (email?.errors?.['email']) {
+          <p class="error">Email no válido</p>
+        }
+      }
+    </div>
+
+    <div>
+      <label>Contraseña</label>
+      <input formControlName="password" type="password" placeholder="123456"/>
+      @if (submitted() && password?.invalid) {
+        @if (password?.errors?.['required']) {
+          <p class="error">La contraseña es obligatoria</p>
+        }
+        @if (password?.errors?.['minlength']) {
+          <p class="error">Mínimo 6 caracteres</p>
+        }
+      }
+    </div>
+
+    @if (error()) {
+      <p class="error">{{ error() }}</p>
+    }
+
+    <button type="submit" [disabled]="loading()">
+      @if (loading()) { Verificando... } @else { Entrar }
+    </button>
+  </form>
+</div>

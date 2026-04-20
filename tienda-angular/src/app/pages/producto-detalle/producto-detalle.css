@@ -1,0 +1,98 @@
+.detalle {
+  display: flex;
+  gap: 3rem;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 2rem auto;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.detalle img {
+  width: 280px;
+  height: 280px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+}
+
+.info h2 {
+  font-size: 1.3rem;
+  color: #1a1a2e;
+  line-height: 1.4;
+}
+
+.precio {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #e44d26;
+}
+
+.categoria {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: #888;
+  letter-spacing: 1px;
+  background: #f5f5f5;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  width: fit-content;
+}
+
+.descripcion {
+  color: #555;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+
+.valoracion {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+button {
+  padding: 0.9rem 2rem;
+  background: #e44d26;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  transition: background 0.2s, transform 0.1s;
+  margin-top: auto;
+}
+
+button:hover {
+  background: #c73d1e;
+  transform: translateY(-1px);
+}
+
+button.agregado {
+  background: #27ae60;
+}
+
+.btn-favorito {
+  padding: 0.7rem 1.5rem;
+  background: transparent;
+  border: 1px solid #e44d26;
+  color: #e44d26;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.btn-favorito:hover {
+  background: #fee;
+}
+
+.btn-favorito.activo {
+  background: #e44d26;
+  color: white;
+}

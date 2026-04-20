@@ -1,0 +1,29 @@
+<div class="favoritos-container">
+  <h2>Mis favoritos ({{ totalFavoritos() }})</h2>
+
+  @if (favoritos().length === 0) {
+    <div class="vacio">
+      <p>No tienes productos favoritos</p>
+      <a routerLink="/productos">Ver productos</a>
+    </div>
+  } @else {
+    <div class="grid">
+      @for (producto of favoritos(); track producto.id) {
+        <div class="card">
+          <img [src]="producto.image" [alt]="producto.title" />
+          <h3>{{ producto.title }}</h3>
+          <p class="precio">{{ producto.price | currency:'EUR' }}</p>
+          <div class="acciones">
+            <button class="btn-carrito" (click)="agregarAlCarrito(producto.id)">
+              Añadir al carrito
+            </button>
+            <button class="btn-quitar" (click)="quitarFavorito(producto.id)">
+              ♥ Quitar
+            </button>
+          </div>
+          <a [routerLink]="['/productos', producto.id]">Ver detalle</a>
+        </div>
+      }
+    </div>
+  }
+</div>

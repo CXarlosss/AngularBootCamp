@@ -1,0 +1,146 @@
+/* features/coach/routine-builder/exercise-row.component.css */
+
+.exercise-row {
+  display: grid;
+  grid-template-columns: 22px 1fr repeat(4, auto) 1fr 26px;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #13151e;
+  border: 0.5px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  transition: border-color .15s;
+}
+
+.exercise-row:hover { border-color: rgba(255,255,255,0.12); }
+
+.ex-index {
+  font-size: 11px;
+  color: #2C2C2A;
+  font-weight: 500;
+  text-align: center;
+}
+
+.ex-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e8e6df;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ex-field {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.ex-field label {
+  font-size: 9px;
+  color: #444441;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  white-space: nowrap;
+}
+
+.stepper-sm {
+  display: flex;
+  align-items: center;
+  background: #0a0c12;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 7px;
+  overflow: hidden;
+}
+
+.stepper-sm button {
+  width: 24px;
+  height: 26px;
+  border: none;
+  background: transparent;
+  color: #888780;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  flex-shrink: 0;
+}
+
+.stepper-sm button:hover {
+  background: rgba(29,158,117,0.1);
+  color: #1D9E75;
+}
+
+.stepper-sm span {
+  font-size: 12px;
+  font-weight: 500;
+  color: #e8e6df;
+  min-width: 22px;
+  text-align: center;
+}
+
+.weight-input {
+  width: 52px;
+  background: #0a0c12;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 7px;
+  color: #e8e6df;
+  font-size: 12px;
+  text-align: center;
+  padding: 4px 6px;
+  outline: none;
+  transition: border-color .15s;
+}
+
+.weight-input:focus { border-color: #1D9E75; }
+
+.unit { font-size: 10px; color: #444441; }
+
+.rest-select {
+  background: #0a0c12;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 7px;
+  color: #e8e6df;
+  font-size: 11px;
+  padding: 4px 6px;
+  outline: none;
+  cursor: pointer;
+}
+
+.ex-notes {
+  background: transparent;
+  border: none;
+  color: #5F5E5A;
+  font-size: 11px;
+  outline: none;
+  width: 100%;
+  padding: 0;
+}
+
+.ex-notes::placeholder { color: #2C2C2A; }
+.ex-notes:focus { color: #888780; }
+
+.ex-remove {
+  font-size: 16px;
+  color: #2C2C2A;
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: color .15s;
+  line-height: 1;
+  padding: 0;
+}
+
+.ex-remove:hover { color: #E24B4A; }
+
+@media (max-width: 768px) {
+  .exercise-row {
+    grid-template-columns: 22px 1fr auto auto;
+    gap: 8px;
+  }
+  .ex-field:nth-child(4),
+  .ex-field:nth-child(5),
+  .ex-notes,
+  .unit { display: none; }
+}

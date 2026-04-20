@@ -1,0 +1,28 @@
+@if (producto()) {
+  <div class="detalle">
+    <img [src]="producto()!.image" [alt]="producto()!.title" />
+    <div class="info">
+      <h2>{{ producto()!.title }}</h2>
+      <p class="precio">{{ producto()!.price | currency:'EUR' }}</p>
+      <p class="categoria">{{ producto()!.category }}</p>
+      <p class="descripcion">{{ producto()!.description }}</p>
+      <p>Valoración: {{ producto()!.rating.rate }} / 5
+        ({{ producto()!.rating.count }} reviews)
+      </p>
+      <button
+        class="btn-favorito"
+        (click)="toggleFavorito()"
+        [class.activo]="esFavorito()"
+      >
+        @if (esFavorito()) { ♥ En favoritos } @else { ♡ Añadir a favoritos }
+      </button>
+      <button (click)="agregarAlCarrito()">
+        @if (agregado()) {
+          Añadido al carrito
+        } @else {
+          Añadir al carrito
+        }
+      </button>
+    </div>
+  </div>
+}

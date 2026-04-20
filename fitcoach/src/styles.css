@@ -1,0 +1,52 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import './styles/client-theme.css';
+
+* { box-sizing: border-box; }
+
+body {
+  background: #0f1117;
+  color: #e8e6df;
+  font-family: var(--font-sans, system-ui, sans-serif);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* En escritorio, el portal del cliente se ve como app móvil centrada */
+@media (min-width: 768px) {
+  fc-client-dashboard,
+  fc-today-workout,
+  fc-client-progress {
+    display: block;
+    max-width: 480px;
+    margin: 0 auto;
+    min-height: 100dvh;
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+  }
+
+  body {
+    background: #080a0f;  /* fondo más oscuro alrededor del "móvil" */
+  }
+}
+
+/* Fix del stepper — evitar que se corte */
+.stepper {
+  min-width: 0;
+}
+
+.stepper input {
+  min-width: 40px;
+  width: 100%;
+}
+
+.stepper button {
+  flex-shrink: 0;
+  min-width: 36px;
+}
+
+/* Transiciones de vista globales */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: 0.25s;
+  animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+}

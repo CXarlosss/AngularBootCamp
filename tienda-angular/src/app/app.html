@@ -1,0 +1,38 @@
+<nav class="navbar">
+  <div class="nav-brand">
+    <i class="ri-store-3-line"></i>
+    <span>PremiumStore</span>
+  </div>
+
+  <div class="nav-links">
+    <a routerLink="/productos" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+      <i class="ri-shopping-bag-3-line"></i> Productos
+    </a>
+    <a routerLink="/favoritos" routerLinkActive="active">
+      <i class="ri-heart-3-line"></i> Favoritos 
+      @if(totalFavoritos() > 0) { <span class="badge">{{ totalFavoritos() }}</span> }
+    </a>
+    <a routerLink="/carrito" routerLinkActive="active">
+      <i class="ri-shopping-cart-2-line"></i> Carrito
+      @if(totalItems() > 0) { <span class="badge accent">{{ totalItems() }}</span> }
+    </a>
+  </div>
+
+  <div class="nav-auth">
+    @if (isLoggedIn()) {
+      <a routerLink="/perfil" class="profile-link">
+        <div class="avatar">{{ user()?.name?.charAt(0) | uppercase }}</div>
+        {{ user()?.name }}
+      </a>
+      <button class="btn-logout" (click)="logout()">
+        <i class="ri-logout-box-r-line"></i> Salir
+      </button>
+    } @else {
+      <a routerLink="/login" class="btn-login">Login</a>
+    }
+  </div>
+</nav>
+
+<main class="main-content">
+  <router-outlet />
+</main>

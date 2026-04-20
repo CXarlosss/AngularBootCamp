@@ -1,0 +1,13 @@
+<h2>Iniciar sesión</h2>
+
+@if (loading()) {
+  <p>Verificando...</p>
+} @else {
+  <app-login-form (formSubmitted)="onFormSubmitted($event)" />
+}
+
+@if (error()) {
+  <p>{{ error() }}</p>
+}
+
+<p>Usa: admin@test.com / 123456</p>

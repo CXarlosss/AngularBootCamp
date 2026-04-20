@@ -1,0 +1,34 @@
+<div class="perfil-container">
+
+  @if (user()) {
+    <div class="perfil-card">
+      <div class="avatar">
+        {{ user()!.name.charAt(0).toUpperCase() }}
+      </div>
+      <h2>{{ user()!.name }}</h2>
+      <p class="email">{{ user()!.email }}</p>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-valor">{{ totalItems() }}</span>
+        <span class="stat-label">Productos en carrito</span>
+      </div>
+      <div class="stat">
+        <span class="stat-valor">{{ totalPrecio() | currency:'EUR' }}</span>
+        <span class="stat-label">Total carrito</span>
+      </div>
+    </div>
+
+    <div class="acciones">
+      <a routerLink="/carrito" class="btn-carrito">Ver carrito</a>
+      <button (click)="logout()" class="btn-logout">Cerrar sesión</button>
+    </div>
+  } @else {
+    <div class="no-sesion">
+      <p>No has iniciado sesión</p>
+      <a routerLink="/login">Iniciar sesión</a>
+    </div>
+  }
+
+</div>

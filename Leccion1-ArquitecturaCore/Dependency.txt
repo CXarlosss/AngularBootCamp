@@ -1,0 +1,48 @@
+// ❌ Cómo lo piensas si vienes de React
+// "Necesito un store global, usaré Zustand/Jotai equivalent"
+
+// ✅ Cómo debes pensarlo en Angular
+// "Necesito un servicio con providedIn correcto"
+
+@Injectable({
+  providedIn: 'root'  // Singleton en toda la app — instancia única
+})
+export class AuthService {
+  private currentUser = signal<User | null>(null);
+  
+  // signal() aquí es el equivalente a useState() pero compartido
+  // La diferencia clave: este signal vive en el servicio, no en el componente
+  readonly user = this.currentUser.asReadonly();
+  
+  login(credentials: LoginDto): Observable<User> {
+    return this.http.post<User>('/api/auth/login', credentials).pipe(
+      tap(user => this.currentUser.set(user))
+    );
+  }
+}
+```
+
+**Por bloques:**
+
+`@Injectable({ providedIn: 'root' })` — Esto le dice al injector raíz de Angular "registra este servicio como singleton".
+ No necesitas importarlo en ningún módulo. Angular lo incluirá en el bundle solo si alguien lo consume (tree-shakeable).
+
+**La jerarquía de injectors** es lo que separa a Angular de React context en profundidad:
+```
+Injector raíz (root)
+  └── Injector de ruta (route-level)
+        └── Injector de componente (component-level)
+
+
+        @Component({
+  selector: 'app-cart',
+  providers: [
+    // Esta instancia es SOLO para este componente y sus hijos
+    // Diferente a la instancia root
+    CartService
+  ]
+})
+export class CartComponent {
+  // Esta CartService es una instancia nueva, no el singleton root
+  constructor(private cart: CartService) {}
+}

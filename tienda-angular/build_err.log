@@ -1,0 +1,16 @@
+
+> tienda-angular@0.0.0 build
+> ng build
+
+❯ Building...
+✔ Building...
+Initial chunk files | Names         |  Raw size | Estimated transfer size
+main-BMAMDVBT.js    | main          | 287.63 kB |                76.40 kB
+styles-5INURTSO.css | styles        |   0 bytes |                 0 bytes
+
+                    | Initial total | 287.63 kB |                76.40 kB
+
+Application bundle generation complete. [2.885 seconds] - 2026-04-06T15:19:33.264Z
+
+Output location: C:\Users\Carlos\.claude\AngularBootCamp\tienda-angular\dist\tienda-angular
+

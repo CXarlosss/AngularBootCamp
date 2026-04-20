@@ -1,0 +1,21 @@
+<h2>Buscador</h2>
+
+<input
+  [formControl]="searchControl"
+  placeholder="Escribe un nombre..."
+/>
+
+@if (loading()) {
+  <p>Buscando...</p>
+}
+
+@if (searched() && !loading() && results().length === 0) {
+  <p>Sin resultados</p>
+}
+
+@for (user of results(); track user.id) {
+  <div>
+    <strong>{{ user.name }}</strong>
+    <span> — {{ user.email }}</span>
+  </div>
+}

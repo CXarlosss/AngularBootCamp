@@ -1,0 +1,126 @@
+<!-- ============================================================
+     ARCHIVO: todo-list.component.html
+     ============================================================
+     Este es el template: describe QUÉ se muestra en pantalla.
+     Angular lee este HTML y lo convierte en elementos reales del DOM.
+
+     Los {{ }} (double curly braces) muestran valores de TypeScript.
+     Ej: {{ todoService.todos().length }} muestra el número de todos.
+-->
+
+<div class="todo-container">
+
+  <h1>Lista de Tareas</h1>
+
+  <!-- ─────────────────────────────────────────
+       FORMULARIO PARA AGREGAR NUEVOS TODOS
+       ─────────────────────────────────────── -->
+  <div class="add-todo">
+
+    <!-- #newTodoInput es una "template reference variable"
+         Le ponemos un nombre al input para poder leerlo desde el template.
+         Es como decir "llama a este input 'newTodoInput'" -->
+    <input
+      #newTodoInput
+      type="text"
+      placeholder="¿Qué necesitas hacer?"
+      (keydown.enter)="addTodo(newTodoInput)"
+    />
+    <!-- ↑ (keydown.enter) es un "event binding": cuando el usuario
+           presiona Enter, ejecuta el método addTodo() del componente -->
+
+    <button (click)="addTodo(newTodoInput)">
+      Agregar
+    </button>
+    <!-- ↑ (click) es otro event binding: ejecuta addTodo() al hacer clic -->
+
+  </div>
+
+  <!-- ─────────────────────────────────────────
+       CONTADOR DE PENDIENTES
+       ─────────────────────────────────────── -->
+  <p class="counter">
+    <!-- Leemos el computed del servicio directamente en el template -->
+    Pendientes: {{ todoService.pendingCount() }}
+  </p>
+
+  <!-- ─────────────────────────────────────────
+       @if — Mostrar estado vacío
+       ─────────────────────────────────────── -->
+  <!--
+    @if es la nueva sintaxis de Angular (v17+) para renderizado condicional.
+    Antes se usaba *ngIf. Ahora es más limpio y fácil de leer.
+
+    Si el array de todos está vacío (.length === 0), mostramos un mensaje.
+    Si hay todos, mostramos la lista.
+  -->
+
+  @if (todoService.todos().length === 0) {
+
+    <!-- Este bloque solo se renderiza cuando NO hay todos -->
+    <div class="empty-state">
+      <p>No tienes tareas todavía.</p>
+      <p>¡Agrega una usando el campo de arriba!</p>
+    </div>
+
+  } @else {
+
+    <!-- ─────────────────────────────────────────
+         @for — Renderizar la lista de todos
+         ─────────────────────────────────────── -->
+    <!--
+      @for recorre un array y renderiza su bloque por cada elemento.
+      Antes se usaba *ngFor.
+
+      track todo.id — esto es el "trackBy":
+        Le dice a Angular cómo identificar cada elemento de la lista.
+        Sin esto, cuando el array cambia, Angular destruye y recrea
+        TODOS los elementos del DOM (lento e ineficiente).
+        Con track, Angular solo actualiza los elementos que cambiaron.
+        Siempre usar un ID único (nunca el índice si el orden puede cambiar).
+    -->
+
+    <ul class="todo-list">
+      @for (todo of todoService.todos(); track todo.id) {
+
+        <li class="todo-item" [class.completed]="todo.completed">
+        <!-- ↑ [class.completed] es un "class binding":
+               agrega la clase CSS "completed" solo si todo.completed es true.
+               Los [] (square brackets) indican un binding unidireccional
+               desde TypeScript → HTML -->
+
+          <!-- Checkbox para marcar como completado -->
+          <input
+            type="checkbox"
+            [checked]="todo.completed"
+            (change)="todoService.toggleTodo(todo.id)"
+          />
+          <!-- ↑ [checked] binding: el checkbox está marcado si completed es true
+               ↑ (change) event: cuando el usuario hace clic, llama toggleTodo -->
+
+          <!-- Título del todo -->
+          <span class="todo-title">{{ todo.title }}</span>
+
+          <!-- Botón para eliminar -->
+          <button
+            class="delete-btn"
+            (click)="todoService.removeTodo(todo.id)"
+          >
+            Eliminar
+          </button>
+
+        </li>
+
+      }
+    </ul>
+
+    <!-- Sección de completados (solo si hay alguno) -->
+    @if (todoService.completedTodos().length > 0) {
+      <p class="completed-info">
+        Completados: {{ todoService.completedTodos().length }}
+      </p>
+    }
+
+  }
+
+</div>

@@ -1,0 +1,134 @@
+<div class="checkout-container">
+
+  <!-- Indicador de pasos -->
+  <div class="pasos">
+    <div class="paso" [class.activo]="pasoActual() >= 1" [class.completado]="pasoActual() > 1">
+      <span>1</span>
+      <p>Envío</p>
+    </div>
+    <div class="linea" [class.activa]="pasoActual() > 1"></div>
+    <div class="paso" [class.activo]="pasoActual() >= 2" [class.completado]="pasoActual() > 2">
+      <span>2</span>
+      <p>Pago</p>
+    </div>
+    <div class="linea" [class.activa]="pasoActual() > 2"></div>
+    <div class="paso" [class.activo]="pasoActual() >= 3">
+      <span>3</span>
+      <p>Confirmación</p>
+    </div>
+  </div>
+
+  <!-- Paso 1 — Envío -->
+  @if (pasoActual() === 1) {
+    <div class="formulario-card">
+      <h2>Datos de envío</h2>
+
+      <form [formGroup]="formEnvio">
+        <div class="campo">
+          <label>Nombre completo</label>
+          <input formControlName="nombre" placeholder="Carlos García" />
+          @if (submittedEnvio() && nombre?.invalid) {
+            <p class="error">Nombre obligatorio (mínimo 3 caracteres)</p>
+          }
+        </div>
+
+        <div class="campo">
+          <label>Dirección</label>
+          <input formControlName="direccion" placeholder="Calle Mayor 123" />
+          @if (submittedEnvio() && direccion?.invalid) {
+            <p class="error">Dirección obligatoria</p>
+          }
+        </div>
+
+        <div class="fila">
+          <div class="campo">
+            <label>Ciudad</label>
+            <input formControlName="ciudad" placeholder="Madrid" />
+            @if (submittedEnvio() && ciudad?.invalid) {
+              <p class="error">Ciudad obligatoria</p>
+            }
+          </div>
+          <div class="campo">
+            <label>Código postal</label>
+            <input formControlName="codigo" placeholder="28001" maxlength="5"/>
+            @if (submittedEnvio() && codigo?.invalid) {
+              <p class="error">5 dígitos</p>
+            }
+          </div>
+        </div>
+
+        <button type="button" (click)="siguientePaso()">
+          Continuar al pago →
+        </button>
+      </form>
+    </div>
+  }
+
+  <!-- Paso 2 — Pago -->
+  @if (pasoActual() === 2) {
+    <div class="formulario-card">
+      <h2>Datos de pago</h2>
+
+      <div class="resumen-mini">
+        <span>{{ totalItems() }} productos</span>
+        <span class="total-mini">{{ totalPrecio() | currency:'EUR' }}</span>
+      </div>
+
+      <form [formGroup]="formPago">
+        <div class="campo">
+          <label>Titular de la tarjeta</label>
+          <input formControlName="titular" placeholder="CARLOS GARCIA" />
+          @if (submittedPago() && titular?.invalid) {
+            <p class="error">Nombre del titular obligatorio</p>
+          }
+        </div>
+
+        <div class="campo">
+          <label>Número de tarjeta</label>
+          <input formControlName="tarjeta" placeholder="1234567890123456" maxlength="16"/>
+          @if (submittedPago() && tarjeta?.invalid) {
+            <p class="error">16 dígitos sin espacios</p>
+          }
+        </div>
+
+        <div class="fila">
+          <div class="campo">
+            <label>Fecha de expiración</label>
+            <input formControlName="expiracion" placeholder="MM/AA" maxlength="5"/>
+            @if (submittedPago() && expiracion?.invalid) {
+              <p class="error">Formato MM/AA</p>
+            }
+          </div>
+          <div class="campo">
+            <label>CVV</label>
+            <input formControlName="cvv" placeholder="123" maxlength="3" type="password"/>
+            @if (submittedPago() && cvv?.invalid) {
+              <p class="error">3 dígitos</p>
+            }
+          </div>
+        </div>
+
+        <div class="botones">
+          <button type="button" class="btn-volver" (click)="pasoActual.set(1)">
+            ← Volver
+          </button>
+          <button type="button" (click)="confirmarPago()" [disabled]="loading()">
+            @if (loading()) { Procesando... } @else { Confirmar pago }
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- Paso 3 — Confirmación -->
+  @if (pasoActual() === 3) {
+    <div class="confirmacion">
+      <div class="icono-ok">✓</div>
+      <h2>¡Pedido confirmado!</h2>
+      <p>Tu pedido ha sido procesado correctamente.</p>
+      <p>Recibirás un email de confirmación en breve.</p>
+      <button (click)="volverAlCatalogo()">Seguir comprando</button>
+    </div>
+  }
+
+</div>

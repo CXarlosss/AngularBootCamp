@@ -1,0 +1,118 @@
+.favoritos-container {
+  padding: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+h2 {
+  font-size: 1.5rem;
+  color: #1a1a2e;
+  margin-bottom: 1.5rem;
+}
+
+.vacio {
+  text-align: center;
+  padding: 3rem;
+  background: white;
+  border-radius: 12px;
+  color: #888;
+}
+
+.vacio a {
+  display: inline-block;
+  margin-top: 1rem;
+  background: #e44d26;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.card img {
+  width: 100%;
+  height: 160px;
+  object-fit: contain;
+}
+
+.card h3 {
+  font-size: 0.85rem;
+  color: #333;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.precio {
+  font-weight: bold;
+  color: #e44d26;
+  font-size: 1.1rem;
+}
+
+.acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-carrito {
+  flex: 1;
+  padding: 0.5rem;
+  background: #1a1a2e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.btn-carrito:hover {
+  background: #e44d26;
+}
+
+.btn-quitar {
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid #e44d26;
+  color: #e44d26;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-quitar:hover {
+  background: #e44d26;
+  color: white;
+}
+
+.card a {
+  background: #f5f5f5;
+  color: #333;
+  padding: 0.5rem;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 0.8rem;
+  transition: background 0.2s;
+}
+
+.card a:hover {
+  background: #ddd;
+  text-decoration: none;
+}

@@ -1,0 +1,61 @@
+<div class="page-header">
+  <h2>Descubre la Colección</h2>
+
+  @if (!loading()) {
+    <div class="controles">
+      <div class="search-box">
+        <i class="ri-search-line"></i>
+        <input
+          [value]="busqueda()"
+          (input)="busqueda.set($any($event.target).value)"
+          placeholder="Buscar producto de alta gama..."
+          class="buscador"
+        />
+      </div>
+
+      <select (change)="ordenar($any($event.target).value)">
+        <option value="ninguno">Ordenar por...</option>
+        <option value="asc">Precio: Menor a Mayor</option>
+        <option value="desc">Precio: Mayor a Menor</option>
+      </select>
+    </div>
+
+    <div class="filtros">
+      @for (cat of categorias(); track cat) {
+        <button
+          (click)="filtrar(cat)"
+          [class.activo]="categoriaActiva() === cat"
+        >
+          {{ cat }}
+        </button>
+      }
+    </div>
+  }
+</div>
+
+@if (loading()) {
+  <p class="count">Cargando la colección exclusiva...</p>
+}
+
+@if (!loading()) {
+  <p class="count">Mostrando {{ productosFiltrados().length }} productos exclusivos</p>
+
+  <div class="grid">
+    @for (producto of productosFiltrados(); track producto.id) {
+      <div class="card">
+        <div class="card-img-wrapper">
+          <img [src]="producto.image" [alt]="producto.title" />
+        </div>
+        <span class="card-category">{{ producto.category }}</span>
+        <h3>{{ producto.title }}</h3>
+        
+        <div class="card-footer">
+          <span class="card-price">{{ producto.price | currency:'EUR' }}</span>
+          <a [routerLink]="['/productos', producto.id]" class="btn-view">
+            <i class="ri-arrow-right-line"></i>
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+}

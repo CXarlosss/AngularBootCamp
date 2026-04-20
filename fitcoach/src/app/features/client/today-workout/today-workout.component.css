@@ -1,0 +1,302 @@
+.workout-screen {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  background: #080a0f;
+  color: #e8e6df;
+  max-width: 480px;
+  margin: 0 auto;
+  overflow: hidden;
+  position: relative;
+}
+
+/* ── Header ── */
+.workout-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 12px;
+  background: #0d0f18;
+  border-bottom: 0.5px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  color: #5F5E5A;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color .15s;
+  flex-shrink: 0;
+}
+
+.btn-back:hover { color: #e8e6df; }
+
+.workout-meta { flex: 1; }
+.workout-title    { font-size: 15px; font-weight: 500; color: #fff; margin: 0 0 2px; }
+.workout-progress { font-size: 11px; color: #5F5E5A; }
+
+/* Anillo de progreso */
+.overall-ring { flex-shrink: 0; }
+
+.overall-ring svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.ring-wrapper {
+  position: relative;
+  width: 44px;
+  height: 44px;
+}
+
+.ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.ring-text.complete { color: #1D9E75; font-size: 12px; }
+
+/* ── Lista de ejercicios ── */
+.exercises-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #080a0f;
+}
+
+.exercises-list::-webkit-scrollbar { width: 3px; }
+.exercises-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
+
+/* ── Exercise card ── */
+.exercise-card {
+  background: #1a1d27;
+  border: 0.5px solid rgba(255,255,255,0.1);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: border-color .2s, opacity .2s;
+}
+
+.exercise-card.active {
+  border-color: #1D9E75;
+  box-shadow: 0 0 0 1px rgba(29,158,117,0.12), 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.exercise-card.done {
+  opacity: .75;
+  background: #13151e;
+  border-color: rgba(29,158,117,0.15);
+}
+
+.exercise-card.future {
+  background: #14161f;
+  border: 0.5px solid rgba(255,255,255,0.05);
+  opacity: .35;
+}
+
+.ex-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  cursor: pointer;
+}
+
+/* Indicador circular */
+.ex-done-indicator {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 500;
+  transition: all .2s;
+}
+
+.exercise-card.done   .ex-done-indicator { background: #0F2E22; color: #1D9E75; }
+.exercise-card.active .ex-done-indicator { background: rgba(29,158,117,0.12); color: #1D9E75; border: 1px solid rgba(29,158,117,0.25); }
+.exercise-card:not(.done):not(.active) .ex-done-indicator { background: rgba(255,255,255,0.04); color: #444441; }
+
+.check { color: #1D9E75; }
+.ex-num { color: #444441; }
+
+.ex-card-meta { flex: 1; min-width: 0; }
+.ex-card-name   { font-size: 14px; font-weight: 500; color: #fff; margin: 0 0 2px; }
+.ex-card-target { font-size: 11px; color: #444441; margin: 0; }
+
+.ex-sets-summary { text-align: right; flex-shrink: 0; }
+.sets-done  { font-size: 20px; font-weight: 500; color: #fff; line-height: 1; }
+.sets-total { font-size: 11px; color: #444441; }
+
+/* Series completadas */
+.sets-history {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 0 14px 10px;
+}
+
+.set-chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  background: rgba(29,158,117,0.08);
+  border: 0.5px solid rgba(29,158,117,0.15);
+  cursor: pointer;
+  transition: background .15s;
+}
+
+.set-chip:hover { background: rgba(29,158,117,0.15); }
+.set-chip-num   { font-size: 10px; color: #5F5E5A; }
+.set-chip-val   { font-size: 11px; font-weight: 500; color: #1D9E75; }
+
+/* Logger */
+.set-logger-wrap {
+  padding: 12px 14px;
+  border-top: 0.5px solid rgba(255,255,255,0.05);
+  background: #0d0f18;
+}
+
+/* Nota del coach */
+.coach-note {
+  font-size: 11px;
+  color: #444441;
+  padding: 0 14px 12px;
+  margin: 0;
+  font-style: italic;
+  line-height: 1.5;
+}
+
+/* ── Timer de descanso ── */
+.rest-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  background: rgba(0,0,0,0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rest-card {
+  background: #13151e;
+  border: 0.5px solid #0F6E56;
+  border-radius: 20px;
+  padding: 28px 36px;
+  text-align: center;
+  width: 240px;
+}
+
+.rest-label {
+  font-size: 10px;
+  color: #1D9E75;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 16px;
+  font-weight: 500;
+}
+
+.rest-circle {
+  position: relative;
+  display: inline-block;
+  margin-bottom: 18px;
+}
+
+.rest-circle svg { display: block; transform: rotate(-90deg); }
+
+.rest-time {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 34px;
+  font-weight: 500;
+  color: #fff;
+  letter-spacing: -.02em;
+}
+
+.btn-skip {
+  font-size: 12px;
+  color: #5F5E5A;
+  background: none;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all .15s;
+  width: 100%;
+}
+
+.btn-skip:hover {
+  color: #e8e6df;
+  border-color: rgba(255,255,255,0.14);
+}
+
+/* ── Banner completar ── */
+.complete-banner {
+  padding: 14px 16px;
+  border-top: 0.5px solid rgba(255,255,255,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  background: #0d0f18;
+}
+
+.complete-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #5F5E5A;
+}
+
+.cs-value { color: #e8e6df; font-weight: 500; }
+.cs-sep   { color: #2C2C2A; }
+
+.btn-complete {
+  width: 100%;
+  padding: 14px;
+  background: #0F6E56;
+  color: #9FE1CB;
+  border: none;
+  border-radius: 12px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+  letter-spacing: -.01em;
+}
+
+.btn-complete:hover    { background: #1D9E75; }
+.btn-complete:active   { transform: scale(0.99); }
+.btn-complete:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── Empty ── */
+.empty-state {
+  text-align: center;
+  color: #2C2C2A;
+  font-size: 13px;
+  padding: 48px 20px;
+  border: 0.5px dashed rgba(255,255,255,0.04);
+  border-radius: 12px;
+}

@@ -1,0 +1,36 @@
+// Angular MODERNO (lo que debes usar y conocer a fondo)
+@Component({
+  selector: 'app-dashboard',
+  standalone: true,  // Este componente es autosuficiente
+  imports: [
+    CommonModule,        // ❌ Obsoleto en standalone — evítalo
+    NgIf,                // ❌ También obsoleto con el nuevo control flow
+    AsyncPipe,           // ✅ Útil si aún usas RxJS en templates
+    RouterModule,        // ✅ Para routerLink, routerOutlet
+    ReactiveFormsModule, // ✅ Para formularios reactivos
+    UserCardComponent,   // ✅ Otro standalone component — así se compone
+    UserListComponent,
+  ],
+  template: `
+    <!-- Angular 17+ control flow moderno -->
+    @if (user()) {
+      <app-user-card [user]="user()" />
+    } @else {
+      <p>Loading...</p>
+    }
+    
+    @for (item of items(); track item.id) {
+      <app-user-list [item]="item" />
+    } @empty {
+      <p>No items</p>
+    }
+  `
+})
+export class DashboardComponent {
+  // inject() es el enfoque moderno — más composable que el constructor
+  private userService = inject(UserService);
+  
+  // signal() para estado local reactivo
+  protected user = signal<User | null>(null);
+  protected items = signal<Item[]>([]);
+}

@@ -1,0 +1,123 @@
+.perfil-container {
+  max-width: 500px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.perfil-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #e44d26;
+  color: white;
+  font-size: 2rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.perfil-card h2 {
+  font-size: 1.5rem;
+  color: #1a1a2e;
+  margin-bottom: 0.3rem;
+}
+
+.email {
+  color: #888;
+  font-size: 0.9rem;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.stat {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.stat-valor {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #e44d26;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.acciones {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-carrito {
+  flex: 1;
+  padding: 0.8rem;
+  background: #1a1a2e;
+  color: white;
+  border-radius: 10px;
+  text-align: center;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.btn-carrito:hover {
+  background: #e44d26;
+  text-decoration: none;
+}
+
+.btn-logout {
+  flex: 1;
+  padding: 0.8rem;
+  background: transparent;
+  border: 1px solid #e44d26;
+  color: #e44d26;
+  border-radius: 10px;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.btn-logout:hover {
+  background: #e44d26;
+  color: white;
+}
+
+.no-sesion {
+  background: white;
+  border-radius: 16px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+}
+
+.no-sesion a {
+  display: inline-block;
+  margin-top: 1rem;
+  background: #e44d26;
+  color: white;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+}

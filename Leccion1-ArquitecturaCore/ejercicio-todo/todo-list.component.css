@@ -1,0 +1,82 @@
+/* Estilos básicos para visualizar el componente */
+
+.todo-container {
+  max-width: 500px;
+  margin: 2rem auto;
+  font-family: sans-serif;
+}
+
+.add-todo {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1rem;
+}
+
+.add-todo input {
+  flex: 1;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.add-todo button {
+  padding: 8px 16px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.counter {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: #999;
+  padding: 2rem;
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+}
+
+.todo-list {
+  list-style: none;
+  padding: 0;
+}
+
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+/* Esta clase se aplica con [class.completed]="todo.completed" */
+.todo-item.completed .todo-title {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.todo-title {
+  flex: 1;
+}
+
+.delete-btn {
+  padding: 4px 8px;
+  background: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.completed-info {
+  color: #28a745;
+  font-size: 0.9rem;
+  text-align: right;
+}

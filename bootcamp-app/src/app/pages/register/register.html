@@ -1,0 +1,13 @@
+<h2>Registro</h2>
+
+@if (loading()) {
+  <p>Registrando...</p>
+}
+
+@if (success()) {
+  <p>Usuario registrado correctamente</p>
+} @else {
+  <app-register-form
+    (formSubmitted)="onFormSubmitted($event)"
+  />
+}

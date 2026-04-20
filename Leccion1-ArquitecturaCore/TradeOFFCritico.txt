@@ -1,0 +1,41 @@
+Trade-off crítico NgModule vs Standalone:
+NgModule te da organización explícita y lazy loading a nivel de módulo. Standalone te da composición más directa, mejor tree-shaking, 
+y menos boilerplate. En 2024, standalone es el camino. NgModule sigue existiendo para código legacy y casos específicos de migración.
+El error que cometen los React developers: Tratar los imports del decorador @Component como los import de ES modules. No lo son. 
+Los imports en el decorador son para decirle al compilador de Angular qué directivas, pipes y componentes están disponibles en el 
+template de este componente. Los import de TypeScript siguen siendo necesarios para el código TypeScript.
+
+Change Detection: el motor invisible
+React re-renderiza por defecto cuando cambia el estado. Angular tiene un sistema diferente:
+typescript// Modo DEFAULT (evítalo en componentes de presentación)
+// Angular revisa TODO el árbol cada vez que algo cambia
+@Component({
+  selector: 'app-list',
+  // Sin ChangeDetectionStrategy = DEFAULT
+  template: `{{ items.length }} items`
+})
+export class ListComponent {
+  items: Item[] = [];
+}
+
+// Modo OnPush (lo que debes usar siempre en componentes serios)
+// Angular solo re-verifica este componente cuando:
+// 1. Cambia un @Input() (por referencia)
+// 2. Un event handler dispara en el componente
+// 3. Un Observable al que estás suscrito emite (con async pipe)
+// 4. Un signal que usas en el template cambia
+// 5. Llamas manualmente a markForCheck()
+@Component({
+  selector: 'app-list',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `{{ items().length }} items`
+})
+export class ListComponent {
+  items = input<Item[]>([]);  // Angular 17+ signal-based inputs
+}
+La pregunta de entrevista que distingue a los candidatos:
+"¿Cuál es la diferencia entre markForCheck() y detectChanges()?"
+Respuesta promedio: "uno marca el componente y el otro ejecuta la detección."
+Respuesta que impresiona: "markForCheck() sube por el árbol de componentes marcando 
+todos los ancestros hasta el root como 'necesitan verificación', pero no dispara la detección inmediatamente — espera al próximo ciclo de Zone.js. detectChanges() ejecuta change detection sincrónicamente solo para el componente actual y sus hijos. En componentes OnPush trabajando fuera de Zone.js (como con Workers o código imperativo), necesitas detectChanges() para actualizaciones síncronas inmediatas. Con signals, 
+esto se vuelve prácticamente irrelevante porque Angular sabe exactamente qué componentes dependen de qué signals."

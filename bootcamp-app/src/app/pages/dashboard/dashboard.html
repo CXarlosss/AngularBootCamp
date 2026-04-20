@@ -1,0 +1,7 @@
+<h2>Dashboard</h2>
+
+@if (user()) {
+  <p>Bienvenido, {{ user()!.name }}</p>
+  <p>{{ user()!.email }}</p>
+  <button (click)="logout()">Cerrar sesión</button>
+}

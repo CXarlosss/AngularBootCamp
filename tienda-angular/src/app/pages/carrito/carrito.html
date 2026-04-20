@@ -1,0 +1,34 @@
+<div class="carrito-container">
+  <h2>Tu carrito</h2>
+
+  @if (items().length === 0) {
+    <div class="vacio">
+      <p>El carrito está vacío</p>
+      <a routerLink="/productos">Ver productos</a>
+    </div>
+  } @else {
+    @for (item of items(); track item.producto.id) {
+      <div class="item">
+        <img [src]="item.producto.image" [alt]="item.producto.title" />
+        <div class="item-info">
+          <p>{{ item.producto.title }}</p>
+          <p class="precio-unit">{{ item.producto.price | currency:'EUR' }} / unidad</p>
+          <div class="cantidad">
+            <button (click)="cambiarCantidad(item.producto.id, item.cantidad - 1)">-</button>
+            <span>{{ item.cantidad }}</span>
+            <button (click)="cambiarCantidad(item.producto.id, item.cantidad + 1)">+</button>
+          </div>
+          <p class="subtotal">Subtotal: {{ item.producto.price * item.cantidad | currency:'EUR' }}</p>
+        </div>
+        <button class="btn-eliminar" (click)="eliminar(item.producto.id)">Eliminar</button>
+      </div>
+    }
+
+    <div class="total">
+      <p>Total items: {{ totalItems() }}</p>
+      <p class="precio-total">{{ totalPrecio() | currency:'EUR' }}</p>
+      <a routerLink="/checkout" class="btn-checkout">Finalizar compra →</a>
+      <button class="btn-vaciar" (click)="vaciar()">Vaciar carrito</button>
+    </div>
+  }
+</div>

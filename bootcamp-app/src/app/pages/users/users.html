@@ -1,0 +1,5 @@
+<h2>Lista de usuarios</h2>
+
+@for (user of users(); track user.id) {
+  <app-greeting [name]="user.name" />
+}
