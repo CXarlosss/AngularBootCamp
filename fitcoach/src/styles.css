@@ -37,12 +37,9 @@ body {
 
 /* Portal móvil centrado en escritorio */
 @media (min-width: 768px) {
-  fc-client-dashboard,
-  fc-today-workout,
-  fc-client-progress,
+  /* Componentes que actúan como "Shell" (Portales) */
   fc-login,
   fc-register-client,
-  fc-client-chat,
   fc-client-layout {
     display: flex;
     flex-direction: column;
@@ -55,9 +52,16 @@ body {
     position: relative;
   }
 
-  body {
-    background: #040508;
-    padding: 20px 0;
+  /* Componentes que van DENTRO del layout */
+  fc-client-dashboard,
+  fc-today-workout,
+  fc-client-progress,
+  fc-client-chat {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
   }
 }
 
