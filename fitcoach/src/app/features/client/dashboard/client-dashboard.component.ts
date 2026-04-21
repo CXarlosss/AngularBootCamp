@@ -79,7 +79,7 @@ import { computed }             from '@angular/core';
           <p class="empty-sub">Tu entrenador te enviará una rutina pronto</p>
         </div>
       }
-
+    </div>
   `,
   styleUrl: './client-dashboard.component.css',
 })

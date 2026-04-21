@@ -308,12 +308,3 @@
   font-size: 13px;
   font-weight: 500;
 }
-
-/* ── Bottom Nav handled by global styles, but adding padding fix ── */
-.bottom-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0; right: 0;
-  max-width: 440px;
-  margin: 0 auto;
-}
