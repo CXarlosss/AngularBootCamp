@@ -6,4 +6,5 @@ export interface Profile {
   role: UserRole;
   avatarUrl?: string;
   coachId?: string;        // solo si es cliente
+  email?: string;          // email del usuario
 }

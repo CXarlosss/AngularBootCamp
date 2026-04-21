@@ -36,7 +36,7 @@
         </svg>
         Mensajes
         @if (unreadCount() > 0) {
-          <span class="nav-badge unread">{{ unreadCount() }}</span>
+          <span class="nav-badge">{{ unreadCount() }}</span>
         }
       </button>
     </div>
@@ -75,19 +75,22 @@
       <div class="kpi-card">
         <span class="kpi-label">Clientes</span>
         <span class="kpi-value">{{ clients().length }}</span>
+        <span class="kpi-hint">{{ clients().length === 0 ? 'Sin clientes aún' : 'activos' }}</span>
       </div>
       <div class="kpi-card">
-        <span class="kpi-label">Sesiones/Semana</span>
+        <span class="kpi-label">Sesiones / semana</span>
         <span class="kpi-value">{{ sessionCount() }}</span>
+        <span class="kpi-hint">esta semana</span>
       </div>
       <div class="kpi-card">
-        <span class="kpi-label">Pendientes</span>
+        <span class="kpi-label">Mensajes</span>
         <span class="kpi-value" [class.kpi-alert]="unreadCount() > 0">
           {{ unreadCount() }}
         </span>
+        <span class="kpi-hint">{{ unreadCount() > 0 ? 'sin leer' : 'al día' }}</span>
       </div>
       <div class="kpi-card invite-kpi" (click)="copyCode()">
-        <span class="kpi-label">Invitar</span>
+        <span class="kpi-label">Código invitación</span>
         <span class="kpi-code">{{ inviteCode() }}</span>
         <span class="kpi-hint">Clic para copiar</span>
       </div>
@@ -95,18 +98,18 @@
 
     <!-- Content grid -->
     <div class="content-grid">
-      
+
       <div class="left-col">
         <!-- Panel de clientes -->
         <div class="panel">
           <div class="panel-header">
             <span class="panel-title">Mis clientes</span>
-            <button class="panel-action" (click)="goTo('/coach/clients')">Ver todos</button>
+            <button class="panel-action" (click)="goTo('/coach/clients')">Ver todos →</button>
           </div>
 
           @if (clients().length === 0) {
             <div class="empty-panel">
-              <p>Aún no tienes clientes.</p>
+              <p>Aún no tienes clientes. Comparte tu código para que se registren.</p>
               <button class="btn-primary-dark" (click)="shareCode()">
                 Enviar invitación
               </button>
@@ -118,7 +121,7 @@
               <div class="client-av">{{ initials(client.fullName) }}</div>
               <div class="client-info">
                 <div class="client-name">{{ client.fullName }}</div>
-                <div class="client-meta">Cliente activo</div>
+                <div class="client-meta">Semana activa · ver progreso</div>
               </div>
               <button class="btn-assign"
                 (click)="$event.stopPropagation(); goTo('/coach/routine-builder')">
@@ -136,7 +139,8 @@
 
           @if (recentActivity().length === 0) {
             <div class="empty-activity">
-              Los entrenamientos completados aparecerán aquí
+              <div style="font-size: 24px; margin-bottom: 8px; opacity: .3">📊</div>
+              Los entrenamientos completados de tus clientes aparecerán aquí
             </div>
           }
 
@@ -157,19 +161,19 @@
         <div class="invite-card">
           <div class="invite-label">Código de invitación</div>
           <div class="invite-code">{{ inviteCode() }}</div>
-          <p class="invite-sub">Compártelo con tus clientes para vincularlos a tu cuenta.</p>
+          <p class="invite-sub">Compártelo para vincular nuevos clientes a tu cuenta.</p>
           <div class="invite-actions">
             <button class="ibtn-copy" (click)="copyCode()">Copiar</button>
             <button class="ibtn-share" (click)="shareCode()">Compartir</button>
           </div>
         </div>
 
-        <!-- Nav / Actions -->
+        <!-- Acciones rápidas -->
         <div class="panel">
           <div class="panel-header">
             <span class="panel-title">Acciones</span>
           </div>
-          
+
           <button class="quick-action" (click)="goTo('/coach/routine-builder')">
             <div class="qa-icon qa-green">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
@@ -177,8 +181,22 @@
               </svg>
             </div>
             <div class="qa-text">
-              <span class="qa-label">Nueva rutina</span>
-              <span class="qa-sub">Constructor</span>
+              <div class="qa-label">Nueva rutina</div>
+              <div class="qa-sub">Constructor</div>
+            </div>
+            <span class="qa-arrow">›</span>
+          </button>
+
+          <button class="quick-action" (click)="goTo('/coach/clients')">
+            <div class="qa-icon qa-teal">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+              </svg>
+            </div>
+            <div class="qa-text">
+              <div class="qa-label">Mis clientes</div>
+              <div class="qa-sub">{{ clients().length }} activo{{ clients().length !== 1 ? 's' : '' }}</div>
             </div>
             <span class="qa-arrow">›</span>
           </button>
@@ -190,8 +208,8 @@
               </svg>
             </div>
             <div class="qa-text">
-              <span class="qa-label">Mensajes</span>
-              <span class="qa-sub">Bandeja de entrada</span>
+              <div class="qa-label">Mensajes</div>
+              <div class="qa-sub">{{ unreadCount() > 0 ? unreadCount() + ' sin leer' : 'Al día' }}</div>
             </div>
             <span class="qa-arrow">›</span>
           </button>
