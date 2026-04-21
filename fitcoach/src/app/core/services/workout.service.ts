@@ -15,12 +15,12 @@ export class WorkoutService {
       client_id: log.clientId,
       assigned_routine_id: log.assignedRoutineId,
       day_id: log.dayId,
-      logged_date: log.loggedDate,
+      logged_date: log.loggedDate instanceof Date ? log.loggedDate.toISOString() : log.loggedDate,
       completed: log.completed
     });
 
     if (wError) {
-      console.error('Error al guardar workout_log:', wError);
+      console.error('Error detallado de Supabase:', wError.message, wError.details, wError.hint);
       throw wError;
     }
 
