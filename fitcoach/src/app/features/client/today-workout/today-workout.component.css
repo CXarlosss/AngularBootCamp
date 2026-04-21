@@ -3,6 +3,9 @@
   flex-direction: column;
   height: 100dvh;
   background: #080a0f;
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(29, 158, 117, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 100% 100%, rgba(29, 158, 117, 0.02) 0%, transparent 40%);
   color: #e8e6df;
   max-width: 480px;
   margin: 0 auto;
@@ -82,29 +85,32 @@
 
 /* ── Exercise card ── */
 .exercise-card {
-  background: #1a1d27;
-  border: 0.5px solid rgba(255,255,255,0.1);
-  border-radius: 14px;
+  background: #13161f;
+  border: 0.5px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
   overflow: hidden;
-  transition: border-color .2s, opacity .2s;
+  transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .exercise-card.active {
   border-color: #1D9E75;
-  box-shadow: 0 0 0 1px rgba(29,158,117,0.15), 0 4px 20px rgba(0,0,0,0.4);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(29,158,117,0.2);
   background: #1c2030;
+  transform: translateY(-2px);
+  z-index: 2;
 }
 
 .exercise-card.done {
-  opacity: .8;
-  background: #13151e;
-  border-color: rgba(29,158,117,0.2);
+  opacity: .7;
+  background: #0d0f18;
+  border-color: rgba(29,158,117,0.1);
+  transform: scale(0.98);
 }
 
 .exercise-card.future {
-  background: #14161f;
-  border: 0.5px solid rgba(255,255,255,0.06);
-  opacity: .6;
+  background: #0d0f18;
+  border: 0.5px solid rgba(255,255,255,0.04);
+  opacity: .5;
 }
 
 .ex-card-header {
