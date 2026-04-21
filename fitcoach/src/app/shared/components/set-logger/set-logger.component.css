@@ -1,3 +1,5 @@
+:host { display: block; }
+
 .set-logger {
   display: block !important;
   width: 100% !important;

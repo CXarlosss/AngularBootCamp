@@ -105,16 +105,20 @@
   background: #11141b;
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: 20px;
-  overflow: hidden;
-  transition: all .4s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible; /* Cambiado de hidden para evitar clipping de interacción */
+  transition: min-height .4s cubic-bezier(0.16, 1, 0.3, 1), transform .3s;
   scroll-margin: 80px;
+  position: relative;
+  height: auto;
 }
 
 .exercise-card.active {
   background: #172120 !important;
   border-color: #1D9E75 !important;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(29,158,117,0.2) !important;
-  z-index: 5;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 2px rgba(29,158,117,0.2) !important;
+  z-index: 10 !important; /* Asegurar que esté por encima de sus hermanos */
+  height: auto !important;
+  min-height: 100px; /* Base mínima */
 }
 
 .exercise-card.done {
