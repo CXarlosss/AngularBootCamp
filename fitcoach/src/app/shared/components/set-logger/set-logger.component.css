@@ -26,10 +26,10 @@
 }
 
 .inputs-row {
-  display: grid !important;
-  grid-template-columns: 1fr 1fr !important;
-  gap: 10px !important;
-  margin-bottom: 12px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  margin-bottom: 16px !important;
 }
 
 .input-group { display: flex !important; flex-direction: column !important; gap: 4px !important; }
@@ -67,22 +67,23 @@
   background: none !important;
   border: none !important;
   color: #fff !important;
-  font-size: 18px !important;
-  font-weight: 500 !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
   text-align: center !important;
   outline: none !important;
 }
 
 .log-btn {
   width: 100% !important;
-  padding: 14px !important;
-  background: #0F6E56 !important;
-  color: #9FE1CB !important;
+  padding: 16px !important;
+  background: var(--c-green) !important;
+  color: #fff !important;
   border: none !important;
-  border-radius: 10px !important;
-  font-size: 14px !important;
-  font-weight: 500 !important;
+  border-radius: 14px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
   cursor: pointer !important;
+  box-shadow: 0 4px 12px rgba(29, 158, 117, 0.2) !important;
 }
 
 .log-btn:active   { transform: scale(0.98) !important; }
