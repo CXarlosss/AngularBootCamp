@@ -11,6 +11,7 @@ export interface WorkoutLog {
   id: string;
   clientId: string;
   assignedRoutineId: string;
+  dayId: string;
   loggedDate: Date;
   completed: boolean;
   sets: SetLog[];

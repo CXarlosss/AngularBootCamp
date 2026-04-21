@@ -8,6 +8,8 @@ import { toObservable } from '@angular/core/rxjs-interop';
 import { AuthService }         from '../../../core/auth/auth.service';
 import { ClientRoutineService } from '../../../core/services/client-routine.service';
 import { AssignedRoutine }      from '../../../core/models/routine.model';
+import { WorkoutStore }         from '../../../state/workout.store';
+import { computed }             from '@angular/core';
 
 @Component({
   selector: 'fc-client-dashboard',
@@ -25,7 +27,10 @@ import { AssignedRoutine }      from '../../../core/models/routine.model';
       <div class="greeting">
         <h1 class="greeting-name">{{ greeting() }}, {{ firstName() }}</h1>
         <p class="greeting-sub">
-          @if (routine()) { Tienes una rutina activa esta semana }
+          @if (routine()) { 
+            @if (visibleDays().length > 0) { Tienes trabajo pendiente esta semana }
+            @else { ¡Has completado todos los entrenamientos de esta rutina! 🚀 }
+          }
           @else { Tu entrenador aún no te ha asignado una rutina }
         </p>
       </div>
@@ -34,24 +39,33 @@ import { AssignedRoutine }      from '../../../core/models/routine.model';
         <div class="routine-card">
           <div class="rc-header">
             <div class="rc-badge">Rutina activa</div>
-            <span class="rc-arrow">›</span>
+            <span class="rc-total">{{ visibleDays().length }} / {{ r.routine?.days?.length }} restantes</span>
           </div>
           <h2 class="rc-name">{{ r.routine?.name }}</h2>
           <p class="rc-meta">
-            {{ r.routine?.days?.length }} días ·
-            {{ goalLabel(r.routine?.goal) }}
+            {{ r.routine?.goal ? goalLabel(r.routine.goal) : '' }}
           </p>
+          
           <div class="rc-days">
-            @for (day of r.routine?.days ?? []; track day.id) {
+            @for (day of visibleDays(); track day.id) {
               <div class="day-chip interactive" (click)="startWorkout(day.id)">
                 <span class="day-label">{{ day.label }}</span>
                 <span class="day-count">{{ day.exercises.length }} ejercicios</span>
               </div>
             }
+
+            @if (visibleDays().length === 0) {
+              <div class="all-done-msg">
+                💪 Todo completado por ahora. ¡Buen trabajo!
+              </div>
+            }
           </div>
-          <button class="btn-start" (click)="startWorkout()">
-            Empezar entrenamiento de hoy
-          </button>
+
+          @if (visibleDays().length > 0) {
+            <button class="btn-start" (click)="startWorkout(visibleDays()[0].id)">
+              Continuar entrenamiento
+            </button>
+          }
         </div>
       } @else {
         <div class="empty-card">
@@ -104,9 +118,26 @@ import { AssignedRoutine }      from '../../../core/models/routine.model';
 export class ClientDashboardComponent implements OnInit {
   auth    = inject(AuthService);
   router  = inject(Router);
+  workoutStore = inject(WorkoutStore);
   private clientRoutineSvc = inject(ClientRoutineService);
 
   routine = signal<AssignedRoutine | null>(null);
+
+  visibleDays = computed(() => {
+    const r = this.routine();
+    const history = this.workoutStore.history();
+    if (!r || !r.routine?.days) return [];
+
+    // Filtramos los días que ya tienen un log completado para ESTA asignación específica
+    return r.routine.days.filter(day => {
+      const isCompleted = history.some(log => 
+        log.assignedRoutineId === r.id && 
+        log.dayId === day.id &&
+        log.completed
+      );
+      return !isCompleted;
+    });
+  });
 
   greeting = () => {
     const h = new Date().getHours();
@@ -129,25 +160,25 @@ export class ClientDashboardComponent implements OnInit {
   }[goal ?? ''] ?? goal ?? '');
 
   async ngOnInit(): Promise<void> {
-    // No usamos bucles while, confiamos en el estado de loading inicial
     const profile = this.auth.profile();
     if (profile?.id) {
-      this.loadRoutine(profile.id);
+      this.loadData(profile.id);
     } else {
-      // Si el perfil no está (ej: recarga profunda), esperamos a que cambie la señal
-      // Observamos cambios del perfil de forma reactiva una sola vez
       const sub = toObservable(this.auth.profile).subscribe(p => {
         if (p?.id) {
-          this.loadRoutine(p.id);
+          this.loadData(p.id);
           sub.unsubscribe();
         }
       });
     }
   }
 
-  private async loadRoutine(clientId: string) {
-    console.log('[Dashboard] Cargando rutina para:', clientId);
-    const r = await this.clientRoutineSvc.getActiveRoutine(clientId);
+  private async loadData(clientId: string) {
+    console.log('[Dashboard] Cargando datos para:', clientId);
+    const [r] = await Promise.all([
+      this.clientRoutineSvc.getActiveRoutine(clientId),
+      this.workoutStore.loadHistory(clientId)
+    ]);
     this.routine.set(r);
   }
 

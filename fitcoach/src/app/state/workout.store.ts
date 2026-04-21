@@ -36,13 +36,13 @@ export const WorkoutStore = signalStore(
   ) => ({
 
     // Iniciar un entrenamiento nuevo para hoy
-    startWorkout(assignedRoutineId: string, clientId: string): void {
+    startWorkout(assignedRoutineId: string, clientId: string, dayId: string): void {
       // Intentar recuperar sesión guardada (priorizamos localStorage para evitar pérdidas)
       const saved = localStorage.getItem('active_workout');
       if (saved) {
         try {
           const log = JSON.parse(saved);
-          if (log.assignedRoutineId === assignedRoutineId) {
+          if (log.assignedRoutineId === assignedRoutineId && log.dayId === dayId) {
             // Asegurar que las fechas se vuelvan a instanciar como Date
             log.loggedDate = new Date(log.loggedDate);
             patchState(store, { activeLog: log });
@@ -55,6 +55,7 @@ export const WorkoutStore = signalStore(
         id: crypto.randomUUID(),
         clientId,
         assignedRoutineId,
+        dayId,
         loggedDate: new Date(),
         completed: false,
         sets: [],

@@ -14,6 +14,7 @@ export class WorkoutService {
       id: log.id,
       client_id: log.clientId,
       assigned_routine_id: log.assignedRoutineId,
+      day_id: log.dayId,
       logged_date: log.loggedDate,
       completed: log.completed
     });
@@ -63,6 +64,7 @@ export class WorkoutService {
       id: w.id,
       clientId: w.client_id,
       assignedRoutineId: w.assigned_routine_id,
+      dayId: w.day_id,
       loggedDate: new Date(w.logged_date),
       completed: w.completed,
       sets: (w.sets || []).map((s: any) => ({

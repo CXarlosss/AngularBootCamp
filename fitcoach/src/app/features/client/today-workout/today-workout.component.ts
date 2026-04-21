@@ -258,7 +258,12 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     const assigned = await this.clientRoutineSvc.getActiveRoutine(user.id);
     this.activeRoutine.set(assigned);
 
-    if (assigned) this.workoutStore.startWorkout(assigned.id, user.id);
+    if (assigned) {
+      const day = this.todayDay();
+      if (day) {
+        this.workoutStore.startWorkout(assigned.id, user.id, day.id);
+      }
+    }
   }
 
   ngOnDestroy(): void {

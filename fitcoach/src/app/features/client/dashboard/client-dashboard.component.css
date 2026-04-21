@@ -164,6 +164,26 @@
 .day-label { font-size: 15px; font-weight: 500; color: #fff; }
 .day-count  { font-size: 12px; color: var(--c-text-4); }
 
+.rc-total {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--c-text-4);
+  background: rgba(255,255,255,0.03);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+.all-done-msg {
+  padding: 40px 20px;
+  text-align: center;
+  font-size: 15px;
+  color: var(--c-green);
+  background: var(--c-green-t);
+  border-radius: 20px;
+  border: 1px dashed var(--c-green-glow);
+  margin: 10px 0;
+}
+
 .btn-start {
   width: 100%;
   padding: 16px;
