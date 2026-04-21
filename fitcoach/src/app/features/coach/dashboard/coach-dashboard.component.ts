@@ -119,7 +119,12 @@ export class CoachDashboardComponent implements OnInit {
     const { error } = await this.sb
       .from('invite_codes')
       .insert({ code, coach_id: coachId });
-    return error ? null : code;
+    if (error) {
+      console.error('❌ Error generando código:', error.message, '| code:', error.code);
+      return null;
+    }
+    console.log('✅ Nuevo código generado:', code);
+    return code;
   }
 
   formatTime(date: Date): string {
