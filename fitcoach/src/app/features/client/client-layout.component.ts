@@ -55,23 +55,33 @@ import { Router, RouterOutlet, RouterModule } from '@angular/router';
   `,
   styles: [`
     .client-layout {
+      height: 100%;
       display: flex;
       flex-direction: column;
-      height: 100%;
+      background: var(--c-bg);
       position: relative;
+      overflow: hidden;
     }
 
     .content-area {
       flex: 1;
+      height: 0; /* Asegura que el flex-grow no cause overflow del padre */
       overflow-y: auto;
-      /* Espacio para el footer */
-      padding-bottom: 20px; 
+      scroll-behavior: smooth;
     }
 
-    /* La bottom-nav ya tiene estilos globales en styles.css, 
-       pero nos aseguramos de que aquí se vea bien */
-    .bottom-nav {
-      flex-shrink: 0;
+    /* Estilos extra para los botones activos */
+    .nav-btn {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .nav-btn span {
+      margin-top: 4px;
+      transition: opacity 0.3s;
+    }
+
+    .nav-btn.active span {
+      color: var(--c-green);
     }
   `]
 })

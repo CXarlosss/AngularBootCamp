@@ -42,8 +42,10 @@ body {
   fc-client-progress,
   fc-login,
   fc-register-client,
-  fc-client-chat {
-    display: block;
+  fc-client-chat,
+  fc-client-layout {
+    display: flex;
+    flex-direction: column;
     max-width: 440px;
     margin: 0 auto;
     height: 100dvh;
