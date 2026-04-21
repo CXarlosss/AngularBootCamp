@@ -257,3 +257,35 @@
 
 .btn-complete:active { transform: scale(0.98); }
 .btn-complete:disabled { opacity: 0.5; filter: grayscale(0.5); }
+
+/* ── Empty State ── */
+.empty-state {
+  text-align: center;
+  padding: 60px 24px;
+  color: #5F5E5A;
+}
+
+.empty-illustration {
+  font-size: 64px;
+  margin-bottom: 24px;
+  opacity: 0.6;
+  animation: float 3s ease-in-out infinite;
+}
+
+.empty-state p {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e8e6df;
+  margin: 0 0 8px;
+}
+
+.empty-sub {
+  font-size: 13px;
+  color: #5F5E5A;
+  display: block;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-12px); }
+}

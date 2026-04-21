@@ -9,6 +9,8 @@ import { ClientRoutineService } from '../../../core/services/client-routine.serv
 import { AuthService }     from '../../../core/auth/auth.service';
 import { RestTimerService } from '../../../core/services/rest-timer.service';
 import { SetLoggerComponent } from '../../../shared/components/set-logger/set-logger.component';
+import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
+import { HapticService }     from '../../../core/services/haptic.service';
 import { AssignedRoutine, Exercise, RoutineDay } from '../../../core/models/routine.model';
 import { SetLog }          from '../../../core/models/workout-log.model';
 
@@ -23,7 +25,7 @@ interface ExerciseState {
   selector: 'fc-today-workout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, SetLoggerComponent],
+  imports: [CommonModule, SetLoggerComponent, SkeletonComponent],
   template: `
     <div class="workout-screen">
 
@@ -81,64 +83,76 @@ interface ExerciseState {
       }
 
       <div class="exercises-list">
-        @for (state of exerciseStates(); track state.exercise.id; let i = $index) {
-          <div
-            class="exercise-card"
-            [class.active]="state.isActive && !state.isDone"
-            [class.done]="state.isDone"
-            [class.future]="!state.isActive && !state.isDone"
-          >
-            <div class="ex-card-header" (click)="setActiveExercise(i)">
-              <div class="ex-done-indicator">
-                @if (state.isDone) {
-                  <span class="check">✓</span>
-                } @else {
-                  <span class="ex-num">{{ i + 1 }}</span>
-                }
-              </div>
-              <div class="ex-card-meta">
-                <h3 class="ex-card-name">{{ state.exercise.name }}</h3>
-                <p class="ex-card-target">
-                  @if (state.exercise.targetWeight) {
-                    {{ state.exercise.targetWeight }}kg ·
-                  }
-                  {{ state.exercise.sets }} series ·
-                  {{ state.exercise.restSeconds }}s descanso
-                </p>
-              </div>
-              <div class="ex-sets-summary">
-                <span class="sets-done">{{ state.completedSets.length }}</span>
-                <span class="sets-total">/{{ state.exercise.sets }}</span>
-              </div>
-            </div>
-
-            @if (state.completedSets.length > 0) {
-              <div class="sets-history">
-                @for (set of state.completedSets; track set.id) {
-                  <div class="set-chip" (click)="editSet(set)">
-                    <span class="set-chip-num">S{{ set.setNumber }}</span>
-                    <span class="set-chip-val">{{ set.weightKg }}kg×{{ set.repsDone }}</span>
-                  </div>
-                }
-              </div>
-            }
-
-            @if (state.isActive && !state.isDone) {
-              <div class="set-logger-wrap">
-                <fc-set-logger
-                  [setNumber]="state.completedSets.length + 1"
-                  [exerciseId]="state.exercise.id"
-                  [exerciseName]="state.exercise.name"
-                  [previousSet]="lastSet(state)"
-                  (setLogged)="onSetLogged($event, state.exercise)"
-                />
-              </div>
-            }
-
-            @if (state.exercise.notes) {
-              <p class="coach-note">{{ state.exercise.notes }}</p>
-            }
+        @if (isLoading()) {
+          @for (i of [1,2,3,4]; track i) {
+            <fc-skeleton type="exercise-card" />
+          }
+        } @else if (exerciseStates().length === 0) {
+          <div class="empty-state">
+            <div class="empty-illustration">🏋️</div>
+            <p>No hay ejercicios para hoy</p>
+            <span class="empty-sub">Tu entrenador está preparando algo grande para ti</span>
           </div>
+        } @else {
+          @for (state of exerciseStates(); track state.exercise.id; let i = $index) {
+            <div
+              class="exercise-card"
+              [class.active]="state.isActive && !state.isDone"
+              [class.done]="state.isDone"
+              [class.future]="!state.isActive && !state.isDone"
+            >
+              <div class="ex-card-header" (click)="setActiveExercise(i)">
+                <div class="ex-done-indicator">
+                  @if (state.isDone) {
+                    <span class="check">✓</span>
+                  } @else {
+                    <span class="ex-num">{{ i + 1 }}</span>
+                  }
+                </div>
+                <div class="ex-card-meta">
+                  <h3 class="ex-card-name">{{ state.exercise.name }}</h3>
+                  <p class="ex-card-target">
+                    @if (state.exercise.targetWeight) {
+                      {{ state.exercise.targetWeight }}kg ·
+                    }
+                    {{ state.exercise.sets }} series ·
+                    {{ state.exercise.restSeconds }}s descanso
+                  </p>
+                </div>
+                <div class="ex-sets-summary">
+                  <span class="sets-done">{{ state.completedSets.length }}</span>
+                  <span class="sets-total">/{{ state.exercise.sets }}</span>
+                </div>
+              </div>
+
+              @if (state.completedSets.length > 0) {
+                <div class="sets-history">
+                  @for (set of state.completedSets; track set.id) {
+                    <div class="set-chip" (click)="editSet(set)">
+                      <span class="set-chip-num">S{{ set.setNumber }}</span>
+                      <span class="set-chip-val">{{ set.weightKg }}kg×{{ set.repsDone }}</span>
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (state.isActive && !state.isDone) {
+                <div class="set-logger-wrap">
+                  <fc-set-logger
+                    [setNumber]="state.completedSets.length + 1"
+                    [exerciseId]="state.exercise.id"
+                    [exerciseName]="state.exercise.name"
+                    [previousSet]="lastSet(state)"
+                    (setLogged)="onSetLogged($event, state.exercise)"
+                  />
+                </div>
+              }
+
+              @if (state.exercise.notes) {
+                <p class="coach-note">{{ state.exercise.notes }}</p>
+              }
+            </div>
+          }
         }
       </div>
 
@@ -169,9 +183,11 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   clientRoutineSvc = inject(ClientRoutineService);
   auth         = inject(AuthService);
   timer        = inject(RestTimerService);
+  haptic       = inject(HapticService);
   router       = inject(Router);
   private route = inject(ActivatedRoute);
 
+  isLoading = signal(true);
   activeExerciseIndex = signal(0);
   activeRoutine = signal<AssignedRoutine | null>(null);
   selectedDayId = signal<string | null>(null);
@@ -255,14 +271,18 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
 
     this.selectedDayId.set(this.route.snapshot.queryParams['dayId'] ?? null);
 
-    const assigned = await this.clientRoutineSvc.getActiveRoutine(user.id);
-    this.activeRoutine.set(assigned);
+    try {
+      const assigned = await this.clientRoutineSvc.getActiveRoutine(user.id);
+      this.activeRoutine.set(assigned);
 
-    if (assigned) {
-      const day = this.todayDay();
-      if (day) {
-        this.workoutStore.startWorkout(assigned.id, user.id, day.id);
+      if (assigned) {
+        const day = this.todayDay();
+        if (day) {
+          this.workoutStore.startWorkout(assigned.id, user.id, day.id);
+        }
       }
+    } finally {
+      this.isLoading.set(false);
     }
   }
 
@@ -289,6 +309,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     exercise: Exercise
   ): void {
     this.workoutStore.logSet(set);
+    this.haptic.trigger('light');
 
     const currentLog = this.workoutStore.activeLog();
     const completedSetsCount = currentLog?.sets.filter(s => s.exerciseId === exercise.id).length ?? 0;
@@ -299,6 +320,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     if (completedSetsCount < targetSets) {
       this.timer.start(exercise.restSeconds);
     } else {
+      this.haptic.trigger('heavy');
       const nextIndex = this.activeExerciseIndex() + 1;
       const exercisesLength = this.todayDay()?.exercises.length ?? 0;
 
@@ -316,6 +338,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   }
 
   async completeWorkout(): Promise<void> {
+    this.haptic.trigger('complete');
     await this.workoutStore.completeWorkout();
     this.router.navigate(['/client/progress']);
   }
