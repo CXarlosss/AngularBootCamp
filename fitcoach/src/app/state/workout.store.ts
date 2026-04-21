@@ -37,13 +37,25 @@ export const WorkoutStore = signalStore(
 
     // Iniciar un entrenamiento nuevo para hoy
     startWorkout(assignedRoutineId: string, clientId: string, dayId: string): void {
-      // Intentar recuperar sesión guardada (priorizamos localStorage para evitar pérdidas)
+      // 1. Prioridad: ¿Ya lo hemos completado hoy? (miramos historial)
+      const finished = store.history().find(h => 
+        h.assignedRoutineId === assignedRoutineId && 
+        h.dayId === dayId && 
+        h.completed
+      );
+      
+      if (finished) {
+        console.log('[WorkoutStore] Cargando entrenamiento ya completado del historial');
+        patchState(store, { activeLog: finished });
+        return;
+      }
+
+      // 2. ¿Había una sesión a medias en localStorage?
       const saved = localStorage.getItem('active_workout');
       if (saved) {
         try {
           const log = JSON.parse(saved);
           if (log.assignedRoutineId === assignedRoutineId && log.dayId === dayId) {
-            // Asegurar que las fechas se vuelvan a instanciar como Date
             log.loggedDate = new Date(log.loggedDate);
             patchState(store, { activeLog: log });
             return;
@@ -51,6 +63,7 @@ export const WorkoutStore = signalStore(
         } catch {}
       }
 
+      // 3. Si no hay nada, creamos uno nuevo
       const log: WorkoutLog = {
         id: crypto.randomUUID(),
         clientId,

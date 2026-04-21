@@ -136,7 +136,7 @@ interface ExerciseState {
                 </div>
               }
 
-              @if (state.isActive && !state.isDone) {
+              @if (state.isActive && !state.isDone && !workoutStore.activeLog()?.completed) {
                 <div class="set-logger-wrap">
                   <fc-set-logger
                     [setNumber]="state.completedSets.length + 1"
@@ -275,6 +275,9 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
       const assigned = await this.clientRoutineSvc.getActiveRoutine(user.id);
       this.activeRoutine.set(assigned);
 
+      // Cargamos el historial ANTES de iniciar para detectar si ya terminamos hoy
+      await this.workoutStore.loadHistory(user.id);
+
       if (assigned) {
         const day = this.todayDay();
         if (day) {
@@ -304,6 +307,10 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     this.activeExerciseIndex.set(index);
   }
 
+  setsForExercise(exerciseId: string) {
+    return (this.workoutStore.activeLog()?.sets ?? []).filter(s => s.exerciseId === exerciseId);
+  }
+
   onSetLogged(
     set: Omit<SetLog, 'id'>,
     exercise: Exercise
@@ -311,20 +318,18 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     this.workoutStore.logSet(set);
     this.haptic.trigger('light');
 
-    const currentLog = this.workoutStore.activeLog();
-    const completedSetsCount = (currentLog?.sets ?? []).filter(s => s.exerciseId === exercise.id).length + 1; // +1 porque el cambio en el store es async
-    const targetSets = Number(exercise.sets) || 0;
+    const completed = this.setsForExercise(exercise.id).length + 1;
+    const target = Number(exercise.sets) || 0;
 
-    console.log(`[Workout] ${exercise.name}: ${completedSetsCount}/${targetSets} series`);
-
-    // Iniciamos descanso siempre que no hayamos terminado el ejercicio
-    // O si lo acabamos de terminar, damos el feedback hático pero no saltamos de página
-    if (completedSetsCount >= targetSets) {
+    // Feedback visual y hático al terminar series
+    if (completed >= target) {
       this.haptic.trigger('heavy');
     }
     
-    // El descanso se inicia siempre para dar ritmo
-    this.timer.start(exercise.restSeconds);
+    // El descanso se inicia siempre para mantener el ritmo, pero NO avanzamos
+    if (exercise.restSeconds > 0) {
+      this.timer.start(exercise.restSeconds);
+    }
   }
 
   editSet(set: SetLog): void {
