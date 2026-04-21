@@ -93,7 +93,7 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 20px; /* Incrementado desde 14px */
   scroll-behavior: smooth;
   scroll-padding: 80px;
   padding-bottom: 120px;
@@ -116,9 +116,10 @@
   background: #172120 !important;
   border-color: #1D9E75 !important;
   box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 2px rgba(29,158,117,0.2) !important;
-  z-index: 10 !important; /* Asegurar que esté por encima de sus hermanos */
+  z-index: 10 !important;
   height: auto !important;
-  min-height: 100px; /* Base mínima */
+  min-height: 100px;
+  margin-bottom: 8px; /* Espacio extra para que no se pegue al siguiente */
 }
 
 .exercise-card.done {
