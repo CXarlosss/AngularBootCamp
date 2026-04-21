@@ -88,8 +88,8 @@ input[type=number] {
 /* ── Bottom nav ── */
 .bottom-nav {
   display: flex;
-  padding: 14px 10px 30px;
-  background: rgba(8, 10, 15, 0.92);
+  padding: 12px 10px 20px; /* Más compacto */
+  background: rgba(8, 10, 15, 0.94);
   backdrop-filter: blur(20px);
   border-top: 1px solid var(--c-border);
   position: absolute;

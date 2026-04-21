@@ -200,7 +200,7 @@
 
 /* ── Input Area ── */
 .chat-input-area {
-  padding: 16px 20px 100px; /* Incrementado para subirlo por encima del footer global */
+  padding: 12px 16px 75px; /* Ajustado al nuevo footer compacto */
   background: rgba(8, 10, 15, 0.9);
   backdrop-filter: blur(20px);
   border-top: 1px solid var(--c-border);

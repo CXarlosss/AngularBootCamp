@@ -65,7 +65,7 @@ import { Router, RouterOutlet, RouterModule } from '@angular/router';
       scroll-behavior: smooth;
       display: flex;
       flex-direction: column;
-      padding-bottom: 90px; /* Espacio para el footer absoluto */
+      padding-bottom: 80px; /* Espacio optimizado para el footer compacto */
     }
 
     /* Estilos extra para los botones activos */
