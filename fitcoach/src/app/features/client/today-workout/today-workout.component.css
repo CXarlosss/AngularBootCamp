@@ -1,341 +1,260 @@
 .workout-screen {
+  height: 100vh;
+  background: radial-gradient(circle at top right, #1a2035 0%, #080a0f 100%);
+  color: #e8e6df;
   display: flex;
   flex-direction: column;
-  height: 100dvh;
-  background: #080a0f;
-  background-image: 
-    radial-gradient(circle at 0% 0%, rgba(29, 158, 117, 0.03) 0%, transparent 40%),
-    radial-gradient(circle at 100% 100%, rgba(29, 158, 117, 0.02) 0%, transparent 40%);
-  color: #e8e6df;
-  max-width: 480px;
-  margin: 0 auto;
   overflow: hidden;
-  position: relative;
 }
 
-/* ── Header ── */
 .workout-header {
+  padding: 16px 20px;
+  background: rgba(8, 10, 15, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 0.5px solid rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 16px 12px;
-  background: #0d0f18;
-  border-bottom: 0.5px solid rgba(255,255,255,0.06);
-  flex-shrink: 0;
+  gap: 16px;
+  z-index: 10;
 }
 
 .btn-back {
-  background: none;
-  border: none;
-  color: #5F5E5A;
-  font-size: 20px;
-  cursor: pointer;
-  padding: 4px;
-  line-height: 1;
-  transition: color .15s;
-  flex-shrink: 0;
-}
-
-.btn-back:hover { color: #e8e6df; }
-
-.workout-meta { flex: 1; }
-.workout-title    { font-size: 15px; font-weight: 500; color: #fff; margin: 0 0 2px; }
-.workout-progress { font-size: 11px; color: #5F5E5A; }
-
-/* Anillo de progreso */
-.overall-ring { flex-shrink: 0; }
-
-.overall-ring svg {
-  display: block;
-  transform: rotate(-90deg);
-}
-
-.ring-wrapper {
-  position: relative;
-  width: 44px;
-  height: 44px;
-}
-
-.ring-text {
-  position: absolute;
-  inset: 0;
+  background: rgba(255,255,255,0.03);
+  border: 0.5px solid rgba(255,255,255,0.1);
+  color: #fff;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
-  font-weight: 500;
-  color: #fff;
+  cursor: pointer;
 }
 
-.ring-text.complete { color: #1D9E75; font-size: 12px; }
+.workout-meta { flex: 1; min-width: 0; }
+.workout-title { font-size: 18px; font-weight: 600; margin: 0; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.workout-progress { font-size: 13px; color: #5F5E5A; margin: 2px 0 0; }
 
-/* ── Lista de ejercicios ── */
+.overall-ring { position: relative; width: 44px; height: 44px; }
+.ring-text {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 10px;
+  font-weight: 700;
+  color: #1D9E75;
+}
+.ring-text.complete { font-size: 16px; }
+
+/* ── Timer Overlays ── */
+.rest-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.rest-card {
+  background: #11141d;
+  padding: 32px;
+  border-radius: 32px;
+  text-align: center;
+  width: 100%;
+  max-width: 280px;
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+
+.rest-label { color: #5F5E5A; text-transform: uppercase; letter-spacing: .1em; font-size: 11px; font-weight: 600; margin-bottom: 24px; }
+.rest-circle { position: relative; margin: 0 auto 32px; width: 140px; height: 140px; }
+.rest-time   { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 42px; font-weight: 700; color: #fff; font-variant-numeric: tabular-nums; }
+
+.btn-skip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 100px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+/* ── Exercises List ── */
 .exercises-list {
   flex: 1;
   overflow-y: auto;
-  padding: 14px 16px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  background: #080a0f;
+  gap: 14px;
   scroll-behavior: smooth;
-  scroll-padding: 20px;
+  scroll-padding: 80px;
+  padding-bottom: 120px;
 }
 
-.exercises-list::-webkit-scrollbar { width: 3px; }
-.exercises-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 2px; }
+.exercises-list::-webkit-scrollbar { width: 0; }
 
-/* ── Exercise card ── */
 .exercise-card {
-  background: #13161f;
-  border: 0.5px solid rgba(255,255,255,0.08);
-  border-radius: 16px;
+  background: #11141b;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 20px;
   overflow: hidden;
-  transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
-  scroll-margin: 20px;
+  transition: all .4s cubic-bezier(0.16, 1, 0.3, 1);
+  scroll-margin: 80px;
 }
 
-/* Card activa mucho más visible */
 .exercise-card.active {
+  background: #172120 !important;
   border-color: #1D9E75 !important;
-  background: #1a2820 !important;
-  box-shadow: 0 0 0 1px rgba(29,158,117,0.2), 0 4px 12px rgba(0,0,0,0.4) !important;
-  transform: translateY(-2px);
-  z-index: 2;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(29,158,117,0.2) !important;
+  z-index: 5;
 }
 
-.exercise-card.active .ex-card-header {
-  background: transparent;
-  padding: 16px 18px;
-}
-
-.exercise-card.active .ex-card-name {
-  font-size: 17px;
-  font-weight: 600;
-}
-
-/* Card completada */
 .exercise-card.done {
-  background: #111418 !important;
-  border-color: rgba(29,158,117,0.15) !important;
-  opacity: 0.7;
+  opacity: 0.6;
+  background: #0d0f14;
+  border-color: rgba(29,158,117,0.1);
   transform: scale(0.98);
 }
 
-/* Cards futuras más oscuras para contrastar */
 .exercise-card.future {
-  background: #0f1117 !important;
-  border-color: rgba(255,255,255,0.04) !important;
-  opacity: 0.5;
+  opacity: 0.4;
+  filter: grayscale(0.5);
 }
 
 .ex-card-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  gap: 12px;
+  padding: 14px 16px;
   cursor: pointer;
 }
 
-/* Indicador circular */
+.exercise-card.active .ex-card-header {
+  padding: 10px 18px !important;
+}
+
 .ex-done-indicator {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
+  background: rgba(255,255,255,0.03);
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  font-size: 11px;
-  font-weight: 500;
-  transition: all .2s;
+  color: #5F5E5A;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all .3s;
+  border: 1px solid rgba(255,255,255,0.05);
 }
 
-/* Indicador activo más grande y visible */
 .exercise-card.active .ex-done-indicator {
-  background: rgba(29,158,117,0.2) !important;
-  color: #1D9E75 !important;
-  border: 1.5px solid #1D9E75 !important;
-  width: 32px !important;
-  height: 32px !important;
+  background: #1D9E75;
+  color: #fff;
+  border-color: #1D9E75;
+  box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3);
 }
 
-.exercise-card.done   .ex-done-indicator { background: #0F2E22; color: #1D9E75; }
-.exercise-card:not(.done):not(.active) .ex-done-indicator { background: rgba(255,255,255,0.04); color: #444441; }
-
-.check { color: #1D9E75; }
-.ex-num { color: #444441; }
+.exercise-card.done .ex-done-indicator {
+  background: rgba(29,158,117,0.15);
+  color: #1D9E75;
+  border-color: transparent;
+}
 
 .ex-card-meta { flex: 1; min-width: 0; }
-.ex-card-name   { font-size: 15px; font-weight: 500; color: #fff; margin: 0 0 3px; }
-.ex-card-target { font-size: 12px; color: #5F5E5A; margin: 0; }
+.ex-card-name { font-size: 16px; font-weight: 600; margin: 0; color: #fff; }
+.exercise-card.active .ex-card-name { font-size: 18px; color: #1D9E75; }
 
-.ex-sets-summary { text-align: right; flex-shrink: 0; }
-.sets-done  { font-size: 22px; font-weight: 500; color: #1D9E75; line-height: 1; }
-.sets-total { font-size: 12px; color: #444441; }
+.ex-card-target { font-size: 12px; color: #5F5E5A; margin: 2px 0 0; }
+.exercise-card.active .ex-card-target { color: #8BA89D; }
 
-/* Series completadas */
+.ex-sets-summary { font-size: 13px; font-weight: 600; }
+.sets-done  { color: #1D9E75; }
+.sets-total { color: #5F5E5A; }
+
+/* ── History chips ── */
 .sets-history {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  padding: 0 14px 10px;
+  gap: 8px;
+  padding: 0 16px 14px;
 }
 
 .set-chip {
+  background: rgba(255,255,255,0.03);
+  padding: 6px 12px;
+  border-radius: 100px;
   display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 99px;
-  background: rgba(29,158,117,0.08);
-  border: 0.5px solid rgba(29,158,117,0.15);
-  cursor: pointer;
-  transition: background .15s;
+  gap: 6px;
+  border: 1px solid rgba(255,255,255,0.05);
+  font-size: 12px;
 }
 
-.set-chip:hover { background: rgba(29,158,117,0.15); }
-.set-chip-num   { font-size: 10px; color: #5F5E5A; }
-.set-chip-val   { font-size: 11px; font-weight: 500; color: #1D9E75; }
+.set-chip-num { color: #5F5E5A; font-weight: 500; }
+.set-chip-val { color: #1D9E75; font-weight: 600; }
 
-/* Forzar que el logger sea visible */
+/* ── Set Logger Section ── */
 .set-logger-wrap {
   display: block !important;
-  visibility: visible !important;
-  height: auto !important;
-  overflow: visible !important;
-  padding: 16px 14px !important;
   background: #0d0f18 !important;
-  border-top: 0.5px solid rgba(255,255,255,0.08) !important;
+  border-top: 1px solid rgba(29,158,117,0.1) !important;
+  padding: 20px 18px !important;
 }
 
-.exercise-card.active .set-logger-wrap {
-  display: block !important;
-}
-
-/* Nota del coach */
 .coach-note {
-  font-size: 11px;
-  color: #444441;
-  padding: 0 14px 12px;
+  font-size: 13px;
+  color: #8BA89D;
+  background: rgba(29,158,117,0.05);
   margin: 0;
+  padding: 10px 18px;
+  border-top: 1px solid rgba(255,255,255,0.03);
   font-style: italic;
-  line-height: 1.5;
 }
 
-/* ── Timer de descanso ── */
-.rest-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 50;
-  background: rgba(0,0,0,0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.rest-card {
-  background: #13151e;
-  border: 0.5px solid #0F6E56;
-  border-radius: 20px;
-  padding: 28px 36px;
-  text-align: center;
-  width: 240px;
-}
-
-.rest-label {
-  font-size: 10px;
-  color: #1D9E75;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  margin-bottom: 16px;
-  font-weight: 500;
-}
-
-.rest-circle {
-  position: relative;
-  display: inline-block;
-  margin-bottom: 18px;
-}
-
-.rest-circle svg { display: block; transform: rotate(-90deg); }
-
-.rest-time {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 34px;
-  font-weight: 500;
-  color: #fff;
-  letter-spacing: -.02em;
-}
-
-.btn-skip {
-  font-size: 12px;
-  color: #5F5E5A;
-  background: none;
-  border: 0.5px solid rgba(255,255,255,0.08);
-  border-radius: 8px;
-  padding: 8px 20px;
-  cursor: pointer;
-  transition: all .15s;
-  width: 100%;
-}
-
-.btn-skip:hover {
-  color: #e8e6df;
-  border-color: rgba(255,255,255,0.14);
-}
-
-/* ── Banner completar ── */
+/* ── Banner Final ── */
 .complete-banner {
-  padding: 14px 16px;
-  border-top: 0.5px solid rgba(255,255,255,0.06);
+  margin-top: auto;
+  background: #11141b;
+  padding: 20px 24px 34px; /* extra bottom for safe area */
+  border-top: 1px solid rgba(255,255,255,0.05);
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  flex-shrink: 0;
-  background: #0d0f18;
+  gap: 16px;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.4);
 }
 
 .complete-stats {
   display: flex;
-  align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: 12px;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
   color: #5F5E5A;
 }
 
-.cs-value { color: #e8e6df; font-weight: 500; }
-.cs-sep   { color: #2C2C2A; }
+.cs-value { color: #fff; font-weight: 600; }
+.cs-sep   { opacity: 0.3; }
 
 .btn-complete {
-  width: 100%;
-  padding: 14px;
-  background: #0F6E56;
-  color: #9FE1CB;
+  background: linear-gradient(135deg, #1D9E75 0%, #158062 100%);
+  color: #fff;
   border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 500;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
   cursor: pointer;
-  transition: background .15s, transform .1s;
-  letter-spacing: -.01em;
+  transition: transform .2s;
+  box-shadow: 0 8px 20px rgba(29, 158, 117, 0.3);
 }
 
-.btn-complete:hover    { background: #1D9E75; }
-.btn-complete:active   { transform: scale(0.99); }
-.btn-complete:disabled { opacity: .4; cursor: not-allowed; }
-
-/* ── Empty ── */
-.empty-state {
-  text-align: center;
-  color: #2C2C2A;
-  font-size: 13px;
-  padding: 48px 20px;
-  border: 0.5px dashed rgba(255,255,255,0.04);
-  border-radius: 12px;
-}
+.btn-complete:active { transform: scale(0.98); }
+.btn-complete:disabled { opacity: 0.5; filter: grayscale(0.5); }
