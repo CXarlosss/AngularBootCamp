@@ -109,11 +109,8 @@ export class AuthService {
       .eq('id', data.user.id);
     if (pErr) throw pErr;
 
-    // 4. Marcar código como usado
-    await this.sb
-      .from('invite_codes')
-      .update({ used_by: data.user.id })
-      .eq('code', inviteCode.toUpperCase());
+    // 4. (Opcional) Registrar uso del código (sin invalidarlo para otros)
+    // Ya no marcamos el código como 'used_by' para permitir que sea reutilizable.
 
     await this.loadProfile(data.user.id);
     this.router.navigate(['/client/dashboard']);
@@ -166,7 +163,7 @@ export class AuthService {
       .single();
 
     if (error || !data)    throw new Error('Código de invitación no válido');
-    if (data.used_by)      throw new Error('Este código ya ha sido usado');
+    // Eliminada la restricción 'used_by' para permitir códigos reutilizables
     if (new Date(data.expires_at) < new Date()) throw new Error('El código ha expirado');
 
     return {

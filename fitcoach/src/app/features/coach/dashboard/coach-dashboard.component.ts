@@ -55,7 +55,6 @@ export class CoachDashboardComponent implements OnInit {
         .from('invite_codes')
         .select('code')
         .eq('coach_id', id)
-        .is('used_by', null)
         .order('created_at', { ascending: false })
         .limit(1);
 

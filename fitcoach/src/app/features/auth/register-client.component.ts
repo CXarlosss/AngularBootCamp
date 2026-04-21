@@ -57,7 +57,7 @@ type CodeStatus = 'idle' | 'checking' | 'valid' | 'invalid';
             </div>
           }
           @if (codeStatus() === 'invalid') {
-            <p class="code-hint-err">Código no válido o ya utilizado</p>
+            <p class="code-hint-err">Código no válido o expirado</p>
           }
         </div>
 
