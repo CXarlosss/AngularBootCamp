@@ -87,15 +87,17 @@ input[type=number] {
 
 /* ── Bottom nav ── */
 .bottom-nav {
-  margin-top: auto;
   display: flex;
-  padding: 12px 10px 32px;
-  background: rgba(8, 10, 15, 0.9);
-  backdrop-filter: blur(16px);
+  padding: 14px 10px 30px;
+  background: rgba(8, 10, 15, 0.92);
+  backdrop-filter: blur(20px);
   border-top: 1px solid var(--c-border);
-  position: sticky;
+  position: absolute;
   bottom: 0;
+  left: 0;
+  width: 100%;
   z-index: 100;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
 }
 
 .nav-btn {
