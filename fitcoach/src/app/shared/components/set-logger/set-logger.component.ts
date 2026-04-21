@@ -1,4 +1,4 @@
-import { Component, input, output, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, signal, effect, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SetLog } from '../../../core/models/workout-log.model';
 
@@ -66,6 +66,17 @@ export class SetLoggerComponent {
 
   weight = signal(0);
   reps   = signal(10);
+
+  constructor() {
+    // Al recibir un set anterior, actualizamos los valores por defecto
+    effect(() => {
+      const prev = this.previousSet();
+      if (prev) {
+        this.weight.set(prev.weightKg);
+        this.reps.set(prev.repsDone);
+      }
+    }, { allowSignalWrites: true });
+  }
 
   adjustWeight(delta: number): void {
     this.weight.update(w => Math.max(0, +(w + delta).toFixed(1)));

@@ -37,12 +37,14 @@ export const WorkoutStore = signalStore(
 
     // Iniciar un entrenamiento nuevo para hoy
     startWorkout(assignedRoutineId: string, clientId: string): void {
-      // Intentar recuperar sesión guardada primero
-      const saved = sessionStorage.getItem('active_workout');
+      // Intentar recuperar sesión guardada (priorizamos localStorage para evitar pérdidas)
+      const saved = localStorage.getItem('active_workout');
       if (saved) {
         try {
           const log = JSON.parse(saved);
           if (log.assignedRoutineId === assignedRoutineId) {
+            // Asegurar que las fechas se vuelvan a instanciar como Date
+            log.loggedDate = new Date(log.loggedDate);
             patchState(store, { activeLog: log });
             return;
           }
@@ -58,17 +60,17 @@ export const WorkoutStore = signalStore(
         sets: [],
       };
       patchState(store, { activeLog: log });
-      sessionStorage.setItem('active_workout', JSON.stringify(log));
+      localStorage.setItem('active_workout', JSON.stringify(log));
     },
 
-    // Registrar una serie (el gesto más frecuente en la app)
+    // Registrar una serie
     logSet(set: Omit<SetLog, 'id'>): void {
       const log = store.activeLog();
       if (!log) return;
       const newSet: SetLog = { ...set, id: crypto.randomUUID() };
       const updated = { ...log, sets: [...log.sets, newSet] };
       patchState(store, { activeLog: updated });
-      sessionStorage.setItem('active_workout', JSON.stringify(updated));
+      localStorage.setItem('active_workout', JSON.stringify(updated));
     },
 
     // Corregir el peso de una serie ya registrada
@@ -113,7 +115,7 @@ export const WorkoutStore = signalStore(
         history: [completed, ...store.history()],
         loading: false,
       });
-      sessionStorage.removeItem('active_workout');
+      localStorage.removeItem('active_workout');
     },
 
     async loadHistory(clientId: string): Promise<void> {
