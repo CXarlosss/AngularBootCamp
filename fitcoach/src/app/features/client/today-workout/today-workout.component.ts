@@ -312,24 +312,19 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     this.haptic.trigger('light');
 
     const currentLog = this.workoutStore.activeLog();
-    const completedSetsCount = currentLog?.sets.filter(s => s.exerciseId === exercise.id).length ?? 0;
+    const completedSetsCount = (currentLog?.sets ?? []).filter(s => s.exerciseId === exercise.id).length + 1; // +1 porque el cambio en el store es async
     const targetSets = Number(exercise.sets) || 0;
 
     console.log(`[Workout] ${exercise.name}: ${completedSetsCount}/${targetSets} series`);
 
-    if (completedSetsCount < targetSets) {
-      this.timer.start(exercise.restSeconds);
-    } else {
+    // Iniciamos descanso siempre que no hayamos terminado el ejercicio
+    // O si lo acabamos de terminar, damos el feedback hático pero no saltamos de página
+    if (completedSetsCount >= targetSets) {
       this.haptic.trigger('heavy');
-      const nextIndex = this.activeExerciseIndex() + 1;
-      const exercisesLength = this.todayDay()?.exercises.length ?? 0;
-
-      if (nextIndex < exercisesLength) {
-        console.log(`[Workout] Avanzando al ejercicio índice ${nextIndex}`);
-        this.activeExerciseIndex.set(nextIndex);
-        this.timer.start(exercise.restSeconds);
-      }
     }
+    
+    // El descanso se inicia siempre para dar ritmo
+    this.timer.start(exercise.restSeconds);
   }
 
   editSet(set: SetLog): void {

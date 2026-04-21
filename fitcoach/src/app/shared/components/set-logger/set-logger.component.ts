@@ -1,6 +1,7 @@
-import { Component, input, output, signal, effect, ChangeDetectionStrategy } from '@angular/core';
+import { Component, input, output, signal, effect, ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SetLog } from '../../../core/models/workout-log.model';
+import { HapticService } from '../../../core/services/haptic.service';
 
 @Component({
   selector: 'fc-set-logger',
@@ -64,6 +65,8 @@ export class SetLoggerComponent {
 
   setLogged = output<Omit<SetLog, 'id'>>();
 
+  private haptic = inject(HapticService);
+
   weight = signal(0);
   reps   = signal(10);
 
@@ -79,10 +82,12 @@ export class SetLoggerComponent {
   }
 
   adjustWeight(delta: number): void {
+    this.haptic.trigger('light');
     this.weight.update(w => Math.max(0, +(w + delta).toFixed(1)));
   }
 
   adjustReps(delta: number): void {
+    this.haptic.trigger('light');
     this.reps.update(r => Math.max(1, r + delta));
   }
 
