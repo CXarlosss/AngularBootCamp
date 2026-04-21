@@ -43,7 +43,7 @@ import { computed }             from '@angular/core';
           </div>
           <h2 class="rc-name">{{ r.routine?.name }}</h2>
           <p class="rc-meta">
-            {{ r.routine?.goal ? goalLabel(r.routine.goal) : '' }}
+            {{ r.routine?.goal ? goalLabel(r.routine!.goal!) : '' }}
           </p>
           
           <div class="rc-days">
