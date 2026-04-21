@@ -1,6 +1,6 @@
 import {
   Component, inject, signal, computed,
-  ChangeDetectionStrategy, OnInit, OnDestroy
+  ChangeDetectionStrategy, OnInit, OnDestroy, effect, ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -174,6 +174,20 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   activeExerciseIndex = signal(0);
   activeRoutine = signal<AssignedRoutine | null>(null);
   selectedDayId = signal<string | null>(null);
+
+  constructor() {
+    // Efecto para auto-scrollear al ejercicio activo
+    effect(() => {
+      const index = this.activeExerciseIndex();
+      // Pequeño delay para dejar que Angular renderice la expansión de la card
+      setTimeout(() => {
+        const activeCard = document.querySelector('.exercise-card.active');
+        if (activeCard) {
+          activeCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    });
+  }
 
   todayDay = computed((): RoutineDay | null => {
     const r = this.activeRoutine()?.routine;
