@@ -23,9 +23,6 @@ import { ChatWindowComponent } from '../../shared/chat/chat-window.component';
           </div>
         }
       </div>
-
-      </div>
-    </div>
     </div>
   `,
   styles: [`

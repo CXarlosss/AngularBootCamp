@@ -154,8 +154,6 @@ import { ProgressChartComponent } from '../../../shared/components/progress-char
           </div>
         </div>
       </div>
-
-      </div>
     </div>
   `,
   styleUrl: './client-progress.component.css'
