@@ -93,7 +93,7 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 20px; /* Incrementado desde 14px */
+  gap: 28px; /* Aumentado significativamente para evitar solapes */
   scroll-behavior: smooth;
   scroll-padding: 80px;
   padding-bottom: 120px;
@@ -105,8 +105,9 @@
   background: #11141b;
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: 20px;
-  overflow: visible; /* Cambiado de hidden para evitar clipping de interacción */
-  transition: min-height .4s cubic-bezier(0.16, 1, 0.3, 1), transform .3s;
+  overflow: visible;
+  /* Eliminada la transición de min-height para asegurar que el layout flex 
+     recalcule la posición de los hermanos instantáneamente y sin solapamientos */
   scroll-margin: 80px;
   position: relative;
   height: auto;
@@ -115,11 +116,10 @@
 .exercise-card.active {
   background: #172120 !important;
   border-color: #1D9E75 !important;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 0 2px rgba(29,158,117,0.2) !important;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5), 0 0 0 2px rgba(29,158,117,0.3) !important;
   z-index: 10 !important;
   height: auto !important;
-  min-height: 100px;
-  margin-bottom: 8px; /* Espacio extra para que no se pegue al siguiente */
+  margin-bottom: 16px; /* Más espacio de seguridad */
 }
 
 .exercise-card.done {
