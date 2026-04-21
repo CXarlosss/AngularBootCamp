@@ -23,6 +23,7 @@ interface ExerciseState {
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, SetLoggerComponent],
+  styleUrl: './today-workout.component.css',
   template: `
     <div class="workout-screen">
 
