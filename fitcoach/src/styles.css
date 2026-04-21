@@ -41,13 +41,16 @@ body {
   fc-today-workout,
   fc-client-progress,
   fc-login,
-  fc-register-client {
+  fc-register-client,
+  fc-client-chat {
     display: block;
     max-width: 440px;
     margin: 0 auto;
-    min-height: 100dvh;
+    height: 100dvh;
     background: #080a0f;
-    box-shadow: 0 0 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+    box-shadow: 0 0 100px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.05);
+    overflow: hidden;
+    position: relative;
   }
 
   body {
@@ -75,3 +78,38 @@ input::-webkit-inner-spin-button {
 input[type=number] {
   -moz-appearance: textfield;
 }
+
+/* ── Bottom nav ── */
+.bottom-nav {
+  margin-top: auto;
+  display: flex;
+  padding: 12px 10px 32px;
+  background: rgba(8, 10, 15, 0.9);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--c-border);
+  position: sticky;
+  bottom: 0;
+  z-index: 100;
+}
+
+.nav-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--c-text-4);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: all .2s;
+}
+
+.nav-btn:hover { color: var(--c-text-2); }
+.nav-btn.active { color: var(--c-green); }
+.nav-btn svg { transition: transform .2s; }
+.nav-btn.active svg { transform: translateY(-2px); }
+
