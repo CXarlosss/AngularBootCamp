@@ -24,34 +24,39 @@ import { AuthService } from '../../core/auth/auth.service';
           <div class="auth-error" role="alert">{{ error() }}</div>
         }
 
-        <div class="field-group">
-          <label class="field-label">Email</label>
-          <input
-            type="email"
-            autocomplete="email"
-            placeholder="tu@email.com"
-            [(ngModel)]="email"
-          />
-        </div>
+        <form (ngSubmit)="onLogin()" #loginForm="ngForm">
+          <div class="field-group">
+            <label class="field-label">Email</label>
+            <input
+              type="email"
+              name="email"
+              autocomplete="email"
+              placeholder="tu@email.com"
+              [(ngModel)]="email"
+              required
+            />
+          </div>
 
-        <div class="field-group">
-          <label class="field-label">Contraseña</label>
-          <input
-            type="password"
-            autocomplete="current-password"
-            placeholder="••••••••"
-            [(ngModel)]="password"
-            (keydown.enter)="onLogin()"
-          />
-        </div>
+          <div class="field-group">
+            <label class="field-label">Contraseña</label>
+            <input
+              type="password"
+              name="password"
+              autocomplete="current-password"
+              placeholder="••••••••"
+              [(ngModel)]="password"
+              required
+            />
+          </div>
 
-        <button
-          class="btn-auth"
-          [disabled]="loading()"
-          (click)="onLogin()"
-        >
-          {{ loading() ? 'Entrando...' : 'Entrar' }}
-        </button>
+          <button
+            type="submit"
+            class="btn-auth"
+            [disabled]="loading() || !loginForm.form.valid"
+          >
+            {{ loading() ? 'Entrando...' : 'Entrar' }}
+          </button>
+        </form>
 
         <div class="auth-divider">¿Primera vez aquí?</div>
 

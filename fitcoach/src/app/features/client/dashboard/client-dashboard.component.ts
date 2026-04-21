@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { AuthService }         from '../../../core/auth/auth.service';
 import { ClientRoutineService } from '../../../core/services/client-routine.service';
 import { AssignedRoutine }      from '../../../core/models/routine.model';
@@ -128,20 +129,26 @@ export class ClientDashboardComponent implements OnInit {
   }[goal ?? ''] ?? goal ?? '');
 
   async ngOnInit(): Promise<void> {
-    let attempts = 0;
-    while (!this.auth.profile() && attempts < 20) {
-      await new Promise(r => setTimeout(r, 150));
-      attempts++;
-    }
-
+    // No usamos bucles while, confiamos en el estado de loading inicial
     const profile = this.auth.profile();
-    console.log('Profile al cargar dashboard:', profile);
-
     if (profile?.id) {
-      const r = await this.clientRoutineSvc.getActiveRoutine(profile.id);
-      console.log('Rutina encontrada:', r);
-      this.routine.set(r);
+      this.loadRoutine(profile.id);
+    } else {
+      // Si el perfil no está (ej: recarga profunda), esperamos a que cambie la señal
+      // Observamos cambios del perfil de forma reactiva una sola vez
+      const sub = toObservable(this.auth.profile).subscribe(p => {
+        if (p?.id) {
+          this.loadRoutine(p.id);
+          sub.unsubscribe();
+        }
+      });
     }
+  }
+
+  private async loadRoutine(clientId: string) {
+    console.log('[Dashboard] Cargando rutina para:', clientId);
+    const r = await this.clientRoutineSvc.getActiveRoutine(clientId);
+    this.routine.set(r);
   }
 
   startWorkout(dayId?: string): void {
