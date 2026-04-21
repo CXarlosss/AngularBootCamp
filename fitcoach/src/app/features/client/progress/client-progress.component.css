@@ -146,33 +146,50 @@
   color: #fff;
 }
 
-/* ── Exercise Selector ── */
-.exercise-selector {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  padding: 0 24px 16px;
-  scrollbar-width: none;
+/* ── Exercise Select ── */
+.exercise-select-container {
+  padding: 0 20px 20px;
+  position: relative;
 }
-.exercise-selector::-webkit-scrollbar { display: none; }
 
-.ex-pill {
-  padding: 10px 18px;
-  border-radius: 100px;
+.fc-select {
+  width: 100%;
+  appearance: none;
   background: var(--c-surface);
   border: 1px solid var(--c-border);
-  color: var(--c-text-3);
-  font-size: 13px;
+  border-radius: 16px;
+  padding: 16px 48px 16px 20px;
+  color: #fff;
+  font-size: 15px;
   font-weight: 600;
-  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.2s;
+  outline: none;
+}
+
+.fc-select:focus {
+  border-color: var(--c-green);
+  box-shadow: 0 0 15px var(--c-green-glow);
+}
+
+.select-arrow {
+  position: absolute;
+  right: 36px;
+  top: 17px;
+  pointer-events: none;
+  color: var(--c-text-4);
   transition: all 0.2s;
 }
 
-.ex-pill.active {
-  background: var(--c-green-t);
+.fc-select:focus + .select-arrow {
   color: var(--c-green);
-  border-color: var(--c-green);
-  box-shadow: 0 0 15px var(--c-green-glow);
+  transform: rotate(180deg);
+}
+
+.fc-select option {
+  background: var(--c-surface);
+  color: #fff;
+  padding: 12px;
 }
 
 /* ── Chart ── */

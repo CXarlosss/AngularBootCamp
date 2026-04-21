@@ -67,16 +67,20 @@ import { ProgressChartComponent } from '../../../shared/components/progress-char
             </div>
           </div>
 
-          <div class="exercise-selector">
-            @for (ex of progressStore.exercises(); track ex.name) {
-              <button
-                class="ex-pill"
-                [class.active]="progressStore.selected() === ex.name"
-                (click)="progressStore.selectExercise(ex.name)"
-              >
-                {{ ex.name }}
-              </button>
-            }
+          <div class="exercise-select-container">
+            <select 
+              class="fc-select" 
+              [value]="progressStore.selected()" 
+              (change)="onExerciseChange($event)"
+            >
+              <option value="" disabled>Selecciona un ejercicio...</option>
+              @for (ex of progressStore.exercises(); track ex.name) {
+                <option [value]="ex.name">{{ ex.name }}</option>
+              }
+            </select>
+            <div class="select-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+            </div>
           </div>
 
           <div class="chart-container">
@@ -183,6 +187,11 @@ export class ClientProgressComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const id = this.auth.profile()?.id;
     if (id) await this.progressStore.load(id);
+  }
+
+  async onExerciseChange(event: Event): Promise<void> {
+    const name = (event.target as HTMLSelectElement).value;
+    if (name) this.progressStore.selectExercise(name);
   }
 
   async onPhotoUpload(event: Event): Promise<void> {
