@@ -263,7 +263,9 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   }
 
   isExerciseDone(state: ExerciseState): boolean {
-    return state.completedSets.length >= state.exercise.sets;
+    const actualLength = state.completedSets.length;
+    const targetSets   = Number(state.exercise.sets);
+    return actualLength >= targetSets;
   }
 
   lastSet(state: ExerciseState): SetLog | null {
@@ -280,18 +282,21 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   ): void {
     this.workoutStore.logSet(set);
 
-    // Buscamos el estado actualizado (después del push al store)
-    const state = this.exerciseStates().find(
-      s => s.exercise.id === exercise.id
-    );
+    // Fuente de verdad: el log activo del store
+    const currentLog = this.workoutStore.activeLog();
+    const completedSetsCount = currentLog?.sets.filter(s => s.exerciseId === exercise.id).length ?? 0;
+    const targetSets = Number(exercise.sets);
 
-    if (state && !this.isExerciseDone(state)) {
-      // Más series pendientes → iniciar timer de descanso
+    console.log(`[Workout] ${exercise.name}: ${completedSetsCount}/${targetSets} series`);
+
+    if (completedSetsCount < targetSets) {
+      // Aún faltan series → Descanso
       this.timer.start(exercise.restSeconds);
     } else {
-      // Ejercicio terminado → avanzar al siguiente
+      // Ejercicio completado → Avanzar al siguiente
       const nextIndex = this.activeExerciseIndex() + 1;
-      if (nextIndex < this.exerciseStates().length) {
+      if (nextIndex < this.todayDay()?.exercises.length! || 0) {
+        console.log(`[Workout] Avanzando al ejercicio índice ${nextIndex}`);
         this.activeExerciseIndex.set(nextIndex);
         this.timer.start(exercise.restSeconds);
       }
