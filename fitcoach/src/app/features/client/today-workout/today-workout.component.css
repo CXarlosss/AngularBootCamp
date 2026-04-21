@@ -190,14 +190,19 @@
 .set-chip-num   { font-size: 10px; color: #5F5E5A; }
 .set-chip-val   { font-size: 11px; font-weight: 500; color: #1D9E75; }
 
-/* Logger */
+/* Forzar que el logger sea visible */
 .set-logger-wrap {
-  padding: 24px 20px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: block !important;
+  visibility: visible !important;
+  height: auto !important;
+  overflow: visible !important;
+  padding: 16px 14px !important;
+  background: #0d0f18 !important;
+  border-top: 0.5px solid rgba(255,255,255,0.08) !important;
+}
+
+.exercise-card.active .set-logger-wrap {
+  display: block !important;
 }
 
 /* Nota del coach */
