@@ -50,7 +50,7 @@ export class CoachDashboardComponent implements OnInit {
       const clients = await this.coachSvc.getClients(id);
       this.clients.set(clients);
 
-      // Cargar código de invitación activo
+      // Cargar código de invitación activo — si no hay, generar uno nuevo
       const { data: codes } = await this.sb
         .from('invite_codes')
         .select('code')
@@ -58,7 +58,14 @@ export class CoachDashboardComponent implements OnInit {
         .is('used_by', null)
         .order('created_at', { ascending: false })
         .limit(1);
-      if (codes?.length) this.inviteCode.set(codes[0].code);
+
+      if (codes?.length) {
+        this.inviteCode.set(codes[0].code);
+      } else {
+        // No hay código disponible → generar uno nuevo automáticamente
+        const newCode = await this.generateNewInviteCode(id);
+        if (newCode) this.inviteCode.set(newCode);
+      }
 
       // Contar mensajes no leídos
       const { count } = await this.sb
@@ -102,6 +109,17 @@ export class CoachDashboardComponent implements OnInit {
     } catch (error) {
       console.error('Error loading dashboard data:', error);
     }
+  }
+
+  /** Genera un nuevo código de invitación único en Supabase */
+  private async generateNewInviteCode(coachId: string): Promise<string | null> {
+    const suffix = Math.random().toString(36).slice(2, 6).toUpperCase();
+    const name = (this.profile()?.fullName ?? 'COACH').split(' ')[0].toUpperCase();
+    const code = `${name}-${suffix}`;
+    const { error } = await this.sb
+      .from('invite_codes')
+      .insert({ code, coach_id: coachId });
+    return error ? null : code;
   }
 
   formatTime(date: Date): string {
