@@ -92,25 +92,33 @@
   transition: all .3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Card activa mucho más visible */
 .exercise-card.active {
-  border-color: #1D9E75;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(29,158,117,0.2);
-  background: #1c2030;
+  border-color: #1D9E75 !important;
+  background: #1a2820 !important;
+  box-shadow: 0 0 0 1px rgba(29,158,117,0.2), 0 4px 12px rgba(0,0,0,0.4) !important;
   transform: translateY(-2px);
   z-index: 2;
 }
 
+/* Header de card activa */
+.exercise-card.active .ex-card-header {
+  background: transparent;
+}
+
+/* Card completada */
 .exercise-card.done {
-  opacity: .7;
-  background: #0d0f18;
-  border-color: rgba(29,158,117,0.1);
+  background: #111418 !important;
+  border-color: rgba(29,158,117,0.15) !important;
+  opacity: 0.7;
   transform: scale(0.98);
 }
 
+/* Cards futuras más oscuras para contrastar */
 .exercise-card.future {
-  background: #0d0f18;
-  border: 0.5px solid rgba(255,255,255,0.04);
-  opacity: .5;
+  background: #0f1117 !important;
+  border-color: rgba(255,255,255,0.04) !important;
+  opacity: 0.5;
 }
 
 .ex-card-header {
@@ -135,8 +143,16 @@
   transition: all .2s;
 }
 
+/* Indicador activo más grande y visible */
+.exercise-card.active .ex-done-indicator {
+  background: rgba(29,158,117,0.2) !important;
+  color: #1D9E75 !important;
+  border: 1.5px solid #1D9E75 !important;
+  width: 32px !important;
+  height: 32px !important;
+}
+
 .exercise-card.done   .ex-done-indicator { background: #0F2E22; color: #1D9E75; }
-.exercise-card.active .ex-done-indicator { background: rgba(29,158,117,0.12); color: #1D9E75; border: 1px solid rgba(29,158,117,0.25); }
 .exercise-card:not(.done):not(.active) .ex-done-indicator { background: rgba(255,255,255,0.04); color: #444441; }
 
 .check { color: #1D9E75; }
