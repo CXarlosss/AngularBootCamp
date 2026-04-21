@@ -1,16 +1,19 @@
 /* src/styles/client-theme.css */
 :root {
-  --c-bg:        #0f1117;
-  --c-surface:   #1a1d27;
-  --c-surface-2: #13151e;
-  --c-border:    rgba(255, 255, 255, 0.08);
-  --c-border-g:  #0F6E56;
+  --c-bg:        #080a0f;
+  --c-bg-alt:    radial-gradient(circle at top right, #1a2035 0%, #080a0f 100%);
+  --c-surface:   #11141b;
+  --c-surface-2: rgba(17, 20, 27, 0.8);
+  --c-border:    rgba(255, 255, 255, 0.05);
+  --c-border-hover: rgba(255, 255, 255, 0.1);
   --c-green:     #1D9E75;
+  --c-green-glow: rgba(29, 158, 117, 0.3);
   --c-green-d:   #0F6E56;
-  --c-green-t:   rgba(29, 158, 117, 0.15);
+  --c-green-t:   rgba(29, 158, 117, 0.12);
   --c-text-1:    #ffffff;
   --c-text-2:    #e8e6df;
-  --c-text-3:    #888780;
+  --c-text-3:    #a09f98;
   --c-text-4:    #5F5E5A;
   --c-text-5:    #444441;
+  --c-shadow:    0 8px 32px rgba(0,0,0,0.4);
 }

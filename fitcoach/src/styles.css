@@ -1,52 +1,77 @@
-/* You can add global styles to this file, and also import other style files */
-
+/* styles.css */
 @import './styles/client-theme.css';
 
-* { box-sizing: border-box; }
-
-body {
-  background: #0f1117;
-  color: #e8e6df;
-  font-family: var(--font-sans, system-ui, sans-serif);
-  -webkit-font-smoothing: antialiased;
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
-/* En escritorio, el portal del cliente se ve como app móvil centrada */
+body {
+  background: #080a0f;
+  color: #e8e6df;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar Premium */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Portal móvil centrado en escritorio */
 @media (min-width: 768px) {
   fc-client-dashboard,
   fc-today-workout,
-  fc-client-progress {
+  fc-client-progress,
+  fc-login,
+  fc-register-client {
     display: block;
-    max-width: 480px;
+    max-width: 440px;
     margin: 0 auto;
     min-height: 100dvh;
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.06);
+    background: #080a0f;
+    box-shadow: 0 0 100px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
   }
 
   body {
-    background: #080a0f;  /* fondo más oscuro alrededor del "móvil" */
+    background: #040508;
+    padding: 20px 0;
   }
 }
 
-/* Fix del stepper — evitar que se corte */
-.stepper {
-  min-width: 0;
+/* Utilidades de animación */
+.fade-in {
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
-.stepper input {
-  min-width: 40px;
-  width: 100%;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-.stepper button {
-  flex-shrink: 0;
-  min-width: 36px;
+/* Fix stepper inputs */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
-
-/* Transiciones de vista globales */
-::view-transition-group(*),
-::view-transition-old(*),
-::view-transition-new(*) {
-  animation-duration: 0.25s;
-  animation-timing-function: cubic-bezier(0.19, 1, 0.22, 1);
+input[type=number] {
+  -moz-appearance: textfield;
 }
