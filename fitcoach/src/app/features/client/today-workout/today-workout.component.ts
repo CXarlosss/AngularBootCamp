@@ -16,6 +16,7 @@ interface ExerciseState {
   exercise:      Exercise;
   completedSets: SetLog[];
   isActive:      boolean;
+  isDone:        boolean;
 }
 
 @Component({
@@ -35,7 +36,7 @@ interface ExerciseState {
           </p>
         </div>
 
-        <!-- Anillo de progreso reactivo -->
+        <!-- Anillo de progreso reactivo (Circunferencia: 2 * PI * 18 = 113.1) -->
         <div class="ring-wrapper overall-ring">
           <svg viewBox="0 0 44 44" width="44" height="44">
             <circle cx="22" cy="22" r="18"
@@ -44,8 +45,8 @@ interface ExerciseState {
               fill="none"
               [attr.stroke]="allDone() ? '#1D9E75' : '#1D9E75'"
               stroke-width="3"
-              [attr.stroke-dasharray]="overallProgress() + ' 100'"
-              stroke-dashoffset="25"
+              [attr.stroke-dasharray]="(overallProgress() / 100 * 113.1) + ' 113.1'"
+              stroke-dashoffset="28.27"
               stroke-linecap="round"
               transform="rotate(-90 22 22)"
               style="transition: stroke-dasharray .4s ease"/>
@@ -83,13 +84,13 @@ interface ExerciseState {
         @for (state of exerciseStates(); track state.exercise.id; let i = $index) {
           <div
             class="exercise-card"
-            [class.active]="state.isActive && !isExerciseDone(state)"
-            [class.done]="isExerciseDone(state)"
-            [class.future]="!state.isActive && !isExerciseDone(state)"
+            [class.active]="state.isActive && !state.isDone"
+            [class.done]="state.isDone"
+            [class.future]="!state.isActive && !state.isDone"
           >
             <div class="ex-card-header" (click)="setActiveExercise(i)">
               <div class="ex-done-indicator">
-                @if (isExerciseDone(state)) {
+                @if (state.isDone) {
                   <span class="check">✓</span>
                 } @else {
                   <span class="ex-num">{{ i + 1 }}</span>
@@ -122,7 +123,7 @@ interface ExerciseState {
               </div>
             }
 
-            @if (state.isActive && !isExerciseDone(state)) {
+            @if (state.isActive && !state.isDone) {
               <div class="set-logger-wrap">
                 <fc-set-logger
                   [setNumber]="state.completedSets.length + 1"
@@ -161,7 +162,7 @@ interface ExerciseState {
 
     </div>
   `,
-  styleUrl: './today-workout.component.css'
+  styleUrls: ['./today-workout.component.css']
 })
 export class TodayWorkoutComponent implements OnInit, OnDestroy {
   workoutStore = inject(WorkoutStore);
@@ -212,16 +213,18 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
       const completedSets = (log?.sets ?? []).filter(
         s => s.exerciseId === exercise.id
       );
+      const isDone = completedSets.length >= (Number(exercise.sets) || 0);
       return {
         exercise,
         completedSets,
         isActive: i === this.activeExerciseIndex(),
+        isDone
       };
     });
   });
 
   completedExercises = computed(() =>
-    this.exerciseStates().filter(s => this.isExerciseDone(s)).length
+    this.exerciseStates().filter(s => s.isDone).length
   );
 
   overallProgress = computed(() => {
@@ -234,7 +237,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
 
   allDone = computed(() =>
     this.exerciseStates().length > 0 &&
-    this.exerciseStates().every(s => this.isExerciseDone(s))
+    this.exerciseStates().every(s => s.isDone)
   );
 
   totalSets = computed(() =>
@@ -264,7 +267,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
 
   isExerciseDone(state: ExerciseState): boolean {
     const actualLength = state.completedSets.length;
-    const targetSets   = Number(state.exercise.sets);
+    const targetSets   = Number(state.exercise.sets) || 0;
     return actualLength >= targetSets;
   }
 
@@ -282,20 +285,19 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   ): void {
     this.workoutStore.logSet(set);
 
-    // Fuente de verdad: el log activo del store
     const currentLog = this.workoutStore.activeLog();
     const completedSetsCount = currentLog?.sets.filter(s => s.exerciseId === exercise.id).length ?? 0;
-    const targetSets = Number(exercise.sets);
+    const targetSets = Number(exercise.sets) || 0;
 
     console.log(`[Workout] ${exercise.name}: ${completedSetsCount}/${targetSets} series`);
 
     if (completedSetsCount < targetSets) {
-      // Aún faltan series → Descanso
       this.timer.start(exercise.restSeconds);
     } else {
-      // Ejercicio completado → Avanzar al siguiente
       const nextIndex = this.activeExerciseIndex() + 1;
-      if (nextIndex < this.todayDay()?.exercises.length! || 0) {
+      const exercisesLength = this.todayDay()?.exercises.length ?? 0;
+
+      if (nextIndex < exercisesLength) {
         console.log(`[Workout] Avanzando al ejercicio índice ${nextIndex}`);
         this.activeExerciseIndex.set(nextIndex);
         this.timer.start(exercise.restSeconds);
