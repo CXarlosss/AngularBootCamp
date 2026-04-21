@@ -101,9 +101,14 @@
   z-index: 2;
 }
 
-/* Header de card activa */
 .exercise-card.active .ex-card-header {
   background: transparent;
+  padding: 16px 18px;
+}
+
+.exercise-card.active .ex-card-name {
+  font-size: 17px;
+  font-weight: 600;
 }
 
 /* Card completada */

@@ -266,11 +266,12 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   ): void {
     this.workoutStore.logSet(set);
 
+    // Buscamos el estado actualizado (después del push al store)
     const state = this.exerciseStates().find(
       s => s.exercise.id === exercise.id
     );
 
-    if (state && !this.isExerciseDone({ ...state, completedSets: [...state.completedSets, { ...set, id: '' }] })) {
+    if (state && !this.isExerciseDone(state)) {
       // Más series pendientes → iniciar timer de descanso
       this.timer.start(exercise.restSeconds);
     } else {
