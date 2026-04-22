@@ -103,8 +103,12 @@ export const registry = {
     */
 
     // 3. IndexedDB
+    // TEMPORARILY DISABLED: Ignoring IndexedDB steps if they have 0 ways (bad sync state)
     const idbSteps = await idbGetAllSteps();
-    const idbForLevel = idbSteps.filter(s => s.levelId === levelId);
+    const idbForLevel = idbSteps.filter(s => 
+      (s.levelId === levelId || (s as any).level_id === levelId) && 
+      s.ways && s.ways.length > 0
+    );
     if (idbForLevel.length > 0) {
       idbForLevel.forEach(s => memCache.set(s.id, s));
       return idbForLevel.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));

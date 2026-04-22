@@ -42,10 +42,16 @@ export function LevelSelectPage() {
   }, [profile.currentLevel]);
 
   const uniqueSteps = useMemo(() => {
-    const seen = new Set<string>();
+    const seenIds = new Set<string>();
+    const seenTitles = new Set<string>();
+    
     return steps.filter((step: Step) => {
-      if (seen.has(step.id)) return false;
-      seen.add(step.id);
+      // Deduplicate by ID and Title (to prevent cloud vs local duplicates)
+      const titleKey = step.title.trim().toLowerCase();
+      if (seenIds.has(step.id) || seenTitles.has(titleKey)) return false;
+      
+      seenIds.add(step.id);
+      seenTitles.add(titleKey);
       return true;
     });
   }, [steps]);
@@ -94,6 +100,9 @@ export function LevelSelectPage() {
         
         {uniqueSteps.map((step: Step) => {
           const theme = THEME_COLORS[step.theme] || THEME_COLORS.default;
+          const pictoRaw = step.ways[0]?.stimulus?.image;
+          const isUrl = pictoRaw && (pictoRaw.includes('/') || pictoRaw.startsWith('http') || pictoRaw.startsWith('data:'));
+
           return (
             <motion.div
               key={step.id}
@@ -122,9 +131,14 @@ export function LevelSelectPage() {
                   width: 64, height: 64, borderRadius: 20,
                   background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: 32, boxShadow: `0 4px 12px rgba(0,0,0,0.05)`,
-                  border: `2px solid ${theme.iconBg}`
+                  border: `2px solid ${theme.iconBg}`,
+                  overflow: 'hidden'
                 }}>
-                  {step.ways[0]?.stimulus.image || '✨'}
+                  {isUrl ? (
+                    <img src={pictoRaw} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8 }} />
+                  ) : (
+                    pictoRaw || '✨'
+                  )}
                 </div>
                 <div>
                   <h3 style={{ fontSize: 20, fontWeight: 900, color: C.text, margin: 0 }}>{step.title}</h3>
