@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/(sw.js|manifest.json|icons/.*|splash/.*|screenshots/.*)", "destination": "/$1" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
