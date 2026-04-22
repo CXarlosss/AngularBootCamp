@@ -91,7 +91,7 @@ export const WayEditorPage: React.FC = () => {
     <div style={{ minHeight: '100vh', background: C.slateLight, paddingBottom: 80, fontFamily: 'system-ui, sans-serif' }}>
       {/* Premium Header */}
       <div style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', borderBottom: '4px solid #E2E8F0', position: 'sticky', top: 0, zIndex: 50 }}>
-        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             <motion.button
               whileHover={{ x: -5 }}
@@ -133,9 +133,9 @@ export const WayEditorPage: React.FC = () => {
         </div>
       </div>
 
-      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: 48 }}>
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 48 }}>
         {/* Configuration Column */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32, minWidth: 0 }}>
           <div style={{ background: 'linear-gradient(135deg, #4F46E5, #9333EA)', borderRadius: 24, padding: 32, color: 'white', boxShadow: '0 20px 40px rgba(79,70,229,0.3)', position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'relative', zIndex: 10 }}>
               <h2 style={{ fontSize: 30, fontWeight: 900, letterSpacing: '-1px', margin: '0 0 8px 0', textTransform: 'uppercase', fontStyle: 'italic' }}>Diseño Terapéutico</h2>
@@ -164,7 +164,7 @@ export const WayEditorPage: React.FC = () => {
             <h3 style={{ fontWeight: 900, color: '#1E293B', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12, fontSize: 18, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>
               <span style={{ background: '#FEF3C7', color: '#D97706', padding: 8, borderRadius: 12 }}>🏷️</span> Taxonomía Clínica
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
               <div>
                 <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Skill Tag (Categoría)</label>
                 <input

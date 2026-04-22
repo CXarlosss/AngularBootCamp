@@ -25,7 +25,7 @@ export const StimulusBuilder: React.FC<Props> = ({ text, image, onTextChange, on
         Estímulo Visual y Enunciado
       </h3>
       
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 32 }}>
         <div>
           <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Pictograma Principal</label>
           <motion.div
