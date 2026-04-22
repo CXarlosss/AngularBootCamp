@@ -18,65 +18,91 @@ export const RewardsBackpack: React.FC = () => {
   ] as const;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-100 p-6 md:p-12 overflow-y-auto">
-      <div className="max-w-6xl mx-auto space-y-10">
-        <header className="flex items-center justify-between">
-          <div className="flex items-center gap-6">
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(to bottom right, #fef3c7, #fffbeb, #ffedd5)',
+      padding: '24px 16px',
+      overflowY: 'auto'
+    }}>
+      <div style={{ maxWidth: 1152, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 40 }}>
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             <motion.button
               onClick={() => navigate('/')}
-              className="w-14 h-14 rounded-[1.5rem] bg-white shadow-xl flex items-center justify-center text-amber-600 border-b-4 border-amber-200"
+              style={{
+                width: 56, height: 56, borderRadius: 24, backgroundColor: 'white',
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#d97706', borderBottom: '4px solid #fde68a', cursor: 'pointer'
+              }}
               whileTap={{ scale: 0.9 }}
             >
               <ArrowLeft size={28} />
             </motion.button>
             <div>
-              <h1 className="text-5xl font-black text-amber-900 tracking-tighter font-outfit">Mi Mochila</h1>
-              <p className="text-amber-600 font-bold uppercase tracking-widest text-sm">Inventario de Tesoros</p>
+              <h1 style={{ fontSize: 'clamp(32px, 5vw, 48px)', fontWeight: 900, color: '#78350f', letterSpacing: '-1px', margin: 0, fontFamily: 'Outfit, sans-serif' }}>
+                Mi Mochila
+              </h1>
+              <p style={{ color: '#d97706', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: 14, margin: 0 }}>
+                Inventario de Tesoros
+              </p>
             </div>
           </div>
           
-          <div className="flex flex-col items-end gap-2">
-            <div className="flex items-center gap-4 bg-white rounded-[2rem] px-8 py-4 shadow-xl border-b-4 border-amber-100">
-              <motion.span 
-                animate={{ rotateY: 360 }}
-                className="text-4xl"
-              >
-                🪙
-              </motion.span>
-              <span className="text-4xl font-black text-amber-600">{wayCoins}</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 8 }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 16, backgroundColor: 'white',
+              borderRadius: 32, padding: '16px 32px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              borderBottom: '4px solid #fef3c7'
+            }}>
+              <motion.span animate={{ rotateY: 360 }} style={{ fontSize: 36 }}>🪙</motion.span>
+              <span style={{ fontSize: 36, fontWeight: 900, color: '#d97706' }}>{wayCoins}</span>
             </div>
-            <div className="flex items-center gap-2 text-xs font-black text-amber-800 bg-white/50 px-4 py-1 rounded-full">
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 900,
+              color: '#92400e', backgroundColor: 'rgba(255,255,255,0.5)', padding: '4px 16px', borderRadius: 9999
+            }}>
               <Star size={12} fill="currentColor" />
               <span>{totalXp} XP TOTAL</span>
             </div>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 40, alignItems: 'flex-start' }}>
           {/* Avatar Showcase */}
-          <div className="lg:col-span-5 space-y-6">
-            <div className="sticky top-12 bg-white/60 backdrop-blur-xl rounded-[3.5rem] p-12 shadow-2xl border-4 border-white flex flex-col items-center justify-center relative overflow-hidden group">
-              <div className="absolute inset-0 bg-gradient-to-t from-amber-100/50 to-transparent pointer-events-none" />
-              <h2 className="text-2xl font-black text-amber-900 mb-12 relative z-10 flex items-center gap-2">
-                <Sparkles className="text-amber-500" /> Mi Avatar WAY+
+          <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 24, position: 'sticky', top: 48 }}>
+            <div style={{
+              backgroundColor: 'rgba(255,255,255,0.6)', backdropFilter: 'blur(24px)',
+              borderRadius: 56, padding: 48, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              border: '4px solid white', display: 'flex', flexDirection: 'column', alignItems: 'center',
+              position: 'relative', overflow: 'hidden'
+            }}>
+              <div style={{
+                position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(fef3c7, 0.5), transparent)', pointerEvents: 'none'
+              }} />
+              <h2 style={{
+                fontSize: 24, fontWeight: 900, color: '#78350f', marginBottom: 48,
+                position: 'relative', zIndex: 10, display: 'flex', alignItems: 'center', gap: 8
+              }}>
+                <Sparkles style={{ color: '#f59e0b' }} /> Mi Avatar WAY+
               </h2>
               
-              <div className="relative z-10 w-full">
+              <div style={{ position: 'relative', zIndex: 10, width: '100%' }}>
                 <AvatarPreview />
               </div>
 
-              <div className="mt-12 w-full grid grid-cols-3 gap-3 relative z-10">
-                <div className="bg-white/80 p-4 rounded-2xl text-center shadow-sm">
-                  <span className="text-xs font-black text-slate-400 block mb-1">CABEZA</span>
-                  <span className="text-2xl">{currentAvatar.hat === 'hat-none' ? '❌' : '✅'}</span>
+              <div style={{ marginTop: 48, width: '100%', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12, position: 'relative', zIndex: 10 }}>
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', padding: 16, borderRadius: 16, textAlign: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                  <span style={{ fontSize: 12, fontWeight: 900, color: '#94a3b8', display: 'block', marginBottom: 4 }}>CABEZA</span>
+                  <span style={{ fontSize: 24 }}>{currentAvatar.hat === 'hat-none' ? '❌' : '✅'}</span>
                 </div>
-                <div className="bg-white/80 p-4 rounded-2xl text-center shadow-sm">
-                  <span className="text-xs font-black text-slate-400 block mb-1">CUERPO</span>
-                  <span className="text-2xl">✅</span>
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', padding: 16, borderRadius: 16, textAlign: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                  <span style={{ fontSize: 12, fontWeight: 900, color: '#94a3b8', display: 'block', marginBottom: 4 }}>CUERPO</span>
+                  <span style={{ fontSize: 24 }}>✅</span>
                 </div>
-                <div className="bg-white/80 p-4 rounded-2xl text-center shadow-sm">
-                  <span className="text-xs font-black text-slate-400 block mb-1">PIES</span>
-                  <span className="text-2xl">✅</span>
+                <div style={{ backgroundColor: 'rgba(255,255,255,0.8)', padding: 16, borderRadius: 16, textAlign: 'center', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' }}>
+                  <span style={{ fontSize: 12, fontWeight: 900, color: '#94a3b8', display: 'block', marginBottom: 4 }}>PIES</span>
+                  <span style={{ fontSize: 24 }}>✅</span>
                 </div>
               </div>
 
@@ -87,7 +113,12 @@ export const RewardsBackpack: React.FC = () => {
                   resetPreview();
                   navigate('/shop');
                 }}
-                className="mt-8 w-full py-4 rounded-2xl bg-amber-500 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-amber-200 flex items-center justify-center gap-3"
+                style={{
+                  marginTop: 32, width: '100%', padding: '16px 0', borderRadius: 16, backgroundColor: '#f59e0b',
+                  color: 'white', fontWeight: 900, fontSize: 14, textTransform: 'uppercase', letterSpacing: '0.1em',
+                  boxShadow: '0 10px 15px -3px rgba(253, 230, 138, 1)', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', gap: 12, cursor: 'pointer', border: 'none'
+                }}
               >
                 <ShoppingBag size={20} /> Ir a la Tienda
               </motion.button>
@@ -95,19 +126,22 @@ export const RewardsBackpack: React.FC = () => {
           </div>
 
           {/* Inventory Controls */}
-          <div className="lg:col-span-7 space-y-8 pb-20">
+          <div style={{ flex: '1 1 500px', display: 'flex', flexDirection: 'column', gap: 32, paddingBottom: 80 }}>
             {categories.map((cat) => (
-              <section key={cat.id} className="space-y-4">
-                <div className="flex items-center justify-between px-2">
-                  <h3 className="text-2xl font-black text-slate-800 flex items-center gap-3">
-                    <span className="text-3xl">{cat.icon}</span> {cat.name}
+              <section key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px' }}>
+                  <h3 style={{ fontSize: 24, fontWeight: 900, color: '#1e293b', display: 'flex', alignItems: 'center', gap: 12, margin: 0 }}>
+                    <span style={{ fontSize: 30 }}>{cat.icon}</span> {cat.name}
                   </h3>
-                  <span className="text-sm font-black text-slate-400 bg-white/50 px-3 py-1 rounded-full border border-slate-100">
+                  <span style={{
+                    fontSize: 14, fontWeight: 900, color: '#94a3b8', backgroundColor: 'rgba(255,255,255,0.5)',
+                    padding: '4px 12px', borderRadius: 9999, border: '1px solid #f1f5f9'
+                  }}>
                     {inventory.filter(i => i.category === cat.id).length} OBJETOS
                   </span>
                 </div>
                 
-                <div className="grid grid-cols-3 sm:grid-cols-4 gap-4">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))', gap: 16 }}>
                   {inventory
                     .filter(item => item.category === cat.id)
                     .map(item => {
@@ -120,19 +154,29 @@ export const RewardsBackpack: React.FC = () => {
                           onClick={() => {
                             equipPart(cat.id, item.id as AvatarPart);
                           }}
-                          className={`aspect-square rounded-[2.5rem] flex flex-col items-center justify-center p-4 transition-all duration-300 relative border-4
-                            ${isEquipped 
-                              ? 'bg-emerald-500 border-emerald-300 shadow-xl shadow-emerald-100' 
-                              : 'bg-white border-transparent hover:border-amber-200 shadow-lg shadow-slate-100'}`}
+                          style={{
+                            aspectRatio: '1 / 1', borderRadius: 40, display: 'flex', flexDirection: 'column',
+                            alignItems: 'center', justifyContent: 'center', padding: 16, position: 'relative',
+                            border: isEquipped ? '4px solid #6ee7b7' : '4px solid transparent',
+                            backgroundColor: isEquipped ? '#10b981' : 'white',
+                            boxShadow: isEquipped ? '0 20px 25px -5px rgba(209, 250, 229, 1)' : '0 10px 15px -3px rgba(241, 245, 249, 1)',
+                            transition: 'all 0.3s', cursor: 'pointer'
+                          }}
                         >
-                          <span className="text-5xl mb-2 filter drop-shadow-sm">{item.icon}</span>
-                          <span className={`text-[10px] font-black text-center leading-tight uppercase tracking-tight
-                            ${isEquipped ? 'text-white' : 'text-slate-500'}`}>
+                          <span style={{ fontSize: 48, marginBottom: 8, filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.1))' }}>{item.icon}</span>
+                          <span style={{
+                            fontSize: 10, fontWeight: 900, textAlign: 'center', lineHeight: 1.2, textTransform: 'uppercase',
+                            letterSpacing: '-0.5px', color: isEquipped ? 'white' : '#64748b'
+                          }}>
                             {item.name}
                           </span>
                           
                           {isEquipped && (
-                            <div className="absolute -top-2 -right-2 bg-white text-emerald-500 rounded-full p-1.5 shadow-lg border-2 border-emerald-500">
+                            <div style={{
+                              position: 'absolute', top: -8, right: -8, backgroundColor: 'white', color: '#10b981',
+                              borderRadius: 9999, padding: 6, boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                              border: '2px solid #10b981', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                            }}>
                               <Star size={12} fill="currentColor" />
                             </div>
                           )}
@@ -144,10 +188,15 @@ export const RewardsBackpack: React.FC = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     onClick={() => navigate('/shop')}
-                    className="aspect-square rounded-[2.5rem] border-4 border-dashed border-slate-200 flex flex-col items-center justify-center opacity-40 hover:opacity-100 transition-opacity bg-slate-50/50"
+                    style={{
+                      aspectRatio: '1 / 1', borderRadius: 40, border: '4px dashed #e2e8f0', display: 'flex',
+                      flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                      opacity: 0.6, backgroundColor: 'rgba(248, 250, 252, 0.5)', transition: 'opacity 0.3s',
+                      cursor: 'pointer'
+                    }}
                   >
-                    <ShoppingBag size={24} className="text-slate-400 mb-1" />
-                    <span className="text-[10px] font-black text-slate-400">MÁS</span>
+                    <ShoppingBag size={24} color="#94a3b8" style={{ marginBottom: 4 }} />
+                    <span style={{ fontSize: 10, fontWeight: 900, color: '#94a3b8' }}>MÁS</span>
                   </motion.button>
                 </div>
               </section>

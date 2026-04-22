@@ -17,34 +17,50 @@ export const PictoOption: React.FC<Props> = ({ option, onSelect, disabled, class
       whileTap={{ scale: 0.95 }}
       onClick={onSelect}
       disabled={disabled}
-      className={cn(
-        "relative min-h-[120px] w-full rounded-[2rem] bg-white shadow-xl overflow-hidden",
-        "border-4 border-slate-100 transition-all duration-300",
-        "hover:border-primary-400 focus:outline-none focus:ring-8 focus:ring-primary-100",
-        "disabled:opacity-70 disabled:cursor-not-allowed group",
-        className
-      )}
+      style={{
+        position: 'relative',
+        minHeight: 120,
+        width: '100%',
+        borderRadius: 32,
+        backgroundColor: '#ffffff',
+        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+        overflow: 'hidden',
+        border: '4px solid #f1f5f9',
+        transition: 'all 0.3s',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.7 : 1,
+        // Using a basic fallback for hover state simulation (the framer-motion does the heavy lifting)
+      }}
       aria-label={option.label}
     >
-      <div className="flex items-center h-full px-6 py-4 gap-6">
-        <div className="w-20 h-20 flex-shrink-0 bg-slate-50 rounded-2xl p-2 flex items-center justify-center">
+      <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '16px 24px', gap: 24 }}>
+        <div style={{
+          width: 80, height: 80, flexShrink: 0, backgroundColor: '#f8fafc',
+          borderRadius: 16, padding: 8, display: 'flex', alignItems: 'center', justifyContent: 'center'
+        }}>
           <img 
             src={option.image} 
             alt={option.label}
-            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
+            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             loading="lazy"
           />
         </div>
         
-        <div className="flex-1 text-left">
-          <span className="text-xl md:text-2xl font-black text-slate-800 tracking-tight leading-tight uppercase">
+        <div style={{ flex: 1, textAlign: 'left' }}>
+          <span style={{ 
+            fontSize: 24, fontWeight: 900, color: '#1e293b', 
+            letterSpacing: '-0.5px', lineHeight: 1.2, textTransform: 'uppercase' 
+          }}>
             {option.label}
           </span>
         </div>
       </div>
       
       {/* Decorative inner shadow */}
-      <div className="absolute inset-0 pointer-events-none shadow-[inset_0_0_20px_rgba(0,0,0,0.01)]" />
+      <div style={{
+        position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
+        pointerEvents: 'none', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.01)'
+      }} />
     </motion.button>
   );
 };

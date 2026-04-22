@@ -73,33 +73,42 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete }) => {
       case 'double-choice':
       default:
         return (
-          <div className="flex flex-col items-center gap-10 w-full max-w-lg mx-auto py-4 px-2">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 40, width: '100%', maxWidth: 512, margin: '0 auto', padding: '16px 8px' }}>
              {/* Stimulus Section */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="w-full text-center space-y-4"
+              style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}
             >
-              <div className="mx-auto w-40 h-40 bg-white rounded-[2.5rem] shadow-xl p-6 border-4 border-slate-50 animate-float flex items-center justify-center">
-                <img src={way.stimulus.image} alt="Estímulo" className="max-w-full max-h-full object-contain" />
+              <div style={{ 
+                margin: '0 auto', width: 160, height: 160, backgroundColor: 'white', borderRadius: 40, 
+                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', 
+                padding: 24, border: '4px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+              }}>
+                <img src={way.stimulus.image} alt="Estímulo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
               </div>
               {way.stimulus.text && (
-                <h2 className="text-2xl font-black text-slate-800 tracking-tight leading-tight uppercase">
+                <h2 style={{ fontSize: 24, fontWeight: 900, color: '#1e293b', letterSpacing: '-0.5px', lineHeight: 1.2, textTransform: 'uppercase' }}>
                   {way.stimulus.text}
                 </h2>
               )}
             </motion.div>
 
             {/* Options Grid - Single column for mobile accessibility */}
-            <div className="grid grid-cols-1 gap-4 w-full">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, width: '100%' }}>
               {way.options.map((option) => (
-                <PictoOption
-                  key={option.id}
-                  option={option}
-                  onSelect={() => handleDoubleChoiceSelect(option.id)}
-                  disabled={celebration.show}
-                  className={celebration.show && celebration.type === 'happy' && option.isCorrect ? 'border-emerald-400 bg-emerald-50 ring-4 ring-emerald-100' : ''}
-                />
+                <div key={option.id} style={{ 
+                  borderRadius: 32,
+                  ...(celebration.show && celebration.type === 'happy' && option.isCorrect ? {
+                    border: '4px solid #34d399', backgroundColor: '#ecfdf5', boxShadow: '0 0 0 4px #d1fae5'
+                  } : {})
+                }}>
+                  <PictoOption
+                    option={option}
+                    onSelect={() => handleDoubleChoiceSelect(option.id)}
+                    disabled={celebration.show}
+                  />
+                </div>
               ))}
             </div>
           </div>
