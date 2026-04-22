@@ -104,7 +104,7 @@ export function WayPlayerPage() {
   const handleCelebrationDone = () => {
     setCelebration(c => ({ ...c, show: false }));
     if (celebration.type === 'step-complete') {
-      navigate(`/`);
+      navigate(`/play/${levelId}/${stepId}`);
     }
   };
 
@@ -152,7 +152,7 @@ export function WayPlayerPage() {
         gap: 12,
         borderBottom: '1px solid #E8E9FF',
       }}>
-        <BackButton onPress={() => navigate('/')} />
+        <BackButton onPress={() => navigate(`/play/${levelId}/${stepId}`)} />
         <WayProgress
           current={currentIdx + 1}
           total={ways.length}

@@ -108,9 +108,7 @@ export function LevelSelectPage() {
               key={step.id}
               whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if (step.ways.length > 0) {
-                  navigate(`/play/${profile.currentLevel}/${step.id}/${step.ways[0].id}`);
-                }
+                navigate(`/play/${profile.currentLevel}/${step.id}`);
               }}
               style={{
                 background: theme.bg,

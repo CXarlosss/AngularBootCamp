@@ -25,6 +25,7 @@ const ErrorFallback = ({ error }: { error: any }) => (
 
 // Lazy imports (Handling named exports)
 const LevelSelectPage = lazy(() => import('@/features/player/pages/LevelSelectPage').then(m => ({ default: m.LevelSelectPage })));
+const StepDetailsPage = lazy(() => import('@/features/player/pages/StepDetailsPage').then(m => ({ default: m.StepDetailsPage })));
 const WayPlayerPage = lazy(() => import('@/features/content/pages/WayPlayerPage').then(m => ({ default: m.WayPlayerPage })));
 const AnnexesHubPage = lazy(() => import('@/features/annexes/pages/AnnexesHubPage').then(m => ({ default: m.AnnexesHubPage })));
 const RelaxationTrackerPage = lazy(() => import('@/features/annexes/pages/RelaxationTrackerPage').then(m => ({ default: m.RelaxationTrackerPage })));
@@ -52,6 +53,10 @@ export const router = createBrowserRouter([
       { 
         path: 'auth', 
         element: Load(AuthPage) 
+      },
+      { 
+        path: 'play/:levelId/:stepId', 
+        element: Load(StepDetailsPage) 
       },
       { 
         path: 'play/:levelId/:stepId/:wayId', 

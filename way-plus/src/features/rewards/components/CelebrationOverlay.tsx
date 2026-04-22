@@ -96,13 +96,13 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
               <motion.div 
                 animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }} 
                 transition={{ repeat: Infinity, duration: 2 }}
-                style={{ fontSize: 128, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))' }}
+                style={{ fontSize: 96, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))', whiteSpace: 'nowrap' }}
               >
-                😃
+                😊🥇
               </motion.div>
             )}
             {type === 'sad' && (
-              <motion.div style={{ fontSize: 128, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))' }}>😢</motion.div>
+              <motion.div style={{ fontSize: 96, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))', whiteSpace: 'nowrap' }}>😢🚫</motion.div>
             )}
             {type === 'step-complete' && (
               <motion.div 
