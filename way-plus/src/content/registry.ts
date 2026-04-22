@@ -87,6 +87,9 @@ export const registry = {
     if (cached.length > 0) return cached.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     // 2. Try cloud (non-blocking: if it fails we fall through)
+    // TEMPORARILY DISABLED: The Supabase cloud is returning steps with empty ways, 
+    // which overwrites the local functional steps and causes "0/0 WAYS".
+    /*
     if (navigator.onLine) {
       const cloudSteps = await fetchFromCloud(levelId);
       if (cloudSteps.length > 0) {
@@ -97,6 +100,7 @@ export const registry = {
         return cloudSteps;
       }
     }
+    */
 
     // 3. IndexedDB
     const idbSteps = await idbGetAllSteps();

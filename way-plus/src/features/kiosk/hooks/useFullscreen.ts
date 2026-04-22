@@ -27,19 +27,23 @@ export function useFullscreen(enabled: boolean) {
       return;
     }
 
-    enterFullscreen();
+    // Do NOT call enterFullscreen() here on mount. 
+    // Browsers strictly require a user gesture (click/touch).
     
     const handleInteraction = () => {
-      if (!document.fullscreenElement) enterFullscreen();
+      // Only request fullscreen if we aren't already and it's enabled
+      if (!document.fullscreenElement && enabled) {
+        enterFullscreen();
+      }
     };
 
-    document.addEventListener('click', handleInteraction);
-    document.addEventListener('touchstart', handleInteraction);
+    // Use passive true where possible, but here we just listen to clicks
+    document.addEventListener('click', handleInteraction, { capture: true });
+    document.addEventListener('touchstart', handleInteraction, { capture: true, passive: true });
     
     const handleChange = () => {
-      if (!document.fullscreenElement && enabled) {
-        setTimeout(enterFullscreen, 300);
-      }
+      // If the user manually exited fullscreen, we shouldn't force them back instantly 
+      // without a gesture. We wait for their next click.
     };
     
     document.addEventListener('fullscreenchange', handleChange);

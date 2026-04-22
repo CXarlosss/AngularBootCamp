@@ -9,8 +9,10 @@ export function useOrientationLock(orientation: 'portrait' | 'landscape' | 'natu
         if ('orientation' in screen && (screen.orientation as any).lock) {
           await (screen.orientation as any).lock(orientation);
         }
-      } catch (e) {
-        console.warn('Orientation lock no soportado:', e);
+      } catch (e: any) {
+        if (e.name !== 'NotSupportedError') {
+          console.warn('Orientation lock falló:', e);
+        }
       }
     };
     
