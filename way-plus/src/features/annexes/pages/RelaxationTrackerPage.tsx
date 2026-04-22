@@ -4,7 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { format } from 'date-fns';
-import { ArrowLeft, Clock, MapPin, User, Wind, CheckCircle2 } from 'lucide-react';
+
+const C = {
+  emerald: '#10B981',
+  emeraldLight: '#ECFDF5',
+  emeraldDark: '#064E3B',
+  emeraldMuted: '#A7F3D0',
+  white: '#ffffff',
+  slate: '#64748B',
+  slateDark: '#1E293B',
+  slateLight: '#F1F5F9',
+};
 
 const WEEK_DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -15,17 +25,12 @@ export const RelaxationTrackerPage: React.FC = () => {
   const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
   
   const [isPracticing, setIsPracticing] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutos
+  const [timeLeft, setTimeLeft] = useState(300);
   const [checks, setChecks] = useState({
-    room: false,
-    chair: false,
-    posture: false,
-    breathing: false,
-    accompanied: false,
+    room: false, chair: false, posture: false, breathing: false, accompanied: false,
   });
   
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
   const allChecks = Object.values(checks).every(Boolean);
   
   const startPractice = () => {
@@ -45,24 +50,16 @@ export const RelaxationTrackerPage: React.FC = () => {
 
   const completePractice = () => {
     logRelaxation(today, {
-      completed: true,
-      duration: 5,
-      posture: checks.posture,
-      breathing: checks.breathing,
-      accompanied: checks.accompanied,
+      completed: true, duration: 5, posture: checks.posture,
+      breathing: checks.breathing, accompanied: checks.accompanied,
       location: checks.room ? 'room' : 'other',
     });
-    
-    // Disparar recompensa
     useRewardsStore.getState().celebrateCompletion('annex');
-    
     setIsPracticing(false);
   };
 
   useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, []);
 
   const formatTime = (seconds: number) => {
@@ -72,65 +69,65 @@ export const RelaxationTrackerPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-gradient-to-b from-emerald-50 to-emerald-100 p-6 md:p-12 overflow-y-auto">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <header className="flex items-center justify-between">
+    <div style={{ flex: 1, background: `linear-gradient(135deg, ${C.emeraldLight}, #D1FAE5)`, padding: '24px 16px', minHeight: '100vh', overflowY: 'auto' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <motion.button
-            onClick={() => navigate('/annexes')}
-            className="w-12 h-12 rounded-2xl bg-white shadow-lg flex items-center justify-center text-emerald-600"
             whileTap={{ scale: 0.9 }}
+            onClick={() => navigate('/annexes')}
+            style={{ width: 48, height: 48, borderRadius: 16, background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', boxShadow: '0 4px 12px rgba(16,185,129,0.15)', cursor: 'pointer', fontSize: 20, color: C.emerald }}
           >
-            <ArrowLeft size={24} />
+            ←
           </motion.button>
-          <div className="text-right">
-            <h1 className="text-3xl md:text-4xl font-black text-emerald-900 tracking-tighter">Relajación</h1>
-            <p className="text-emerald-600 font-bold uppercase tracking-widest text-sm">Anexo 1: Calma y Bienestar</p>
+          <div style={{ textAlign: 'right' }}>
+            <h1 style={{ fontSize: 28, fontWeight: 900, color: C.emeraldDark, margin: 0 }}>Relajación</h1>
+            <p style={{ fontSize: 12, fontWeight: 700, color: C.emerald, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>Calma y Bienestar</p>
           </div>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Checklist Section */}
-          <div className="bg-white/70 backdrop-blur-xl rounded-[2.5rem] p-8 shadow-2xl border border-white space-y-6">
-            <h2 className="text-2xl font-black text-emerald-900 flex items-center gap-2">
-              <CheckCircle2 className="text-emerald-500" />
-              Lista de Calma
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 24 }}>
+          {/* Checklist */}
+          <div style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: 32, padding: 24, boxShadow: '0 8px 32px rgba(16,185,129,0.1)', border: '2px solid white' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 900, color: C.emeraldDark, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+              📋 Lista de Calma
             </h2>
-            <div className="space-y-4">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {[
-                { key: 'room', label: 'Lugar sin ruidos', icon: <MapPin size={20} /> },
-                { key: 'chair', label: 'Silla cómoda', icon: <User size={20} /> },
-                { key: 'posture', label: 'Pies en el suelo', icon: <Wind size={20} /> },
-                { key: 'breathing', label: 'Respiro despacio', icon: <Wind size={20} /> },
-                { key: 'accompanied', label: 'Estoy acompañado', icon: <User size={20} /> },
-              ].map((item) => (
-                <motion.button
-                  key={item.key}
-                  onClick={() => setChecks(prev => ({ ...prev, [item.key]: !prev[item.key as keyof typeof checks] }))}
-                  whileTap={{ scale: 0.98 }}
-                  className={`w-full flex items-center justify-between p-5 rounded-3xl border-2 transition-all duration-300
-                    ${checks[item.key as keyof typeof checks] 
-                      ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200' 
-                      : 'bg-white border-slate-100 text-slate-600 hover:border-emerald-200'
-                    }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <span className={checks[item.key as keyof typeof checks] ? 'text-white' : 'text-emerald-500'}>
-                      {item.icon}
-                    </span>
-                    <span className="text-lg font-black">{item.label}</span>
-                  </div>
-                  <div className={`w-8 h-8 rounded-xl border-2 flex items-center justify-center transition-colors
-                    ${checks[item.key as keyof typeof checks] ? 'border-white bg-white/20' : 'border-slate-200'}
-                  `}>
-                    {checks[item.key as keyof typeof checks] && <CheckCircle2 size={20} />}
-                  </div>
-                </motion.button>
-              ))}
+                { key: 'room', label: 'Lugar sin ruidos', icon: '📍' },
+                { key: 'chair', label: 'Silla cómoda', icon: '🪑' },
+                { key: 'posture', label: 'Pies en el suelo', icon: '🦶' },
+                { key: 'breathing', label: 'Respiro despacio', icon: '🌬️' },
+                { key: 'accompanied', label: 'Estoy acompañado', icon: '🧑‍🤝‍🧑' },
+              ].map((item) => {
+                const checked = checks[item.key as keyof typeof checks];
+                return (
+                  <motion.button
+                    key={item.key}
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => setChecks(prev => ({ ...prev, [item.key]: !checked }))}
+                    style={{
+                      width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: 16, borderRadius: 20, cursor: 'pointer', border: 'none', transition: 'all 0.2s',
+                      background: checked ? C.emerald : C.white,
+                      boxShadow: checked ? '0 8px 16px rgba(16,185,129,0.3)' : '0 2px 8px rgba(0,0,0,0.05)',
+                      color: checked ? C.white : C.slateDark
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <span style={{ fontSize: 20 }}>{item.icon}</span>
+                      <span style={{ fontSize: 16, fontWeight: 800 }}>{item.label}</span>
+                    </div>
+                    <div style={{ width: 28, height: 28, borderRadius: 10, border: `2px solid ${checked ? 'white' : C.slateLight}`, display: 'flex', alignItems: 'center', justifyContent: 'center', background: checked ? 'rgba(255,255,255,0.2)' : 'transparent' }}>
+                      {checked && <span style={{ color: 'white', fontSize: 16 }}>✓</span>}
+                    </div>
+                  </motion.button>
+                );
+              })}
             </div>
           </div>
 
           {/* Timer Section */}
-          <div className="flex flex-col gap-8">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <AnimatePresence mode="wait">
               {isPracticing ? (
                 <motion.div
@@ -138,74 +135,71 @@ export const RelaxationTrackerPage: React.FC = () => {
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
-                  className="bg-white rounded-[2.5rem] p-12 shadow-2xl flex-1 flex flex-col items-center justify-center text-center space-y-6"
+                  style={{ background: C.white, borderRadius: 32, padding: 32, boxShadow: '0 12px 40px rgba(16,185,129,0.15)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}
                 >
-                  <div className="relative">
-                    <svg className="w-48 h-48 -rotate-90">
-                      <circle cx="96" cy="96" r="88" fill="none" stroke="#f1f5f9" strokeWidth="12" />
+                  <div style={{ position: 'relative', width: 200, height: 200 }}>
+                    <svg style={{ width: '100%', height: '100%', transform: 'rotate(-90deg)' }}>
+                      <circle cx="100" cy="100" r="90" fill="none" stroke={C.slateLight} strokeWidth="12" />
                       <motion.circle 
-                        cx="96" cy="96" r="88" fill="none" stroke="#10b981" strokeWidth="12" strokeLinecap="round"
-                        strokeDasharray={553}
-                        animate={{ strokeDashoffset: 553 - (timeLeft / 300) * 553 }}
+                        cx="100" cy="100" r="90" fill="none" stroke={C.emerald} strokeWidth="12" strokeLinecap="round"
+                        strokeDasharray={565}
+                        animate={{ strokeDashoffset: 565 - (timeLeft / 300) * 565 }}
                       />
                     </svg>
-                    <div className="absolute inset-0 flex items-center justify-center text-5xl font-black text-slate-800 tabular-nums">
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, fontWeight: 900, color: C.slateDark }}>
                       {formatTime(timeLeft)}
                     </div>
                   </div>
-                  <p className="text-xl font-bold text-emerald-600 animate-pulse uppercase tracking-widest">Inspirar... Expirar...</p>
-                  <motion.div
-                    animate={{ scale: [1, 1.3, 1] }}
-                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-                    className="text-7xl"
-                  >
-                    🍃
-                  </motion.div>
+                  <p style={{ fontSize: 18, fontWeight: 800, color: C.emerald, textTransform: 'uppercase', letterSpacing: 2 }}>Inspirar... Expirar...</p>
                 </motion.div>
               ) : (
                 <motion.div
                   key="start"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="bg-white rounded-[2.5rem] p-8 shadow-2xl flex-1 flex flex-col justify-between space-y-8"
+                  style={{ background: C.white, borderRadius: 32, padding: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.05)', display: 'flex', flexDirection: 'column', gap: 24 }}
                 >
-                  <div className="space-y-4">
-                    <h3 className="text-2xl font-black text-slate-800">Práctica Diaria</h3>
-                    <p className="text-slate-500 font-medium">Completa la lista de calma para activar el temporizador.</p>
+                  <div>
+                    <h3 style={{ fontSize: 22, fontWeight: 900, color: C.slateDark, margin: '0 0 8px' }}>Práctica Diaria</h3>
+                    <p style={{ fontSize: 14, fontWeight: 600, color: C.slate, margin: 0 }}>Completa la lista de calma para activar el temporizador.</p>
                   </div>
                   
                   <motion.button
-                    whileHover={allChecks ? { scale: 1.02 } : {}}
-                    whileTap={allChecks ? { scale: 0.98 } : {}}
+                    whileTap={allChecks ? { scale: 0.96 } : {}}
                     onClick={startPractice}
                     disabled={!allChecks}
-                    className={`w-full py-8 rounded-[2rem] text-2xl font-black shadow-xl transition-all flex items-center justify-center gap-4
-                      ${allChecks 
-                        ? 'bg-emerald-500 text-white shadow-emerald-200 hover:bg-emerald-600' 
-                        : 'bg-slate-100 text-slate-300 cursor-not-allowed shadow-none'
-                      }`}
+                    style={{
+                      width: '100%', padding: 20, borderRadius: 24, fontSize: 18, fontWeight: 900, border: 'none', cursor: allChecks ? 'pointer' : 'not-allowed', transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+                      background: allChecks ? C.emerald : C.slateLight,
+                      color: allChecks ? C.white : '#9CA3AF',
+                      boxShadow: allChecks ? '0 12px 24px rgba(16,185,129,0.3)' : 'none'
+                    }}
                   >
-                    <Clock size={32} />
+                    <span>⏱️</span>
                     {relaxationLog[today]?.completed ? 'REPETIR PRÁCTICA' : 'EMPEZAR (5 MIN)'}
                   </motion.button>
                 </motion.div>
               )}
             </AnimatePresence>
 
-            {/* Weekly Progress mini-track */}
-            <div className="bg-white/40 backdrop-blur p-6 rounded-[2rem] border border-white">
-              <h4 className="text-sm font-black text-emerald-800 uppercase tracking-widest mb-4">Progreso Semanal</h4>
-              <div className="flex justify-between gap-2">
+            {/* Weekly Progress */}
+            <div style={{ background: 'rgba(255,255,255,0.6)', borderRadius: 24, padding: 20, border: '1px solid white' }}>
+              <h4 style={{ fontSize: 12, fontWeight: 800, color: C.emeraldDark, textTransform: 'uppercase', letterSpacing: 1, margin: '0 0 16px' }}>Progreso Semanal</h4>
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between' }}>
                 {WEEK_DAYS.map((day, idx) => {
                   const dateKey = format(new Date(Date.now() - (todayIndex - idx) * 86400000), 'yyyy-MM-dd');
                   const isDone = !!relaxationLog[dateKey]?.completed;
                   return (
-                    <div key={day} className="flex-1 flex flex-col items-center gap-2">
-                      <div className={`w-full aspect-square rounded-xl flex items-center justify-center text-xl shadow-sm border-2
-                        ${isDone ? 'bg-emerald-400 border-emerald-400 text-white' : 'bg-white border-white/50 text-slate-200'}`}>
+                    <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                      <div style={{
+                        width: '100%', aspectRatio: '1/1', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, fontWeight: 900,
+                        background: isDone ? C.emerald : C.white,
+                        color: isDone ? C.white : C.emeraldMuted,
+                        border: isDone ? 'none' : `2px solid ${C.emeraldLight}`
+                      }}>
                         {isDone ? '★' : ''}
                       </div>
-                      <span className="text-[10px] font-black text-emerald-800/50 uppercase">{day.slice(0,3)}</span>
+                      <span style={{ fontSize: 9, fontWeight: 800, color: C.emeraldDark, opacity: 0.6, textTransform: 'uppercase' }}>{day.slice(0,3)}</span>
                     </div>
                   );
                 })}

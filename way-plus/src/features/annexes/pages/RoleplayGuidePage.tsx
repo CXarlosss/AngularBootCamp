@@ -3,7 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { format } from 'date-fns';
-import { ArrowLeft, Play, Users, MessageSquare, Shield, Star, CheckCircle } from 'lucide-react';
+
+const C = {
+  orange: '#F97316',
+  orangeLight: '#FFF7ED',
+  orangeDark: '#9A3412',
+  emerald: '#10B981',
+  emeraldLight: '#ECFDF5',
+  slate: '#64748B',
+  slateDark: '#1E293B',
+  slateLight: '#F1F5F9',
+  white: '#ffffff',
+};
 
 const WEEK_DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
@@ -34,19 +45,20 @@ export const RoleplayGuidePage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 bg-gradient-to-b from-orange-50 to-rose-100 p-6 md:p-12 overflow-y-auto">
-      <div className="max-w-4xl mx-auto space-y-8">
-        <header className="flex items-center justify-between">
+    <div style={{ flex: 1, background: `linear-gradient(135deg, ${C.orangeLight}, #FFEDD5)`, padding: '24px 16px', minHeight: '100vh', overflowY: 'auto' }}>
+      <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
+        
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <motion.button
-            onClick={() => navigate('/annexes')}
-            className="w-12 h-12 rounded-2xl bg-white shadow-lg flex items-center justify-center text-orange-600"
             whileTap={{ scale: 0.9 }}
+            onClick={() => navigate('/annexes')}
+            style={{ width: 48, height: 48, borderRadius: 16, background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', boxShadow: '0 4px 12px rgba(249,115,22,0.15)', cursor: 'pointer', fontSize: 20, color: C.orange }}
           >
-            <ArrowLeft size={24} />
+            ←
           </motion.button>
-          <div className="text-right">
-            <h1 className="text-3xl md:text-4xl font-black text-orange-900 tracking-tighter">Role Playing</h1>
-            <p className="text-orange-600 font-bold uppercase tracking-widest text-sm">Anexo 3: Práctica Social</p>
+          <div style={{ textAlign: 'right' }}>
+            <h1 style={{ fontSize: 28, fontWeight: 900, color: C.orangeDark, margin: 0 }}>Role Playing</h1>
+            <p style={{ fontSize: 12, fontWeight: 700, color: C.orange, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>Práctica Social</p>
           </div>
         </header>
 
@@ -57,87 +69,85 @@ export const RoleplayGuidePage: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="bg-white rounded-[3rem] p-10 shadow-2xl border-4 border-orange-200 space-y-8"
+              style={{ background: C.white, borderRadius: 32, padding: 32, boxShadow: '0 12px 40px rgba(249,115,22,0.15)', border: `4px solid #FFEDD5`, display: 'flex', flexDirection: 'column', gap: 24 }}
             >
-              <div className="flex items-center gap-6">
-                <div className="w-24 h-24 bg-orange-50 rounded-[2rem] flex items-center justify-center text-5xl shadow-inner">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                <div style={{ width: 80, height: 80, background: C.orangeLight, borderRadius: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, boxShadow: 'inset 0 4px 8px rgba(0,0,0,0.05)' }}>
                   {ROLEPLAY_SCENARIOS.find(s => s.wayId === selectedScenario)?.icon}
                 </div>
                 <div>
-                  <h2 className="text-3xl font-black text-slate-800 tracking-tight">
+                  <h2 style={{ fontSize: 22, fontWeight: 900, color: C.slateDark, margin: '0 0 4px' }}>
                     {ROLEPLAY_SCENARIOS.find(s => s.wayId === selectedScenario)?.title}
                   </h2>
-                  <p className="text-orange-500 font-bold uppercase tracking-widest">Misión: {ROLEPLAY_SCENARIOS.find(s => s.wayId === selectedScenario)?.step}</p>
+                  <p style={{ fontSize: 12, fontWeight: 800, color: C.orange, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>Misión: {ROLEPLAY_SCENARIOS.find(s => s.wayId === selectedScenario)?.step}</p>
                 </div>
               </div>
 
-              <div className="bg-orange-50 rounded-[2rem] p-8 space-y-6">
-                <h3 className="text-xl font-black text-orange-900 flex items-center gap-2">
-                  <Users size={24} />
-                  Guía para el Adulto
+              <div style={{ background: C.orangeLight, borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <h3 style={{ fontSize: 18, fontWeight: 900, color: C.orangeDark, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  👨‍👩‍👧‍👦 Guía para el Adulto
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <GuideStep icon={<MessageSquare size={18} />} text="Explica la situación con calma" />
-                  <GuideStep icon={<Users size={18} />} text="Tú haces el papel del otro primero" />
-                  <GuideStep icon={<Play size={18} />} text="Luego intercambiad los papeles" />
-                  <GuideStep icon={<Star size={18} />} text="Refuerza cada pequeño acierto" />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
+                  <GuideStep icon="💬" text="Explica la situación con calma" />
+                  <GuideStep icon="👥" text="Tú haces el papel del otro primero" />
+                  <GuideStep icon="🔁" text="Luego intercambiad los papeles" />
+                  <GuideStep icon="⭐" text="Refuerza cada pequeño acierto" />
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 16 }}>
                 <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                  whileTap={{ scale: 0.96 }}
                   onClick={() => handlePractice(selectedScenario)}
-                  className="flex-1 bg-emerald-500 text-white py-6 rounded-[2rem] text-2xl font-black shadow-xl shadow-emerald-100 flex items-center justify-center gap-3"
+                  style={{ width: '100%', padding: 20, borderRadius: 24, background: C.emerald, color: C.white, fontSize: 18, fontWeight: 900, border: 'none', cursor: 'pointer', boxShadow: '0 8px 24px rgba(16,185,129,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                 >
-                  <CheckCircle size={28} />
-                  ¡LO HEMOS LOGRADO!
+                  ✓ ¡LO HEMOS LOGRADO!
                 </motion.button>
                 <button
                   onClick={() => setSelectedScenario(null)}
-                  className="px-8 bg-slate-100 text-slate-500 rounded-[2rem] font-bold hover:bg-slate-200 transition-colors"
+                  style={{ width: '100%', padding: 16, borderRadius: 24, background: C.slateLight, color: C.slate, fontSize: 16, fontWeight: 800, border: 'none', cursor: 'pointer' }}
                 >
                   VOLVER
                 </button>
               </div>
             </motion.div>
           ) : (
-            <div className="space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {ROLEPLAY_SCENARIOS.map((scenario) => (
-                  <motion.button
-                    key={scenario.wayId}
-                    whileHover={{ scale: 1.03, translateY: -5 }}
-                    whileTap={{ scale: 0.97 }}
-                    onClick={() => setSelectedScenario(scenario.wayId)}
-                    className={`p-8 rounded-[2.5rem] text-left shadow-xl border-4 transition-all duration-300 relative group
-                      ${todayLog.includes(scenario.wayId) 
-                        ? 'bg-emerald-50 border-emerald-300' 
-                        : 'bg-white border-transparent hover:border-orange-300'
-                      }`}
-                  >
-                    <div className="flex items-center gap-4 mb-4">
-                      <span className="text-4xl filter grayscale group-hover:grayscale-0 transition-all">{scenario.icon}</span>
-                      <div className="flex-1">
-                        <h3 className="text-xl font-black text-slate-800 leading-tight">{scenario.title}</h3>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{scenario.step}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
+                {ROLEPLAY_SCENARIOS.map((scenario) => {
+                  const isDone = todayLog.includes(scenario.wayId);
+                  return (
+                    <motion.button
+                      key={scenario.wayId}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={() => setSelectedScenario(scenario.wayId)}
+                      style={{
+                        padding: 24, borderRadius: 32, textAlign: 'left', cursor: 'pointer', border: isDone ? `4px solid ${C.emeraldLight}` : '4px solid transparent', transition: 'all 0.2s', position: 'relative',
+                        background: isDone ? C.emeraldLight : C.white,
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: isDone ? 12 : 0 }}>
+                        <span style={{ fontSize: 32 }}>{scenario.icon}</span>
+                        <div style={{ flex: 1 }}>
+                          <h3 style={{ fontSize: 18, fontWeight: 900, color: C.slateDark, margin: '0 0 4px', lineHeight: 1.2 }}>{scenario.title}</h3>
+                          <p style={{ fontSize: 11, fontWeight: 800, color: C.slate, textTransform: 'uppercase', letterSpacing: 1, margin: 0 }}>{scenario.step}</p>
+                        </div>
                       </div>
-                    </div>
-                    {todayLog.includes(scenario.wayId) && (
-                      <div className="flex items-center gap-2 text-emerald-600 font-black text-sm bg-white/80 w-fit px-3 py-1 rounded-full border border-emerald-100">
-                        <CheckCircle size={16} />
-                        Practicado hoy
-                      </div>
-                    )}
-                  </motion.button>
-                ))}
+                      {isDone && (
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: C.white, padding: '4px 12px', borderRadius: 20, border: `1px solid ${C.emeraldLight}`, color: C.emerald, fontSize: 12, fontWeight: 900 }}>
+                          ✓ Practicado hoy
+                        </div>
+                      )}
+                    </motion.button>
+                  );
+                })}
               </div>
 
               {/* Weekly Tracker */}
-              <div className="bg-white/80 backdrop-blur-xl rounded-[3rem] p-10 shadow-2xl border border-white">
-                <h3 className="text-2xl font-black text-slate-800 mb-8">Nuestra Semana</h3>
-                <div className="flex justify-between gap-4">
+              <div style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: 32, padding: 24, boxShadow: '0 8px 32px rgba(0,0,0,0.05)', border: '2px solid white' }}>
+                <h3 style={{ fontSize: 20, fontWeight: 900, color: C.slateDark, marginBottom: 24, marginTop: 0 }}>Nuestra Semana</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
                   {WEEK_DAYS.map((day, idx) => {
                     const date = new Date();
                     const dayDiff = idx - todayIndex;
@@ -146,13 +156,16 @@ export const RoleplayGuidePage: React.FC = () => {
                     const isToday = idx === todayIndex;
                     
                     return (
-                      <div key={day} className="flex-1 flex flex-col items-center gap-3">
-                        <span className={`text-xs font-black uppercase tracking-widest ${isToday ? 'text-orange-600' : 'text-slate-400'}`}>
+                      <div key={day} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 10, fontWeight: 900, textTransform: 'uppercase', color: isToday ? C.orange : C.slate }}>
                           {day.slice(0,3)}
                         </span>
-                        <div className={`w-full aspect-square rounded-2xl flex items-center justify-center text-xl font-black transition-all duration-500
-                          ${dayLog.length > 0 ? 'bg-orange-400 text-white shadow-lg shadow-orange-100' : 'bg-slate-100 text-slate-300'}
-                        `}>
+                        <div style={{
+                          width: '100%', aspectRatio: '1/1', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900,
+                          background: dayLog.length > 0 ? C.orange : C.slateLight,
+                          color: dayLog.length > 0 ? C.white : C.slate,
+                          boxShadow: dayLog.length > 0 ? '0 4px 12px rgba(249,115,22,0.2)' : 'none'
+                        }}>
                           {dayLog.length > 0 ? dayLog.length : ''}
                         </div>
                       </div>
@@ -169,8 +182,8 @@ export const RoleplayGuidePage: React.FC = () => {
 };
 
 const GuideStep = ({ icon, text }: { icon: React.ReactNode; text: string }) => (
-  <div className="flex items-center gap-3 bg-white/50 p-4 rounded-2xl border border-white">
-    <div className="text-orange-500">{icon}</div>
-    <span className="font-bold text-slate-700 text-sm">{text}</span>
+  <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.7)', padding: 16, borderRadius: 16, border: '1px solid white' }}>
+    <div style={{ fontSize: 20 }}>{icon}</div>
+    <span style={{ fontWeight: 800, color: C.slateDark, fontSize: 14 }}>{text}</span>
   </div>
 );
