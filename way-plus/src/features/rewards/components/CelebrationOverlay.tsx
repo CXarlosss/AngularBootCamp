@@ -42,12 +42,19 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center pointer-events-none"
+        style={{
+          position: 'fixed', top: 0, right: 0, bottom: 0, left: 0,
+          zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none'
+        }}
       >
-        <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+        <div style={{
+          position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
+          backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)'
+        }} />
         
         {type !== 'sad' && (
-          <div className="absolute inset-0 overflow-hidden">
+          <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflow: 'hidden' }}>
             {Array.from({ length: 30 }).map((_, i) => (
               <motion.div
                 key={i}
@@ -66,7 +73,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
                   ease: "linear",
                   delay: Math.random() * 1
                 }}
-                className="absolute text-5xl"
+                style={{ position: 'absolute', fontSize: 48 }}
               >
                 {particles[i % particles.length]}
               </motion.div>
@@ -78,61 +85,65 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
           initial={{ scale: 0, rotate: -15 }}
           animate={{ scale: 1, rotate: 0 }}
           exit={{ scale: 0, opacity: 0 }}
-          className="relative bg-white rounded-[3rem] p-12 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] text-center max-w-sm mx-4 border-8 border-white"
+          style={{
+            position: 'relative', backgroundColor: 'white', borderRadius: 48,
+            padding: 48, boxShadow: '0 35px 60px -15px rgba(0,0,0,0.3)', textAlign: 'center',
+            maxWidth: 384, margin: '0 16px', border: '8px solid white'
+          }}
         >
-          <div className="absolute -top-16 left-1/2 -translate-x-1/2">
+          <div style={{ position: 'absolute', top: -64, left: '50%', transform: 'translateX(-50%)' }}>
             {type === 'happy' && (
               <motion.div 
                 animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }} 
                 transition={{ repeat: Infinity, duration: 2 }}
-                className="text-9xl filter drop-shadow-xl"
+                style={{ fontSize: 128, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))' }}
               >
                 😃
               </motion.div>
             )}
             {type === 'sad' && (
-              <motion.div className="text-9xl filter drop-shadow-xl">😢</motion.div>
+              <motion.div style={{ fontSize: 128, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))' }}>😢</motion.div>
             )}
             {type === 'step-complete' && (
               <motion.div 
                 animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
-                className="text-9xl filter drop-shadow-xl"
+                style={{ fontSize: 128, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))' }}
               >
                 🏆
               </motion.div>
             )}
             {type === 'annex-complete' && (
-              <motion.div className="text-9xl filter drop-shadow-xl">🌟</motion.div>
+              <motion.div style={{ fontSize: 128, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))' }}>🌟</motion.div>
             )}
           </div>
 
-          <div className="mt-12 space-y-4">
+          <div style={{ marginTop: 48, display: 'flex', flexDirection: 'column', gap: 16 }}>
             {type === 'happy' && (
               <>
-                <h2 className="text-5xl font-black text-emerald-600 tracking-tighter">¡BRAVO!</h2>
-                <p className="text-slate-500 text-xl font-bold uppercase tracking-widest">¡Eres un campeón!</p>
+                <h2 style={{ fontSize: 48, fontWeight: 900, color: '#059669', letterSpacing: '-2px', margin: 0 }}>¡BRAVO!</h2>
+                <p style={{ color: '#64748b', fontSize: 20, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>¡Eres un campeón!</p>
               </>
             )}
             
             {type === 'sad' && (
               <>
-                <h2 className="text-4xl font-black text-rose-500 tracking-tighter">¡CASI!</h2>
-                <p className="text-slate-500 text-xl font-bold uppercase tracking-widest">¡Inténtalo otra vez!</p>
+                <h2 style={{ fontSize: 36, fontWeight: 900, color: '#f43f5e', letterSpacing: '-2px', margin: 0 }}>¡CASI!</h2>
+                <p style={{ color: '#64748b', fontSize: 20, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>¡Inténtalo otra vez!</p>
               </>
             )}
             
             {type === 'step-complete' && (
               <>
-                <h2 className="text-4xl font-black text-amber-500 tracking-tighter">¡NIVEL SUPERADO!</h2>
-                <p className="text-slate-500 text-xl font-bold uppercase tracking-widest">¡Misión Cumplida!</p>
+                <h2 style={{ fontSize: 36, fontWeight: 900, color: '#f59e0b', letterSpacing: '-2px', margin: 0 }}>¡NIVEL SUPERADO!</h2>
+                <p style={{ color: '#64748b', fontSize: 20, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>¡Misión Cumplida!</p>
               </>
             )}
 
             {type === 'annex-complete' && (
               <>
-                <h2 className="text-4xl font-black text-violet-600 tracking-tighter">¡GENIAL!</h2>
-                <p className="text-slate-500 text-xl font-bold uppercase tracking-widest">Reto completado</p>
+                <h2 style={{ fontSize: 36, fontWeight: 900, color: '#7c3aed', letterSpacing: '-2px', margin: 0 }}>¡GENIAL!</h2>
+                <p style={{ color: '#64748b', fontSize: 20, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Reto completado</p>
               </>
             )}
           </div>
@@ -142,16 +153,19 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
               <motion.div
                 initial={{ y: 20, opacity: 0, scale: 0.5 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
-                className="mt-8 flex items-center justify-center gap-3 bg-amber-100 rounded-[2rem] px-8 py-4 border-4 border-amber-200"
+                style={{
+                  marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
+                  backgroundColor: '#fef3c7', borderRadius: 32, padding: '16px 32px', border: '4px solid #fde68a'
+                }}
               >
                 <motion.span 
                   animate={{ rotateY: 360 }}
                   transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                  className="text-4xl"
+                  style={{ fontSize: 36 }}
                 >
                   🪙
                 </motion.span>
-                <span className="text-4xl font-black text-amber-700">+{coins}</span>
+                <span style={{ fontSize: 36, fontWeight: 900, color: '#b45309' }}>+{coins}</span>
               </motion.div>
             )}
           </AnimatePresence>
