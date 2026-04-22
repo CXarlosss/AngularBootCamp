@@ -15,7 +15,14 @@ interface KioskGateProps {
 export const KioskGate: React.FC<KioskGateProps> = ({ children, enabled = true }) => {
   const { isLocked, lock, requestExit, incrementSecretGesture, resetSecretGesture } = useKioskStore();
   
-  const active = enabled && isLocked;
+  // Detectar si estamos en modo desarrollo o si hay un bypass manual en la URL (?dev=true)
+  const isDev = window.location.hostname === 'localhost' || window.location.search.includes('dev=true');
+  
+  // Solo activar el modo Kiosk en dispositivos táctiles reales y NO en modo desarrollo
+  // Muchos laptops modernos reportan maxTouchPoints > 0 pero no son el target de Kiosk
+  const isTouchDevice = typeof window !== 'undefined' && (('ontouchstart' in window) || navigator.maxTouchPoints > 0);
+  
+  const active = enabled && isLocked && isTouchDevice && !isDev;
 
   useFullscreen(active);
   useWakeLock(active);
@@ -35,7 +42,7 @@ export const KioskGate: React.FC<KioskGateProps> = ({ children, enabled = true }
   }, [enabled, isLocked, lock]);
 
   return (
-    <div className="relative w-full h-full">
+    <div style={{ position: 'relative', width: '100%', minHeight: '100vh' }}>
       {children}
 
       {/* Zona secreta de salida (invisible, esquina superior derecha) */}

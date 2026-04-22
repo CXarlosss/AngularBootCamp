@@ -1,6 +1,8 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const rawUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+// Remove trailing /rest/v1 if present to avoid duplication in the client
+const supabaseUrl = rawUrl?.replace(/\/rest\/v1\/?$/, '');
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
 const isConfigured = Boolean(supabaseUrl && supabaseAnonKey);

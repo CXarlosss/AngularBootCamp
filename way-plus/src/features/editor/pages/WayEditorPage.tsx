@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useWayBuilder } from '../hooks/useWayBuilder';
-import { registry } from '@/content/levels/registry';
+import { registry } from '@/content/registry';
 import { contentService } from '@/features/content/services/contentService';
 import { WayTypeSelector } from '../components/WayTypeSelector';
 import { StimulusBuilder } from '../components/StimulusBuilder';

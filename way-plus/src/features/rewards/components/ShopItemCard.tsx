@@ -36,7 +36,8 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, onPreview, onP
       whileHover={{ scale: 1.05, translateY: -5 }}
       whileTap={{ scale: 0.95 }}
       onClick={onPreview}
-      className={`relative rounded-[2.5rem] p-6 border-4 shadow-xl flex flex-col items-center gap-4 cursor-pointer transition-all duration-300
+      className={`relative rounded-[2.5rem] p-6 border-4 shadow-xl flex flex-col items-center justify-between gap-4 cursor-pointer transition-all duration-300
+        aspect-[3/4]
         ${rarityColors[item.rarity]}
         ${inPreview ? 'ring-4 ring-primary-400' : ''}
         ${equipped ? 'bg-emerald-50 border-emerald-200' : ''}

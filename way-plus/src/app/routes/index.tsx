@@ -1,5 +1,5 @@
 import { createBrowserRouter } from 'react-router-dom';
-import { RootLayout } from '@/app/layouts/RootLayout';
+import { RootLayout } from '@/app/RootLayout';
 import { LevelSelectPage } from '@/features/player/pages/LevelSelectPage';
 import { WayPlayerPage } from '@/features/content/pages/WayPlayerPage';
 import { AnnexesHubPage } from '@/features/annexes/pages/AnnexesHubPage';

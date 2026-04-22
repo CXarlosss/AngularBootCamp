@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { usePlayerStore } from '@/features/player/store/playerStore';
-import { ALL_STEPS } from '@/content/levels/registry';
+import { ALL_STEPS } from '@/content/registry';
 
 export interface DailyQuest {
   id: string;

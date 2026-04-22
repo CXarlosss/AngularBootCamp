@@ -6,7 +6,7 @@ import { CelebrationOverlay } from '@/features/rewards/components/CelebrationOve
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { registry } from '@/content/registry';
-import type { Way } from '@/core/engine/types';
+import type { Step, Way } from '@/core/engine/types';
 
 /* ─── Back button ────────────────────────────────────────────────────── */
 function BackButton({ onPress }: { onPress: () => void }) {
@@ -65,10 +65,15 @@ export function WayPlayerPage() {
     show: boolean; type: 'happy' | 'sad' | 'step-complete'; coins: number;
   }>({ show: false, type: 'happy', coins: 0 });
 
+  const [step, setStep] = useState<Step | null>(null);
+  const [loading, setLoading] = useState(true);
+
   // Load step from registry
-  const step = useMemo(() => {
-    if (!stepId) return null;
-    return registry.getStepById(stepId);
+  useEffect(() => {
+    if (!stepId) return;
+    registry.getStepByIdAsync(stepId)
+      .then(setStep)
+      .finally(() => setLoading(false));
   }, [stepId]);
 
   const ways: Way[] = step?.ways ?? [];
@@ -107,6 +112,14 @@ export function WayPlayerPage() {
     }
     // If 'sad', stay on same way (WayRenderer will allow retry)
   };
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+        <div className="spinner" />
+      </div>
+    );
+  }
 
   if (!step || !currentWay) {
     return (

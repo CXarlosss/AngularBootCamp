@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* ═══════════════════════════════════════════════════════════════════════
    WAY+ Global Styles
    ═══════════════════════════════════════════════════════════════════════ */
@@ -12,19 +14,19 @@
 
 /* ── Root ─────────────────────────────────────────────────────────────── */
 html {
-  height: 100%;
+  min-height: 100%;
   /* Prevent font size scaling when rotating on iOS */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
 }
 
 body {
-  height: 100%;
+  min-height: 100%;
   font-family: 'Outfit', 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: #F4F5FF;
   color: #1E1B4B;
   /* Remove pull-to-refresh on Chrome Android (we handle scroll ourselves) */
-  overscroll-behavior-y: none;
+  overscroll-behavior-y: auto;
   /* Safe area insets for notched devices */
   padding-top:    env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
@@ -33,7 +35,7 @@ body {
 }
 
 #root {
-  height: 100%;
+  min-height: 100%;
 }
 
 /* ── Typography ───────────────────────────────────────────────────────── */
@@ -68,6 +70,15 @@ img {
 
 /* Firefox */
 * { scrollbar-width: thin; scrollbar-color: #C7D2FE transparent; }
+
+/* Utility: hide scrollbars but keep functionality */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 
 /* ── Utility: touch-target enforcement ───────────────────────────────── */
 /* Ensures all interactive elements have a minimum 44×44px touch target.

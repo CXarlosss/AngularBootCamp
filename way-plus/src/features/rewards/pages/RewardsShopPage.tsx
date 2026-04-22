@@ -66,6 +66,9 @@ export const RewardsShopPage: React.FC = () => {
         <div>
           <h1 className="text-3xl font-black text-slate-900 tracking-tighter font-outfit">Tienda WAY+</h1>
           <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Escaparate de Ilusiones</p>
+          <div className="mt-2 bg-primary-50 text-primary-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter w-fit">
+            Toca un artículo para probártelo
+          </div>
         </div>
         
         <div className="flex items-center gap-2 bg-amber-50 rounded-2xl px-4 py-2 border border-amber-100">

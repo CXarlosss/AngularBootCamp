@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { offlineStorage } from '@/core/services/offlineStorage';
-import { registry } from '@/content/levels/registry';
+import { registry } from '@/content/registry';
 
 export const SyncStatus: React.FC = () => {
   const [pendingCount, setPendingCount] = useState(0);

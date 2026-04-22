@@ -57,7 +57,7 @@ export const RootLayout: React.FC = () => {
           )}
 
           {/* Main Content Area */}
-          <main className={`flex-1 flex flex-col px-4 pt-4 ${!isPlaying ? 'pb-32' : 'pb-4'}`}>
+          <main className={`flex-1 overflow-y-auto px-4 pt-4 scrollbar-hide ${!isPlaying ? 'pb-32' : 'pb-4'}`} style={{ minHeight: 0 }}>
             <Outlet />
           </main>
 

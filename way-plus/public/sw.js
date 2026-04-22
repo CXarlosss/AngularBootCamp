@@ -38,6 +38,11 @@ self.addEventListener('activate', (event) => {
 // Fetch: estrategia inteligente por tipo de request
 self.addEventListener('fetch', (event) => {
   const { request } = event;
+  
+  // Ignorar peticiones que no sean http o https (ej: chrome-extension://)
+  // Esto evita errores de "Request scheme unsupported" en el Cache Storage
+  if (!request.url.startsWith('http')) return;
+
   const url = new URL(request.url);
 
   // 1. API de Supabase: Network first, fallback a cache

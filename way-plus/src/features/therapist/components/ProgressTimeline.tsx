@@ -50,7 +50,7 @@ export const ProgressTimeline: React.FC = () => {
         <TrendingUp className="text-primary-400" size={32} />
       </div>
       
-      <div className="h-72 w-full">
+      <div style={{ width: '100%', height: 300 }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data}>
             <defs>

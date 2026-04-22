@@ -15,7 +15,7 @@ const NAV_ITEMS = [
 ];
 
 // Routes that belong to the therapist / admin — no child UI
-const THERAPIST_PATHS = ['/terapeuta', '/editor', '/login'];
+const THERAPIST_PATHS = ['/terapeuta', '/editor', '/login', '/dashboard'];
 
 function isTherapistRoute(pathname: string) {
   return THERAPIST_PATHS.some(p => pathname.startsWith(p));
@@ -126,7 +126,11 @@ function BottomNav() {
     <nav
       style={{
         position: 'fixed',
-        bottom: 0, left: 0, right: 0,
+        bottom: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '100%',
+        maxWidth: 480,
         zIndex: 50,
         background: 'rgba(255,255,255,0.97)',
         backdropFilter: 'blur(12px)',
@@ -201,37 +205,22 @@ export function RootLayout() {
 
   return (
     <KioskGate enabled={!therapistRoute}>
-      {/*
-        ──────────────────────────────────────────────────
-        OUTER wrapper: centers the 480px column on desktop,
-        fills 100% height, clips horizontal overflow that
-        causes layout shifts on some mobile browsers.
-        ──────────────────────────────────────────────────
-      */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
-          minHeight: '100dvh',       // dynamic viewport height
-          background: '#E8E9FF',     // gutters on desktop > 480px
-          overflowX: 'hidden',
+          minHeight: '100vh',
+          background: '#E8E9FF',
         }}
       >
-        {/*
-          Inner column — the actual app shell.
-          All children are scoped inside this 480px box.
-        */}
         <div
           style={{
             width: '100%',
             maxWidth: 480,
-            minHeight: '100dvh',
+            minHeight: '100vh',
             background: '#F4F5FF',
-            display: 'flex',
-            flexDirection: 'column',
             position: 'relative',
             boxShadow: '0 0 60px rgba(79,70,229,0.08)',
-            overflowX: 'hidden',
           }}
         >
           {/* Header — only on child routes */}
@@ -240,18 +229,7 @@ export function RootLayout() {
           {/* Page content */}
           <main
             style={{
-              flex: 1,
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              // Padding ensures content is never hidden under the bottom nav
-              paddingBottom: therapistRoute ? 0 : BOTTOM_NAV_HEIGHT,
-              // Horizontal padding – consistent gutter across all pages
-              // Individual pages can override with their own padding
-              padding: therapistRoute
-                ? 0
-                : `0 0 ${BOTTOM_NAV_HEIGHT}px 0`,
-              // Smooth momentum scrolling on iOS
-              WebkitOverflowScrolling: 'touch',
+              paddingBottom: therapistRoute ? 0 : 80,
             }}
           >
             <AnimatePresence mode="wait" initial={false}>
@@ -261,7 +239,6 @@ export function RootLayout() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -8 }}
                 transition={{ duration: 0.18, ease: 'easeOut' }}
-                style={{ minHeight: '100%' }}
               >
                 <Outlet />
               </motion.div>

@@ -99,7 +99,7 @@ export const EconomicBehavior: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-        <div className="h-56 relative">
+        <div style={{ width: '100%', height: 240, position: 'relative' }}>
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
