@@ -16,8 +16,8 @@ import { autonomyStep } from './levels/pregamer/steps/autonomy';
 import { assertivenessStep } from './levels/pregamer/steps/assertiveness';
 
 export const ALL_STEPS: Record<string, Step> = {
-  'step-1-relaxation': relaxationStep,
-  'step-2-autonomy': autonomyStep,
+  'step-relaxation-1': relaxationStep,
+  'step-autonomy-1': autonomyStep,
   'step-3-assertiveness': assertivenessStep,
 };
 
