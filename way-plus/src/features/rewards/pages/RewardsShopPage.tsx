@@ -78,7 +78,7 @@ export const RewardsShopPage: React.FC = () => {
           <h1 style={{ fontSize: 28, fontWeight: 900, color: C.text, letterSpacing: '-0.5px' }}>
             Tienda <span style={{ color: C.indigo }}>WAY+</span>
           </h1>
-          <p style={{ fontSize: 10, fontWeight: 800, color: C.slate, textTransform: 'uppercase', tracking: '1px' }}>
+          <p style={{ fontSize: 10, fontWeight: 800, color: C.slate, textTransform: 'uppercase', letterSpacing: '1px' }}>
             Escaparate de Ilusiones
           </p>
         </div>
@@ -99,7 +99,7 @@ export const RewardsShopPage: React.FC = () => {
         border: '2px solid #fff', boxShadow: 'inset 0 2px 10px rgba(0,0,0,.05)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <h2 style={{ fontSize: 11, fontWeight: 800, color: C.slate, textTransform: 'uppercase', tracking: '1px' }}>
+          <h2 style={{ fontSize: 11, fontWeight: 800, color: C.slate, textTransform: 'uppercase', letterSpacing: '1px' }}>
             ✨ Probador
           </h2>
           <button 
@@ -138,7 +138,7 @@ export const RewardsShopPage: React.FC = () => {
               }}
             >
               <span style={{ fontSize: 18 }}>{cat.icon}</span>
-              <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase' }}>{cat.name}</span>
+              <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>{cat.name}</span>
             </motion.button>
           );
         })}

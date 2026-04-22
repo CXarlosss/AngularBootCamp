@@ -17,10 +17,7 @@ const C = {
 export const AnnexesHubPage: React.FC = () => {
   const [timerLocked, setTimerLocked] = React.useState(true);
   
-  const { profile } = usePlayerStore();
-  const relaxationLog = profile?.relaxationLog ?? {};
-  const roleplayLog = profile?.roleplayLog ?? {};
-  
+  const { relaxationLog, roleplayLog } = usePlayerStore();
   const today = format(new Date(), 'yyyy-MM-dd');
   
   const hasRelaxationToday = !!relaxationLog[today]?.completed;

@@ -58,7 +58,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, onPreview, onP
       <div style={{
         position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
         padding: '4px 12px', borderRadius: 20, fontSize: 8, fontWeight: 900,
-        textTransform: 'uppercase', tracking: '1px',
+        textTransform: 'uppercase', letterSpacing: '1px',
         background: config.bg, color: config.color, border: `1.5px solid ${C.white}`,
         boxShadow: '0 2px 8px rgba(0,0,0,.1)', whiteSpace: 'nowrap'
       }}>
