@@ -41,18 +41,18 @@ export const OptionBuilder: React.FC<Props> = ({ options, onChange, type }) => {
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border-4 border-slate-50 mb-8">
-      <div className="flex items-center justify-between mb-8">
-        <h3 className="font-black text-slate-800 flex items-center gap-3 text-lg uppercase tracking-tight">
-          <span className="bg-emerald-100 text-emerald-600 p-2 rounded-xl">🔘</span>
+    <div style={{ background: 'white', borderRadius: 40, padding: 32, boxShadow: '0 20px 40px rgba(0,0,0,0.05)', border: '4px solid #F8FAFC', marginBottom: 32 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 32 }}>
+        <h3 style={{ fontWeight: 900, color: '#1E293B', display: 'flex', alignItems: 'center', gap: 12, fontSize: 18, textTransform: 'uppercase', letterSpacing: '-0.5px', margin: 0 }}>
+          <span style={{ background: '#D1FAE5', color: '#059669', padding: 8, borderRadius: 12 }}>🔘</span>
           Configurar Opciones
         </h3>
-        <div className="bg-slate-100 px-4 py-1 rounded-full text-[10px] font-black text-slate-400 uppercase tracking-widest">
+        <div style={{ background: '#F1F5F9', padding: '4px 16px', borderRadius: 9999, fontSize: 10, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2 }}>
           {options.length} / 6 Opciones
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 24 }}>
         <AnimatePresence>
           {options.map((opt, idx) => (
             <motion.div
@@ -61,30 +61,42 @@ export const OptionBuilder: React.FC<Props> = ({ options, onChange, type }) => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className={`rounded-3xl border-4 p-5 relative transition-all shadow-md group
-                ${opt.isCorrect ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 bg-white hover:border-indigo-100'}
-              `}
+              style={{
+                borderRadius: 24, padding: 20, position: 'relative', transition: 'all 0.2s', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                border: opt.isCorrect ? '4px solid #10B981' : '4px solid #F1F5F9',
+                background: opt.isCorrect ? '#ECFDF5' : 'white',
+              }}
             >
-              <div className="absolute -top-3 -right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+              <div style={{ position: 'absolute', top: -12, right: -12, display: 'flex', gap: 8, zIndex: 10 }}>
                 <button
                   onClick={() => updateOption(idx, { isCorrect: !opt.isCorrect })}
-                  className={`w-10 h-10 rounded-2xl flex items-center justify-center text-sm font-black shadow-lg border-2
-                    ${opt.isCorrect ? 'bg-emerald-500 text-white border-white' : 'bg-white text-slate-300 border-slate-100'}
-                  `}
+                  style={{
+                    width: 40, height: 40, borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, cursor: 'pointer',
+                    boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                    background: opt.isCorrect ? '#10B981' : 'white',
+                    color: opt.isCorrect ? 'white' : '#CBD5E1',
+                    border: opt.isCorrect ? '2px solid white' : '2px solid #F1F5F9',
+                  }}
                   title="Marcar como correcta"
                 >
                   ✓
                 </button>
                 <button
                   onClick={() => removeOption(idx)}
-                  className="w-10 h-10 rounded-2xl bg-white text-rose-500 border-2 border-slate-100 flex items-center justify-center text-sm font-black shadow-lg"
+                  style={{
+                    width: 40, height: 40, borderRadius: 16, background: 'white', color: '#F43F5E', border: '2px solid #F1F5F9',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, cursor: 'pointer', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                  }}
                 >
                   ✕
                 </button>
               </div>
 
               <div 
-                className="aspect-video bg-slate-50 rounded-2xl mb-4 flex items-center justify-center cursor-pointer overflow-hidden border-2 border-dashed border-slate-200 hover:border-indigo-300 transition-all"
+                style={{
+                  aspectRatio: '16/9', background: '#F8FAFC', borderRadius: 16, marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', overflow: 'hidden', border: '2px dashed #E2E8F0', transition: 'all 0.2s'
+                }}
                 onClick={() => {
                   const input = document.createElement('input');
                   input.type = 'file';
@@ -97,23 +109,26 @@ export const OptionBuilder: React.FC<Props> = ({ options, onChange, type }) => {
                 }}
               >
                 {opt.image ? (
-                  <img src={opt.image} alt="" className="w-full h-full object-contain p-3" />
+                  <img src={opt.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 12 }} />
                 ) : (
-                  <div className="text-center">
-                    <span className="text-2xl mb-1 block">🖼️</span>
-                    <span className="text-[10px] text-slate-400 font-black uppercase tracking-tighter">Pictograma</span>
+                  <div style={{ textAlign: 'center' }}>
+                    <span style={{ fontSize: 24, marginBottom: 4, display: 'block' }}>🖼️</span>
+                    <span style={{ fontSize: 10, color: '#94A3B8', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>Pictograma</span>
                   </div>
                 )}
               </div>
 
-              <div className="flex gap-3">
+              <div style={{ display: 'flex', gap: 12 }}>
                 {type === 'sequencing' && (
-                  <div className="w-12">
+                  <div style={{ width: 48 }}>
                     <input
                       type="number"
                       value={opt.order}
                       onChange={(e) => updateOption(idx, { order: Number(e.target.value) })}
-                      className="w-full p-2 rounded-xl border-2 border-slate-100 text-center font-black text-indigo-600 focus:outline-none focus:border-indigo-500 shadow-inner"
+                      style={{
+                        width: '100%', padding: 8, borderRadius: 12, border: '2px solid #F1F5F9', textAlign: 'center', fontWeight: 900, color: '#4F46E5',
+                        outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)', boxSizing: 'border-box'
+                      }}
                       placeholder="#"
                     />
                   </div>
@@ -123,7 +138,10 @@ export const OptionBuilder: React.FC<Props> = ({ options, onChange, type }) => {
                   value={opt.label}
                   onChange={(e) => updateOption(idx, { label: e.target.value })}
                   placeholder="Nombre de la opción"
-                  className="flex-1 p-3 rounded-xl border-2 border-slate-100 font-bold text-slate-700 text-sm focus:outline-none focus:border-indigo-500 shadow-inner"
+                  style={{
+                    flex: 1, width: '100%', padding: 12, borderRadius: 12, border: '2px solid #F1F5F9', fontWeight: 700, color: '#334155', fontSize: 14,
+                    outline: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)', boxSizing: 'border-box'
+                  }}
                 />
               </div>
             </motion.div>
@@ -136,7 +154,10 @@ export const OptionBuilder: React.FC<Props> = ({ options, onChange, type }) => {
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           onClick={addOption}
-          className="mt-8 w-full py-5 rounded-[2rem] border-4 border-dashed border-slate-200 text-slate-400 font-black uppercase tracking-widest hover:border-indigo-400 hover:text-indigo-500 transition-all bg-slate-50/50"
+          style={{
+            marginTop: 32, width: '100%', padding: '20px 0', borderRadius: 32, border: '4px dashed #E2E8F0', color: '#94A3B8', fontWeight: 900,
+            textTransform: 'uppercase', letterSpacing: 2, cursor: 'pointer', transition: 'all 0.2s', background: 'rgba(248, 250, 252, 0.5)'
+          }}
         >
           + Añadir Opción Nueva
         </motion.button>

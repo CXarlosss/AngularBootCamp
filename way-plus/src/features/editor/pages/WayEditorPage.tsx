@@ -9,6 +9,21 @@ import { StimulusBuilder } from '../components/StimulusBuilder';
 import { OptionBuilder } from '../components/OptionBuilder';
 import { LivePreview } from '../components/LivePreview';
 
+const C = {
+  indigo:      '#4F46E5',
+  indigoDark:  '#3730A3',
+  indigoLight: '#E0E7FF',
+  slate:       '#64748B',
+  slateLight:  '#F1F5F9',
+  slateDark:   '#1E293B',
+  text:        '#1E1B4B',
+  white:       '#ffffff',
+  emerald:     '#10B981',
+  amber:       '#F59E0B',
+  rose:        '#F43F5E',
+  purple:      '#8B5CF6',
+};
+
 export const WayEditorPage: React.FC = () => {
   const navigate = useNavigate();
   const {
@@ -31,7 +46,6 @@ export const WayEditorPage: React.FC = () => {
 
     setIsPublishing(true);
     try {
-      // 1. Subir imagen del estímulo si es un blob local
       let stimulusImage = json.stimulus.image;
       if (stimulusImage && stimulusImage.startsWith('blob:')) {
         const response = await fetch(stimulusImage);
@@ -40,7 +54,6 @@ export const WayEditorPage: React.FC = () => {
         stimulusImage = await contentService.uploadPictogram(file, 'stimuli');
       }
 
-      // 2. Subir imágenes de opciones
       const processedOptions = await Promise.all(
         json.options.map(async (opt: any) => {
           if (opt.image?.startsWith('blob:')) {
@@ -60,7 +73,6 @@ export const WayEditorPage: React.FC = () => {
         options: processedOptions,
       };
 
-      // 3. Publicar via Registry (Hybrid: Cloud + Local Fallback)
       await registry.publishWay(wayToPublish, draft.stepId || 'custom-step');
       
       setGeneratedJSON(JSON.stringify(wayToPublish, null, 2));
@@ -76,32 +88,32 @@ export const WayEditorPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div style={{ minHeight: '100vh', background: C.slateLight, paddingBottom: 80, fontFamily: 'system-ui, sans-serif' }}>
       {/* Premium Header */}
-      <div className="bg-white/80 backdrop-blur-md border-b-4 border-slate-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
-          <div className="flex items-center gap-6">
+      <div style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', borderBottom: '4px solid #E2E8F0', position: 'sticky', top: 0, zIndex: 50 }}>
+        <div style={{ maxWidth: 1280, margin: '0 auto', padding: '20px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
             <motion.button
               whileHover={{ x: -5 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => navigate('/terapeuta')}
-              className="bg-slate-100 p-3 rounded-2xl text-slate-500 hover:text-slate-800 transition-colors shadow-inner"
+              style={{ background: '#F1F5F9', padding: 12, borderRadius: 16, color: '#64748B', border: 'none', cursor: 'pointer', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
                 <path d="M19 12H5M12 19l-7-7 7-7" />
               </svg>
             </motion.button>
             <div>
-              <h1 className="text-2xl font-black text-slate-800 tracking-tight leading-none mb-1">Editor de Ways</h1>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Plataforma de Contenido Clínico No-Code</p>
+              <h1 style={{ fontSize: 24, fontWeight: 900, color: '#1E293B', letterSpacing: '-0.5px', margin: '0 0 4px 0', lineHeight: 1 }}>Editor de Ways</h1>
+              <p style={{ fontSize: 10, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, margin: 0 }}>Plataforma de Contenido Clínico No-Code</p>
             </div>
           </div>
           
-          <div className="flex gap-4">
+          <div style={{ display: 'flex', gap: 16 }}>
             <motion.button
               whileTap={{ scale: 0.95 }}
               onClick={reset}
-              className="px-6 py-3 rounded-2xl border-4 border-slate-100 text-slate-500 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all"
+              style={{ padding: '12px 24px', borderRadius: 16, border: '4px solid #F1F5F9', background: 'transparent', color: '#64748B', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 2, fontSize: 12, cursor: 'pointer', transition: 'all 0.2s' }}
             >
               Limpiar
             </motion.button>
@@ -110,7 +122,10 @@ export const WayEditorPage: React.FC = () => {
               whileTap={{ scale: 0.95 }}
               onClick={handlePublish}
               disabled={isPublishing}
-              className={`px-8 py-3 rounded-2xl bg-indigo-600 text-white font-black uppercase tracking-widest text-xs shadow-xl shadow-indigo-100 hover:bg-indigo-700 transition-all border-b-4 border-indigo-900/20 ${isPublishing ? 'opacity-50 cursor-not-allowed' : ''}`}
+              style={{ 
+                padding: '12px 32px', borderRadius: 16, background: C.indigo, color: 'white', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 2, fontSize: 12, border: 'none', 
+                borderBottom: '4px solid rgba(0,0,0,0.2)', boxShadow: '0 10px 20px rgba(79,70,229,0.3)', cursor: isPublishing ? 'not-allowed' : 'pointer', opacity: isPublishing ? 0.5 : 1, transition: 'all 0.2s' 
+              }}
             >
               {isPublishing ? '🚀 Publicando...' : '🚀 Publicar Way'}
             </motion.button>
@@ -118,67 +133,54 @@ export const WayEditorPage: React.FC = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12">
+      <div style={{ maxWidth: 1280, margin: '0 auto', padding: '48px 24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))', gap: 48 }}>
         {/* Configuration Column */}
-        <div className="space-y-8">
-          <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-8 text-white shadow-2xl relative overflow-hidden">
-            <div className="relative z-10">
-              <h2 className="text-3xl font-black tracking-tight mb-2 uppercase italic">Diseño Terapéutico</h2>
-              <p className="text-white/80 font-bold text-sm">Configura la lógica y los estímulos visuales de tu intervención.</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+          <div style={{ background: 'linear-gradient(135deg, #4F46E5, #9333EA)', borderRadius: 24, padding: 32, color: 'white', boxShadow: '0 20px 40px rgba(79,70,229,0.3)', position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'relative', zIndex: 10 }}>
+              <h2 style={{ fontSize: 30, fontWeight: 900, letterSpacing: '-1px', margin: '0 0 8px 0', textTransform: 'uppercase', fontStyle: 'italic' }}>Diseño Terapéutico</h2>
+              <p style={{ color: 'rgba(255,255,255,0.8)', fontWeight: 700, fontSize: 14, margin: 0 }}>Configura la lógica y los estímulos visuales de tu intervención.</p>
             </div>
-            <div className="absolute top-0 right-0 p-8 text-8xl opacity-10 rotate-12">📐</div>
+            <div style={{ position: 'absolute', top: 0, right: 0, padding: 32, fontSize: 96, opacity: 0.1, transform: 'rotate(12deg)' }}>📐</div>
           </div>
           
           <section>
-            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">1. Estrategia de Juego</label>
-            <WayTypeSelector
-              selected={draft.type}
-              onSelect={(type) => updateField('type', type as any)}
-            />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, marginLeft: 16 }}>1. Estrategia de Juego</label>
+            <WayTypeSelector selected={draft.type} onSelect={(type) => updateField('type', type as any)} />
           </section>
 
           <section>
-            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">2. Núcleo del Reto</label>
-            <StimulusBuilder
-              text={draft.stimulus.text}
-              image={draft.stimulus.image}
-              onTextChange={(text) => updateStimulus({ text })}
-              onImageChange={(image) => updateStimulus({ image })}
-            />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, marginLeft: 16 }}>2. Núcleo del Reto</label>
+            <StimulusBuilder text={draft.stimulus.text} image={draft.stimulus.image} onTextChange={(text) => updateStimulus({ text })} onImageChange={(image) => updateStimulus({ image })} />
           </section>
 
           <section>
-            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4 ml-4">3. Lógica de Respuesta</label>
-            <OptionBuilder
-              options={draft.options}
-              onChange={(opts) => updateField('options', opts)}
-              type={draft.type}
-            />
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, marginLeft: 16 }}>3. Lógica de Respuesta</label>
+            <OptionBuilder options={draft.options} onChange={(opts) => updateField('options', opts)} type={draft.type} />
           </section>
 
           {/* Classification Section */}
-          <section className="bg-white rounded-[2.5rem] p-8 shadow-xl border-4 border-slate-50">
-            <h3 className="font-black text-slate-800 mb-6 flex items-center gap-3 text-lg uppercase tracking-tight">
-              <span className="bg-amber-100 text-amber-600 p-2 rounded-xl">🏷️</span>
-              Taxonomía Clínica
+          <section style={{ background: 'white', borderRadius: 40, padding: 32, boxShadow: '0 20px 40px rgba(0,0,0,0.05)', border: '4px solid #F8FAFC' }}>
+            <h3 style={{ fontWeight: 900, color: '#1E293B', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12, fontSize: 18, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>
+              <span style={{ background: '#FEF3C7', color: '#D97706', padding: 8, borderRadius: 12 }}>🏷️</span> Taxonomía Clínica
             </h3>
-            <div className="grid grid-cols-2 gap-6">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Skill Tag (Categoría)</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Skill Tag (Categoría)</label>
                 <input
                   type="text"
                   value={draft.metadata.skillTag}
                   onChange={(e) => updateMetadata({ skillTag: e.target.value })}
                   placeholder="ej: autonomy.hygiene.hands"
-                  className="w-full p-4 rounded-2xl border-4 border-slate-100 focus:border-indigo-500 focus:outline-none font-bold text-slate-700 shadow-inner"
+                  style={{ width: '100%', padding: 16, borderRadius: 16, border: '4px solid #F1F5F9', outline: 'none', fontWeight: 700, color: '#334155', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)', boxSizing: 'border-box' }}
                 />
               </div>
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Dificultad Sugerida</label>
+                <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Dificultad Sugerida</label>
                 <select
                   value={draft.metadata.difficulty}
                   onChange={(e) => updateMetadata({ difficulty: Number(e.target.value) as any })}
-                  className="w-full p-4 rounded-2xl border-4 border-slate-100 focus:border-indigo-500 focus:outline-none font-bold text-slate-700 bg-white shadow-inner"
+                  style={{ width: '100%', padding: 16, borderRadius: 16, border: '4px solid #F1F5F9', outline: 'none', fontWeight: 700, color: '#334155', background: 'white', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)', boxSizing: 'border-box' }}
                 >
                   <option value={1}>🟢 Baja (Iniciación)</option>
                   <option value={2}>🟡 Media (Progresión)</option>
@@ -195,16 +197,15 @@ export const WayEditorPage: React.FC = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className="bg-rose-50 border-4 border-rose-100 rounded-[2.5rem] p-8 shadow-xl shadow-rose-100/50"
+                style={{ background: '#FFF1F2', border: '4px solid #FFE4E6', borderRadius: 40, padding: 32, boxShadow: '0 20px 40px rgba(225,29,72,0.1)' }}
               >
-                <h4 className="font-black text-rose-800 mb-4 flex items-center gap-2 uppercase tracking-tight">
-                  <span className="bg-rose-500 text-white w-6 h-6 rounded-full flex items-center justify-center text-xs">!</span>
-                  Requisitos Pendientes
+                <h4 style={{ fontWeight: 900, color: '#9F1239', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>
+                  <span style={{ background: '#F43F5E', color: 'white', width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12 }}>!</span> Requisitos Pendientes
                 </h4>
-                <ul className="space-y-3">
+                <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {errors.map((err, i) => (
-                    <li key={i} className="text-sm text-rose-600 font-bold flex items-start gap-3">
-                      <span className="mt-1 w-2 h-2 rounded-full bg-rose-400 shrink-0" />
+                    <li key={i} style={{ fontSize: 14, color: '#E11D48', fontWeight: 700, display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+                      <span style={{ marginTop: 6, width: 8, height: 8, borderRadius: '50%', background: '#FB7185', flexShrink: 0 }} />
                       {err}
                     </li>
                   ))}
@@ -215,7 +216,7 @@ export const WayEditorPage: React.FC = () => {
         </div>
 
         {/* Preview Column */}
-        <div className="space-y-8">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
           <LivePreview draft={draft} />
           
           <AnimatePresence>
@@ -223,31 +224,27 @@ export const WayEditorPage: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="bg-slate-900 rounded-[3rem] p-8 shadow-2xl relative overflow-hidden"
+                style={{ background: '#0F172A', borderRadius: 48, padding: 32, boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)', position: 'relative', overflow: 'hidden' }}
               >
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-white font-black flex items-center gap-3 uppercase tracking-tight">
-                    <span className="bg-indigo-500 text-white w-8 h-8 rounded-xl flex items-center justify-center text-sm">📋</span>
-                    JSON Estructural
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                  <h3 style={{ color: 'white', fontWeight: 900, display: 'flex', alignItems: 'center', gap: 12, textTransform: 'uppercase', letterSpacing: '-0.5px', margin: 0 }}>
+                    <span style={{ background: '#6366F1', color: 'white', width: 32, height: 32, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14 }}>📋</span> JSON Estructural
                   </h3>
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(generatedJSON);
-                      // Feedback visual simple
-                    }}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all"
+                    onClick={() => navigator.clipboard.writeText(generatedJSON)}
+                    style={{ background: '#4F46E5', color: 'white', padding: '8px 16px', borderRadius: 12, fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 2, border: 'none', cursor: 'pointer' }}
                   >
                     Copiar JSON
                   </button>
                 </div>
-                <div className="bg-slate-950 rounded-2xl p-6 border-2 border-slate-800 shadow-inner overflow-hidden">
-                  <pre className="text-indigo-300 text-[10px] font-mono overflow-auto max-h-96 leading-relaxed custom-scrollbar">
+                <div style={{ background: '#020617', borderRadius: 24, padding: 24, border: '2px solid #1E293B', boxShadow: 'inset 0 4px 6px rgba(0,0,0,0.5)', overflow: 'hidden' }}>
+                  <pre style={{ color: '#A5B4FC', fontSize: 10, fontFamily: 'monospace', overflow: 'auto', maxHeight: 384, lineHeight: 1.6, margin: 0 }}>
                     {generatedJSON}
                   </pre>
                 </div>
-                <div className="mt-6 flex items-center gap-3 bg-white/5 p-4 rounded-2xl border border-white/5">
-                  <span className="text-2xl">☁️</span>
-                  <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest leading-tight">
+                <div style={{ marginTop: 24, display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,255,255,0.05)', padding: 16, borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' }}>
+                  <span style={{ fontSize: 24 }}>☁️</span>
+                  <p style={{ fontSize: 10, color: '#64748B', fontWeight: 900, textTransform: 'uppercase', letterSpacing: 2, lineHeight: 1.4, margin: 0 }}>
                     En la versión de producción, este contenido se sincronizará automáticamente con Supabase y estará disponible para el paciente en milisegundos.
                   </p>
                 </div>

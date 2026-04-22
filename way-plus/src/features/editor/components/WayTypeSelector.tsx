@@ -13,24 +13,28 @@ export const WayTypeSelector: React.FC<{
   onSelect: (type: string) => void;
 }> = ({ selected, onSelect }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-      {TYPES.map((type) => (
-        <motion.button
-          key={type.id}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          onClick={() => onSelect(type.id)}
-          className={`p-5 rounded-[2rem] border-4 text-left transition-all shadow-lg
-            ${selected === type.id 
-              ? 'border-indigo-500 bg-indigo-50 shadow-indigo-100' 
-              : 'border-white bg-white hover:border-indigo-100'
-            }`}
-        >
-          <div className="text-4xl mb-3">{type.icon}</div>
-          <div className="font-black text-slate-800 text-sm uppercase tracking-tight">{type.label}</div>
-          <div className="text-xs text-slate-400 font-bold mt-1 leading-tight">{type.desc}</div>
-        </motion.button>
-      ))}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: 16, marginBottom: 32 }}>
+      {TYPES.map((type) => {
+        const isSelected = selected === type.id;
+        return (
+          <motion.button
+            key={type.id}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+            onClick={() => onSelect(type.id)}
+            style={{
+              padding: 20, borderRadius: 32, textAlign: 'left', cursor: 'pointer', transition: 'all 0.2s',
+              border: isSelected ? '4px solid #6366F1' : '4px solid white',
+              background: isSelected ? '#EEF2FF' : 'white',
+              boxShadow: isSelected ? '0 10px 25px rgba(99,102,241,0.2)' : '0 10px 25px rgba(0,0,0,0.05)',
+            }}
+          >
+            <div style={{ fontSize: 36, marginBottom: 12 }}>{type.icon}</div>
+            <div style={{ fontWeight: 900, color: '#1E293B', fontSize: 12, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>{type.label}</div>
+            <div style={{ fontSize: 10, color: '#94A3B8', fontWeight: 700, marginTop: 4, lineHeight: 1.2 }}>{type.desc}</div>
+          </motion.button>
+        );
+      })}
     </div>
   );
 };

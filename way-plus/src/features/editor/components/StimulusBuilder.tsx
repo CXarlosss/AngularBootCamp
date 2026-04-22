@@ -19,51 +19,57 @@ export const StimulusBuilder: React.FC<Props> = ({ text, image, onTextChange, on
   };
 
   return (
-    <div className="bg-white rounded-[2.5rem] p-8 shadow-xl border-4 border-slate-50 mb-8">
-      <h3 className="font-black text-slate-800 mb-6 flex items-center gap-3 text-lg uppercase tracking-tight">
-        <span className="bg-indigo-100 text-indigo-600 p-2 rounded-xl">🎯</span>
+    <div style={{ background: 'white', borderRadius: 40, padding: 32, boxShadow: '0 20px 40px rgba(0,0,0,0.05)', border: '4px solid #F8FAFC', marginBottom: 32 }}>
+      <h3 style={{ fontWeight: 900, color: '#1E293B', marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12, fontSize: 18, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>
+        <span style={{ background: '#E0E7FF', color: '#4F46E5', padding: 8, borderRadius: 12 }}>🎯</span>
         Estímulo Visual y Enunciado
       </h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32 }}>
         <div>
-          <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Pictograma Principal</label>
+          <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Pictograma Principal</label>
           <motion.div
             whileHover={{ scale: 1.02 }}
             onClick={() => fileRef.current?.click()}
-            className={`aspect-square rounded-[2rem] border-4 border-dashed flex flex-col items-center justify-center cursor-pointer overflow-hidden transition-all
-              ${image ? 'border-emerald-200 bg-emerald-50' : 'border-slate-100 bg-slate-50 hover:bg-white hover:border-indigo-200'}
-            `}
+            style={{
+              aspectRatio: '1/1', borderRadius: 32, border: image ? '4px solid #A7F3D0' : '4px dashed #F1F5F9',
+              background: image ? '#ECFDF5' : '#F8FAFC', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              cursor: 'pointer', overflow: 'hidden', transition: 'all 0.2s',
+            }}
           >
             {image ? (
-              <img src={image} alt="" className="w-full h-full object-contain p-6" />
+              <img src={image} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 24 }} />
             ) : (
-              <div className="text-center p-6">
-                <div className="text-5xl mb-4">🖼️</div>
-                <div className="text-sm text-slate-800 font-black uppercase tracking-tight">Subir Pictograma</div>
-                <div className="text-xs text-slate-400 font-bold mt-1">Formatos PNG, JPG, WEBP</div>
+              <div style={{ textAlign: 'center', padding: 24 }}>
+                <div style={{ fontSize: 48, marginBottom: 16 }}>🖼️</div>
+                <div style={{ fontSize: 14, color: '#1E293B', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '-0.5px' }}>Subir Pictograma</div>
+                <div style={{ fontSize: 10, color: '#94A3B8', fontWeight: 700, marginTop: 4 }}>Formatos PNG, JPG, WEBP</div>
               </div>
             )}
           </motion.div>
-          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFile} />
+          <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="flex-1">
-            <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Pregunta o Consigna</label>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Pregunta o Consigna</label>
             <textarea
               value={text}
               onChange={(e) => onTextChange(e.target.value)}
               placeholder="Ej: ¿Qué haces antes de comer?"
-              className="w-full h-full p-6 rounded-[2rem] border-4 border-slate-100 focus:border-indigo-500 focus:outline-none text-xl font-bold text-slate-700 resize-none shadow-inner"
+              style={{
+                flex: 1, width: '100%', padding: 24, borderRadius: 32, border: '4px solid #F1F5F9',
+                outline: 'none', fontSize: 20, fontWeight: 700, color: '#334155', resize: 'none', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)', boxSizing: 'border-box',
+                fontFamily: 'inherit'
+              }}
             />
           </div>
           
-          <div className="bg-amber-50 rounded-3xl p-6 border-b-4 border-amber-200">
-            <div className="flex items-center gap-2 text-amber-800 font-black text-xs uppercase tracking-widest mb-2">
+          <div style={{ background: '#FFFBEB', borderRadius: 24, padding: 24, borderBottom: '4px solid #FDE68A' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#92400E', fontWeight: 900, fontSize: 10, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>
               <span>💡</span> Consejo Clínico
             </div>
-            <p className="text-sm text-amber-700 font-medium leading-relaxed">
+            <p style={{ fontSize: 14, color: '#B45309', fontWeight: 600, lineHeight: 1.5, margin: 0 }}>
               Usa lenguaje positivo y directo. Los pictogramas deben ser claros y sin distracciones de fondo para niños con TEA.
             </p>
           </div>
