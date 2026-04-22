@@ -1,8 +1,9 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePlayerStore } from '../store/playerStore';
-import { LEVELS } from '../data/levels';
+import { registry } from '@/content/registry';
+import type { Step } from '@/core/engine/types';
 
 const C = {
   indigo:      '#4F46E5',
@@ -29,20 +30,33 @@ const THEME_COLORS: Record<string, { bg: string; iconBg: string; text: string }>
 export function LevelSelectPage() {
   const navigate = useNavigate();
   const { profile } = usePlayerStore();
+  const [steps, setSteps] = useState<Step[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  const currentLevel = useMemo(() => 
-    LEVELS.find(l => l.id.toLowerCase() === profile.currentLevel.toLowerCase()) || LEVELS[0]
-  , [profile.currentLevel]);
+  useEffect(() => {
+    setLoading(true);
+    registry.getStepsForLevel(profile.currentLevel).then(res => {
+      setSteps(res);
+      setLoading(false);
+    });
+  }, [profile.currentLevel]);
 
-  // Fix: Unique steps filter
   const uniqueSteps = useMemo(() => {
-    const seen = new Set();
-    return currentLevel.steps.filter(step => {
+    const seen = new Set<string>();
+    return steps.filter((step: Step) => {
       if (seen.has(step.id)) return false;
       seen.add(step.id);
       return true;
     });
-  }, [currentLevel]);
+  }, [steps]);
+
+  if (loading) {
+    return (
+      <div style={{ padding: 40, textAlign: 'center', color: C.indigo, fontWeight: 700 }}>
+        Cargando módulos...
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px 16px 100px', display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -62,12 +76,12 @@ export function LevelSelectPage() {
           ¿Listo para jugar hoy?
         </h1>
         <div style={{ fontSize: 13, fontWeight: 600, color: C.slate, marginBottom: 12 }}>
-          Progreso {currentLevel.name} — {profile.completedWays.length} WAYS
+          Progreso {profile.currentLevel.toUpperCase()} — {profile.completedWays.length} WAYS
         </div>
         <div style={{ height: 8, background: 'rgba(255,255,255,0.5)', borderRadius: 4, overflow: 'hidden' }}>
           <motion.div 
             initial={{ width: 0 }}
-            animate={{ width: '20%' }} // Mock progress
+            animate={{ width: '20%' }}
             style={{ height: '100%', background: C.indigo, borderRadius: 4 }}
           />
         </div>
@@ -75,16 +89,20 @@ export function LevelSelectPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
         <h2 style={{ fontSize: 12, fontWeight: 800, color: C.slate, textTransform: 'uppercase', letterSpacing: '1px' }}>
-          Módulos {currentLevel.name}
+          Módulos {profile.currentLevel.toUpperCase()}
         </h2>
         
-        {uniqueSteps.map((step) => {
+        {uniqueSteps.map((step: Step) => {
           const theme = THEME_COLORS[step.theme] || THEME_COLORS.default;
           return (
             <motion.div
               key={step.id}
               whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(`/play/${currentLevel.id}/${step.id}/${step.ways[0].id}`)}
+              onClick={() => {
+                if (step.ways.length > 0) {
+                  navigate(`/play/${profile.currentLevel}/${step.id}/${step.ways[0].id}`);
+                }
+              }}
               style={{
                 background: theme.bg,
                 borderRadius: 32,
@@ -106,7 +124,7 @@ export function LevelSelectPage() {
                   fontSize: 32, boxShadow: `0 4px 12px rgba(0,0,0,0.05)`,
                   border: `2px solid ${theme.iconBg}`
                 }}>
-                  {step.ways[0].stimulus.image || '✨'}
+                  {step.ways[0]?.stimulus.image || '✨'}
                 </div>
                 <div>
                   <h3 style={{ fontSize: 20, fontWeight: 900, color: C.text, margin: 0 }}>{step.title}</h3>
