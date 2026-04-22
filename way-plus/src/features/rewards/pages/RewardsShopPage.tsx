@@ -127,7 +127,7 @@ export const RewardsShopPage: React.FC = () => {
         </section>
 
         {/* Category Filters */}
-        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 8, scrollbarWidth: 'none' }}>
+        <div style={{ display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 16, scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}>
           {CATEGORIES.map(cat => {
             const active = activeCategory === cat.id;
             return (
@@ -136,17 +136,17 @@ export const RewardsShopPage: React.FC = () => {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveCategory(cat.id)}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '12px 20px', borderRadius: 20,
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  minWidth: 84, height: 88, borderRadius: 24, flexShrink: 0,
                   background: active ? C.purple : 'rgba(255,255,255,0.8)',
                   color: active ? C.white : C.slateDark,
-                  boxShadow: active ? '0 8px 24px rgba(139,92,246,0.4)' : '0 4px 12px rgba(0,0,0,0.05)',
-                  cursor: 'pointer', whiteSpace: 'nowrap', transition: 'all 0.2s',
-                  border: active ? 'none' : '2px solid white'
+                  boxShadow: active ? '0 12px 24px rgba(139,92,246,0.4)' : '0 4px 12px rgba(0,0,0,0.05)',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                  border: active ? '2px solid transparent' : '2px solid white'
                 }}
               >
-                <span style={{ fontSize: 20 }}>{cat.icon}</span>
-                <span style={{ fontSize: 12, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px' }}>{cat.name}</span>
+                <span style={{ fontSize: 32, lineHeight: 1 }}>{cat.icon}</span>
+                <span style={{ fontSize: 11, fontWeight: 900, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{cat.name}</span>
               </motion.button>
             );
           })}

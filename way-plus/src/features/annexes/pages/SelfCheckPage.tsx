@@ -59,7 +59,7 @@ export const SelfCheckPage: React.FC = () => {
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 600 }}>
             <thead>
               <tr style={{ background: C.indigo, color: C.white }}>
-                <th style={{ padding: '24px', textAlign: 'left', fontSize: 18, fontWeight: 900, minWidth: 240, borderTopLeftRadius: 30 }}>Actividad</th>
+                <th style={{ position: 'sticky', left: 0, zIndex: 10, background: C.indigo, padding: '24px', textAlign: 'left', fontSize: 18, fontWeight: 900, minWidth: 240, borderTopLeftRadius: 30, boxShadow: '4px 0 8px rgba(0,0,0,0.1)' }}>Actividad</th>
                 {WEEK_DAYS.map((day, idx) => (
                   <th key={day} style={{ padding: '16px 8px', textAlign: 'center', borderLeft: '1px solid rgba(255,255,255,0.1)', minWidth: 80, ...(idx === 6 ? { borderTopRightRadius: 30 } : {}) }}>
                     <div style={{ fontSize: 10, fontWeight: 900, textTransform: 'uppercase', letterSpacing: 1, opacity: 0.7, marginBottom: 4 }}>{day.slice(0,3)}</div>
@@ -77,7 +77,7 @@ export const SelfCheckPage: React.FC = () => {
                   transition={{ delay: rowIdx * 0.05 }}
                   style={{ borderBottom: `1px solid ${C.indigoLight}`, background: item.category === 'base' ? 'rgba(224,231,255,0.3)' : 'transparent' }}
                 >
-                  <td style={{ padding: '20px 24px' }}>
+                  <td style={{ position: 'sticky', left: 0, zIndex: 5, background: item.category === 'base' ? '#F4F6FF' : C.white, padding: '20px 24px', boxShadow: '4px 0 8px rgba(0,0,0,0.03)' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                       <span style={{ fontWeight: 900, fontSize: item.category === 'base' ? 16 : 14, color: item.category === 'base' ? C.indigoDark : C.slate }}>
                         {item.label}
@@ -95,7 +95,7 @@ export const SelfCheckPage: React.FC = () => {
                     const isDesbloqueado = item.category === 'base' || profile.completedWays.includes(item.id);
                     
                     return (
-                      <td key={dateStr} style={{ padding: 8, borderLeft: `1px solid ${C.indigoLight}` }}>
+                      <td key={dateStr} style={{ padding: 12, borderLeft: `1px solid ${C.indigoLight}` }}>
                         <motion.button
                           whileTap={isDesbloqueado ? { scale: 0.9 } : {}}
                           disabled={!isDesbloqueado}
@@ -106,7 +106,7 @@ export const SelfCheckPage: React.FC = () => {
                             }
                           }}
                           style={{
-                            width: '100%', aspectRatio: '1/1', borderRadius: 16, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isDesbloqueado ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
+                            width: '100%', minWidth: 44, aspectRatio: '1/1', borderRadius: 16, border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isDesbloqueado ? 'pointer' : 'not-allowed', transition: 'all 0.2s',
                             background: isChecked ? C.emerald : isDesbloqueado ? C.white : C.slateLight,
                             color: isChecked ? C.white : isDesbloqueado ? C.indigoMuted : 'rgba(0,0,0,0)',
                             boxShadow: isChecked ? '0 4px 12px rgba(16,185,129,0.3)' : isDesbloqueado ? 'inset 0 0 0 2px #E0E7FF' : 'none'
