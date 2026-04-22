@@ -229,6 +229,7 @@ export function RootLayout() {
           {/* Page content */}
           <main
             style={{
+              paddingTop: 60, /* Header height */
               paddingBottom: therapistRoute ? 0 : 80,
             }}
           >
