@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRewardsStore } from '../store/rewardsStore';
 
 export const AvatarPreview: React.FC = () => {
@@ -8,28 +8,31 @@ export const AvatarPreview: React.FC = () => {
   const avatar = previewAvatar;
   const isPreviewDifferent = JSON.stringify(previewAvatar) !== JSON.stringify(currentAvatar);
 
-  const getBackgroundClass = () => {
+  const getBackgroundColor = () => {
     switch (avatar.background) {
-      case 'background-space': return 'bg-slate-900';
-      case 'background-garden': return 'bg-emerald-50';
-      case 'background-castle': return 'bg-amber-50';
-      case 'background-clouds': return 'bg-sky-50';
-      default: return 'bg-slate-100';
+      case 'background-space': return '#0F172A'; // slate-900
+      case 'background-garden': return '#ECFDF5'; // emerald-50
+      case 'background-castle': return '#FFFBEB'; // amber-50
+      case 'background-clouds': return '#F0F9FF'; // sky-50
+      default: return '#F1F5F9'; // slate-100
     }
   };
 
   return (
-    <div className="relative w-full max-w-sm mx-auto">
-      <div className={`aspect-square rounded-[3rem] flex items-center justify-center text-8xl relative overflow-hidden shadow-inner border-4 border-white
-        ${getBackgroundClass()} transition-colors duration-500`}>
+    <div style={{ position: 'relative', width: '100%', maxWidth: 384, margin: '0 auto' }}>
+      <div style={{ 
+        aspectRatio: '1/1', borderRadius: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', 
+        fontSize: 96, position: 'relative', overflow: 'hidden', boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.1)', 
+        border: '4px solid white', background: getBackgroundColor(), transition: 'background 0.5s ease'
+      }}>
         
         {/* Background Decor */}
         {avatar.background === 'background-space' && (
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
             {Array.from({ length: 8 }).map((_, i) => (
               <motion.span 
                 key={i} 
-                className="absolute text-xl opacity-40"
+                style={{ position: 'absolute', fontSize: 20, opacity: 0.4 }}
                 initial={{ x: Math.random() * 100 + '%', y: Math.random() * 100 + '%' }}
                 animate={{ scale: [1, 1.5, 1], opacity: [0.2, 0.6, 0.2] }}
                 transition={{ duration: 2 + i, repeat: Infinity }}
@@ -39,11 +42,25 @@ export const AvatarPreview: React.FC = () => {
             ))}
           </div>
         )}
+
+        {avatar.background === 'background-garden' && (
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+             {Array.from({ length: 5 }).map((_, i) => (
+              <span key={i} style={{ position: 'absolute', fontSize: 24, left: `${Math.random() * 80 + 10}%`, bottom: `${Math.random() * 20}%` }}>🌸</span>
+             ))}
+          </div>
+        )}
+
+        {avatar.background === 'background-castle' && (
+          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', display: 'flex', alignItems: 'center', justifyItems: 'center', opacity: 0.2 }}>
+              <span style={{ fontSize: 200, position: 'absolute', top: -20, right: -40 }}>🏰</span>
+          </div>
+        )}
         
         {/* Composite Avatar */}
-        <div className="relative z-10 flex flex-col items-center">
+        <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           {/* Hat */}
-          <div className="h-16 relative z-20">
+          <div style={{ height: 64, position: 'relative', zIndex: 20 }}>
             <AnimatePresence>
               {avatar.hat !== 'hat-none' && (
                 <motion.div 
@@ -51,7 +68,7 @@ export const AvatarPreview: React.FC = () => {
                   initial={{ y: -20, opacity: 0 }}
                   animate={{ y: 0, opacity: 1 }}
                   exit={{ y: -20, opacity: 0 }}
-                  className="text-7xl absolute -top-8 left-1/2 -translate-x-1/2 drop-shadow-lg"
+                  style={{ fontSize: 72, position: 'absolute', top: -32, left: '50%', transform: 'translateX(-50%)', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' }}
                 >
                   {avatar.hat === 'hat-crown' && '👑'}
                   {avatar.hat === 'hat-cap' && '🧢'}
@@ -63,9 +80,9 @@ export const AvatarPreview: React.FC = () => {
             </AnimatePresence>
           </div>
 
-          <div className="relative">
+          <div style={{ position: 'relative' }}>
              {/* Cape (Behind) */}
-             <div className="absolute -z-10 top-4 left-1/2 -translate-x-1/2 text-9xl opacity-80 filter blur-[1px]">
+             <div style={{ position: 'absolute', zIndex: -10, top: 16, left: '50%', transform: 'translateX(-50%)', fontSize: 128, opacity: 0.8, filter: 'blur(1px)' }}>
               {avatar.cape === 'cape-super' && '🦸'}
               {avatar.cape === 'cape-magic' && '✨'}
               {avatar.cape === 'cape-rainbow' && '🌈'}
@@ -74,7 +91,7 @@ export const AvatarPreview: React.FC = () => {
             <motion.div 
               animate={{ y: [0, -10, 0], rotate: [-1, 1, -1] }} 
               transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              className="text-[10rem] drop-shadow-2xl"
+              style={{ fontSize: 160, filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.3))' }}
             >
               {avatar.base === 'base-unicorn' && '🦄'}
               {avatar.base === 'base-dragon' && '🐉'}
@@ -83,7 +100,7 @@ export const AvatarPreview: React.FC = () => {
             </motion.div>
 
             {/* Shoes */}
-            <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 text-6xl flex gap-1">
+            <div style={{ position: 'absolute', bottom: -16, left: '50%', transform: 'translateX(-50%)', fontSize: 64, display: 'flex', gap: 4 }}>
               {avatar.shoes === 'shoes-gold' && '👟'}
               {avatar.shoes === 'shoes-rainbow' && '🌈'}
               {avatar.shoes === 'shoes-rocket' && '🚀'}
@@ -97,9 +114,13 @@ export const AvatarPreview: React.FC = () => {
         <motion.div 
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="absolute -bottom-4 left-1/2 -translate-x-1/2 z-30"
+          style={{ position: 'absolute', bottom: -16, left: '50%', transform: 'translateX(-50%)', zIndex: 30 }}
         >
-          <span className="bg-amber-400 text-white px-6 py-2 rounded-full font-black text-sm shadow-xl border-2 border-white uppercase tracking-widest">
+          <span style={{ 
+            background: '#FBBF24', color: 'white', padding: '8px 24px', borderRadius: 9999, 
+            fontWeight: 900, fontSize: 14, boxShadow: '0 4px 12px rgba(251,191,36,0.3)', 
+            border: '2px solid white', textTransform: 'uppercase', letterSpacing: 2 
+          }}>
             Vista Previa
           </span>
         </motion.div>
@@ -107,5 +128,3 @@ export const AvatarPreview: React.FC = () => {
     </div>
   );
 };
-
-import { AnimatePresence } from 'framer-motion';
