@@ -39,7 +39,10 @@ export const useTherapistStore = create<TherapistState>()(
     selectedPatientId: 'demo-1',
     dateRange: 'week',
     
-    selectPatient: (id) => set((state) => { state.selectedPatientId = id; }),
+    selectPatient: (id) => set((state) => { 
+      state.selectedPatientId = id; 
+      localStorage.setItem('way-active-patient', id);
+    }),
     setDateRange: (range) => set((state) => { state.dateRange = range; }),
     addPatient: (patient) => set((state) => { state.patients.push(patient); }),
   }))

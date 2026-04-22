@@ -263,6 +263,14 @@ export function TherapistDashboard() {
 
   const patient = patients.find(p => p.id === selectedId) ?? patients[0];
 
+  React.useEffect(() => {
+    if (selectedId) {
+      // Re-cargar la data del paciente activo
+      usePlayerStore.persist.rehydrate();
+      useRewardsStore.persist.rehydrate();
+    }
+  }, [selectedId]);
+
   return (
     <div style={{ background: C.bg, minHeight: '100dvh', padding: '0 0 32px' }}>
       {/* ── Top bar ──────────────────────────────────────────────── */}

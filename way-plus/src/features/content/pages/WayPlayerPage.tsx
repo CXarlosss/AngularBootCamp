@@ -85,15 +85,21 @@ export function WayPlayerPage() {
   const handleWayComplete = useCallback(() => {
     if (!currentWay) return;
     
+    // Marcar el Way como completado
+    completeWay(currentWay.id, 1);
+    
     if (isLastWay) {
       // Complete the whole step
+      celebrateCompletion('step');
       setCelebration({ show: true, type: 'step-complete', coins: 100 });
     } else {
+      // Award points for single way
+      celebrateCompletion('way');
       // Navigate to next way
       const nextWay = ways[currentIdx + 1];
       navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
     }
-  }, [currentWay, isLastWay, ways, currentIdx, levelId, stepId, navigate]);
+  }, [currentWay, isLastWay, ways, currentIdx, levelId, stepId, navigate, completeWay, celebrateCompletion]);
 
   const handleCelebrationDone = () => {
     setCelebration(c => ({ ...c, show: false }));

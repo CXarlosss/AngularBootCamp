@@ -202,6 +202,23 @@ export const useRewardsStore = create<RewardsState>()(
         get().checkAndUpdateStreak();
       },
     })),
-    { name: 'way-plus-rewards' }
+    { 
+      name: 'way-plus-rewards',
+      storage: {
+        getItem: (name) => {
+          const patientId = localStorage.getItem('way-active-patient') || 'demo-1';
+          const str = localStorage.getItem(`${name}-${patientId}`);
+          return str ? JSON.parse(str) : null;
+        },
+        setItem: (name, value) => {
+          const patientId = localStorage.getItem('way-active-patient') || 'demo-1';
+          localStorage.setItem(`${name}-${patientId}`, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          const patientId = localStorage.getItem('way-active-patient') || 'demo-1';
+          localStorage.removeItem(`${name}-${patientId}`);
+        }
+      }
+    }
   )
 );
