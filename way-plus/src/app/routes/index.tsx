@@ -51,15 +51,15 @@ export const router = createBrowserRouter([
         element: <RewardsShopPage /> 
       },
       { 
-        path: 'anexos/relajacion', 
+        path: 'annexes/relaxation', 
         element: <RelaxationTrackerPage /> 
       },
       { 
-        path: 'anexos/autocomprobacion', 
+        path: 'annexes/self-check', 
         element: <SelfCheckPage /> 
       },
       { 
-        path: 'anexos/roleplaying', 
+        path: 'annexes/role-play', 
         element: <RoleplayGuidePage /> 
       },
     ],

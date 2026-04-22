@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { useRewardsStore } from '../store/rewardsStore';
 import { SHOP_CATALOG, type ShopItem } from '../data/shopCatalog';
 import { AvatarPreview } from '../components/AvatarPreview';
 import { ShopItemCard } from '../components/ShopItemCard';
 import { PurchaseModal } from '../components/PurchaseModal';
-import { Sparkles } from 'lucide-react';
+
+const C = {
+  indigo:      '#4F46E5',
+  indigoLight: '#E8E9FF',
+  indigoDark:  '#3730A3',
+  slate:       '#64748B',
+  slateLight:  '#F1F5F9',
+  slateDark:   '#1E293B',
+  amber:       '#F59E0B',
+  amberLight:  '#FEF3C7',
+  text:        '#1E1B4B',
+  white:       '#ffffff',
+};
 
 const CATEGORIES = [
   { id: 'all', name: 'Todo', icon: '🏪' },
@@ -18,7 +29,6 @@ const CATEGORIES = [
 ] as const;
 
 export const RewardsShopPage: React.FC = () => {
-  const navigate = useNavigate();
   const { 
     wayCoins, previewItem, resetPreview, purchaseItem, equipPart, isPurchased 
   } = useRewardsStore();
@@ -60,83 +70,100 @@ export const RewardsShopPage: React.FC = () => {
   };
 
   return (
-    <div className="flex-1 space-y-8 pb-20">
+    <div style={{ padding: '20px 16px 80px', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      
       {/* Header */}
-      <header className="px-2 flex items-center justify-between">
+      <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tighter font-outfit">Tienda WAY+</h1>
-          <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px]">Escaparate de Ilusiones</p>
-          <div className="mt-2 bg-primary-50 text-primary-600 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter w-fit">
-            Toca un artículo para probártelo
-          </div>
+          <h1 style={{ fontSize: 28, fontWeight: 900, color: C.text, letterSpacing: '-0.5px' }}>
+            Tienda <span style={{ color: C.indigo }}>WAY+</span>
+          </h1>
+          <p style={{ fontSize: 10, fontWeight: 800, color: C.slate, textTransform: 'uppercase', tracking: '1px' }}>
+            Escaparate de Ilusiones
+          </p>
         </div>
         
-        <div className="flex items-center gap-2 bg-amber-50 rounded-2xl px-4 py-2 border border-amber-100">
-          <span className="text-xl">🪙</span>
-          <span className="text-xl font-black text-amber-600">{wayCoins}</span>
+        <div style={{ 
+          display: 'flex', alignItems: 'center', gap: 6, 
+          background: C.amberLight, borderRadius: 20, padding: '8px 16px',
+          border: '1.5px solid #FCD34D'
+        }}>
+          <span style={{ fontSize: 20 }}>🪙</span>
+          <span style={{ fontSize: 18, fontWeight: 900, color: '#92400E' }}>{wayCoins}</span>
         </div>
       </header>
 
-      {/* Preview Mirror - Top Sticky or Fixed */}
-      <section className="px-2">
-        <div className="bg-slate-50 rounded-[2.5rem] p-6 border-2 border-white shadow-inner flex flex-col items-center">
-           <div className="w-full flex justify-between items-center mb-4">
-             <h2 className="text-sm font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <Sparkles size={16} className="text-amber-500" /> Probador
-            </h2>
-            <button onClick={resetPreview} className="text-[10px] font-black text-primary-500 uppercase tracking-widest bg-white px-3 py-1 rounded-full shadow-sm">
-              Limpiar
-            </button>
-           </div>
-           
-           <div className="scale-75 -my-10">
-            <AvatarPreview />
-           </div>
+      {/* Preview Mirror */}
+      <section style={{
+        background: '#F8FAFC', borderRadius: 32, padding: 24,
+        border: '2px solid #fff', boxShadow: 'inset 0 2px 10px rgba(0,0,0,.05)'
+      }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <h2 style={{ fontSize: 11, fontWeight: 800, color: C.slate, textTransform: 'uppercase', tracking: '1px' }}>
+            ✨ Probador
+          </h2>
+          <button 
+            onClick={resetPreview}
+            style={{ 
+              fontSize: 10, fontWeight: 800, color: C.indigo, 
+              background: '#fff', border: 'none', padding: '4px 12px', 
+              borderRadius: 20, boxShadow: '0 2px 4px rgba(0,0,0,.05)', cursor: 'pointer'
+            }}
+          >
+            Limpiar
+          </button>
+        </div>
+        
+        <div style={{ transform: 'scale(0.85)', margin: '-30px 0' }}>
+          <AvatarPreview />
         </div>
       </section>
 
       {/* Category Filters */}
-      <section className="px-2">
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {CATEGORIES.map(cat => (
-            <button
+      <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+        {CATEGORIES.map(cat => {
+          const active = activeCategory === cat.id;
+          return (
+            <motion.button
               key={cat.id}
+              whileTap={{ scale: 0.95 }}
               onClick={() => setActiveCategory(cat.id)}
-              className={`flex items-center gap-2 px-4 py-3 rounded-2xl font-black whitespace-nowrap transition-all
-                ${activeCategory === cat.id 
-                  ? 'bg-primary-500 text-white shadow-lg' 
-                  : 'bg-white text-slate-500 border border-slate-100'
-                }`}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '10px 16px', borderRadius: 16, border: 'none',
+                background: active ? C.indigo : C.white,
+                color: active ? C.white : C.slate,
+                boxShadow: active ? '0 8px 20px rgba(79,70,229,.3)' : '0 2px 8px rgba(0,0,0,.05)',
+                cursor: 'pointer', whiteSpace: 'nowrap'
+              }}
             >
-              <span className="text-lg">{cat.icon}</span>
-              <span className="uppercase tracking-widest text-[10px]">{cat.name}</span>
-            </button>
-          ))}
-        </div>
-      </section>
+              <span style={{ fontSize: 18 }}>{cat.icon}</span>
+              <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase' }}>{cat.name}</span>
+            </motion.button>
+          );
+        })}
+      </div>
 
-      {/* Catalog Grid - 2 Columns */}
-      <section className="px-2">
-        <div className="grid grid-cols-2 gap-4">
-          <AnimatePresence mode="popLayout">
-            {filteredItems.map((item) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-              >
-                <ShopItemCard
-                  item={item}
-                  onPreview={() => handlePreview(item)}
-                  onPurchase={() => handlePurchaseClick(item)}
-                />
-              </motion.div>
-            ))}
-          </AnimatePresence>
-        </div>
-      </section>
+      {/* Catalog Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+        <AnimatePresence mode="popLayout">
+          {filteredItems.map((item) => (
+            <motion.div
+              key={item.id}
+              layout
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+            >
+              <ShopItemCard
+                item={item}
+                onPreview={() => handlePreview(item)}
+                onPurchase={() => handlePurchaseClick(item)}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
 
       <PurchaseModal
         item={selectedItem}

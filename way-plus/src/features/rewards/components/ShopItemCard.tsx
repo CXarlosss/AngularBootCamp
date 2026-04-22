@@ -2,7 +2,18 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useRewardsStore } from '../store/rewardsStore';
 import type { ShopItem } from '../data/shopCatalog';
-import { Star } from 'lucide-react';
+
+const C = {
+  indigo:      '#4F46E5',
+  indigoLight: '#E8E9FF',
+  slate:       '#64748B',
+  slateLight:  '#F1F5F9',
+  slateDark:   '#1E293B',
+  amber:       '#F59E0B',
+  emerald:     '#10B981',
+  text:        '#1E1B4B',
+  white:       '#ffffff',
+};
 
 interface ShopItemCardProps {
   item: ShopItem;
@@ -17,57 +28,70 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, onPreview, onP
   const inPreview = previewAvatar[item.category] === item.id;
   const canAfford = wayCoins >= item.price;
   
-  const rarityColors = {
-    common: 'border-slate-200 bg-white text-slate-600',
-    rare: 'border-blue-200 bg-blue-50 text-blue-600',
-    epic: 'border-purple-200 bg-purple-50 text-purple-600',
-    legendary: 'border-amber-200 bg-amber-50 text-amber-600',
+  const rarityConfig: Record<string, { color: string; bg: string; label: string }> = {
+    common:    { color: C.slate,   bg: '#F3F4F6', label: 'Básico' },
+    rare:      { color: '#3B82F6', bg: '#EFF6FF', label: 'Especial' },
+    epic:      { color: '#8B5CF6', bg: '#F5F3FF', label: 'Épico' },
+    legendary: { color: '#F59E0B', bg: '#FFFBEB', label: 'Legendario' },
   };
 
-  const rarityLabels = {
-    common: 'Básico',
-    rare: 'Especial',
-    epic: 'Épico',
-    legendary: '¡Legendario!',
-  };
+  const config = rarityConfig[item.rarity] || rarityConfig.common;
 
   return (
     <motion.div
-      whileHover={{ scale: 1.05, translateY: -5 }}
-      whileTap={{ scale: 0.95 }}
+      whileHover={{ scale: 1.02, y: -4 }}
+      whileTap={{ scale: 0.98 }}
       onClick={onPreview}
-      className={`relative rounded-[2.5rem] p-6 border-4 shadow-xl flex flex-col items-center justify-between gap-4 cursor-pointer transition-all duration-300
-        aspect-[3/4]
-        ${rarityColors[item.rarity]}
-        ${inPreview ? 'ring-4 ring-primary-400' : ''}
-        ${equipped ? 'bg-emerald-50 border-emerald-200' : ''}
-      `}
+      style={{
+        position: 'relative',
+        borderRadius: 24,
+        padding: '24px 16px 16px',
+        background: equipped ? '#ECFDF5' : C.white,
+        border: equipped ? `2px solid ${C.emerald}` : inPreview ? `2px solid ${C.indigo}` : '2px solid #E2E8F0',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+        cursor: 'pointer', transition: 'all 0.3s',
+        boxShadow: inPreview ? '0 10px 25px rgba(79,70,229,.15)' : '0 4px 12px rgba(0,0,0,.04)',
+        aspectRatio: '3/4',
+      }}
     >
       {/* Rarity Tag */}
-      <div className={`absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border-2
-        ${rarityColors[item.rarity]} border-white shadow-md`}>
-        {rarityLabels[item.rarity]}
+      <div style={{
+        position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+        padding: '4px 12px', borderRadius: 20, fontSize: 8, fontWeight: 900,
+        textTransform: 'uppercase', tracking: '1px',
+        background: config.bg, color: config.color, border: `1.5px solid ${C.white}`,
+        boxShadow: '0 2px 8px rgba(0,0,0,.1)', whiteSpace: 'nowrap'
+      }}>
+        {config.label}
       </div>
 
-      <div className="text-6xl my-2 filter drop-shadow-sm">{item.icon}</div>
+      <div style={{ fontSize: 52, margin: '8px 0' }}>{item.icon}</div>
       
-      <div className="text-center font-black text-slate-800 text-sm leading-tight h-10 flex items-center">
+      <div style={{ 
+        textAlign: 'center', fontWeight: 800, color: C.text, fontSize: 13, 
+        lineHeight: 1.2, height: 32, display: 'flex', alignItems: 'center' 
+      }}>
         {item.name}
       </div>
       
-      <div className="w-full mt-2">
+      <div style={{ width: '100%', marginTop: 'auto' }}>
         {!purchased ? (
-          <motion.div 
-            className={`flex items-center justify-center gap-2 rounded-2xl py-3 px-4 font-black text-xl shadow-inner
-              ${canAfford ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-300'}
-            `}
-          >
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+            borderRadius: 16, padding: '8px', fontWeight: 900, fontSize: 16,
+            background: canAfford ? '#FFFBEB' : '#F3F4F6',
+            color: canAfford ? '#B45309' : '#9CA3AF'
+          }}>
             <span>🪙</span>
             <span>{item.price}</span>
-          </motion.div>
+          </div>
         ) : equipped ? (
-          <div className="bg-emerald-500 text-white rounded-2xl py-3 text-center font-black text-sm shadow-lg flex items-center justify-center gap-2">
-            <Star size={16} fill="white" /> PUESTO
+          <div style={{
+            background: C.emerald, color: C.white, borderRadius: 16, padding: '10px',
+            textAlign: 'center', fontWeight: 900, fontSize: 10, textTransform: 'uppercase',
+            boxShadow: '0 4px 12px rgba(16,185,129,.2)'
+          }}>
+            Puesto
           </div>
         ) : (
           <button
@@ -75,18 +99,27 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, onPreview, onP
               e.stopPropagation();
               onPurchase();
             }}
-            className="w-full bg-primary-500 text-white rounded-2xl py-3 font-black text-sm shadow-lg shadow-primary-100 hover:bg-primary-600 transition-colors"
+            style={{
+              width: '100%', background: C.indigo, color: C.white, border: 'none',
+              borderRadius: 16, padding: '10px', fontWeight: 900, fontSize: 10,
+              textTransform: 'uppercase', cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(79,70,229,.2)'
+            }}
           >
-            PONERME
+            Ponerme
           </button>
         )}
       </div>
 
       {item.rarity === 'legendary' && (
         <motion.div 
-          animate={{ opacity: [0.3, 0.6, 0.3] }}
+          animate={{ opacity: [0, 0.2, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}
-          className="absolute inset-0 bg-gradient-to-tr from-white/0 via-white/40 to-white/0 rounded-[2.5rem] pointer-events-none"
+          style={{
+            position: 'absolute', inset: 0, borderRadius: 24,
+            background: 'linear-gradient(135deg, transparent, rgba(255,255,255,0.4), transparent)',
+            pointerEvents: 'none'
+          }}
         />
       )}
     </motion.div>

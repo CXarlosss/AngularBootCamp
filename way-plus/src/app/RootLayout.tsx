@@ -19,13 +19,13 @@ import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 
 const NAV_ITEMS = [
   { path: '/',          label: 'Inicio',    icon: '🏠' },
-  { path: '/terapeuta', label: 'Terapeuta', icon: '🧠' },
-  { path: '/anexos',    label: 'Anexos',    icon: '📋' },
-  { path: '/tienda',    label: 'Tienda',    icon: '🏪' },
-  { path: '/mochila',   label: 'Mochila',   icon: '🎒' },
+  { path: '/therapist', label: 'Terapeuta', icon: '🧠' },
+  { path: '/annexes',   label: 'Anexos',    icon: '📋' },
+  { path: '/shop',      label: 'Tienda',    icon: '🏪' },
+  { path: '/backpack',  label: 'Mochila',   icon: '🎒' },
 ] as const;
 
-const THERAPIST_PREFIXES = ['/terapeuta', '/editor', '/login'];
+const THERAPIST_PREFIXES = ['/therapist', '/dashboard', '/editor', '/auth'];
 
 function isTherapist(path: string) {
   return THERAPIST_PREFIXES.some(p => path.startsWith(p));
@@ -96,7 +96,7 @@ function AppHeader() {
           </div>
           <motion.button
             whileTap={{ scale: 0.88 }}
-            onClick={() => navigate('/mochila')}
+            onClick={() => navigate('/backpack')}
             style={{
               width: 38, height: 38, borderRadius: '50%',
               background: 'rgba(255,255,255,.15)',
