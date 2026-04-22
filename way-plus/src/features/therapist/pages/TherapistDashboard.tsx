@@ -108,20 +108,21 @@ function AnnexHeatmap() {
             <div style={{ width: 90, fontSize: 11, fontWeight: 600, color: C.muted, flexShrink: 0 }}>
               {row.label}
             </div>
-            <div style={{ display: 'flex', gap: 5, flex: 1 }}>
+            <div style={{ display: 'flex', gap: 6, flex: 1, justifyContent: 'space-between' }}>
               {days.map((date, i) => {
                 const done = row.check(date);
                 return (
-                  <div
+                   <div
                     key={date}
                     title={date}
                     style={{
-                      flex: 1, aspectRatio: '1',
-                      borderRadius: 7,
+                      width: 28, height: 28,
+                      borderRadius: 8,
                       background: done ? row.color : '#F1F2FF',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: 10, color: done ? '#fff' : '#C7D2FE',
                       fontWeight: 700,
+                      flexShrink: 0,
                     }}
                   >
                     {done ? '✓' : DAYS_SHORT[i]}
@@ -150,7 +151,9 @@ function AlertPanel() {
 
   const alerts = useMemo(() => {
     const list = [];
-    if (!relaxationLog[today]?.completed)
+    const isLateEnough = new Date().getHours() >= 10;
+    
+    if (!relaxationLog[today]?.completed && isLateEnough)
       list.push({ id: 'relax', icon: '🧘', title: 'Relajación pendiente', msg: 'El niño no ha practicado hoy.', color: '#FEF3C7', border: '#F59E0B', tc: '#92400E' });
     if (completedWays.length > 5)
       list.push({ id: 'prog', icon: '🚀', title: 'Progreso acelerado', msg: `${completedWays.length} retos completados. Subir dificultad.`, color: '#ECFDF5', border: '#10B981', tc: '#065F46' });

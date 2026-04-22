@@ -4,6 +4,7 @@
    Use min-height everywhere so content can grow freely.
    ═══════════════════════════════════════════════════════════ */
 
+@source "../src";
 @import "tailwindcss";
 
 /* ── Reset ──────────────────────────────────────────────────── */
