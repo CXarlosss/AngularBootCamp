@@ -137,7 +137,7 @@ export const RewardsShopPage: React.FC = () => {
                 onClick={() => setActiveCategory(cat.id)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '12px 20px', borderRadius: 20, border: 'none',
+                  padding: '12px 20px', borderRadius: 20,
                   background: active ? C.purple : 'rgba(255,255,255,0.8)',
                   color: active ? C.white : C.slateDark,
                   boxShadow: active ? '0 8px 24px rgba(139,92,246,0.4)' : '0 4px 12px rgba(0,0,0,0.05)',
