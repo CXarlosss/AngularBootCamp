@@ -1,115 +1,111 @@
+/**
+ * RootLayout.tsx — Scroll-safe layout
+ *
+ * Architecture: let the browser body scroll naturally.
+ * - NO overflow:hidden anywhere in this file
+ * - NO height:100dvh on any wrapper div
+ * - BottomNav is position:fixed (outside document flow)
+ * - KioskGate only wraps inline, never sets overflow
+ */
+
 import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KioskGate } from '@/features/kiosk/components/KioskGate';
 import { InstallPrompt } from '@/features/pwa/components/InstallPrompt';
-import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 
-// ─── Bottom nav items (child-facing routes only) ──────────────────────
+/* ─── Config ─────────────────────────────────────────────────────── */
+
 const NAV_ITEMS = [
-  { path: '/',         label: 'Inicio',    icon: '🏠' },
-  { path: '/anexos',  label: 'Anexos',    icon: '📋' },
-  { path: '/tienda',  label: 'Tienda',    icon: '🏪' },
-  { path: '/mochila', label: 'Mochila',   icon: '🎒' },
-];
+  { path: '/',          label: 'Inicio',    icon: '🏠' },
+  { path: '/terapeuta', label: 'Terapeuta', icon: '🧠' },
+  { path: '/anexos',    label: 'Anexos',    icon: '📋' },
+  { path: '/tienda',    label: 'Tienda',    icon: '🏪' },
+  { path: '/mochila',   label: 'Mochila',   icon: '🎒' },
+] as const;
 
-// Routes that belong to the therapist / admin — no child UI
-const THERAPIST_PATHS = ['/terapeuta', '/editor', '/login', '/dashboard'];
+const THERAPIST_PREFIXES = ['/terapeuta', '/editor', '/login'];
 
-function isTherapistRoute(pathname: string) {
-  return THERAPIST_PATHS.some(p => pathname.startsWith(p));
+function isTherapist(path: string) {
+  return THERAPIST_PREFIXES.some(p => path.startsWith(p));
 }
 
-// ─── Header ───────────────────────────────────────────────────────────
+/* ─── Header ─────────────────────────────────────────────────────── */
+
 function AppHeader() {
   const navigate = useNavigate();
-  const { wayCoins, streakDays, currentAvatar } = useRewardsStore();
+  const wayCoins   = useRewardsStore(s => s.wayCoins)   ?? 0;
+  const streakDays = useRewardsStore(s => s.streakDays) ?? 0;
+  const base       = useRewardsStore(s => s.currentAvatar?.base);
+
+  const emoji =
+    base === 'base-dragon' ? '🐉' :
+    base === 'base-puppy'  ? '🐶' :
+    base === 'base-kitten' ? '🐱' : '🦄';
 
   return (
-    <header
-      style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 50,
-        background: 'linear-gradient(135deg, #3730A3 0%, #4F46E5 100%)',
-        // Safe area for notched phones / tablets
-        paddingTop: 'max(env(safe-area-inset-top), 0px)',
-        boxShadow: '0 4px 24px rgba(55,48,163,0.3)',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          height: 60,
-          padding: '0 16px',
-          maxWidth: 480,
-          margin: '0 auto',
-        }}
-      >
+    <header style={{
+      position: 'sticky',
+      top: 0,
+      zIndex: 40,
+      background: 'linear-gradient(135deg,#3730A3,#4F46E5)',
+      boxShadow: '0 4px 20px rgba(55,48,163,.3)',
+    }}>
+      <div style={{
+        maxWidth: 480,
+        margin: '0 auto',
+        padding: '0 16px',
+        height: 56,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+      }}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 24 }}>🧠</span>
-          <span
-            style={{
-              fontFamily: "'Outfit', sans-serif",
-              fontWeight: 800,
-              fontSize: 21,
-              color: '#fff',
-              letterSpacing: '-0.5px',
-            }}
-          >
+          <span style={{ fontSize: 22 }}>🧠</span>
+          <span style={{
+            fontFamily: "'Outfit',sans-serif",
+            fontWeight: 800, fontSize: 20, color: '#fff', letterSpacing: '-0.5px',
+          }}>
             WAY<span style={{ color: '#A5B4FC' }}>+</span>
           </span>
         </div>
 
         {/* Stats */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Streak */}
           {streakDays > 0 && (
-            <div
-              style={{
-                display: 'flex', alignItems: 'center', gap: 4,
-                background: 'rgba(245,158,11,0.2)',
-                border: '1.5px solid rgba(245,158,11,0.35)',
-                borderRadius: 20, padding: '4px 10px',
-              }}
-            >
-              <span style={{ fontSize: 15 }}>🔥</span>
-              <span style={{ color: '#FCD34D', fontWeight: 700, fontSize: 14 }}>{streakDays}</span>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 4,
+              background: 'rgba(245,158,11,.2)',
+              border: '1.5px solid rgba(245,158,11,.4)',
+              borderRadius: 20, padding: '4px 10px',
+            }}>
+              <span style={{ fontSize: 14 }}>🔥</span>
+              <span style={{ color: '#FCD34D', fontWeight: 700, fontSize: 13 }}>{streakDays}</span>
             </div>
           )}
-          {/* Coins */}
-          <div
-            style={{
-              display: 'flex', alignItems: 'center', gap: 4,
-              background: 'rgba(255,255,255,0.12)',
-              border: '1.5px solid rgba(255,255,255,0.2)',
-              borderRadius: 20, padding: '4px 10px',
-            }}
-          >
-            <span style={{ fontSize: 15 }}>🪙</span>
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: 14 }}>{wayCoins}</span>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 4,
+            background: 'rgba(255,255,255,.12)',
+            border: '1.5px solid rgba(255,255,255,.2)',
+            borderRadius: 20, padding: '4px 10px',
+          }}>
+            <span style={{ fontSize: 14 }}>🪙</span>
+            <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{wayCoins}</span>
           </div>
-          {/* Avatar */}
           <motion.button
             whileTap={{ scale: 0.88 }}
             onClick={() => navigate('/mochila')}
             style={{
-              width: 40, height: 40, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.15)',
-              border: '2px solid rgba(255,255,255,0.3)',
-              fontSize: 20, cursor: 'pointer',
+              width: 38, height: 38, borderRadius: '50%',
+              background: 'rgba(255,255,255,.15)',
+              border: '2px solid rgba(255,255,255,.3)',
+              fontSize: 18, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              flexShrink: 0,
             }}
           >
-            {currentAvatar.base === 'base-unicorn' && '🦄'}
-            {currentAvatar.base === 'base-dragon'  && '🐉'}
-            {currentAvatar.base === 'base-puppy'   && '🐶'}
-            {currentAvatar.base === 'base-kitten'  && '🐱'}
+            {emoji}
           </motion.button>
         </div>
       </div>
@@ -117,142 +113,128 @@ function AppHeader() {
   );
 }
 
-// ─── Bottom Nav ───────────────────────────────────────────────────────
+/* ─── Bottom Nav ──────────────────────────────────────────────────── */
+
 function BottomNav() {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
   const { pathname } = useLocation();
 
   return (
-    <nav
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        width: '100%',
-        maxWidth: 480,
-        zIndex: 50,
-        background: 'rgba(255,255,255,0.97)',
-        backdropFilter: 'blur(12px)',
-        borderTop: '1px solid #E8E9FF',
-        // Safe area bottom for home-indicator devices
-        paddingBottom: 'max(env(safe-area-inset-bottom), 8px)',
-        display: 'flex',
-      }}
-    >
-      <div
-        style={{
-          display: 'flex',
-          width: '100%',
-          maxWidth: 480,
-          margin: '0 auto',
-          paddingTop: 6,
-        }}
-      >
-        {NAV_ITEMS.map(item => {
-          const active = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path));
-          return (
-            <motion.button
-              key={item.path}
-              whileTap={{ scale: 0.88 }}
-              onClick={() => navigate(item.path)}
-              style={{
-                flex: 1,
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
-                background: 'none', border: 'none', cursor: 'pointer',
-                paddingBottom: 4,
-                minHeight: 52, // min touch target
-              }}
-            >
-              <motion.span
-                animate={{ scale: active ? 1.15 : 1 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                style={{ fontSize: 22, lineHeight: 1 }}
-              >
-                {item.icon}
-              </motion.span>
-              <span
-                style={{
-                  fontSize: 10, fontWeight: active ? 700 : 500,
-                  color: active ? '#4F46E5' : '#9CA3AF',
-                  transition: 'color 0.15s',
-                }}
-              >
-                {item.label}
-              </span>
-              {active && (
-                <motion.div
-                  layoutId="navIndicator"
-                  style={{ width: 4, height: 4, borderRadius: 2, background: '#4F46E5', marginTop: 1 }}
-                  transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                />
-              )}
-            </motion.button>
-          );
-        })}
-      </div>
+    <nav style={{
+      position: 'fixed',
+      bottom: 0,
+      /* Center on any screen width, capped at 480px */
+      left: '50%',
+      transform: 'translateX(-50%)',
+      width: '100%',
+      maxWidth: 480,
+      zIndex: 40,
+      background: 'rgba(255,255,255,.97)',
+      backdropFilter: 'blur(10px)',
+      borderTop: '1px solid #E8E9FF',
+      paddingBottom: 'max(env(safe-area-inset-bottom),4px)',
+      display: 'flex',
+    }}>
+      {NAV_ITEMS.map(item => {
+        const active =
+          item.path === '/'
+            ? pathname === '/'
+            : pathname.startsWith(item.path);
+        return (
+          <motion.button
+            key={item.path}
+            whileTap={{ scale: 0.85 }}
+            onClick={() => navigate(item.path)}
+            style={{
+              flex: 1,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              background: 'none', border: 'none', cursor: 'pointer',
+              paddingTop: 8, paddingBottom: 4,
+              minHeight: 52,
+            }}
+          >
+            <span style={{ fontSize: 20 }}>{item.icon}</span>
+            <span style={{
+              fontSize: 9,
+              fontWeight: active ? 700 : 500,
+              color: active ? '#4F46E5' : '#9CA3AF',
+            }}>
+              {item.label}
+            </span>
+            {active && (
+              <motion.div
+                layoutId="navDot"
+                style={{ width: 4, height: 4, borderRadius: 2, background: '#4F46E5' }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+              />
+            )}
+          </motion.button>
+        );
+      })}
     </nav>
   );
 }
 
-// ─── Root Layout ──────────────────────────────────────────────────────
+/* ─── Root Layout ─────────────────────────────────────────────────── */
+
 export function RootLayout() {
   const { pathname } = useLocation();
-  const therapistRoute = isTherapistRoute(pathname);
+  const therapist = isTherapist(pathname);
 
-  // Bottom nav height + safe area — content must not be hidden beneath it
-  const BOTTOM_NAV_HEIGHT = 72; // px, conservative estimate
+  /*
+    SCROLL CONTRACT
+    ───────────────
+    • html / body: min-height only, no overflow restriction  ← set in index.css
+    • #root:       min-height only                           ← set in index.css
+    • .layout-outer: centers the 480px column; min-height, no overflow
+    • .layout-inner: the white column; min-height, no overflow
+    • BottomNav:   position:fixed — outside document flow
+    • paddingBottom on layout-inner keeps content above the nav
+  */
 
   return (
-    <KioskGate enabled={!therapistRoute}>
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          minHeight: '100vh',
-          background: '#E8E9FF',
-        }}
-      >
-        <div
-          style={{
-            width: '100%',
-            maxWidth: 480,
-            minHeight: '100vh',
-            background: '#F4F5FF',
-            position: 'relative',
-            boxShadow: '0 0 60px rgba(79,70,229,0.08)',
-          }}
-        >
-          {/* Header — only on child routes */}
-          {!therapistRoute && <AppHeader />}
+    <KioskGate enabled={!therapist}>
 
-          {/* Page content */}
-          <main
-            style={{
-              paddingTop: 60, /* Header height */
-              paddingBottom: therapistRoute ? 0 : 80,
-            }}
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={pathname}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -8 }}
-                transition={{ duration: 0.18, ease: 'easeOut' }}
-              >
-                <Outlet />
-              </motion.div>
-            </AnimatePresence>
-          </main>
+      {/* Outer centering shell — shows as gutter colour on wide screens */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        minHeight: '100dvh',       // grows with content, never clips
+        background: '#DDE0FF',
+        // ← NO overflow property here
+      }}>
 
-          {/* Bottom nav — only on child routes */}
-          {!therapistRoute && <BottomNav />}
+        {/* App column */}
+        <div style={{
+          width: '100%',
+          maxWidth: 480,
+          background: '#F4F5FF',
+          boxShadow: '0 0 40px rgba(79,70,229,.08)',
+          // ← NO overflow property here
+          // Content pushes this div taller → body scrolls naturally
+          paddingBottom: therapist ? 0 : 72, // clear fixed BottomNav (52px) + gap
+        }}>
+
+          {!therapist && <AppHeader />}
+
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={pathname}
+              initial={{ opacity: 0, y: 6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Outlet />
+            </motion.div>
+          </AnimatePresence>
+
         </div>
       </div>
 
-      {/* PWA install prompt — floating, works on any route */}
+      {!therapist && <BottomNav />}
       <InstallPrompt />
+
     </KioskGate>
   );
 }
