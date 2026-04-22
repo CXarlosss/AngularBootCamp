@@ -4,270 +4,287 @@ import { motion } from 'framer-motion';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { registry } from '@/content/registry';
-import { useDailyQuests } from '@/features/rewards/hooks/useDailyQuests';
-import { StreakFlame } from '@/features/rewards/components/StreakFlame';
 import type { Step } from '@/core/engine/types';
-import { Sparkles, Target, Zap, Clock, ChevronRight } from 'lucide-react';
 
-/* ─── helpers ────────────────────────────────────────────────────────── */
+/* ─── colour tokens ──────────────────────────────────────────────── */
+const C = {
+  indigo:      '#4F46E5',
+  indigoLight: '#E8E9FF',
+  indigoDark:  '#3730A3',
+  teal:        '#14B8A6',
+  amber:       '#F59E0B',
+  text:        '#1E1B4B',
+  muted:       '#6B7280',
+  border:      '#E8E9FF',
+  bg:          '#F4F5FF',
+  white:       '#ffffff',
+};
+
+/* ─── step metadata ──────────────────────────────────────────────── */
+const STEP_META: Record<string, { icon: string; color: string; bg: string; desc: string }> = {
+  'step-1-relaxation':     { icon: '🧘', color: '#14B8A6', bg: '#CCFBF1', desc: 'Regulación emocional' },
+  'step-2-autonomy':       { icon: '⭐', color: C.indigo,  bg: C.indigoLight, desc: 'Independencia y autoestima' },
+  'step-3-assertiveness':  { icon: '🤝', color: '#F59E0B', bg: '#FEF3C7', desc: 'Habilidades sociales' },
+};
+
+/* ─── helpers ────────────────────────────────────────────────────── */
 const pct = (done: number, total: number) =>
   total === 0 ? 0 : Math.round((done / total) * 100);
 
-const LEVEL_META: Record<string, {
-  icon: string; label: string; subtitle: string;
-  color: string; bg: string;
-}> = {
-  'step-1-relaxation':  { icon: '🧘', label: 'Relajación',  subtitle: 'Calma y control', color: '#14B8A6', bg: '#CCFBF1' },
-  'step-2-autonomy':    { icon: '⭐', label: 'Autonomía',   subtitle: '¡Yo puedo solo!', color: '#4F46E5', bg: '#E8E9FF' },
-  'step-3-assertiveness':{ icon: '🤝', label: 'Asertividad', subtitle: 'Hablo y escucho', color: '#F59E0B', bg: '#FEF3C7' },
-};
-
-/* ─── Step card ──────────────────────────────────────────────────────── */
+/* ─── Step Card ──────────────────────────────────────────────────── */
 function StepCard({ step, done, total, locked, onTap }: {
   step: Step; done: number; total: number; locked: boolean; onTap: () => void;
 }) {
-  const meta = LEVEL_META[step.id] ?? {
-    icon: '📚', label: step.title, subtitle: '', color: '#6B7280', bg: '#F3F4F6',
+  const meta = STEP_META[step.id] ?? {
+    icon: '📚', color: C.muted, bg: '#F3F4F6', desc: '',
   };
   const progress = pct(done, total);
   const complete = progress === 100;
 
   return (
     <motion.button
-      whileHover={!locked ? { x: 4, scale: 1.01 } : {}}
-      whileTap={!locked ? { scale: 0.98 } : {}}
+      whileHover={!locked ? { y: -2, boxShadow: '0 10px 30px rgba(79,70,229,.15)' } : {}}
+      whileTap={!locked ? { scale: 0.97 } : {}}
       onClick={!locked ? onTap : undefined}
-      className={`w-full relative overflow-hidden rounded-[2.5rem] p-6 text-left border-4 transition-all duration-300
-        ${locked ? 'bg-slate-50 border-slate-100 opacity-60 grayscale' : 'bg-white border-white shadow-xl shadow-slate-100'}
-      `}
+      style={{
+        width: '100%',
+        background: locked ? '#F1F2FF' : C.white,
+        border: complete
+          ? `2.5px solid ${meta.color}`
+          : `1.5px solid ${C.border}`,
+        borderRadius: 20,
+        padding: '18px 18px 14px',
+        cursor: locked ? 'not-allowed' : 'pointer',
+        textAlign: 'left',
+        position: 'relative',
+        overflow: 'hidden',
+        opacity: locked ? 0.65 : 1,
+        transition: 'box-shadow 0.2s',
+        boxShadow: '0 2px 12px rgba(79,70,229,.06)',
+      }}
     >
-      <div className="flex items-center gap-6">
-        {/* Icon Container */}
-        <div className={`w-20 h-20 rounded-3xl flex items-center justify-center text-4xl shadow-inner
-          ${locked ? 'bg-slate-200' : 'bg-gradient-to-br from-white to-slate-50'}
-        `} style={{ color: meta.color }}>
+      {/* Decorative blob */}
+      <div style={{
+        position: 'absolute', top: -18, right: -18,
+        width: 70, height: 70, borderRadius: '50%',
+        background: meta.bg, opacity: 0.8,
+        pointerEvents: 'none',
+      }} />
+
+      {/* Icon + state badge */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+        <div style={{
+          width: 52, height: 52, borderRadius: 14,
+          background: meta.bg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 26, flexShrink: 0,
+        }}>
           {meta.icon}
         </div>
+        <span style={{ fontSize: 18 }}>
+          {locked ? '🔒' : complete ? '✅' : ''}
+        </span>
+      </div>
 
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-xl font-black text-slate-800 tracking-tight">{meta.label}</h3>
-            {locked ? <span className="text-xl">🔒</span> : complete ? <span className="text-xl">✅</span> : null}
-          </div>
-          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">{meta.subtitle}</p>
-          
-          <div className="flex items-center gap-4">
-            <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
-                className="h-full rounded-full"
-                style={{ backgroundColor: meta.color }}
-              />
-            </div>
-            <span className="text-[10px] font-black text-slate-500">{progress}%</span>
-          </div>
-        </div>
-        
-        {!locked && <ChevronRight className="text-slate-300" size={24} />}
+      {/* Title + desc */}
+      <div style={{ fontWeight: 700, fontSize: 16, color: C.text, marginBottom: 3 }}>
+        {step.title}
+      </div>
+      <div style={{ fontSize: 12, color: C.muted, marginBottom: 14 }}>
+        {meta.desc}
+      </div>
+
+      {/* Progress bar */}
+      <div style={{ background: '#E8E9FF', borderRadius: 8, height: 8, overflow: 'hidden' }}>
+        <motion.div
+          initial={{ width: 0 }}
+          animate={{ width: `${progress}%` }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          style={{ height: '100%', borderRadius: 8, background: meta.color }}
+        />
+      </div>
+      <div style={{ fontSize: 11, color: C.muted, marginTop: 5, fontWeight: 600 }}>
+        {done}/{total} WAYs · {progress}%
       </div>
     </motion.button>
   );
 }
 
-/* ─── Daily quest card ───────────────────────────────────────────────── */
-function DailyQuestCard({ quest, onTap }: { quest: any; onTap: () => void }) {
-  const isMorning = quest.title?.includes('Mañana');
-  const isNight = quest.title?.includes('Noche');
-  
-  const colors = isMorning 
-    ? 'from-amber-400 to-orange-500' 
-    : isNight 
-      ? 'from-indigo-600 to-slate-800' 
-      : 'from-blue-400 to-indigo-500';
-
+/* ─── Daily quest pill ───────────────────────────────────────────── */
+function DailyQuest({ quest, onTap }: { quest: any; onTap: () => void }) {
   return (
     <motion.button
-      whileHover={{ y: -5, scale: 1.02 }}
-      whileTap={{ scale: 0.95 }}
+      whileTap={{ scale: 0.97 }}
       onClick={onTap}
-      className={`relative w-[240px] h-[180px] shrink-0 rounded-[2.5rem] p-6 text-left shadow-xl overflow-hidden group
-        ${quest.completed ? 'bg-emerald-500' : `bg-gradient-to-br ${colors}`}
-      `}
+      style={{
+        width: '100%', textAlign: 'left', cursor: 'pointer',
+        background: quest.completed
+          ? '#ECFDF5'
+          : 'linear-gradient(135deg,#FEF3C7,#FDE68A)',
+        border: `1.5px solid ${quest.completed ? '#6EE7B7' : '#FCD34D'}`,
+        borderRadius: 18, padding: '16px 18px',
+      }}
     >
-      <div className="absolute top-0 right-0 p-4 opacity-20 text-6xl rotate-12 group-hover:scale-125 transition-transform duration-500">
-        {isMorning ? '🌅' : isNight ? '🌙' : '☀️'}
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#78350F', marginBottom: 4 }}>
+        {quest.completed ? '✅ Misión completada' : '🌅 Misión del Día'}
       </div>
-      
-      <div className="relative z-10 h-full flex flex-col justify-between">
-        <div>
-          <div className="text-[10px] font-black text-white/70 uppercase tracking-widest mb-1">
-            {quest.completed ? 'Completado' : 'Misión Diaria'}
-          </div>
-          <h4 className="text-lg font-black text-white leading-tight">
-            {quest.title.split(' ')[2]}
-          </h4>
-        </div>
-        
-        <div className="flex items-center justify-between">
-          <div className="bg-white/20 backdrop-blur-md px-3 py-1.5 rounded-xl flex items-center gap-2">
-             <span className="text-sm">🪙</span>
-             <span className="text-sm font-black text-white">+{quest.reward.coins}</span>
-          </div>
-          <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-slate-800">
-            <Zap size={16} fill="currentColor" />
-          </div>
-        </div>
+      <div style={{ fontSize: 15, fontWeight: 700, color: '#92400E', marginBottom: 10 }}>
+        {quest.description}
+      </div>
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: 4,
+        background: 'rgba(255,255,255,.6)', borderRadius: 12, padding: '4px 12px',
+      }}>
+        <span style={{ fontSize: 14 }}>🪙</span>
+        <span style={{ fontWeight: 700, fontSize: 13, color: C.amber }}>
+          +{quest.reward?.coins ?? 15}
+        </span>
       </div>
     </motion.button>
   );
 }
 
-/* ─── Page ───────────────────────────────────────────────────────────── */
+/* ─── Page ───────────────────────────────────────────────────────── */
 export function LevelSelectPage() {
   const navigate = useNavigate();
-  const { profile } = usePlayerStore();
-  const completedWays = profile.completedWays;
-  const { streakDays } = useRewardsStore();
-  const dailyQuests = useDailyQuests();
+  const completedWays = usePlayerStore(s => s.profile.completedWays) ?? [];
+  const streakDays    = useRewardsStore(s => s.streakDays)   ?? 0;
 
-  const [steps, setSteps] = useState<Step[]>([]);
+  const [steps, setSteps]   = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     registry.getStepsForLevel('pregamer')
-      .then(setSteps)
+      .then(s => setSteps(s))
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  const totalWays = steps.reduce((s, st) => s + st.ways.length, 0);
-  const totalDone = steps.reduce(
-    (s, st) => s + st.ways.filter(w => completedWays?.includes(w.id)).length, 0
+  /* de-duplicate by id just in case registry returns duplicates */
+  const uniqueSteps = steps.filter(
+    (s, i, arr) => arr.findIndex(x => x.id === s.id) === i
+  );
+
+  const totalWays = uniqueSteps.reduce((n, s) => n + s.ways.length, 0);
+  const totalDone = uniqueSteps.reduce(
+    (n, s) => n + s.ways.filter(w => completedWays.includes(w.id)).length, 0
   );
   const totalPct = pct(totalDone, totalWays);
 
-  const handleStepTap = (step: Step) => {
-    const firstIncomplete = step.ways.find(w => !completedWays?.includes(w.id));
-    if (firstIncomplete) {
-      navigate(`/play/pregamer/${step.id}/${firstIncomplete.id}`);
+  const handleStep = (step: Step) => {
+    const first = step.ways.find(w => !completedWays.includes(w.id));
+    if (first) {
+        navigate(`/play/pregamer/${step.id}/${first.id}`);
     } else {
-      // Si ya está completo, ir al primero
-      navigate(`/play/pregamer/${step.id}/${step.ways[0].id}`);
+        navigate(`/play/pregamer/${step.id}/${step.ways[0].id}`);
     }
   };
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
-        <motion.div 
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-          className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full"
-        />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 240 }}>
+        <div className="spinner" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-10 pb-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="page-padding" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
-      {/* Hero Header */}
-      <section className="relative rounded-[3rem] bg-gradient-to-br from-indigo-600 to-primary-700 p-8 text-white shadow-2xl overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 text-9xl opacity-10 rotate-12">🎮</div>
-        <div className="relative z-10 space-y-6">
-          <div className="flex items-center justify-between">
-            <div className="space-y-1">
-              <h2 className="text-4xl font-black tracking-tighter leading-none">¡Hola, Gamer! 👋</h2>
-              <p className="text-white/70 font-bold uppercase tracking-widest text-[10px]">¿Qué superpoder practicamos hoy?</p>
-            </div>
-            {streakDays > 0 && <StreakFlame />}
-          </div>
-
-          <div className="bg-white/10 backdrop-blur-md rounded-3xl p-5 border border-white/10">
-            <div className="flex justify-between items-center mb-3">
-              <span className="text-xs font-black uppercase tracking-widest">Nivel PREGAMER</span>
-              <span className="text-xs font-black">{totalDone}/{totalWays} WAYs</span>
-            </div>
-            <div className="h-4 bg-black/20 rounded-full overflow-hidden shadow-inner">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${totalPct}%` }}
-                className="h-full bg-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.5)]"
-              />
+      {/* ── Welcome banner ─────────────────────────────────────── */}
+      <div style={{
+        background: 'linear-gradient(135deg,#E8E9FF,#C7D2FE)',
+        borderRadius: 20, padding: '18px 18px 16px',
+        border: `1.5px solid #C7D2FE`,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <div>
+            <div style={{ fontSize: 13, color: C.muted, marginBottom: 2 }}>¡Hola! 👋</div>
+            <div style={{ fontWeight: 800, fontSize: 20, color: C.text }}>
+              ¿Listo para jugar hoy?
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* Daily Quests - Horizontal Scroll */}
-      <section className="space-y-4">
-        <div className="flex items-center justify-between px-2">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <Clock size={14} /> Misiones de Hoy
-          </h3>
-          <span className="text-[10px] font-black text-primary-500 uppercase tracking-widest">Ver Todas</span>
-        </div>
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide -mx-4 px-4">
-          {dailyQuests.map(q => (
-            <DailyQuestCard
-              key={q.id}
-              quest={q}
-              onTap={() => navigate(`/play/pregamer/${q.stepId}/${q.wayId}`)}
-            />
-          ))}
-          {dailyQuests.length === 0 && (
-            <div className="w-full bg-slate-50 rounded-3xl p-8 border-2 border-dashed border-slate-200 text-center text-slate-400 font-bold">
-              ¡Todas las misiones completadas! 🌟
+          {streakDays > 0 && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              background: '#FFF7ED', border: '1.5px solid #FED7AA',
+              borderRadius: 20, padding: '6px 12px',
+            }}>
+              <span style={{ fontSize: 16 }}>🔥</span>
+              <span style={{ fontWeight: 700, fontSize: 14, color: '#C2410C' }}>{streakDays}</span>
             </div>
           )}
         </div>
-      </section>
 
-      {/* Module Modules */}
-      <section className="space-y-4">
-        <h3 className="px-2 text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-          <Target size={14} /> Módulos de Entrenamiento
-        </h3>
-        <div className="space-y-4">
-          {steps.map((step, idx) => {
-            const stepDone = step.ways.filter(w => !completedWays || completedWays?.includes(w.id)).length;
-            const prevStep = steps[idx - 1];
-            const prevDone = prevStep
-              ? prevStep.ways.filter(w => completedWays && completedWays?.includes(w.id)).length
-              : 999;
-            const locked = idx > 0 && prevDone < (prevStep?.ways.length ?? 0);
+        {/* Global progress */}
+        <div style={{ fontSize: 12, color: C.muted, fontWeight: 600, marginBottom: 6 }}>
+          Progreso PREGAMER — {totalDone}/{totalWays} WAYs ({totalPct}%)
+        </div>
+        <div style={{ background: 'rgba(255,255,255,.5)', borderRadius: 8, height: 8, overflow: 'hidden' }}>
+          <motion.div
+            initial={{ width: 0 }}
+            animate={{ width: `${totalPct}%` }}
+            transition={{ duration: 1, ease: 'easeOut' }}
+            style={{ height: '100%', borderRadius: 8, background: C.indigo }}
+          />
+        </div>
+      </div>
+
+      {/* ── Steps ─────────────────────────────────────────────── */}
+      <section>
+        <div style={{
+          fontWeight: 700, fontSize: 11, color: C.muted,
+          textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 12,
+        }}>
+          Módulos PREGAMER
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {uniqueSteps.map((step, idx) => {
+            const done = step.ways.filter(w => completedWays.includes(w.id)).length;
+            const prev = uniqueSteps[idx - 1];
+            const prevDone = prev
+              ? prev.ways.filter(w => completedWays.includes(w.id)).length
+              : Infinity;
+            const locked = idx > 0 && prevDone < (prev?.ways.length ?? 0);
 
             return (
               <StepCard
                 key={step.id}
                 step={step}
-                done={stepDone}
+                done={done}
                 total={step.ways.length}
                 locked={locked}
-                onTap={() => handleStepTap(step)}
+                onTap={() => handleStep(step)}
               />
             );
           })}
         </div>
       </section>
 
-      {/* GAMER Teaser */}
-      <section className="relative rounded-[3rem] bg-slate-900 p-8 text-white shadow-2xl overflow-hidden group">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-600/20 to-blue-600/20 opacity-50" />
-        <div className="relative z-10 flex items-center gap-6">
-          <div className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center text-4xl group-hover:scale-110 transition-transform">
-            🎮
+      {/* ── GAMER teaser ──────────────────────────────────────── */}
+      <section>
+        <div style={{
+          fontWeight: 700, fontSize: 11, color: C.muted,
+          textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 12,
+        }}>
+          Próximamente
+        </div>
+        <div style={{
+          background: 'linear-gradient(135deg,#1E1B4B,#312E81)',
+          borderRadius: 20, padding: '18px',
+          display: 'flex', alignItems: 'center', gap: 14,
+        }}>
+          <div style={{
+            fontSize: 34, background: 'rgba(255,255,255,.1)',
+            borderRadius: 14, padding: '10px 12px', flexShrink: 0,
+          }}>🎮</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontWeight: 800, fontSize: 16, color: '#fff' }}>Nivel GAMER</div>
+            <div style={{ fontSize: 12, color: '#A5B4FC', marginTop: 4 }}>
+              Secuencias, memoria y trazado.
+            </div>
           </div>
-          <div className="flex-1">
-            <h4 className="text-xl font-black tracking-tight">Nivel GAMER</h4>
-            <p className="text-white/50 text-xs font-bold leading-tight mt-1">
-              Desbloquea desafíos de memoria avanzada y lógica compleja.
-            </p>
-          </div>
-          <div className="bg-white/10 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest">
-            🔒 Bloqueado
-          </div>
+          <span style={{ fontSize: 18 }}>🔒</span>
         </div>
       </section>
 
