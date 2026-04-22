@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WayRenderer } from '@/features/content/components/WayRenderer';
@@ -58,11 +58,12 @@ export function WayPlayerPage() {
   }>();
   const navigate = useNavigate();
 
-  const { completeWay, completedWays } = usePlayerStore();
+  const completeWay = usePlayerStore(state => state.completeWay);
+  const completedWays = usePlayerStore(state => state.profile.completedWays);
   const { celebrateCompletion, addCoins, checkAndUpdateStreak } = useRewardsStore();
 
   const [celebration, setCelebration] = useState<{
-    show: boolean; type: 'happy' | 'sad' | 'step-complete'; coins: number;
+    show: boolean; type: 'happy' | 'sad' | 'step-complete' | 'annex-complete'; coins: number;
   }>({ show: false, type: 'happy', coins: 0 });
 
   const [step, setStep] = useState<Step | null>(null);
@@ -81,36 +82,24 @@ export function WayPlayerPage() {
   const currentWay = ways[currentIdx] ?? null;
   const isLastWay = currentIdx === ways.length - 1;
 
-  const handleCorrect = useCallback(() => {
+  const handleWayComplete = useCallback(() => {
     if (!currentWay) return;
-    completeWay(currentWay.id, 1);
-    addCoins(10, 'way-correct');
-    checkAndUpdateStreak();
-
+    
     if (isLastWay) {
       // Complete the whole step
-      celebrateCompletion('step');
-      setCelebration({ show: true, type: 'step-complete', coins: 110 });
+      setCelebration({ show: true, type: 'step-complete', coins: 100 });
     } else {
-      celebrateCompletion('way');
-      setCelebration({ show: true, type: 'happy', coins: 10 });
+      // Navigate to next way
+      const nextWay = ways[currentIdx + 1];
+      navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
     }
-  }, [currentWay, isLastWay, completeWay, addCoins, checkAndUpdateStreak, celebrateCompletion]);
-
-  const handleIncorrect = useCallback(() => {
-    setCelebration({ show: true, type: 'sad', coins: 0 });
-  }, []);
+  }, [currentWay, isLastWay, ways, currentIdx, levelId, stepId, navigate]);
 
   const handleCelebrationDone = () => {
     setCelebration(c => ({ ...c, show: false }));
     if (celebration.type === 'step-complete') {
       navigate(`/`);
-    } else if (celebration.type === 'happy' && !isLastWay) {
-      // Navigate to next way
-      const nextWay = ways[currentIdx + 1];
-      navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
     }
-    // If 'sad', stay on same way (WayRenderer will allow retry)
   };
 
   if (loading) {
@@ -177,8 +166,7 @@ export function WayPlayerPage() {
           >
             <WayRenderer
               way={currentWay}
-              onCorrect={handleCorrect}
-              onIncorrect={handleIncorrect}
+              onComplete={handleWayComplete}
             />
           </motion.div>
         </AnimatePresence>
