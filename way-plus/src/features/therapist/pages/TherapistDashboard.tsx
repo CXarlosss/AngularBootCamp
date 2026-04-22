@@ -9,9 +9,10 @@ import { SyncStatus } from '../components/SyncStatus';
 
 /* ─── colour tokens ──────────────────────────────────────────────── */
 const C = {
-  indigo:  '#4F46E5',
-  teal:    '#14B8A6',
-  amber:   '#F59E0B',
+  indigo:      '#4F46E5',
+  indigoDark:  '#3730A3',
+  teal:        '#14B8A6',
+  amber:       '#F59E0B',
   rose:    '#F43F5E',
   emerald: '#10B981',
   text:    '#1E1B4B',
