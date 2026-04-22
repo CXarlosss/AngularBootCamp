@@ -1,66 +1,97 @@
+import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { RootLayout } from '@/app/RootLayout';
-import { LevelSelectPage } from '@/features/player/pages/LevelSelectPage';
-import { WayPlayerPage } from '@/features/content/pages/WayPlayerPage';
-import { AnnexesHubPage } from '@/features/annexes/pages/AnnexesHubPage';
-import { RelaxationTrackerPage } from '@/features/annexes/pages/RelaxationTrackerPage';
-import { SelfCheckPage } from '@/features/annexes/pages/SelfCheckPage';
-import { RoleplayGuidePage } from '@/features/annexes/pages/RoleplayGuidePage';
-import { RewardsBackpack } from '@/features/rewards/pages/RewardsBackpack';
-import { RewardsShopPage } from '@/features/rewards/pages/RewardsShopPage';
-import { AuthPage } from '@/features/auth/pages/AuthPage';
-import { TherapistDashboard } from '@/features/therapist/pages/TherapistDashboard';
-import { WayEditorPage } from '@/features/editor/pages/WayEditorPage';
+
+// Error Boundary Fallback Component
+const ErrorFallback = ({ error }: { error: any }) => (
+  <div style={{
+    padding: 40, textAlign: 'center', background: '#FFF1F2', color: '#BE123C',
+    borderRadius: 24, margin: 20, border: '2px solid #FECDD3'
+  }}>
+    <h2 style={{ fontWeight: 900 }}>🚨 Error al cargar esta página</h2>
+    <p style={{ opacity: 0.8 }}>{error?.message || 'Error desconocido'}</p>
+    <p style={{ fontSize: 12, marginTop: 10 }}>Verifica que el archivo del componente exista en la ruta especificada.</p>
+    <button 
+      onClick={() => window.location.reload()}
+      style={{
+        background: '#BE123C', color: '#fff', border: 'none', padding: '10px 20px',
+        borderRadius: 12, fontWeight: 700, marginTop: 10, cursor: 'pointer'
+      }}
+    >
+      Reintentar
+    </button>
+  </div>
+);
+
+// Lazy imports (Handling named exports)
+const LevelSelectPage = lazy(() => import('@/features/player/pages/LevelSelectPage').then(m => ({ default: m.LevelSelectPage })));
+const WayPlayerPage = lazy(() => import('@/features/content/pages/WayPlayerPage').then(m => ({ default: m.WayPlayerPage })));
+const AnnexesHubPage = lazy(() => import('@/features/annexes/pages/AnnexesHubPage').then(m => ({ default: m.AnnexesHubPage })));
+const RelaxationTrackerPage = lazy(() => import('@/features/annexes/pages/RelaxationTrackerPage').then(m => ({ default: m.RelaxationTrackerPage })));
+const SelfCheckPage = lazy(() => import('@/features/annexes/pages/SelfCheckPage').then(m => ({ default: m.SelfCheckPage })));
+const RoleplayGuidePage = lazy(() => import('@/features/annexes/pages/RoleplayGuidePage').then(m => ({ default: m.RoleplayGuidePage })));
+const RewardsBackpack = lazy(() => import('@/features/rewards/pages/RewardsBackpack').then(m => ({ default: m.RewardsBackpack })));
+const RewardsShopPage = lazy(() => import('@/features/rewards/pages/RewardsShopPage').then(m => ({ default: m.RewardsShopPage })));
+const AuthPage = lazy(() => import('@/features/auth/pages/AuthPage').then(m => ({ default: m.AuthPage })));
+const TherapistDashboard = lazy(() => import('@/features/therapist/pages/TherapistDashboard').then(m => ({ default: m.TherapistDashboard })));
+const WayEditorPage = lazy(() => import('@/features/editor/pages/WayEditorPage').then(m => ({ default: m.WayEditorPage })));
+
+const Load = (Component: React.ComponentType) => (
+  <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', fontWeight: 800, color: '#4F46E5' }}>Cargando módulo...</div>}>
+    <Component />
+  </Suspense>
+);
 
 export const router = createBrowserRouter([
   {
     path: '/',
     element: <RootLayout />,
+    errorElement: <ErrorFallback error={{ message: 'Error crítico en el router' }} />,
     children: [
-      { index: true, element: <LevelSelectPage /> },
+      { index: true, element: Load(LevelSelectPage) },
       { 
         path: 'auth', 
-        element: <AuthPage /> 
+        element: Load(AuthPage) 
       },
       { 
         path: 'play/:levelId/:stepId/:wayId', 
-        element: <WayPlayerPage /> 
+        element: Load(WayPlayerPage) 
       },
       { 
         path: 'editor', 
-        element: <WayEditorPage /> 
+        element: Load(WayEditorPage) 
       },
       { 
         path: 'dashboard', 
-        element: <TherapistDashboard /> 
+        element: Load(TherapistDashboard) 
       },
       { 
         path: 'therapist', 
-        element: <TherapistDashboard /> 
+        element: Load(TherapistDashboard) 
       },
       { 
         path: 'annexes', 
-        element: <AnnexesHubPage /> 
+        element: Load(AnnexesHubPage) 
       },
       { 
         path: 'backpack', 
-        element: <RewardsBackpack /> 
+        element: Load(RewardsBackpack) 
       },
       { 
         path: 'shop', 
-        element: <RewardsShopPage /> 
+        element: Load(RewardsShopPage) 
       },
       { 
         path: 'annexes/relaxation', 
-        element: <RelaxationTrackerPage /> 
+        element: Load(RelaxationTrackerPage) 
       },
       { 
         path: 'annexes/self-check', 
-        element: <SelfCheckPage /> 
+        element: Load(SelfCheckPage) 
       },
       { 
         path: 'annexes/role-play', 
-        element: <RoleplayGuidePage /> 
+        element: Load(RoleplayGuidePage) 
       },
     ],
   },

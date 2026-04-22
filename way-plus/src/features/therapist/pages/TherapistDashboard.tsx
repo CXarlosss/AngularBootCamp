@@ -1,147 +1,394 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { PatientSelector } from '../components/PatientSelector';
-import { EconomicBehavior } from '../components/EconomicBehavior';
-import { AnnexCompliance } from '../components/AnnexCompliance';
-import { ProgressTimeline } from '../components/ProgressTimeline';
-import { AlertPanel } from '../components/AlertPanel';
-import { ReportGenerator } from '../components/ReportGenerator';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { usePlayerStore } from '@/features/player/store/playerStore';
+import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { useTherapistStore } from '../store/therapistStore';
-import { FileText, Settings, Share2, BrainCircuit, Edit3 } from 'lucide-react';
+import { ReportGenerator } from '../components/ReportGenerator';
 import { SyncStatus } from '../components/SyncStatus';
-import { KioskConfigPanel } from '../components/KioskConfigPanel';
 
-export const TherapistDashboard: React.FC = () => {
-  const navigate = useNavigate();
-  const { selectedPatientId, patients } = useTherapistStore();
-  const patient = patients.find(p => p.id === selectedPatientId);
+/* ─── colour tokens ──────────────────────────────────────────────── */
+const C = {
+  indigo:  '#4F46E5',
+  teal:    '#14B8A6',
+  amber:   '#F59E0B',
+  rose:    '#F43F5E',
+  emerald: '#10B981',
+  text:    '#1E1B4B',
+  muted:   '#6B7280',
+  border:  '#E8E9FF',
+  bg:      '#F8FAFF',
+  white:   '#ffffff',
+};
 
-  if (!patient) return null;
+/* ─── small atoms ────────────────────────────────────────────────── */
+function Card({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  return (
+    <div style={{
+      background: C.white,
+      borderRadius: 20,
+      border: `1.5px solid ${C.border}`,
+      boxShadow: '0 2px 12px rgba(79,70,229,.06)',
+      padding: 20,
+      ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function Kpi({ label, value, color = C.indigo, bg = '#E8E9FF' }: {
+  label: string; value: string | number; color?: string; bg?: string;
+}) {
+  return (
+    <div style={{
+      background: bg, borderRadius: 14,
+      padding: '12px 14px', textAlign: 'center',
+    }}>
+      <div style={{ fontSize: 22, fontWeight: 800, color }}>{value}</div>
+      <div style={{ fontSize: 11, color: C.muted, marginTop: 2 }}>{label}</div>
+    </div>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{
+      fontWeight: 700, fontSize: 15, color: C.text, marginBottom: 14,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+/* ─── Annex heatmap (7 days) ─────────────────────────────────────── */
+function AnnexHeatmap() {
+  const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
+  const roleplayLog   = usePlayerStore(s => s.roleplayLog)   ?? {};
+  const weeklyCheck   = usePlayerStore(s => s.weeklyCheck)   ?? {};
+
+  const days = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (6 - i));
+      return d.toISOString().split('T')[0];
+    });
+  }, []);
+
+  const DAYS_SHORT = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+
+  const rows = [
+    {
+      label: '🧘 Relajación',
+      color: C.teal,
+      check: (date: string) => !!relaxationLog[date]?.completed,
+    },
+    {
+      label: '🎭 Roleplay',
+      color: '#F97316',
+      check: (date: string) => !!(roleplayLog[date] && roleplayLog[date].length > 0),
+    },
+    {
+      label: '📊 Autocomp.',
+      color: '#7C3AED',
+      check: (date: string) => {
+        const hits = Object.entries(weeklyCheck).filter(([k]) => k.endsWith(date) && weeklyCheck[k]);
+        return hits.length >= 3;
+      },
+    },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] p-6 md:p-12 overflow-y-auto">
-      <div className="max-w-7xl mx-auto space-y-12">
-        {/* Header */}
-        <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <motion.div 
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="space-y-2"
-          >
-            <div className="flex items-center gap-3 bg-indigo-600 text-white px-4 py-1.5 rounded-full w-fit text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-indigo-100">
-              <BrainCircuit size={14} /> Sistema de Inteligencia Terapéutica
+    <Card>
+      <SectionTitle>📋 Adherencia (7 días)</SectionTitle>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {rows.map(row => (
+          <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ width: 90, fontSize: 11, fontWeight: 600, color: C.muted, flexShrink: 0 }}>
+              {row.label}
             </div>
-            <h1 className="text-5xl font-black text-slate-900 tracking-tighter">Dashboard WAY+</h1>
-            <p className="text-slate-400 font-bold uppercase tracking-widest text-xs flex items-center gap-2">
-              Seguimiento Clínico Especializado • {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-            </p>
-          </motion.div>
-
-          <div className="flex flex-col md:flex-row gap-6 items-center">
-            <SyncStatus />
-            <PatientSelector />
+            <div style={{ display: 'flex', gap: 5, flex: 1 }}>
+              {days.map((date, i) => {
+                const done = row.check(date);
+                return (
+                  <div
+                    key={date}
+                    title={date}
+                    style={{
+                      flex: 1, aspectRatio: '1',
+                      borderRadius: 7,
+                      background: done ? row.color : '#F1F2FF',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 10, color: done ? '#fff' : '#C7D2FE',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {done ? '✓' : DAYS_SHORT[i]}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ width: 28, textAlign: 'right', fontSize: 11, fontWeight: 700, color: C.muted }}>
+              {days.filter(d => row.check(d)).length}/7
+            </div>
           </div>
-        </header>
+        ))}
+      </div>
+    </Card>
+  );
+}
 
-        {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          
-          {/* Main Visualizations (Left 2/3) */}
-          <div className="lg:col-span-8 space-y-10">
-            <ProgressTimeline />
-            <EconomicBehavior />
-            <AnnexCompliance />
-          </div>
+/* ─── Alerts ─────────────────────────────────────────────────────── */
+function AlertPanel() {
+  const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
+  const roleplayLog   = usePlayerStore(s => s.roleplayLog)   ?? {};
+  const completedWays = usePlayerStore(s => s.profile.completedWays) ?? [];
+  const streakDays    = useRewardsStore(s => s.streakDays)   ?? 0;
 
-          {/* Sidebar Info (Right 1/3) */}
-          <div className="lg:col-span-4 space-y-10">
-            <div className="sticky top-12 space-y-10">
-              
-              {/* Active Patient Card */}
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-white rounded-[3rem] p-10 shadow-2xl border-4 border-white text-center relative overflow-hidden group"
-              >
-                <div className="absolute inset-0 bg-gradient-to-b from-indigo-50/50 to-transparent" />
-                <div className="relative z-10">
-                  <div className="text-[6rem] mb-6 filter drop-shadow-xl group-hover:scale-110 transition-transform duration-500">
-                    {patient.avatar}
-                  </div>
-                  <h2 className="text-3xl font-black text-slate-800 tracking-tight">{patient.name}</h2>
-                  <p className="text-slate-400 font-bold uppercase tracking-widest text-[10px] mt-2">
-                    {patient.age} años • {patient.diagnosis}
-                  </p>
-                  
-                  <div className="mt-8 flex flex-wrap justify-center gap-2">
-                    <StatusBadge label={patient.currentLevel} color="indigo" />
-                    <StatusBadge label="Activo hoy" color="emerald" />
-                  </div>
-                  
-                  <div className="mt-10 pt-10 border-t border-slate-100 grid grid-cols-2 gap-4">
-                    <div className="text-left">
-                      <span className="text-[10px] font-black text-slate-300 uppercase block">Inicio</span>
-                      <span className="text-sm font-bold text-slate-600">{new Date(patient.startDate).toLocaleDateString()}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] font-black text-slate-300 uppercase block">Última Sesión</span>
-                      <span className="text-sm font-bold text-slate-600">{new Date(patient.lastSession).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
+  const today = new Date().toISOString().split('T')[0];
 
-              {/* Clinical Alerts */}
-              <AlertPanel />
+  const alerts = useMemo(() => {
+    const list = [];
+    if (!relaxationLog[today]?.completed)
+      list.push({ id: 'relax', icon: '🧘', title: 'Relajación pendiente', msg: 'El niño no ha practicado hoy.', color: '#FEF3C7', border: '#F59E0B', tc: '#92400E' });
+    if (completedWays.length > 5)
+      list.push({ id: 'prog', icon: '🚀', title: 'Progreso acelerado', msg: `${completedWays.length} retos completados. Subir dificultad.`, color: '#ECFDF5', border: '#10B981', tc: '#065F46' });
+    const weekRoleplays = Object.keys(roleplayLog).filter(d => {
+      const diff = (Date.now() - new Date(d).getTime()) / 86400000;
+      return diff <= 7;
+    }).length;
+    if (weekRoleplays < 2)
+      list.push({ id: 'roleplay', icon: '🎭', title: 'Baja generalización', msg: 'Poca práctica de roleplay en casa.', color: '#FEF3C7', border: '#F59E0B', tc: '#92400E' });
+    return list;
+  }, [relaxationLog, roleplayLog, completedWays, streakDays, today]);
 
-              {/* Kiosk Management */}
-              <KioskConfigPanel />
-              
-              {/* Quick Actions */}
-              <div className="bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl text-white">
-                <h3 className="text-xl font-black mb-6 uppercase tracking-widest text-indigo-400 flex items-center gap-2">
-                  <Settings size={20} /> Acciones
-                </h3>
-                <div className="space-y-3">
-                  <ReportGenerator />
-                  <ActionButton 
-                    icon={<Edit3 size={18} />} 
-                    label="Crear Nuevo Way" 
-                    onClick={() => navigate('/editor')}
-                  />
-                  <ActionButton icon={<BrainCircuit size={18} />} label="Ajustar Dificultad IA" />
-                  <ActionButton icon={<Share2 size={18} />} label="Compartir con Familia" />
-                </div>
+  return (
+    <Card>
+      <SectionTitle>🔔 Alertas Clínicas</SectionTitle>
+      {alerts.length === 0 ? (
+        <div style={{ textAlign: 'center', color: C.muted, fontSize: 13, padding: '12px 0' }}>
+          ✨ Sin alertas activas
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {alerts.map(a => (
+            <div key={a.id} style={{
+              background: a.color, border: `1.5px solid ${a.border}`,
+              borderRadius: 14, padding: '12px 14px',
+              display: 'flex', gap: 10, alignItems: 'flex-start',
+            }}>
+              <span style={{ fontSize: 20 }}>{a.icon}</span>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 13, color: a.tc }}>{a.title}</div>
+                <div style={{ fontSize: 12, color: a.tc, opacity: 0.8, marginTop: 2 }}>{a.msg}</div>
               </div>
-
             </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  );
+}
+
+/* ─── Kiosk config ───────────────────────────────────────────────── */
+function KioskPanel() {
+  const [pin, setPin] = React.useState('');
+  const [saved, setSaved] = React.useState(false);
+
+  const save = () => {
+    if (pin.length !== 4) return;
+    try {
+      const store = JSON.parse(localStorage.getItem('way-kiosk-config') || '{}');
+      store.state = { ...(store.state || {}), pin };
+      localStorage.setItem('way-kiosk-config', JSON.stringify(store));
+    } catch {}
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+    setPin('');
+  };
+
+  return (
+    <Card>
+      <SectionTitle>🔒 Modo Kiosko</SectionTitle>
+      <div style={{ fontSize: 12, color: C.muted, marginBottom: 14, lineHeight: 1.5 }}>
+        Bloquea la tablet para que el niño no pueda salir de la app.
+      </div>
+      <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+        <input
+          type="password"
+          inputMode="numeric"
+          maxLength={4}
+          placeholder="Nuevo PIN (4 dígitos)"
+          value={pin}
+          onChange={e => setPin(e.target.value.replace(/\D/g, ''))}
+          style={{
+            flex: 1, padding: '10px 14px', borderRadius: 12,
+            border: `2px solid ${C.border}`, fontSize: 16,
+            textAlign: 'center', letterSpacing: '0.4em',
+          }}
+        />
+        <motion.button
+          whileTap={{ scale: 0.95 }}
+          onClick={save}
+          disabled={pin.length !== 4}
+          style={{
+            background: pin.length === 4 ? C.indigo : '#D1D5DB',
+            color: '#fff', border: 'none', borderRadius: 12,
+            padding: '10px 18px', fontWeight: 700, fontSize: 14, cursor: 'pointer',
+          }}
+        >
+          Guardar
+        </motion.button>
+      </div>
+      {saved && (
+        <div style={{ color: C.emerald, fontWeight: 700, fontSize: 13 }}>✅ PIN guardado</div>
+      )}
+    </Card>
+  );
+}
+
+/* ─── Main page ──────────────────────────────────────────────────── */
+export function TherapistDashboard() {
+  const navigate = useNavigate();
+  const patients          = useTherapistStore(s => s.patients)          ?? [];
+  const selectedId        = useTherapistStore(s => s.selectedPatientId);
+  const selectPatient     = useTherapistStore(s => s.selectPatient);
+  const completedWays     = usePlayerStore(s => s.profile.completedWays) ?? [];
+  const relaxationLog     = usePlayerStore(s => s.relaxationLog)        ?? {};
+  const { totalXp = 0, streakDays = 0 } = useRewardsStore();
+
+  const patient = patients.find(p => p.id === selectedId) ?? patients[0];
+
+  return (
+    <div style={{ background: C.bg, minHeight: '100dvh', padding: '0 0 32px' }}>
+      {/* ── Top bar ──────────────────────────────────────────────── */}
+      <div style={{
+        background: C.white,
+        borderBottom: `1px solid ${C.border}`,
+        padding: '16px 20px',
+        position: 'sticky', top: 0, zIndex: 30,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        flexWrap: 'wrap', gap: 10,
+      }}>
+        <div>
+          <div style={{ fontWeight: 800, fontSize: 20, color: C.text }}>🧠 Dashboard WAY+</div>
+          <div style={{ fontSize: 12, color: C.muted }}>
+            {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
           </div>
         </div>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <SyncStatus />
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/')}
+            style={{
+              background: C.indigo, color: '#fff', border: 'none',
+              borderRadius: 12, padding: '8px 16px',
+              fontWeight: 700, fontSize: 13, cursor: 'pointer',
+            }}
+          >
+            👦 Ir a la app del niño
+          </motion.button>
+        </div>
+      </div>
+
+      <div style={{ maxWidth: 900, margin: '0 auto', padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+
+        {/* ── Patient selector ───────────────────────────────────── */}
+        <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
+          {patients.map(p => (
+            <motion.button
+              key={p.id}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => selectPatient(p.id)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                padding: '10px 18px', borderRadius: 16,
+                border: `2px solid ${p.id === (selectedId ?? patients[0]?.id) ? C.indigo : C.border}`,
+                background: p.id === (selectedId ?? patients[0]?.id) ? '#E8E9FF' : C.white,
+                cursor: 'pointer', whiteSpace: 'nowrap', flexShrink: 0,
+                fontWeight: 700, fontSize: 14, color: C.text,
+              }}
+            >
+              <span style={{ fontSize: 24 }}>{p.avatar}</span>
+              <div style={{ textAlign: 'left' }}>
+                <div>{p.name}</div>
+                <div style={{ fontSize: 11, color: C.muted, fontWeight: 500 }}>{p.age} años · {p.currentLevel}</div>
+              </div>
+            </motion.button>
+          ))}
+        </div>
+
+        {/* ── Patient card + KPIs ────────────────────────────────── */}
+        {patient && (
+          <Card style={{
+            background: `linear-gradient(135deg, ${C.indigo}, ${C.indigoDark ?? '#3730A3'})`,
+            color: '#fff', border: 'none',
+            display: 'flex', alignItems: 'center', gap: 16,
+            flexWrap: 'wrap',
+          }}>
+            <div style={{ fontSize: 52, lineHeight: 1 }}>{patient.avatar}</div>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontWeight: 800, fontSize: 20 }}>{patient.name}</div>
+              <div style={{ opacity: 0.8, fontSize: 13, marginTop: 2 }}>
+                {patient.age} años · {patient.diagnosis ?? 'Sin diagnóstico'} · {patient.currentLevel}
+              </div>
+              <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                <span style={{ background: 'rgba(255,255,255,.2)', borderRadius: 10, padding: '3px 10px', fontSize: 12 }}>
+                  🔥 {streakDays} días
+                </span>
+                <span style={{ background: 'rgba(16,185,129,.3)', borderRadius: 10, padding: '3px 10px', fontSize: 12 }}>
+                  {completedWays.length} retos completados
+                </span>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {/* ── KPIs row ───────────────────────────────────────────── */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+          <Kpi label="Retos completados" value={completedWays.length} color={C.indigo} bg="#E8E9FF" />
+          <Kpi label="XP total" value={totalXp} color={C.amber} bg="#FEF3C7" />
+          <Kpi
+            label="Sesiones relajación"
+            value={Object.values(relaxationLog).filter((r: any) => r.completed).length}
+            color={C.teal}
+            bg="#CCFBF1"
+          />
+        </div>
+
+        {/* ── Two-column layout (stacks on mobile) ──────────────── */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: 16,
+        }}>
+          <AnnexHeatmap />
+          <AlertPanel />
+        </div>
+
+        {/* ── Actions ────────────────────────────────────────────── */}
+        <Card>
+          <SectionTitle>⚡ Acciones</SectionTitle>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <ReportGenerator />
+            <motion.button
+              whileTap={{ scale: 0.97 }}
+              onClick={() => navigate('/editor')}
+              style={{
+                background: '#E8E9FF', color: C.indigo, border: `1.5px solid ${C.border}`,
+                borderRadius: 14, padding: '13px 18px',
+                fontWeight: 700, fontSize: 14, cursor: 'pointer', textAlign: 'left',
+              }}
+            >
+              ✏️ Crear nuevo WAY (Editor Visual)
+            </motion.button>
+          </div>
+        </Card>
+
+        <KioskPanel />
+
       </div>
     </div>
   );
-};
-
-const StatusBadge = ({ label, color }: any) => {
-  const colors: any = {
-    indigo: 'bg-indigo-600 text-white shadow-lg shadow-indigo-100',
-    emerald: 'bg-emerald-500 text-white shadow-lg shadow-emerald-100',
-  };
-  return (
-    <span className={`${colors[color]} px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest`}>
-      {label}
-    </span>
-  );
-};
-
-const ActionButton = ({ icon, label, onClick }: any) => (
-  <motion.button
-    whileHover={{ x: 5, backgroundColor: 'rgba(255,255,255,0.1)' }}
-    onClick={onClick}
-    className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl bg-white/5 border border-white/10 transition-colors text-left"
-  >
-    <div className="text-indigo-400">{icon}</div>
-    <span className="text-sm font-bold uppercase tracking-tight">{label}</span>
-  </motion.button>
-);
+}
