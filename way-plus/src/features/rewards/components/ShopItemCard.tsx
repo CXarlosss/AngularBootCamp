@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useRewardsStore } from '../store/rewardsStore';
+import { usePlayerStore } from '@/features/player/store/playerStore';
 import type { ShopItem } from '../data/shopCatalog';
 
 const C = {
@@ -24,6 +25,13 @@ interface ShopItemCardProps {
 export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, onPreview, onPurchase }) => {
   const { wayCoins, isPurchased, currentAvatar, previewAvatar } = useRewardsStore();
   const purchased = isPurchased(item.id);
+  const { profile } = usePlayerStore();
+  
+  const levels = ['pregamer', 'gamer', 'pro'];
+  const currentLevelIndex = levels.indexOf((profile.currentLevel || 'pregamer').toLowerCase());
+  const requiredLevelIndex = item.requiredLevel ? levels.indexOf(item.requiredLevel.toLowerCase()) : -1;
+  const isLocked = !purchased && requiredLevelIndex > currentLevelIndex;
+
   const equipped = currentAvatar[item.category] === item.id;
   const inPreview = previewAvatar[item.category] === item.id;
   const canAfford = wayCoins >= item.price;
@@ -39,9 +47,9 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, onPreview, onP
 
   return (
     <motion.div
-      whileHover={{ scale: 1.02, y: -4 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={onPreview}
+      whileHover={isLocked ? {} : { scale: 1.02, y: -4 }}
+      whileTap={isLocked ? {} : { scale: 0.98 }}
+      onClick={isLocked ? undefined : onPreview}
       style={{
         position: 'relative',
         borderRadius: 24,
@@ -49,9 +57,10 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, onPreview, onP
         background: equipped ? '#ECFDF5' : C.white,
         border: equipped ? `2px solid ${C.emerald}` : inPreview ? `2px solid ${C.indigo}` : '2px solid #E2E8F0',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-        cursor: 'pointer', transition: 'all 0.3s',
+        cursor: isLocked ? 'not-allowed' : 'pointer', transition: 'all 0.3s',
         boxShadow: inPreview ? '0 10px 25px rgba(79,70,229,.15)' : '0 4px 12px rgba(0,0,0,.04)',
         aspectRatio: '3/4',
+        opacity: isLocked ? 0.8 : 1,
       }}
     >
       {/* Rarity Tag */}
@@ -65,17 +74,29 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, onPreview, onP
         {config.label}
       </div>
 
-      <div style={{ fontSize: 52, margin: '8px 0' }}>{item.icon}</div>
+      <div style={{ fontSize: 52, margin: '8px 0', filter: isLocked ? 'grayscale(1) blur(2px)' : 'none' }}>
+        {item.icon}
+      </div>
       
       <div style={{ 
-        textAlign: 'center', fontWeight: 800, color: C.text, fontSize: 13, 
+        textAlign: 'center', fontWeight: 800, color: isLocked ? C.slate : C.text, fontSize: 13, 
         lineHeight: 1.2, height: 32, display: 'flex', alignItems: 'center' 
       }}>
         {item.name}
       </div>
       
       <div style={{ width: '100%', marginTop: 'auto' }}>
-        {!purchased ? (
+        {isLocked ? (
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+            borderRadius: 16, padding: '8px', background: '#F1F2FF', border: '1px dashed #C7D2FE'
+          }}>
+            <span style={{ fontSize: 16 }}>🔒</span>
+            <span style={{ fontWeight: 800, fontSize: 8, color: '#4F46E5', textTransform: 'uppercase' }}>
+              Nivel {item.requiredLevel}
+            </span>
+          </div>
+        ) : !purchased ? (
           <div style={{
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
             borderRadius: 16, padding: '8px', fontWeight: 900, fontSize: 16,
@@ -111,7 +132,7 @@ export const ShopItemCard: React.FC<ShopItemCardProps> = ({ item, onPreview, onP
         )}
       </div>
 
-      {item.rarity === 'legendary' && (
+      {item.rarity === 'legendary' && !isLocked && (
         <motion.div 
           animate={{ opacity: [0, 0.2, 0] }}
           transition={{ repeat: Infinity, duration: 2 }}

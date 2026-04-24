@@ -4,6 +4,7 @@ import { PictoOption } from '@/shared/ui/PictoOption';
 import { CelebrationOverlay } from '@/features/rewards/components/CelebrationOverlay';
 import { adaptiveEngine, type DifficultyAdjustment } from '@/core/engine/adaptiveDifficulty';
 import { motion, AnimatePresence } from 'framer-motion';
+import { audioService } from '@/core/utils/audioService';
 
 // Import Strategies
 import { SequencingWay } from '../strategies/SequencingWay';
@@ -15,9 +16,10 @@ import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 interface Props {
   way: Way;
   onComplete: () => void;
+  activeBoostId?: string | null;
 }
 
-export const WayRenderer: React.FC<Props> = ({ way, onComplete }) => {
+export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId }) => {
   const [celebration, setCelebration] = useState<{
     show: boolean;
     type: 'happy' | 'sad' | 'step-complete' | 'annex-complete';
@@ -26,9 +28,11 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete }) => {
   const [attempts, setAttempts] = useState(0);
   const [startTime] = useState(Date.now());
   const [adaptive, setAdaptive] = useState<DifficultyAdjustment | null>(null);
+  const [extraLifeUsed, setExtraLifeUsed] = useState(false);
 
   const completeWay = usePlayerStore((s) => s.completeWay);
   const celebrateCompletion = useRewardsStore((s) => s.celebrateCompletion);
+  const [showVideo, setShowVideo] = useState(false);
 
   React.useEffect(() => {
     const adjustment = adaptiveEngine.analyze(way.id);
@@ -51,11 +55,22 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete }) => {
       });
 
       completeWay(way.id, attempts + 1);
+      
+      const coinsBase = 10;
+      const finalCoins = activeBoostId === 'double_coins' ? coinsBase * 2 : coinsBase;
+      
       celebrateCompletion('way');
       setCelebration({ show: true, type: 'happy' });
       
       setTimeout(onComplete, 3500); 
     } else {
+      if (activeBoostId === 'extra_life' && !extraLifeUsed) {
+        setExtraLifeUsed(true);
+        audioService.playSFX('success'); // Feedback de que se salvó
+        // No mostramos triste, solo un aviso
+        return;
+      }
+      
       setCelebration({ show: true, type: 'sad' });
       setTimeout(() => setCelebration({ show: false, type: 'happy' }), 2000);
     }
@@ -101,6 +116,11 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete }) => {
                   borderRadius: 32,
                   ...(celebration.show && celebration.type === 'happy' && option.isCorrect ? {
                     border: '4px solid #34d399', backgroundColor: '#ecfdf5', boxShadow: '0 0 0 4px #d1fae5'
+                  } : {}),
+                  // Efecto de HINT
+                  ...(activeBoostId === 'hint' && option.isCorrect ? {
+                    boxShadow: '0 0 20px #fbbf24',
+                    border: '2px dashed #fbbf24'
                   } : {})
                 }}>
                   <PictoOption
@@ -140,6 +160,62 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete }) => {
       </AnimatePresence>
 
       {renderStrategy()}
+
+      {/* Modeling Video Overlay */}
+      <AnimatePresence>
+        {way.modelingVideoUrl && (
+          <div style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 40 }}>
+            <motion.button
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowVideo(true)}
+              style={{
+                background: '#fff', border: '2px solid #4F46E5', borderRadius: '50%',
+                width: 56, height: 56, fontSize: 24, cursor: 'pointer',
+                boxShadow: '0 8px 20px rgba(79,70,229,0.2)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}
+            >
+              🎥
+            </motion.button>
+          </div>
+        )}
+
+        {showVideo && way.modelingVideoUrl && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 100,
+              background: 'rgba(0,0,0,0.9)', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', padding: 20
+            }}
+          >
+            <div style={{ width: '100%', maxWidth: 640, position: 'relative' }}>
+              <button 
+                onClick={() => setShowVideo(false)}
+                style={{
+                  position: 'absolute', top: -40, right: 0,
+                  background: 'transparent', border: 'none', color: '#fff',
+                  fontSize: 32, cursor: 'pointer'
+                }}
+              >
+                ×
+              </button>
+              <video 
+                src={way.modelingVideoUrl} 
+                controls 
+                autoPlay 
+                style={{ width: '100%', borderRadius: 24, boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }} 
+              />
+              <div style={{ textAlign: 'center', color: '#fff', marginTop: 16, fontWeight: 700 }}>
+                ¡Mira cómo se hace! 🌟
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

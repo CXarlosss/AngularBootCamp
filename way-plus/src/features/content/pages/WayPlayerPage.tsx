@@ -4,8 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { WayRenderer } from '@/features/content/components/WayRenderer';
 import { CelebrationOverlay } from '@/features/rewards/components/CelebrationOverlay';
 import { usePlayerStore } from '@/features/player/store/playerStore';
-import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
+import { MilestoneOverlay } from '@/features/player/components/MilestoneOverlay';
 import { registry } from '@/content/registry';
+import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
+import { audioService } from '@/core/utils/audioService';
+import { BoostSelector } from '@/features/rewards/components/BoostSelector';
 import type { Step, Way } from '@/core/engine/types';
 
 /* ─── Back button ────────────────────────────────────────────────────── */
@@ -59,15 +62,21 @@ export function WayPlayerPage() {
   const navigate = useNavigate();
 
   const completeWay = usePlayerStore(state => state.completeWay);
-  const completedWays = usePlayerStore(state => state.profile.completedWays);
+  const completedWays = usePlayerStore(state => state.profile?.completedWays || []);
   const { celebrateCompletion, addCoins, checkAndUpdateStreak } = useRewardsStore();
+  const { dailyChallenge, completeDailyChallenge } = usePlayerStore();
 
   const [celebration, setCelebration] = useState<{
     show: boolean; type: 'happy' | 'sad' | 'step-complete' | 'annex-complete'; coins: number;
   }>({ show: false, type: 'happy', coins: 0 });
 
+  const [showMilestone, setShowMilestone] = useState(false);
+
   const [step, setStep] = useState<Step | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showBoostSelector, setShowBoostSelector] = useState(true);
+  const [selectedBoostId, setSelectedBoostId] = useState<string | null>(null);
+  const { ownedBoosts, consumeBoost } = useRewardsStore();
 
   // Load step from registry
   useEffect(() => {
@@ -82,30 +91,68 @@ export function WayPlayerPage() {
   const currentWay = ways[currentIdx] ?? null;
   const isLastWay = currentIdx === ways.length - 1;
 
+  // Lectura automática al entrar
+  useEffect(() => {
+    if (currentWay && !celebration.show) {
+      // Pequeño delay para que no choque con la transición
+      const timer = setTimeout(() => {
+        audioService.speak(currentWay.name || '');
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [currentWay, celebration.show]);
+
   const handleWayComplete = useCallback(() => {
     if (!currentWay) return;
     
-    // Marcar el Way como completado
+    // 1. Marcar como completado
     completeWay(currentWay.id, 1);
     
-    if (isLastWay) {
-      // Complete the whole step
-      celebrateCompletion('step');
-      setCelebration({ show: true, type: 'step-complete', coins: 100 });
-    } else {
-      // Award points for single way
-      celebrateCompletion('way');
-      // Navigate to next way
-      const nextWay = ways[currentIdx + 1];
-      navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
+    // 2. Calcular recompensas
+    const isDaily = currentWay.id === dailyChallenge.wayId && !dailyChallenge.completed;
+    const bonus = isDaily ? 30 : 0;
+    
+    if (isDaily) {
+      completeDailyChallenge();
+      addCoins(bonus, 'daily_challenge');
     }
-  }, [currentWay, isLastWay, ways, currentIdx, levelId, stepId, navigate, completeWay, celebrateCompletion]);
+
+    // 3. Decidir tipo de celebración
+    if (isLastWay) {
+      // HITO: Módulo completo
+      celebrateCompletion('step');
+      setShowMilestone(true);
+    } else {
+      // ÉXITO: Way individual
+      celebrateCompletion('way');
+      setCelebration({ 
+        show: true, 
+        type: 'happy', 
+        coins: 10 + bonus 
+      });
+
+      // 4. Navegar al siguiente
+      const nextWay = ways[currentIdx + 1];
+      if (nextWay) {
+        setTimeout(() => {
+          navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
+        }, 3000); 
+      }
+    }
+  }, [currentWay, isLastWay, ways, currentIdx, levelId, stepId, navigate, completeWay, celebrateCompletion, dailyChallenge, completeDailyChallenge, addCoins]);
 
   const handleCelebrationDone = () => {
     setCelebration(c => ({ ...c, show: false }));
     if (celebration.type === 'step-complete') {
       navigate(`/play/${levelId}/${stepId}`);
     }
+  };
+
+  const handleStartWithBoost = () => {
+    if (selectedBoostId) {
+      consumeBoost(selectedBoostId);
+    }
+    setShowBoostSelector(false);
   };
 
   if (loading) {
@@ -162,6 +209,27 @@ export function WayPlayerPage() {
 
       {/* ── Way content ────────────────────────────────────────────── */}
       <div className="page-padding">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
+          <h1 style={{
+            fontSize: 24, fontWeight: 900, color: '#1E1B4B',
+            textAlign: 'center', margin: 0,
+          }}>
+            {currentWay.name || 'Reto'}
+          </h1>
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => audioService.speak(currentWay.name || '')}
+            style={{
+              background: '#fff', border: '2px solid #E8E9FF',
+              borderRadius: '50%', width: 44, height: 44, fontSize: 18,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 4px 10px rgba(79,70,229,0.1)'
+            }}
+          >
+            🔊
+          </motion.button>
+        </div>
+
         <AnimatePresence mode="wait">
           <motion.div
             key={currentWay.id}
@@ -173,6 +241,7 @@ export function WayPlayerPage() {
             <WayRenderer
               way={currentWay}
               onComplete={handleWayComplete}
+              activeBoostId={selectedBoostId}
             />
           </motion.div>
         </AnimatePresence>
@@ -185,6 +254,25 @@ export function WayPlayerPage() {
         coins={celebration.coins}
         onComplete={handleCelebrationDone}
       />
+      {/* ── Milestone overlay ────────────────────────────────────────── */}
+      <MilestoneOverlay
+        show={showMilestone}
+        title="¡MÓDULO COMPLETADO!"
+        subtitle={`Has superado todos los retos de ${step.title}. ¡Eres increíble!`}
+        onClose={() => {
+          setShowMilestone(false);
+          navigate(`/play/${levelId}/${stepId}`);
+        }}
+      />
+      {/* ── Boost Selector ─────────────────────────────────────────── */}
+      {showBoostSelector && (
+        <BoostSelector
+          ownedBoosts={ownedBoosts}
+          selectedBoostId={selectedBoostId}
+          onSelect={setSelectedBoostId}
+          onStart={handleStartWithBoost}
+        />
+      )}
     </>
   );
 }

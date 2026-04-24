@@ -14,6 +14,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { KioskGate } from '@/features/kiosk/components/KioskGate';
 import { InstallPrompt } from '@/features/pwa/components/InstallPrompt';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
+import { CardUnlockOverlay } from '@/features/rewards/components/CardUnlockOverlay';
+import { SecretManager } from '@/features/rewards/components/SecretManager';
+import { AchievementManager } from '@/features/rewards/components/AchievementManager';
+import { AmbientPlayer } from '@/core/components/AmbientPlayer';
+import { SoundToggle } from '@/core/components/SoundToggle';
 
 /* ─── Config ─────────────────────────────────────────────────────── */
 
@@ -94,6 +99,7 @@ function AppHeader() {
             <span style={{ fontSize: 14 }}>🪙</span>
             <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{wayCoins}</span>
           </div>
+          <SoundToggle />
           <motion.button
             whileTap={{ scale: 0.88 }}
             onClick={() => navigate('/backpack')}
@@ -194,29 +200,20 @@ export function RootLayout() {
 
   return (
     <KioskGate enabled={!therapist}>
-
-      {/* Outer centering shell — shows as gutter colour on wide screens */}
       <div style={{
         display: 'flex',
         justifyContent: 'center',
-        minHeight: '100dvh',       // grows with content, never clips
+        minHeight: '100dvh',
         background: '#DDE0FF',
-        // ← NO overflow property here
       }}>
-
-        {/* App column */}
         <div style={{
           width: '100%',
           maxWidth: 480,
           background: '#F4F5FF',
           boxShadow: '0 0 40px rgba(79,70,229,.08)',
-          // ← NO overflow property here
-          // Content pushes this div taller → body scrolls naturally
-          paddingBottom: therapist ? 0 : 72, // clear fixed BottomNav (52px) + gap
+          paddingBottom: therapist ? 0 : 72,
         }}>
-
           {!therapist && <AppHeader />}
-
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={pathname}
@@ -228,13 +225,14 @@ export function RootLayout() {
               <Outlet />
             </motion.div>
           </AnimatePresence>
-
         </div>
       </div>
-
       {!therapist && <BottomNav />}
       <InstallPrompt />
-
+      <CardUnlockOverlay />
+      <SecretManager />
+      <AchievementManager />
+      <AmbientPlayer />
     </KioskGate>
   );
 }

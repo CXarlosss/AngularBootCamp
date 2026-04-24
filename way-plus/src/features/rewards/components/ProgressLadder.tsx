@@ -11,7 +11,7 @@ export const ProgressLadder: React.FC<ProgressLadderProps> = ({ stepWays }) => {
   const { profile } = usePlayerStore();
   const { currentAvatar } = useRewardsStore();
   
-  const completedCount = stepWays.filter(id => profile.completedWays.includes(id)).length;
+  const completedCount = stepWays.filter(id => (profile?.completedWays || []).includes(id)).length;
   const total = stepWays.length;
   const progress = (completedCount / total) * 100;
 
@@ -45,7 +45,7 @@ export const ProgressLadder: React.FC<ProgressLadderProps> = ({ stepWays }) => {
         {/* Peldaños y Marcas */}
         <div className="absolute inset-0 flex flex-col-reverse justify-between py-2">
           {stepWays.map((wayId, index) => {
-            const isCompleted = profile.completedWays.includes(wayId);
+            const isCompleted = (profile?.completedWays || []).includes(wayId);
             return (
               <div key={wayId} className="relative flex items-center justify-center w-full h-12">
                  <motion.div

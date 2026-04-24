@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePlayerStore } from '../store/playerStore';
+import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { registry } from '@/content/registry';
 import type { Step, Way } from '@/core/engine/types';
 
@@ -34,6 +35,8 @@ export function StepDetailsPage() {
   const [step, setStep] = useState<Step | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const { unlockSticker } = useRewardsStore();
+
   useEffect(() => {
     if (!stepId) return;
     setLoading(true);
@@ -43,7 +46,27 @@ export function StepDetailsPage() {
     });
   }, [stepId]);
 
-  const completedWays = useMemo(() => new Set(profile.completedWays), [profile.completedWays]);
+  const completedWays = useMemo(() => new Set(profile.completedWays || []), [profile.completedWays]);
+  
+  // Detect completion and award card
+  useEffect(() => {
+    if (step && !loading) {
+      const stepWays = step.ways.map(w => w.id);
+      const doneInStep = stepWays.filter(id => completedWays.has(id));
+      
+      if (doneInStep.length === stepWays.length && stepWays.length > 0) {
+        // Award card based on theme
+        const themeCards: Record<string, string> = {
+          relaxation: 'card-001',
+          autonomy: 'card-004',
+          assertiveness: 'card-003',
+          'self-esteem': 'card-002'
+        };
+        const cardId = themeCards[step.theme] || 'card-006';
+        unlockSticker(cardId);
+      }
+    }
+  }, [completedWays, step, loading, unlockSticker]);
 
   if (loading) {
     return (
@@ -96,7 +119,7 @@ export function StepDetailsPage() {
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
         {step.ways.map((way, idx) => {
           const isCompleted = completedWays.has(way.id);
-          const isUrl = way.stimulus?.image && (way.stimulus.image.includes('/') || way.stimulus.image.startsWith('http') || way.stimulus.image.startsWith('data:'));
+          const isUrl = typeof way.stimulus?.image === 'string' && (way.stimulus.image.includes('/') || way.stimulus.image.startsWith('http') || way.stimulus.image.startsWith('data:'));
 
           return (
             <motion.div
@@ -175,7 +198,7 @@ export function StepDetailsPage() {
         <div style={{ height: 10, background: C.slateLight, borderRadius: 5, overflow: 'hidden' }}>
           <motion.div 
             initial={{ width: 0 }}
-            animate={{ width: `${(Array.from(completedWays).filter(id => step.ways.some(w => w.id === id)).length / step.ways.length) * 100}%` }}
+            animate={{ width: `${step.ways.length > 0 ? (Array.from(completedWays).filter(id => step.ways.some(w => w.id === id)).length / step.ways.length) * 100 : 0}%` }}
             style={{ height: '100%', background: C.emerald, borderRadius: 5 }}
           />
         </div>

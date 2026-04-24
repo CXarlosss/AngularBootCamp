@@ -11,6 +11,7 @@ export const relaxationStep: Step = {
   ways: [
     {
       id: 'way-breathing-1',
+      name: 'Respiración Profunda',
       stepId: 'step-relaxation-1',
       type: 'double-choice',
       order: 1,

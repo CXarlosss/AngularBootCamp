@@ -1,0 +1,133 @@
+.radar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+.radar-chart-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  padding: 20px;
+  background: radial-gradient(circle at center, rgba(79, 70, 229, 0.03) 0%, transparent 70%);
+}
+
+.radar-svg {
+  overflow: visible;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.05));
+}
+
+.radar-polygon-base {
+  fill: rgba(241, 242, 255, 0.5);
+  stroke: #E8E9FF;
+  stroke-width: 1;
+}
+
+.radar-polygon-data {
+  fill: rgba(79, 70, 229, 0.2);
+  stroke: #4F46E5;
+  stroke-width: 3;
+  stroke-linejoin: round;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.radar-polygon-prev {
+  fill: transparent;
+  stroke: #94A3B8;
+  stroke-width: 1.5;
+  stroke-dasharray: 4 2;
+  opacity: 0.5;
+}
+
+.radar-axis {
+  stroke: #E2E8F0;
+  stroke-width: 1;
+  stroke-dasharray: 2 2;
+}
+
+.radar-label {
+  font-size: 11px;
+  font-weight: 800;
+  fill: #64748B;
+  text-transform: uppercase;
+}
+
+.competency-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.competency-card {
+  background: white;
+  border: 1.5px solid #F1F2FF;
+  border-radius: 16px;
+  padding: 14px;
+  text-align: center;
+  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.competency-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.08);
+}
+
+.competency-card.active {
+  border-color: #4F46E5;
+  background: #EEF2FF;
+}
+
+.competency-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.competency-value {
+  font-size: 18px;
+  font-weight: 900;
+  color: #1E1B4B;
+}
+
+.competency-name {
+  font-size: 10px;
+  font-weight: 700;
+  color: #64748B;
+  text-transform: uppercase;
+}
+
+.imbalance-alert {
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.imbalance-alert.warning {
+  background: #FFFBEB;
+  border: 1px solid #FDE68A;
+  color: #92400E;
+}
+
+.imbalance-alert.danger {
+  background: #FEF2F2;
+  border: 1px solid #FECACA;
+  color: #991B1B;
+}
+
+@keyframes pulse-radar {
+  0% { transform: scale(1); opacity: 0.2; }
+  50% { transform: scale(1.02); opacity: 0.25; }
+  100% { transform: scale(1); opacity: 0.2; }
+}
+
+.radar-polygon-data {
+  animation: pulse-radar 4s infinite ease-in-out;
+}

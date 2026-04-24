@@ -36,6 +36,8 @@ const RewardsShopPage = lazy(() => import('@/features/rewards/pages/RewardsShopP
 const AuthPage = lazy(() => import('@/features/auth/pages/AuthPage').then(m => ({ default: m.AuthPage })));
 const TherapistDashboard = lazy(() => import('@/features/therapist/pages/TherapistDashboard').then(m => ({ default: m.TherapistDashboard })));
 const WayEditorPage = lazy(() => import('@/features/editor/pages/WayEditorPage').then(m => ({ default: m.WayEditorPage })));
+const ZenModePage = lazy(() => import('@/features/annexes/pages/ZenModePage').then(m => ({ default: m.ZenModePage })));
+const ParentsDashboard = lazy(() => import('@/features/parents/pages/ParentsDashboard').then(m => ({ default: m.ParentsDashboard })));
 
 const Load = (Component: React.ComponentType) => (
   <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', fontWeight: 800, color: '#4F46E5' }}>Cargando módulo...</div>}>
@@ -75,6 +77,10 @@ export const router = createBrowserRouter([
         element: Load(TherapistDashboard) 
       },
       { 
+        path: 'terapeuta', 
+        element: Load(TherapistDashboard) 
+      },
+      { 
         path: 'annexes', 
         element: Load(AnnexesHubPage) 
       },
@@ -97,6 +103,22 @@ export const router = createBrowserRouter([
       { 
         path: 'annexes/role-play', 
         element: Load(RoleplayGuidePage) 
+      },
+      { 
+        path: 'album', 
+        element: Load(RewardsBackpack) 
+      },
+      {
+        path: 'zen',
+        element: Load(ZenModePage)
+      },
+      {
+        path: 'family',
+        element: Load(ParentsDashboard)
+      },
+      {
+        path: 'padres',
+        element: Load(ParentsDashboard)
       },
     ],
   },

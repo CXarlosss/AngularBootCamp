@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePlayerStore } from '@/features/player/store/playerStore';
+import { useAudio } from '@/core/hooks/useAudio';
 
 /* ─── helpers ────────────────────────────────────────────────────── */
 const today = () => new Date().toISOString().split('T')[0];
@@ -123,6 +124,7 @@ function AnnexCard({
 /* ─── Page ───────────────────────────────────────────────────────── */
 export function AnnexesHubPage() {
   const navigate = useNavigate();
+  const { playSFX } = useAudio();
   const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
   const roleplayLog   = usePlayerStore(s => s.roleplayLog)   ?? {};
   const weeklyCheck   = usePlayerStore(s => s.weeklyCheck)   ?? {};
@@ -168,7 +170,7 @@ export function AnnexesHubPage() {
             </div>
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => navigate('/')}
+              onClick={() => { playSFX('click'); navigate('/'); }}
               style={{
                 background: 'rgba(255,255,255,.15)', border: 'none', borderRadius: 12,
                 width: 40, height: 40, color: '#fff', fontSize: 20, cursor: 'pointer'
@@ -221,7 +223,7 @@ export function AnnexesHubPage() {
             completedToday={!!relaxationLog[t]?.completed}
             weekDots={relaxDots}
             streak={relaxStreak === -1 ? 7 : relaxStreak}
-            onTap={() => navigate('/annexes/relaxation')}
+            onTap={() => { playSFX('click'); navigate('/annexes/relaxation'); }}
           />
 
           {/* Autocomprobación */}
@@ -235,7 +237,7 @@ export function AnnexesHubPage() {
             completedToday={checkDots[6]}
             weekDots={checkDots}
             streak={0}
-            onTap={() => navigate('/annexes/self-check')}
+            onTap={() => { playSFX('click'); navigate('/annexes/self-check'); }}
           />
 
           {/* Role Playing */}
@@ -249,7 +251,21 @@ export function AnnexesHubPage() {
             completedToday={!!(roleplayLog[t]?.length > 0)}
             weekDots={roleplayDots}
             streak={roleplayStreak === -1 ? 7 : roleplayStreak}
-            onTap={() => navigate('/annexes/role-play')}
+            onTap={() => { playSFX('click'); navigate('/annexes/role-play'); }}
+          />
+
+          {/* Modo Zen */}
+          <AnnexCard
+            icon="🍃"
+            title="Modo Zen"
+            subtitle="Sonidos relajantes para tus momentos de calma"
+            color="#334155"
+            bg="#F1F5F9"
+            borderColor="#E2E8F0"
+            completedToday={false}
+            weekDots={[false, false, false, false, false, false, false]}
+            streak={0}
+            onTap={() => { playSFX('click'); navigate('/zen'); }}
           />
 
         </div>

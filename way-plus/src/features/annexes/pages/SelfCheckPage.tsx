@@ -83,8 +83,8 @@ export const SelfCheckPage: React.FC = () => {
                         {item.label}
                       </span>
                       {item.category === 'way' && (
-                        <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: profile.completedWays.includes(item.id) ? C.indigo : '#9CA3AF', marginTop: 4 }}>
-                          {profile.completedWays.includes(item.id) ? 'Desbloqueado' : 'Pendiente'}
+                        <span style={{ fontSize: 10, fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, color: (profile?.completedWays || []).includes(item.id) ? C.indigo : '#9CA3AF', marginTop: 4 }}>
+                          {(profile?.completedWays || []).includes(item.id) ? 'Desbloqueado' : 'Pendiente'}
                         </span>
                       )}
                     </div>
@@ -92,7 +92,7 @@ export const SelfCheckPage: React.FC = () => {
                   {weekDays.map((date) => {
                     const dateStr = format(date, 'yyyy-MM-dd');
                     const isChecked = !!weeklyCheck[`${item.id}-${dateStr}`];
-                    const isDesbloqueado = item.category === 'base' || profile.completedWays.includes(item.id);
+                    const isDesbloqueado = item.category === 'base' || (profile?.completedWays || []).includes(item.id);
                     
                     return (
                       <td key={dateStr} style={{ padding: 12, borderLeft: `1px solid ${C.indigoLight}` }}>

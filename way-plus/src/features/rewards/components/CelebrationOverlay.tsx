@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { audioService } from '@/core/utils/audioService';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface CelebrationOverlayProps {

@@ -16,9 +16,11 @@ export interface Option {
 
 export interface Way {
   id: string;
+  name?: string;
   stepId: string;
   type: WayType;
   order: number;
+  modelingVideoUrl?: string; // Vídeo de modelado (10-15s)
   stimulus: {
     image?: string;        // Pictograma principal (opcional para algunos tipos)
     audio?: string;       // Narración para niños con dificultades lectoras
@@ -70,4 +72,5 @@ export interface PlayerProfile {
   currentLevel: string;
   completedWays: string[];
   streakDays: number;
+  tutorialCompleted: boolean;
 }

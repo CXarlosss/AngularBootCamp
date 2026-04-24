@@ -6,6 +6,11 @@ import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { useTherapistStore } from '../store/therapistStore';
 import { ReportGenerator } from '../components/ReportGenerator';
 import { SyncStatus } from '../components/SyncStatus';
+import { EvolutionCharts } from '../components/EvolutionCharts';
+import { TherapistNotes } from '../components/TherapistNotes';
+import { ClinicalRadar } from '../components/ClinicalRadar';
+import { ObjectivesTab } from '../components/ObjectivesTab';
+import { SoundToggle } from '@/core/components/SoundToggle';
 
 /* ─── colour tokens ──────────────────────────────────────────────── */
 const C = {
@@ -259,9 +264,11 @@ export function TherapistDashboard() {
   const selectPatient     = useTherapistStore(s => s.selectPatient);
   const completedWays     = usePlayerStore(s => s.profile.completedWays) ?? [];
   const relaxationLog     = usePlayerStore(s => s.relaxationLog)        ?? {};
+  const roleplayLog       = usePlayerStore(s => s.roleplayLog)          ?? {};
   const { totalXp = 0, streakDays = 0 } = useRewardsStore();
 
   const patient = patients.find(p => p.id === selectedId) ?? patients[0];
+  const [activeTab, setActiveTab] = React.useState<'overview' | 'evolution' | 'objectives' | 'notes'>('overview');
 
   React.useEffect(() => {
     if (selectedId) {
@@ -289,6 +296,7 @@ export function TherapistDashboard() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+          <SoundToggle />
           <SyncStatus />
           <motion.button
             whileTap={{ scale: 0.95 }}
@@ -357,48 +365,145 @@ export function TherapistDashboard() {
           </Card>
         )}
 
-        {/* ── KPIs row ───────────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
-          <Kpi label="Retos completados" value={completedWays.length} color={C.indigo} bg="#E8E9FF" />
-          <Kpi label="XP total" value={totalXp} color={C.amber} bg="#FEF3C7" />
-          <Kpi
-            label="Sesiones relajación"
-            value={Object.values(relaxationLog).filter((r: any) => r.completed).length}
-            color={C.teal}
-            bg="#CCFBF1"
-          />
-        </div>
-
-        {/* ── Two-column layout (stacks on mobile) ──────────────── */}
+        {/* ── Tabs Navigation ────────────────────────────────────── */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: 16,
+          display: 'flex', gap: 20, borderBottom: `2px solid ${C.border}`,
+          padding: '0 8px', marginBottom: 8
         }}>
-          <AnnexHeatmap />
-          <AlertPanel />
-        </div>
-
-        {/* ── Actions ────────────────────────────────────────────── */}
-        <Card>
-          <SectionTitle>⚡ Acciones</SectionTitle>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <ReportGenerator />
-            <motion.button
-              whileTap={{ scale: 0.97 }}
-              onClick={() => navigate('/editor')}
+          {[
+            { id: 'overview', label: 'Resumen', icon: '📋' },
+            { id: 'evolution', label: 'Evolución', icon: '📊' },
+            { id: 'objectives', label: 'Objetivos', icon: '🎯' },
+            { id: 'notes', label: 'Notas Clínicas', icon: '📝' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
               style={{
-                background: '#E8E9FF', color: C.indigo, border: `1.5px solid ${C.border}`,
-                borderRadius: 14, padding: '13px 18px',
-                fontWeight: 700, fontSize: 14, cursor: 'pointer', textAlign: 'left',
+                background: 'transparent', border: 'none',
+                padding: '12px 4px', cursor: 'pointer',
+                fontSize: 14, fontWeight: 700, color: activeTab === tab.id ? C.indigo : C.muted,
+                position: 'relative', display: 'flex', alignItems: 'center', gap: 8
               }}
             >
-              ✏️ Crear nuevo WAY (Editor Visual)
-            </motion.button>
-          </div>
-        </Card>
+              <span>{tab.icon}</span>
+              {tab.label}
+              {activeTab === tab.id && (
+                <motion.div
+                  layoutId="activeTab"
+                  style={{
+                    position: 'absolute', bottom: -2, left: 0, right: 0,
+                    height: 3, background: C.indigo, borderRadius: 3
+                  }}
+                />
+              )}
+            </button>
+          ))}
+        </div>
 
-        <KioskPanel />
+        {activeTab === 'overview' && (
+          <>
+            {/* ── KPIs row ───────────────────────────────────────────── */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10 }}>
+              <Kpi label="Retos completados" value={completedWays.length} color={C.indigo} bg="#E8E9FF" />
+              <Kpi label="XP total" value={totalXp} color={C.amber} bg="#FEF3C7" />
+              <Kpi
+                label="Sesiones relajación"
+                value={Object.values(relaxationLog).filter((r: any) => r.completed).length}
+                color={C.teal}
+                bg="#CCFBF1"
+              />
+            </div>
+
+            <Card style={{ marginBottom: 16 }}>
+              <ClinicalRadar 
+                completedWays={completedWays}
+                relaxationLog={relaxationLog}
+                roleplayLog={roleplayLog}
+                streakDays={streakDays}
+                totalXp={totalXp}
+                patientName={patient?.name || 'Paciente'}
+                previousScores={{ autonomy: 40, assertiveness: 30, regulation: 50, social: 20, persistence: 45 }} // Mocked previous for demo
+              />
+            </Card>
+
+            {/* ── Two-column layout (stacks on mobile) ──────────────── */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: 16,
+            }}>
+              <AnnexHeatmap />
+              <AlertPanel />
+            </div>
+
+            {/* ── Objectives Mini-Summary ─────────────────────────── */}
+            {patient && patient.objectives && patient.objectives.length > 0 && (
+              <Card>
+                <SectionTitle>🎯 Objetivos en curso</SectionTitle>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {patient.objectives.filter(o => o.status !== 'achieved').map(obj => {
+                    const prog = (obj.currentValue / obj.targetValue) * 100;
+                    return (
+                      <div key={obj.id}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 4 }}>
+                          <span style={{ fontWeight: 600 }}>{obj.title}</span>
+                          <span style={{ color: C.muted }}>{obj.currentValue}/{obj.targetValue} {obj.unit}</span>
+                        </div>
+                        <div style={{ height: 6, background: '#F1F2FF', borderRadius: 3, overflow: 'hidden' }}>
+                          <div style={{ height: '100%', width: `${prog}%`, background: C.indigo, borderRadius: 3 }} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <button 
+                    onClick={() => setActiveTab('objectives')}
+                    style={{ 
+                      background: 'transparent', border: 'none', color: C.indigo, 
+                      fontSize: 12, fontWeight: 700, cursor: 'pointer', textAlign: 'center',
+                      marginTop: 4
+                    }}
+                  >
+                    Ver todos los objetivos →
+                  </button>
+                </div>
+              </Card>
+            )}
+
+            {/* ── Actions ────────────────────────────────────────────── */}
+            <Card>
+              <SectionTitle>⚡ Acciones</SectionTitle>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <ReportGenerator />
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => navigate('/editor')}
+                  style={{
+                    background: '#E8E9FF', color: C.indigo, border: `1.5px solid ${C.border}`,
+                    borderRadius: 14, padding: '13px 18px',
+                    fontWeight: 700, fontSize: 14, cursor: 'pointer', textAlign: 'left',
+                  }}
+                >
+                  ✏️ Crear nuevo WAY (Editor Visual)
+                </motion.button>
+              </div>
+            </Card>
+
+            <KioskPanel />
+          </>
+        )}
+
+        {activeTab === 'evolution' && (
+          <EvolutionCharts />
+        )}
+
+        {activeTab === 'objectives' && patient && (
+          <ObjectivesTab patient={patient} />
+        )}
+
+        {activeTab === 'notes' && (
+          <TherapistNotes patientId={patient?.id || 'demo-1'} />
+        )}
 
       </div>
     </div>

@@ -1,0 +1,126 @@
+.daily-chest-container {
+  position: relative;
+  width: 100%;
+  padding: 24px;
+  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  border-radius: 32px;
+  color: white;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.daily-chest-sparkle {
+  position: absolute;
+  font-size: 24px;
+  animation: sparkle-float 2s infinite ease-in-out;
+}
+
+@keyframes sparkle-float {
+  0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.8; }
+  50% { transform: scale(1.5) rotate(15deg); opacity: 1; }
+}
+
+.chest-visual {
+  font-size: 80px;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  user-select: none;
+}
+
+.chest-visual:hover:not(.opening) {
+  transform: scale(1.1) rotate(5deg);
+}
+
+.chest-visual.opening {
+  animation: chest-shake 0.5s infinite;
+}
+
+@keyframes chest-shake {
+  0% { transform: rotate(0deg) scale(1.1); }
+  25% { transform: rotate(5deg) scale(1.1); }
+  50% { transform: rotate(0deg) scale(1.1); }
+  75% { transform: rotate(-5deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1.1); }
+}
+
+.reward-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.reward-card {
+  background: white;
+  width: 100%;
+  maxWidth: 340px;
+  border-radius: 40px;
+  padding: 40px 24px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.reward-rarity-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.rarity-common { background: #f1f5f9; color: #64748b; }
+.rarity-rare { background: #dbeafe; color: #2563eb; }
+.rarity-epic { background: #f3e8ff; color: #9333ea; }
+.rarity-legendary { background: #fef3c7; color: #d97706; }
+
+.reward-icon-container {
+  font-size: 100px;
+  margin: 24px 0;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.1));
+  animation: reward-reveal 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes reward-reveal {
+  0% { transform: scale(0) rotate(-45deg); }
+  70% { transform: scale(1.2) rotate(10deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.claim-button {
+  width: 100%;
+  padding: 16px;
+  border-radius: 20px;
+  border: none;
+  background: #4f46e5;
+  color: white;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+  transition: all 0.2s;
+}
+
+.claim-button:active {
+  transform: scale(0.95);
+}
+
+.confetti-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}

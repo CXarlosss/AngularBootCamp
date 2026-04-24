@@ -37,7 +37,7 @@ export const RoleplayGuidePage: React.FC = () => {
   
   const [selectedScenario, setSelectedScenario] = useState<string | null>(null);
 
-  const todayLog = roleplayLog[today] || [];
+  const todayLog = (roleplayLog || {})[today] || [];
 
   const handlePractice = (wayId: string) => {
     logRoleplay(today, wayId);
@@ -115,7 +115,7 @@ export const RoleplayGuidePage: React.FC = () => {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
                 {ROLEPLAY_SCENARIOS.map((scenario) => {
-                  const isDone = todayLog.includes(scenario.wayId);
+                  const isDone = (todayLog || []).includes(scenario.wayId);
                   return (
                     <motion.button
                       key={scenario.wayId}
@@ -152,7 +152,7 @@ export const RoleplayGuidePage: React.FC = () => {
                     const date = new Date();
                     const dayDiff = idx - todayIndex;
                     const targetDate = format(new Date(date.setDate(date.getDate() + dayDiff)), 'yyyy-MM-dd');
-                    const dayLog = roleplayLog[targetDate] || [];
+                    const dayLog = (roleplayLog || {})[targetDate] || [];
                     const isToday = idx === todayIndex;
                     
                     return (

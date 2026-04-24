@@ -5,9 +5,7 @@ import './app/providers/i18n'
 import App from './App.tsx'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
+  <App />
 )
 
 // Register Service Worker for offline support

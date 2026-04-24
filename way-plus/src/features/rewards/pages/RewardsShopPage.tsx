@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRewardsStore } from '../store/rewardsStore';
+import { useAudio } from '@/core/hooks/useAudio';
 import { SHOP_CATALOG } from '../data/shopCatalog';
+import { BOOSTS_CATALOG } from '../data/boosts';
 import type { ShopItem } from '../data/shopCatalog';
+import type { Boost } from '../data/boosts';
 
 /* ─── colours ────────────────────────────────────────────────────── */
 const C = {
@@ -26,31 +29,39 @@ const RARITY_STYLE: Record<string, { border: string; bg: string; label: string; 
 };
 
 const CATEGORIES = [
-  { id: 'all',        label: 'TODO',     icon: '🏪' },
-  { id: 'base',       label: 'AMIGOS',   icon: '🦄' },
-  { id: 'hat',        label: 'GORROS',   icon: '🧢' },
-  { id: 'cape',       label: 'CAPAS',    icon: '🦸' },
-  { id: 'shoes',      label: 'ZAPATOS',  icon: '👟' },
-  { id: 'background', label: 'CASAS',    icon: '🏰' },
+  { id: 'all',   label: 'TODO',    icon: '🏪' },
+  { id: 'base',  label: 'AMIGOS',  icon: '🦄' },
+  { id: 'hat',   label: 'GORROS',  icon: '🧢' },
+  { id: 'cape',  label: 'CAPAS',   icon: '🦸' },
+  { id: 'shoes', label: 'ZAPATOS', icon: '👟' },
+  { id: 'pet',   label: 'MASCOTAS', icon: '🐾' },
+  { id: 'boost', label: 'POCIONES', icon: '🧪' },
 ];
 
 /* ─── Purchase Modal ─────────────────────────────────────────────── */
 function PurchaseModal({
   item, coins, onClose, onConfirm,
 }: {
-  item: ShopItem | null;
+  item: ShopItem | Boost | null;
   coins: number;
   onClose: () => void;
   onConfirm: () => void;
 }) {
   const [status, setStatus] = useState<'idle' | 'success' | 'fail'>('idle');
+  const { playSFX } = useAudio();
 
   if (!item) return null;
   const canAfford = coins >= item.price;
 
   const handleBuy = () => {
-    if (!canAfford) { setStatus('fail'); return; }
+    if (!canAfford) { 
+      playSFX('error');
+      setStatus('fail'); 
+      return; 
+    }
+    playSFX('coins');
     onConfirm();
+    playSFX('success');
     setStatus('success');
     setTimeout(() => { setStatus('idle'); onClose(); }, 1800);
   };
@@ -146,10 +157,16 @@ function PurchaseModal({
 function ShopItemCard({ item, onTap }: { item: ShopItem; onTap: () => void }) {
   const wayCoins       = useRewardsStore(s => s.wayCoins) ?? 0;
   const purchaseHistory = useRewardsStore(s => s.purchaseHistory) ?? [];
+  const { playSFX } = useAudio();
   const currentAvatar  = useRewardsStore(s => s.currentAvatar);
+  const ownedBoosts    = useRewardsStore(s => s.ownedBoosts) || {};
 
-  const owned    = purchaseHistory.includes(item.id) || item.price === 0;
-  const equipped = currentAvatar?.[item.category as keyof typeof currentAvatar] === item.id;
+  const isBoost = (item as any).effect !== undefined;
+  const owned    = isBoost 
+    ? (ownedBoosts[item.id] > 0)
+    : (purchaseHistory || []).includes(item.id) || item.price === 0;
+
+  const equipped = !isBoost && currentAvatar?.[item.category as keyof typeof currentAvatar] === item.id;
   const canAfford = wayCoins >= item.price;
   const rs = RARITY_STYLE[item.rarity] ?? RARITY_STYLE.common;
 
@@ -157,17 +174,17 @@ function ShopItemCard({ item, onTap }: { item: ShopItem; onTap: () => void }) {
     <motion.button
       whileHover={{ y: -3, boxShadow: '0 8px 24px rgba(79,70,229,.15)' }}
       whileTap={{ scale: 0.95 }}
-      onClick={onTap}
+      onClick={() => { playSFX('click'); onTap(); }}
       style={{
         background: rs.bg,
         border: `2px solid ${equipped ? C.emerald : rs.border}`,
-        borderRadius: 20, padding: '16px 12px',
+        borderRadius: 16, padding: '12px 8px',
         cursor: 'pointer', textAlign: 'center',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
         position: 'relative', overflow: 'hidden',
         boxShadow: equipped ? `0 0 0 3px ${C.emerald}` : 'none',
         transition: 'box-shadow .2s',
-        minHeight: 160,
+        minHeight: 130,
         justifyContent: 'space-between',
       }}
     >
@@ -181,17 +198,17 @@ function ShopItemCard({ item, onTap }: { item: ShopItem; onTap: () => void }) {
 
       {/* Rarity label */}
       <span style={{
-        fontSize: 9, fontWeight: 700, letterSpacing: '0.6px',
+        fontSize: 8, fontWeight: 700, letterSpacing: '0.6px',
         color: C.muted, textTransform: 'uppercase',
       }}>{rs.label}</span>
 
       {/* Icon */}
-      <span style={{ fontSize: 48, lineHeight: 1 }}>{item.icon}</span>
+      <span style={{ fontSize: 36, lineHeight: 1 }}>{item.icon}</span>
 
       {/* Name */}
       <span style={{
-        fontSize: 12, fontWeight: 700, color: C.text,
-        lineHeight: 1.3, textAlign: 'center',
+        fontSize: 10, fontWeight: 700, color: C.text,
+        lineHeight: 1.2, textAlign: 'center',
       }}>{item.name}</span>
 
       {/* Price / state */}
@@ -204,16 +221,19 @@ function ShopItemCard({ item, onTap }: { item: ShopItem; onTap: () => void }) {
           }}>✅ PUESTO</div>
         ) : owned ? (
           <div style={{
-            background: '#E8E9FF', color: C.indigo,
+            background: isBoost ? '#FEF3C7' : '#E8E9FF', 
+            color: isBoost ? C.amber : C.indigo,
             borderRadius: 10, padding: '6px 0',
             fontWeight: 700, fontSize: 12,
-          }}>PONERME</div>
+          }}>
+            {isBoost ? `TIENES ${ownedBoosts[item.id] || 0}` : 'PONERME'}
+          </div>
         ) : (
           <div style={{
             background: canAfford ? '#FEF3C7' : '#F3F4F6',
             color: canAfford ? C.amber : C.muted,
-            borderRadius: 10, padding: '6px 0',
-            fontWeight: 700, fontSize: 13,
+            borderRadius: 8, padding: '4px 0',
+            fontWeight: 700, fontSize: 11,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
           }}>
             <span>🪙</span>{item.price}
@@ -231,12 +251,19 @@ export function RewardsShopPage() {
   const purchaseHistory = useRewardsStore(s => s.purchaseHistory) ?? [];
   const currentAvatar   = useRewardsStore(s => s.currentAvatar);
   const purchaseItem    = useRewardsStore(s => s.purchaseItem);
+  const purchaseBoost   = useRewardsStore(s => s.purchaseBoost);
   const equipPart       = useRewardsStore(s => s.equipPart);
+  const { playSFX } = useAudio();
 
   const [category, setCategory] = useState('all');
-  const [selected, setSelected] = useState<ShopItem | null>(null);
+  const [selected, setSelected] = useState<ShopItem | Boost | null>(null);
 
-  const filtered = SHOP_CATALOG.filter(
+  const ALL_ITEMS = [
+    ...SHOP_CATALOG,
+    ...BOOSTS_CATALOG.map(b => ({ ...b, category: 'boost' }))
+  ] as ShopItem[];
+
+  const filtered = ALL_ITEMS.filter(
     item => category === 'all' || item.category === category
   );
 
@@ -246,20 +273,27 @@ export function RewardsShopPage() {
     currentAvatar?.base === 'base-kitten' ? '🐱' : '🦄';
 
   const handleTap = (item: ShopItem) => {
-    const owned = (purchaseHistory ?? []).includes(item.id) || item.price === 0;
+    const isBoost = (item as any).effect !== undefined;
+    const owned = isBoost ? false : (purchaseHistory ?? []).includes(item.id) || item.price === 0;
+    
     if (owned) {
-      // Already owned → just equip
       equipPart(item.category as any, item.id as any);
     } else {
-      setSelected(item);
+      setSelected(item as any);
     }
   };
 
   const handleConfirmPurchase = () => {
     if (!selected) return;
-    const result = purchaseItem(selected.id as any);
-    if (result?.success) {
-      equipPart(selected.category as any, selected.id as any);
+    const isBoost = (selected as any).effect !== undefined;
+    
+    if (isBoost) {
+      purchaseBoost(selected.id);
+    } else {
+      const result = purchaseItem(selected.id as any);
+      if (result?.success) {
+        equipPart(selected.category as any, selected.id as any);
+      }
     }
   };
 
@@ -274,7 +308,7 @@ export function RewardsShopPage() {
       }}>
         <div style={{ maxWidth: 480, margin: '0 auto' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
+            <div onClick={() => { playSFX('click'); navigate('/'); }} style={{ cursor: 'pointer' }}>
               <div style={{ fontWeight: 800, fontSize: 20, color: '#fff' }}>🏪 Tienda WAY+</div>
               <div style={{ color: '#A5B4FC', fontSize: 13 }}>Escaparate de ilusiones</div>
             </div>
@@ -305,45 +339,50 @@ export function RewardsShopPage() {
           <div style={{
             background: 'rgba(255,255,255,.1)', borderRadius: 12,
             padding: '8px 12px', fontSize: 12, color: '#C7D2FE', textAlign: 'center',
+            marginBottom: 20
           }}>
             👆 Toca un artículo para probártelo · Toca dos veces para comprar
+          </div>
+
+          {/* ── Category filter ─────────────────────────────────── */}
+          <div style={{
+            display: 'flex', gap: 12, overflowX: 'auto',
+            paddingBottom: 4,
+            scrollbarWidth: 'none',
+            justifyContent: 'space-between'
+          }}>
+            {CATEGORIES.map(cat => (
+              <motion.button
+                key={cat.id}
+                whileTap={{ scale: 0.92 }}
+                onClick={() => { playSFX('click'); setCategory(cat.id); }}
+                style={{
+                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+                  padding: '8px 4px', borderRadius: 16, flexShrink: 0,
+                  border: 'none',
+                  background: category === cat.id ? 'rgba(255,255,255,0.2)' : 'transparent',
+                  color: '#fff',
+                  fontWeight: 900, fontSize: 9, cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  opacity: category === cat.id ? 1 : 0.5,
+                  minWidth: 64
+                }}
+              >
+                <span style={{ fontSize: 24 }}>{cat.icon}</span>
+                <span style={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>{cat.label}</span>
+              </motion.button>
+            ))}
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '16px 12px' }}>
-
-        {/* ── Category filter ─────────────────────────────────── */}
-        <div style={{
-          display: 'flex', gap: 8, overflowX: 'auto',
-          paddingBottom: 8, marginBottom: 16,
-          scrollbarWidth: 'none',
-        }}>
-          {CATEGORIES.map(cat => (
-            <motion.button
-              key={cat.id}
-              whileTap={{ scale: 0.92 }}
-              onClick={() => setCategory(cat.id)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '8px 14px', borderRadius: 20, flexShrink: 0,
-                border: `2px solid ${category === cat.id ? C.indigo : C.border}`,
-                background: category === cat.id ? C.indigo : C.white,
-                color: category === cat.id ? '#fff' : C.muted,
-                fontWeight: 700, fontSize: 12, cursor: 'pointer',
-              }}
-            >
-              <span>{cat.icon}</span>
-              <span>{cat.label}</span>
-            </motion.button>
-          ))}
-        </div>
+      <div style={{ maxWidth: 480, margin: '0 auto', padding: '24px 12px' }}>
 
         {/* ── Grid ─────────────────────────────────────────────── */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 12,
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 10,
         }}>
           {filtered.map(item => (
             <ShopItemCard
