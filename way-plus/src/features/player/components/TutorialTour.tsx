@@ -37,7 +37,7 @@ export const TutorialTour: React.FC = () => {
 
   useEffect(() => {
     // Solo mostrar si no se ha completado el tutorial
-    if (!profile.tutorialCompleted) {
+    if (!profile?.tutorialCompleted) {
       const timer = setTimeout(() => setShow(true), 1500);
       return () => clearTimeout(timer);
     }

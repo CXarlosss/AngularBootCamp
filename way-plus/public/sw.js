@@ -27,7 +27,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys
-          .filter((key) => !key.includes('v2'))
+          .filter((key) => key && key.includes && !key.includes('v2'))
           .map((key) => caches.delete(key))
       );
     })

@@ -14,7 +14,7 @@ export interface DailyQuest {
 }
 
 export function useDailyQuests(): DailyQuest[] {
-  const completedWays = usePlayerStore((s) => s.profile.completedWays);
+  const completedWays = usePlayerStore((s) => s.profile?.completedWays);
   
   return useMemo(() => {
     const allSteps = Object.values(ALL_STEPS);

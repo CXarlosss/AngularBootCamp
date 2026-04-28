@@ -175,12 +175,12 @@ export function LevelSelectPage() {
           </button>
         </div>
         <div style={{ fontSize: 13, fontWeight: 600, color: C.slate, marginBottom: 12 }}>
-          Progreso {profile?.currentLevel?.toUpperCase() || ''} — {completedCount}/{totalWaysInLevel} WAYS
+          Progreso {(profile?.currentLevel || 'pregamer').toUpperCase()} — {completedCount}/{totalWaysInLevel} WAYS
         </div>
         <div style={{ height: 10, background: 'rgba(255,255,255,0.5)', borderRadius: 5, overflow: 'hidden' }}>
           <motion.div 
             initial={{ width: 0 }}
-            animate={{ width: `${progressPct}%` }}
+            animate={{ width: `${Math.min(100, progressPct)}%` }}
             transition={{ duration: 1, ease: 'easeOut' }}
             style={{ height: '100%', background: C.indigo, borderRadius: 5 }}
           />
