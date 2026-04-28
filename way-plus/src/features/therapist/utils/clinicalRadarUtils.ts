@@ -44,6 +44,7 @@ export function calculateCompetencies(data: {
   streakDays: number;
   totalXp: number;
 }): CompetencyScores {
+  const { completedWays, relaxationLog, roleplayLog, streakDays, totalXp } = data;
   const safeWays = Array.isArray(completedWays) ? completedWays : [];
 
   // 1. Autonomía: Diversity of ways + total completed
@@ -97,9 +98,10 @@ export const detectImbalances = (scores: CompetencyScores): Imbalance[] => {
         
         worstImbalance = {
           type: diff > 60 ? 'danger' : 'warning',
-          message: `Se observa un desarrollo muy potente en ${COMPETENCY_LABELS[strongerArea]}, lo que nos da una gran oportunidad para fortalecer ${COMPETENCY_LABELS[weakerArea]} y equilibrar el perfil.`,
+          message: `Se observa un desarrollo muy potente en ${COMPETENCY_LABELS[strongerArea]}, lo que nos da una gran oportunidad para fortalecer ${COMPETENCY_LABELS[weakerArea]} equilibrar el perfil.`,
           areaA: strongerArea,
-          areaB: weakerArea
+          areaB: weakerArea,
+          diff: diff
         };
       }
     }

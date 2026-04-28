@@ -45,6 +45,7 @@ function FamilyCard({ children, style = {}, title, icon }: { children: React.Rea
 
 export function ParentsDashboard() {
   const profile = usePlayerStore(s => s.profile);
+  if (!profile) return <div style={{ padding: 40, textAlign: 'center' }}>Cargando perfil...</div>;
   const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
   const roleplayLog = usePlayerStore(s => s.roleplayLog) ?? {};
   const { totalXp = 0, streakDays = 0, inventory = [] } = useRewardsStore();

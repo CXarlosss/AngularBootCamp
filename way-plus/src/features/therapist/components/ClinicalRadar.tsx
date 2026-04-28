@@ -169,8 +169,8 @@ export const ClinicalRadar: React.FC<ClinicalRadarProps> = ({
             💡 Recomendación Clínica
           </div>
           {imbalances.length > 0 
-            ? `Se recomienda priorizar actividades en el área de ${imbalances[0].areaB} para equilibrar el desarrollo competencial.`
-            : `El desarrollo es equilibrado. Continuar con el plan actual fomentando la ${Object.entries(scores).sort((a,b) => a[1]-b[1])[0][1]} como siguiente reto.`}
+            ? `Se recomienda priorizar actividades en el área de ${COMPETENCY_LABELS[imbalances[0].areaB as keyof CompetencyScores]} para equilibrar el desarrollo competencial.`
+            : `El desarrollo es equilibrado. Continuar con el plan actual fomentando la ${COMPETENCY_LABELS[Object.entries(scores).sort((a,b) => a[1]-b[1])[0][0] as keyof CompetencyScores]} como siguiente reto.`}
         </div>
       )}
     </div>
