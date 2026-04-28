@@ -86,21 +86,23 @@ export const registry = {
     const cached = Array.from(memCache.values()).filter(s => s.levelId === levelId);
     if (cached.length > 0) return cached.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-    // 2. Try cloud (non-blocking: if it fails we fall through)
-    // TEMPORARILY DISABLED: The Supabase cloud is returning steps with empty ways, 
-    // which overwrites the local functional steps and causes "0/0 WAYS".
-    /*
+    // 2. Try cloud (non-blocking)
     if (navigator.onLine) {
-      const cloudSteps = await fetchFromCloud(levelId);
-      if (cloudSteps.length > 0) {
-        cloudSteps.forEach(s => {
-          memCache.set(s.id, s);
-          idbSet(s.id, s).catch(() => {});
-        });
-        return cloudSteps;
+      try {
+        const cloudSteps = await fetchFromCloud(levelId);
+        if (cloudSteps && cloudSteps.length > 0) {
+          cloudSteps.forEach(s => {
+            if (s && s.id) {
+              memCache.set(s.id, s);
+              idbSet(s.id, s).catch(() => {});
+            }
+          });
+          return cloudSteps.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        }
+      } catch (e) {
+        console.error('[Registry] Cloud fetch error:', e);
       }
     }
-    */
 
     // 3. IndexedDB
     // TEMPORARILY DISABLED: Ignoring IndexedDB steps if they have 0 ways (bad sync state)

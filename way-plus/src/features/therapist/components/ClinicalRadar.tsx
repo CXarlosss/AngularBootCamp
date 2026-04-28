@@ -18,6 +18,7 @@ interface ClinicalRadarProps {
   totalXp: number;
   previousScores?: CompetencyScores;
   patientName: string;
+  readOnly?: boolean;
 }
 
 export const ClinicalRadar: React.FC<ClinicalRadarProps> = ({
@@ -27,8 +28,10 @@ export const ClinicalRadar: React.FC<ClinicalRadarProps> = ({
   streakDays,
   totalXp,
   previousScores,
-  patientName
+  patientName,
+  readOnly = false
 }) => {
+// ... (rest of the logic remains same until the return)
   const scores = useMemo(() => 
     calculateCompetencies({ completedWays, relaxationLog, roleplayLog, streakDays, totalXp }),
   [completedWays, relaxationLog, roleplayLog, streakDays, totalXp]);
@@ -146,7 +149,7 @@ export const ClinicalRadar: React.FC<ClinicalRadarProps> = ({
         ))}
       </div>
 
-      {imbalances.length > 0 && (
+      {!readOnly && imbalances.length > 0 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {imbalances.map((imb, i) => (
             <div key={i} className={`imbalance-alert ${imb.type}`}>
@@ -157,17 +160,19 @@ export const ClinicalRadar: React.FC<ClinicalRadarProps> = ({
         </div>
       )}
 
-      <div style={{ 
-        marginTop: 8, padding: 16, borderRadius: 16, background: '#F8FAFF', 
-        border: '1.5px solid #E8E9FF', fontSize: 13, color: '#475569', lineHeight: 1.5 
-      }}>
-        <div style={{ fontWeight: 800, color: '#1E1B4B', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
-          💡 Recomendación Clínica
+      {!readOnly && (
+        <div style={{ 
+          marginTop: 8, padding: 16, borderRadius: 16, background: '#F8FAFF', 
+          border: '1.5px solid #E8E9FF', fontSize: 13, color: '#475569', lineHeight: 1.5 
+        }}>
+          <div style={{ fontWeight: 800, color: '#1E1B4B', marginBottom: 4, display: 'flex', alignItems: 'center', gap: 6 }}>
+            💡 Recomendación Clínica
+          </div>
+          {imbalances.length > 0 
+            ? `Se recomienda priorizar actividades en el área de ${imbalances[0].areaB} para equilibrar el desarrollo competencial.`
+            : `El desarrollo es equilibrado. Continuar con el plan actual fomentando la ${Object.entries(scores).sort((a,b) => a[1]-b[1])[0][1]} como siguiente reto.`}
         </div>
-        {imbalances.length > 0 
-          ? `Se recomienda priorizar actividades en el área de ${imbalances[0].areaB} para equilibrar el desarrollo competencial.`
-          : `El desarrollo es equilibrado. Continuar con el plan actual fomentando la ${Object.entries(scores).sort((a,b) => a[1]-b[1])[0][1]} como siguiente reto.`}
-      </div>
+      )}
     </div>
   );
 };

@@ -44,23 +44,23 @@ export function calculateCompetencies(data: {
   streakDays: number;
   totalXp: number;
 }): CompetencyScores {
-  const { completedWays, relaxationLog, roleplayLog, streakDays, totalXp } = data;
+  const safeWays = Array.isArray(completedWays) ? completedWays : [];
 
   // 1. Autonomía: Diversity of ways + total completed
-  const autonomyScore = Math.min(100, (completedWays.length * 2) + (new Set(completedWays.map(id => id.split('-')[0])).size * 10));
+  const autonomyScore = Math.min(100, (safeWays.length * 2) + (new Set(safeWays.map(id => id ? id.split('-')[0] : '')).size * 10));
 
   // 2. Asertividad: Specific "assertive" ways
-  const assertiveWays = completedWays.filter(id => id.includes('assertive')).length;
+  const assertiveWays = safeWays.filter(id => id && typeof id === 'string' && id.includes('assertive')).length;
   const assertivenessScore = Math.min(100, assertiveWays * 15 + 10);
 
   // 3. Autorregulación: Relaxation sessions + "relax" ways
-  const relaxSessions = Object.values(relaxationLog).filter(r => r.completed).length;
-  const relaxWays = completedWays.filter(id => id.includes('relax')).length;
+  const relaxSessions = Object.values(relaxationLog || {}).filter((r: any) => r && r.completed).length;
+  const relaxWays = safeWays.filter(id => id && typeof id === 'string' && id.includes('relax')).length;
   const regulationScore = Math.min(100, (relaxSessions * 5) + (relaxWays * 10));
 
   // 4. Social: Roleplay sessions + "social" ways
-  const roleplaySessions = Object.keys(roleplayLog).length;
-  const socialWays = completedWays.filter(id => id.includes('social')).length;
+  const roleplaySessions = Object.keys(roleplayLog || {}).length;
+  const socialWays = safeWays.filter(id => id && typeof id === 'string' && id.includes('social')).length;
   const socialScore = Math.min(100, (roleplaySessions * 8) + (socialWays * 12));
 
   // 5. Persistencia: Streaks + XP / 100
@@ -78,32 +78,34 @@ export function calculateCompetencies(data: {
 /**
  * Detects significant gaps between competencies.
  */
-export function detectImbalances(scores: CompetencyScores): Imbalance[] {
-  const imbalances: Imbalance[] = [];
+export const detectImbalances = (scores: CompetencyScores): Imbalance[] => {
+  let maxDiff = 0;
+  let worstImbalance: Imbalance | null = null;
   const entries = Object.entries(scores) as [keyof CompetencyScores, number][];
 
   for (let i = 0; i < entries.length; i++) {
     for (let j = i + 1; j < entries.length; j++) {
-      const [keyA, valA] = entries[i];
-      const [keyB, valB] = entries[j];
-      const diff = Math.abs(valA - valB);
-
-      if (diff > 35) {
-        imbalances.push({
-          type: diff > 50 ? 'danger' : 'warning',
-          areaA: COMPETENCY_LABELS[keyA],
-          areaB: COMPETENCY_LABELS[keyB],
-          diff,
-          message: diff > 50 
-            ? `Gran disparidad entre ${COMPETENCY_LABELS[keyA]} y ${COMPETENCY_LABELS[keyB]}.`
-            : `Desequilibrio moderado entre ${COMPETENCY_LABELS[keyA]} y ${COMPETENCY_LABELS[keyB]}.`
-        });
+      const [nameA, scoreA] = entries[i];
+      const [nameB, scoreB] = entries[j];
+      const diff = Math.abs(scoreA - scoreB);
+      
+      // Encontrar el desequilibrio más significativo que supere el umbral
+      if (diff > 40 && diff > maxDiff) {
+        maxDiff = diff;
+        const strongerArea = scoreA > scoreB ? nameA : nameB;
+        const weakerArea = scoreA > scoreB ? nameB : nameA;
+        
+        worstImbalance = {
+          type: diff > 60 ? 'danger' : 'warning',
+          message: `Se observa un desarrollo muy potente en ${COMPETENCY_LABELS[strongerArea]}, lo que nos da una gran oportunidad para fortalecer ${COMPETENCY_LABELS[weakerArea]} y equilibrar el perfil.`,
+          areaA: strongerArea,
+          areaB: weakerArea
+        };
       }
     }
   }
-
-  return imbalances;
-}
+  return worstImbalance ? [worstImbalance] : [];
+};
 
 export function getProfileLabel(scores: CompetencyScores): string {
   const avg = Object.values(scores).reduce((a, b) => a + b, 0) / 5;

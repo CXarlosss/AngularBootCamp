@@ -185,7 +185,7 @@ export const useRewardsStore = create<RewardsState>()(
           return { success: false, message: 'Ya lo tienes' };
         }
         if (state.wayCoins < item.price) {
-          return { success: false, message: 'Necesitas más monedas' };
+          return { success: false, message: 'Necesitas más medallas' };
         }
         
         set((draft) => {
@@ -298,7 +298,7 @@ export const useRewardsStore = create<RewardsState>()(
         
         if (!boost) return { success: false, message: 'Boost no existe' };
         if (state.wayCoins < boost.price) {
-          return { success: false, message: 'Necesitas más monedas' };
+          return { success: false, message: 'Necesitas más medallas' };
         }
         
         set((draft) => {
@@ -480,6 +480,8 @@ export const useRewardsStore = create<RewardsState>()(
           collectedStickers: merged.collectedStickers || [],
           achievements: merged.achievements || [],
           purchaseHistory: merged.purchaseHistory || currentState.purchaseHistory,
+          claimedMissions: merged.claimedMissions || [],
+          unlockedSecrets: merged.unlockedSecrets || [],
         };
       },
       storage: {

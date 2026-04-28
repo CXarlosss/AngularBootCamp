@@ -50,8 +50,11 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(request)
         .then((response) => {
-          const clone = response.clone();
-          caches.open(API_CACHE).then((cache) => cache.put(request, clone));
+          // Solo cacheamos peticiones GET. POST/PUT/PATCH/DELETE no son soportados por el Cache API
+          if (request.method === 'GET' && response.ok) {
+            const clone = response.clone();
+            caches.open(API_CACHE).then((cache) => cache.put(request, clone));
+          }
           return response;
         })
         .catch(() => caches.match(request))

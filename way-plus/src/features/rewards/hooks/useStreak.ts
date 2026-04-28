@@ -19,7 +19,7 @@ export function useStreak(
     
     const bonus = getDailyBonus(streakDays);
     onClaim(bonus);
-    audioService.playSFX('coin');
+    audioService.playSFX('coins');
 
     // Check if a milestone was reached today
     const milestone = STREAK_MILESTONES.find(m => m.day === streakDays);

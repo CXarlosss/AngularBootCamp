@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
-import { audioService, SoundType, AmbientZone } from '../utils/audioService';
+import { audioService } from '../utils/audioService';
+import type { SoundType, AmbientZone } from '../utils/audioService';
 
 /**
  * Hook to interact with the WAY+ Audio Engine

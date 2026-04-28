@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { TherapeuticObjective } from '../store/therapistStore';
+import type { TherapeuticObjective } from '../store/therapistStore';
 
 const CATEGORY_COLORS = {
   autonomy: '#4F46E5', // Indigo

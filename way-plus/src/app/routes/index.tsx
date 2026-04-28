@@ -38,6 +38,7 @@ const TherapistDashboard = lazy(() => import('@/features/therapist/pages/Therapi
 const WayEditorPage = lazy(() => import('@/features/editor/pages/WayEditorPage').then(m => ({ default: m.WayEditorPage })));
 const ZenModePage = lazy(() => import('@/features/annexes/pages/ZenModePage').then(m => ({ default: m.ZenModePage })));
 const ParentsDashboard = lazy(() => import('@/features/parents/pages/ParentsDashboard').then(m => ({ default: m.ParentsDashboard })));
+const PatientDetailView = lazy(() => import('@/features/therapist/pages/PatientDetailView').then(m => ({ default: m.PatientDetailView })));
 
 const Load = (Component: React.ComponentType) => (
   <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', fontWeight: 800, color: '#4F46E5' }}>Cargando módulo...</div>}>
@@ -69,12 +70,12 @@ export const router = createBrowserRouter([
         element: Load(WayEditorPage) 
       },
       { 
-        path: 'dashboard', 
+        path: 'therapist', 
         element: Load(TherapistDashboard) 
       },
       { 
-        path: 'therapist', 
-        element: Load(TherapistDashboard) 
+        path: 'therapist/patient/:patientId', 
+        element: Load(PatientDetailView) 
       },
       { 
         path: 'terapeuta', 

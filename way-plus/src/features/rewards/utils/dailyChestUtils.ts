@@ -11,9 +11,9 @@ export interface DailyReward {
 }
 
 export const REWARD_POOL: { weight: number; reward: DailyReward }[] = [
-  { weight: 40, reward: { id: 'r1', type: 'coins', name: 'Puñado de Monedas', amount: 15, rarity: 'common', icon: '🪙' } },
-  { weight: 25, reward: { id: 'r2', type: 'coins', name: 'Bolsa de Monedas', amount: 30, rarity: 'rare', icon: '💰' } },
-  { weight: 15, reward: { id: 'r3', type: 'coins', name: 'Cofre de Monedas', amount: 50, rarity: 'epic', icon: '🏦' } },
+  { weight: 40, reward: { id: 'r1', type: 'coins', name: 'Puñado de Medallas', amount: 15, rarity: 'common', icon: '🏅' } },
+  { weight: 25, reward: { id: 'r2', type: 'coins', name: 'Bolsa de Medallas', amount: 30, rarity: 'rare', icon: '🎖️' } },
+  { weight: 15, reward: { id: 'r3', type: 'coins', name: 'Cofre de Medallas', amount: 50, rarity: 'epic', icon: '🏆' } },
   { weight: 10, reward: { id: 'r4', type: 'sticker', name: 'Cromo Aleatorio', rarity: 'rare', icon: '📔' } },
   { weight: 8, reward: { id: 'r5', type: 'item', name: 'Accesorio Sorpresa', rarity: 'epic', icon: '🎁' } },
   { weight: 2, reward: { id: 'r6', type: 'coins', name: '¡EL BOTÍN GORDO!', amount: 150, rarity: 'legendary', icon: '👑' } },

@@ -26,7 +26,7 @@ export const MissionBoard: React.FC<Props> = ({ onClose }) => {
   const renderMission = (mission: any) => {
     const progress = missionProgress[mission.id] || 0;
     const isCompleted = progress >= mission.goal;
-    const isClaimed = claimedMissions.includes(mission.id);
+    const isClaimed = Array.isArray(claimedMissions) ? claimedMissions.includes(mission.id) : false;
     const progressPct = Math.min((progress / mission.goal) * 100, 100);
 
     return (

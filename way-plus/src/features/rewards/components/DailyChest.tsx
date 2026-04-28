@@ -83,10 +83,10 @@ export const DailyChest: React.FC<Props> = ({ lastOpenedDate, onClaimReward }) =
 
               <div style={{ marginBottom: 32 }}>
                 <div style={{ fontSize: 20, fontWeight: 900, color: '#4f46e5' }}>
-                  {reward.type === 'coins' ? `+${reward.amount} Monedas` : reward.name}
+                  {reward.type === 'coins' ? `+${reward.amount} Medallas` : reward.name}
                 </div>
                 <div style={{ fontSize: 14, color: '#64748b', marginTop: 4 }}>
-                  {reward.type === 'coins' ? 'WAY+ Coins añadidas a tu monedero' : '¡Nueva pieza para tu colección!'}
+                  {reward.type === 'coins' ? 'Añadidas a tu vitrina de logros' : '¡Nueva pieza para tu colección!'}
                 </div>
               </div>
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/core/hooks/useAudio';
-import { AmbientZone } from '@/core/utils/audioService';
+import type { AmbientZone } from '@/core/utils/audioService';
 import { ArrowLeft, Wind, Droplets, TreePine, Waves } from 'lucide-react';
 
 const ZEN_OPTIONS = [

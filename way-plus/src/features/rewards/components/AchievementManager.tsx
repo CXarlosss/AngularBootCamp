@@ -20,8 +20,7 @@ export function AchievementManager() {
 
     // Helper function to count completions by theme
     const countByTheme = (theme: string) => {
-      // Use partial string matching on the ID as a proxy for the theme
-      return completedWays.filter(id => id.toLowerCase().includes(theme.toLowerCase())).length;
+      return completedWays.filter(id => id && typeof id === 'string' && id.toLowerCase().includes(theme.toLowerCase())).length;
     };
 
     const unlocks: { id: string; condition: boolean }[] = [

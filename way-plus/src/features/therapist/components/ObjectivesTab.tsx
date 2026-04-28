@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTherapistStore, Patient } from '../store/therapistStore';
+import { useTherapistStore } from '../store/therapistStore';
+import type { Patient } from '../store/therapistStore';
 import { ObjectiveCard } from './ObjectiveCard';
 import { AddObjectiveModal } from './AddObjectiveModal';
 

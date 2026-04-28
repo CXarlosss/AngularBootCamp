@@ -74,7 +74,7 @@ export const assertivenessStep: Step = {
         {
           id: "opt-38a",
           image: "https://img.icons8.com/color/512/friends.png",
-          label: "Sí, juego mucho con otros",
+          label: "Sí, juego mucho con otros niños y niñas",
           isCorrect: true,
           feedback: { visual: "happy" }
         },
@@ -95,7 +95,7 @@ export const assertivenessStep: Step = {
       type: "double-choice",
       stimulus: {
         image: "https://img.icons8.com/color/512/shield.png",
-        text: "¿Cómo te defiendes si se meten contigo o te acusan de algo mentira?"
+        text: "¿Cómo te defiendes si se burlan de ti o te acusan de algo que no es verdad?"
       },
       options: [
         {

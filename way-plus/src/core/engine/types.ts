@@ -17,6 +17,7 @@ export interface Option {
 export interface Way {
   id: string;
   name?: string;
+  title?: string;
   stepId: string;
   type: WayType;
   order: number;

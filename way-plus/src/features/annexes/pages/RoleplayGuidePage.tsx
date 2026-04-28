@@ -21,7 +21,7 @@ const WEEK_DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábad
 const ROLEPLAY_SCENARIOS = [
   { wayId: 'way-1', title: 'Llamar a la puerta y pedir permiso', icon: '🚪', step: 'Asertividad' },
   { wayId: 'way-2', title: 'Hacer favores y ayudar a otros', icon: '🤝', step: 'Asertividad' },
-  { wayId: 'way-3', title: 'Pedir jugar con otros niños', icon: '🧒', step: 'Asertividad' },
+  { wayId: 'way-3', title: 'Pedir jugar con otros niños y niñas', icon: '🧒', step: 'Asertividad' },
   { wayId: 'way-6', title: 'Defenderse con palabras, no golpes', icon: '🛡️', step: 'Asertividad' },
   { wayId: 'way-9', title: 'Lavarse las manos antes de comer', icon: '🧼', step: 'Autonomía' },
   { wayId: 'way-11', title: 'Lavarse los dientes correctamente', icon: '🦷', step: 'Autonomía' },

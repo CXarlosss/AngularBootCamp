@@ -69,7 +69,7 @@ export const StreakTracker: React.FC<Props> = ({
           onClick={claimBonus}
         >
           {available && streakDays > 0 ? (
-            <>🎁 Reclamar Bonus (+{getDailyBonus(streakDays)} 🪙)</>
+            <>🎁 Reclamar Bonus (+{getDailyBonus(streakDays)} 🏅)</>
           ) : streakDays === 0 ? (
             <>Completa un reto para empezar</>
           ) : (
@@ -106,8 +106,8 @@ export const StreakTracker: React.FC<Props> = ({
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontSize: 24 }}>🪙</span>
-                    <span style={{ fontWeight: 800 }}>+{activeMilestone.reward.coins} Monedas WAY+</span>
+                    <span style={{ fontSize: 24 }}>🏅</span>
+                    <span style={{ fontWeight: 800 }}>+{activeMilestone.reward.coins} Medallas WAY+</span>
                   </div>
                   {activeMilestone.reward.item && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>

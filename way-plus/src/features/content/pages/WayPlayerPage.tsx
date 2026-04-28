@@ -96,7 +96,7 @@ export function WayPlayerPage() {
     if (currentWay && !celebration.show) {
       // Pequeño delay para que no choque con la transición
       const timer = setTimeout(() => {
-        audioService.speak(currentWay.name || '');
+        audioService.speak(currentWay.title ?? currentWay.name ?? '');
       }, 500);
       return () => clearTimeout(timer);
     }
@@ -214,11 +214,11 @@ export function WayPlayerPage() {
             fontSize: 24, fontWeight: 900, color: '#1E1B4B',
             textAlign: 'center', margin: 0,
           }}>
-            {currentWay.name || 'Reto'}
+            {currentWay.title ?? currentWay.name ?? 'Reto'}
           </h1>
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => audioService.speak(currentWay.name || '')}
+            onClick={() => audioService.speak(currentWay.title ?? currentWay.name ?? '')}
             style={{
               background: '#fff', border: '2px solid #E8E9FF',
               borderRadius: '50%', width: 44, height: 44, fontSize: 18,

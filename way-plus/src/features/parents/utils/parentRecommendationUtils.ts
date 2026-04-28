@@ -3,7 +3,7 @@
  * based on clinical radar data.
  */
 
-import { CompetencyScores, Imbalance } from '../../therapist/utils/clinicalRadarUtils';
+import type { CompetencyScores, Imbalance } from '../../therapist/utils/clinicalRadarUtils';
 
 export interface ParentRecommendation {
   id: string;
@@ -17,28 +17,28 @@ export interface ParentRecommendation {
 export function generateRecommendations(scores: CompetencyScores, imbalances: Imbalance[]): ParentRecommendation[] {
   const recommendations: ParentRecommendation[] = [];
 
-  // 1. Check for critical imbalances
+  // 1. Check for areas to nourish (formerly imbalances)
   imbalances.forEach(imb => {
     if (imb.type === 'danger') {
       recommendations.push({
         id: `imb-${imb.areaA}-${imb.areaB}`,
-        category: 'Equilibrio',
-        icon: '⚖️',
-        title: `Prioridad: Equilibrar ${imb.areaA}`,
-        advice: `Se observa que ${imb.areaA} está muy por debajo de otras áreas. Intenta reforzar pequeñas acciones de esta área en el día a día.`,
+        category: 'Oportunidad',
+        icon: '🌱',
+        title: `Sembrando ${imb.areaA}`,
+        advice: `Es un momento ideal para nutrir el área de ${imb.areaA}. Pequeños gestos cotidianos marcarán la diferencia esta semana.`,
         priority: 'high'
       });
     }
   });
 
-  // 2. Score-based recommendations
+  // 2. Score-based recommendations (Opportunity focused)
   if (scores.regulation < 40) {
     recommendations.push({
       id: 'low-reg',
       category: 'Calma',
       icon: '🧘',
-      title: 'Momento de calma',
-      advice: 'Esta semana el progreso en relajación ha sido lento. Dediquen 2 minutos a respirar juntos antes de las comidas.',
+      title: 'Espacio de Serenidad',
+      advice: 'Podéis fortalecer la calma juntos dedicando 2 minutos a respirar antes de las comidas. ¡Es un gran hábito familiar!',
       priority: 'medium'
     });
   }
@@ -46,10 +46,10 @@ export function generateRecommendations(scores: CompetencyScores, imbalances: Im
   if (scores.social < 50) {
     recommendations.push({
       id: 'low-social',
-      category: 'Social',
+      category: 'Conexión',
       icon: '🤝',
-      title: 'Reto de conexión',
-      advice: 'Anímale a compartir una anécdota del colegio hoy en la cena para practicar la apertura social.',
+      title: 'Puente de Conexión',
+      advice: 'Anímale a compartir algo divertido de su día para seguir alimentando su apertura y confianza social.',
       priority: 'medium'
     });
   }

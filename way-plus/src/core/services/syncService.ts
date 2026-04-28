@@ -17,6 +17,16 @@ export interface TherapistNote {
   author_id?: string;
 }
 
+export interface TherapistRecommendation {
+  id: string;
+  patient_id: string;
+  category: 'autonomy' | 'regulation' | 'social' | 'asertivity' | 'general';
+  title: string;
+  advice: string;
+  created_at: string;
+  status: 'active' | 'completed' | 'dismissed';
+}
+
 export const syncService = {
   /**
    * Pushes full patient state to Supabase.
@@ -156,5 +166,76 @@ export const syncService = {
 
     if (error) return [];
     return data;
+  },
+
+  isSupabaseAvailable() {
+    return isSupabaseAvailable;
+  },
+
+  /**
+   * Parent Recommendations
+   */
+  async getRecommendations(patientId: string): Promise<TherapistRecommendation[]> {
+    if (!isSupabaseAvailable || !supabase) {
+      // Fallback: Local storage mock for development
+      const local = localStorage.getItem(`recs_${patientId}`);
+      return local ? JSON.parse(local) : [];
+    }
+
+    const { data, error } = await supabase
+      .from('therapist_recommendations')
+      .select('*')
+      .eq('patient_id', patientId)
+      .eq('status', 'active')
+      .order('created_at', { ascending: false });
+
+    if (error) return [];
+    return data;
+  },
+
+  async addRecommendation(patientId: string, rec: Omit<TherapistRecommendation, 'id' | 'created_at' | 'status' | 'patient_id'>): Promise<TherapistRecommendation | null> {
+    const newRec: TherapistRecommendation = {
+      ...rec,
+      id: crypto.randomUUID(),
+      patient_id: patientId,
+      created_at: new Date().toISOString(),
+      status: 'active'
+    };
+
+    if (!isSupabaseAvailable || !supabase) {
+      const existing = await this.getRecommendations(patientId);
+      localStorage.setItem(`recs_${patientId}`, JSON.stringify([newRec, ...existing]));
+      return newRec;
+    }
+
+    const { data, error } = await supabase
+      .from('therapist_recommendations')
+      .insert(newRec)
+      .select()
+      .single();
+
+    return error ? null : data;
+  },
+
+  async updateRecommendationStatus(recId: string, patientId: string, status: 'completed' | 'dismissed'): Promise<void> {
+    if (!isSupabaseAvailable || !supabase) {
+      const existing = await this.getRecommendations(patientId);
+      const updated = existing.map(r => r.id === recId ? { ...r, status } : r);
+      localStorage.setItem(`recs_${patientId}`, JSON.stringify(updated));
+      return;
+    }
+
+    await supabase.from('therapist_recommendations').update({ status }).eq('id', recId);
+  },
+
+  async deleteRecommendation(recId: string, patientId: string): Promise<void> {
+    if (!isSupabaseAvailable || !supabase) {
+      const existing = await this.getRecommendations(patientId);
+      const filtered = existing.filter(r => r.id !== recId);
+      localStorage.setItem(`recs_${patientId}`, JSON.stringify(filtered));
+      return;
+    }
+
+    await supabase.from('therapist_recommendations').delete().eq('id', recId);
   }
 };

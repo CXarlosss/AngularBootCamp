@@ -45,7 +45,7 @@ export function useDailyQuests(): DailyQuest[] {
       levelId: (way as any).levelId || 'pregamer',
       stepId: way.stepId,
       reward: { coins: 20 + (idx * 10), xp: 30 + (idx * 15) },
-      completed: completedWays.includes(way.id),
+      completed: Array.isArray(completedWays) ? completedWays.includes(way.id) : false,
     }));
   }, [completedWays]);
 }

@@ -100,9 +100,9 @@ function PurchaseModal({
           ) : status === 'fail' ? (
             <>
               <div style={{ fontSize: 64, marginBottom: 12 }}>😢</div>
-              <div style={{ fontWeight: 800, fontSize: 20, color: C.rose }}>¡Faltan monedas!</div>
+              <div style={{ fontWeight: 800, fontSize: 20, color: C.rose }}>¡Faltan medallas!</div>
               <div style={{ color: C.muted, marginTop: 6, marginBottom: 16 }}>
-                Necesitas {item.price - coins} 🪙 más
+                Necesitas {item.price - coins} 🏅 más
               </div>
               <motion.button whileTap={{ scale: 0.95 }} onClick={onClose}
                 style={{ width: '100%', padding: '14px', borderRadius: 16, border: 'none', background: '#F1F2FF', color: C.indigo, fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>
@@ -142,7 +142,7 @@ function PurchaseModal({
                     color: '#fff', fontWeight: 700, fontSize: 16,
                     cursor: canAfford ? 'pointer' : 'not-allowed',
                   }}>
-                  {canAfford ? '¡Comprar!' : 'Sin monedas'}
+                  {canAfford ? '¡Conseguir!' : 'Sin medallas suficientes'}
                 </motion.button>
               </div>
             </>

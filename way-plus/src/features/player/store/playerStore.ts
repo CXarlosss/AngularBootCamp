@@ -156,7 +156,7 @@ export const usePlayerStore = create<PlayerState>()(
           merged.profile = {
             ...currentState.profile,
             ...merged.profile,
-            completedWays: merged.profile.completedWays || []
+            completedWays: Array.isArray(merged.profile.completedWays) ? merged.profile.completedWays : []
           };
         }
         return merged;

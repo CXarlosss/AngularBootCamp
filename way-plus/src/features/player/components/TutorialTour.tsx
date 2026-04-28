@@ -6,20 +6,20 @@ import { audioService } from '@/core/utils/audioService';
 const TUTORIAL_STEPS = [
   {
     id: 'welcome',
-    title: '¡Hola, Amigo! 👋',
+    title: '¡Hola! 👋',
     text: '¡Soy tu compañero en WAY+! Estoy aquí para ayudarte a aprender cosas increíbles mientras nos divertimos.',
     icon: '✨'
   },
   {
     id: 'ways',
     title: 'Supera los Retos 🏆',
-    text: 'Completa los "Ways" para ganar monedas. Cada vez que lo logres, ¡celebraremos juntos!',
-    icon: '🪙'
+    text: 'Completa los "Ways" para ganar medallas. Cada vez que lo logres, ¡celebraremos juntos con todos los niños y niñas!',
+    icon: '🏅'
   },
   {
     id: 'shop',
-    title: 'Tienda de Premios 👕',
-    text: 'Usa tus monedas en la tienda para comprarme sombreros, capas y nuevos amigos en la mochila.',
+    title: 'Vitrina de Premios 👕',
+    text: 'Usa tus medallas en la vitrina para comprarme sombreros, capas y nuevos amigos en la mochila.',
     icon: '🎒'
   },
   {

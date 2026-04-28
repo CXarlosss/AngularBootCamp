@@ -1,3 +1,4 @@
+// src/features/player/pages/LevelSelectPage.tsx
 import React, { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -12,6 +13,7 @@ import { AdventureMap } from '../components/AdventureMap';
 import { MissionBanner } from '@/features/rewards/components/MissionBanner';
 import type { Step } from '@/core/engine/types';
 import { useAudio } from '@/core/hooks/useAudio';
+import { CategoryIcon, type Category } from '@/core/components/CategoryIcon';
 
 const C = {
   indigo:      '#4F46E5',
@@ -38,6 +40,10 @@ const THEME_COLORS: Record<string, { bg: string; iconBg: string; text: string }>
 export function LevelSelectPage() {
   const navigate = useNavigate();
   const { profile, dailyChallenge, setDailyChallenge } = usePlayerStore();
+  const completedWays = useMemo(() => {
+    const raw = profile?.completedWays;
+    return Array.isArray(raw) ? raw : [];
+  }, [profile?.completedWays]);
   const { playSFX } = useAudio();
   const { 
     wayCoins, 
@@ -56,16 +62,18 @@ export function LevelSelectPage() {
     if (!profile?.currentLevel) return;
     setLoading(true);
     registry.getStepsForLevel(profile.currentLevel).then(res => {
-      setSteps(res || []);
+      console.log('[WAY+] Raw steps from registry:', res);
+      const safeRes = Array.isArray(res) ? res : [];
+      setSteps(safeRes);
       setLoading(false);
 
-      // Generar desafío diario si no hay uno hoy
+      // Generar desafío diario
       const today = new Date().toISOString().split('T')[0];
-      if (dailyChallenge?.date !== today && res && res.length > 0) {
-        const randomStep = res[Math.floor(Math.random() * res.length)];
-        const randomWay = randomStep.ways[Math.floor(Math.random() * randomStep.ways.length)];
-        if (randomWay) {
-          setDailyChallenge(randomWay.id);
+      if (dailyChallenge?.date !== today && safeRes.length > 0) {
+        const randomStep = safeRes[Math.floor(Math.random() * safeRes.length)];
+        if (randomStep?.ways?.length > 0) {
+          const randomWay = randomStep.ways[Math.floor(Math.random() * randomStep.ways.length)];
+          if (randomWay?.id) setDailyChallenge(randomWay.id);
         }
       }
     });
@@ -91,21 +99,22 @@ export function LevelSelectPage() {
   const { totalWaysInLevel, completedCount } = useMemo(() => {
     if (!steps || !profile) return { totalWaysInLevel: 0, completedCount: 0 };
     
-    const completedSet = new Set(profile.completedWays || []);
+    const safeCompleted = Array.isArray(completedWays) ? completedWays : [];
+    const completedSet = new Set(safeCompleted);
     let total = 0;
     let completed = 0;
     
     steps.forEach(s => {
-      if (s.ways) {
+      if (s && Array.isArray(s.ways)) {
         total += s.ways.length;
         s.ways.forEach(w => {
-          if (completedSet.has(w.id)) completed++;
+          if (w && w.id && completedSet.has(w.id)) completed++;
         });
       }
     });
     
     return { totalWaysInLevel: total, completedCount: completed };
-  }, [steps, profile?.completedWays]);
+  }, [steps, completedWays]);
 
   const progressPct = totalWaysInLevel > 0 ? Math.round((completedCount / totalWaysInLevel) * 100) : 0;
 
@@ -149,7 +158,7 @@ export function LevelSelectPage() {
             display: 'flex', alignItems: 'center', gap: 6,
             boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #E8E9FF'
           }}>
-            <span style={{ fontSize: 18 }}>🪙</span>
+            <span style={{ fontSize: 18 }}>🏅</span>
             <span style={{ fontWeight: 900, color: C.text, fontSize: 16 }}>{wayCoins || 0}</span>
           </div>
           <button
@@ -235,7 +244,7 @@ export function LevelSelectPage() {
           >
             <AdventureMap 
               steps={uniqueSteps}
-              completedWays={profile?.completedWays || []}
+              completedWays={completedWays}
               currentLevelId={profile?.currentLevel || ''}
             />
           </motion.div>
@@ -252,11 +261,12 @@ export function LevelSelectPage() {
             </h2>
             
             {uniqueSteps.map((step: Step) => {
+              if (!step) return null;
               const theme = THEME_COLORS[step.theme] || THEME_COLORS.default;
               const pictoRaw = step.ways?.[0]?.stimulus?.image;
               const isUrl = typeof pictoRaw === 'string' && (pictoRaw?.includes('/') || pictoRaw?.startsWith('http') || pictoRaw?.startsWith('data:'));
               
-              const stepCompletedCount = step?.ways?.filter(w => (profile?.completedWays || []).includes(w.id))?.length || 0;
+              const stepCompletedCount = (step?.ways || []).filter(w => w?.id && Array.isArray(completedWays) && completedWays.includes(w.id)).length;
               const stepTotalCount = step?.ways?.length || 0;
               const stepProgressPct = stepTotalCount > 0 ? Math.round((stepCompletedCount / stepTotalCount) * 100) : 0;
 
@@ -286,15 +296,11 @@ export function LevelSelectPage() {
                     <div style={{
                       width: 64, height: 64, borderRadius: 20,
                       background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 32, boxShadow: `0 4px 12px rgba(0,0,0,0.05)`,
+                      boxShadow: `0 4px 12px rgba(0,0,0,0.05)`,
                       border: `2px solid ${theme.iconBg}`,
                       overflow: 'hidden'
                     }}>
-                      {isUrl ? (
-                        <img src={pictoRaw} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: 8 }} />
-                      ) : (
-                        pictoRaw || '✨'
-                      )}
+                      <CategoryIcon category={step.theme as Category} size={48} />
                     </div>
                     <div>
                       <h3 style={{ fontSize: 20, fontWeight: 900, color: C.text, margin: 0 }}>{step.title}</h3>

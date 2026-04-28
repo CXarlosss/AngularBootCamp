@@ -62,7 +62,7 @@ export const RewardsBackpack: React.FC = () => {
   const handleExchange = (count: number, type: 'random' | 'shiny') => {
     const res = exchangeDuplicates(count, type);
     if (res.success) {
-      playSFX('magic');
+      playSFX('chest');
       alert(res.message);
     } else {
       playSFX('error');

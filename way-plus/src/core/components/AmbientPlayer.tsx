@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAudio } from '../hooks/useAudio';
-import { AmbientZone } from '../utils/audioService';
+import { audioService } from '../utils/audioService';
+import type { AmbientZone } from '../utils/audioService';
 
 /**
  * Global component that handles ambient music transitions based on the current route.

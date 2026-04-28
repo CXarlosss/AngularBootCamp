@@ -11,7 +11,8 @@ export const MissionBanner: React.FC = () => {
   // Count missions ready to claim
   const readyToClaimCount = MISSIONS_CATALOG.filter((m) => {
     const progress = missionProgress[m.id] || 0;
-    return progress >= m.goal && !claimedMissions.includes(m.id);
+    const safeClaimed = Array.isArray(claimedMissions) ? claimedMissions : [];
+    return progress >= m.goal && !safeClaimed.includes(m.id);
   }).length;
 
   return (
