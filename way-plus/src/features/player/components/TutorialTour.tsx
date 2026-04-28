@@ -41,7 +41,7 @@ export const TutorialTour: React.FC = () => {
       const timer = setTimeout(() => setShow(true), 1500);
       return () => clearTimeout(timer);
     }
-  }, [profile.tutorialCompleted]);
+  }, [profile?.tutorialCompleted]);
 
   useEffect(() => {
     if (show) {

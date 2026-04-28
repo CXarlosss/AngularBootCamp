@@ -181,7 +181,8 @@ export const useRewardsStore = create<RewardsState>()(
         const item = SHOP_CATALOG.find(i => i.id === itemId);
         
         if (!item) return { success: false, message: 'Item no existe' };
-        if (state.purchaseHistory.includes(itemId)) {
+        const safeHistory = Array.isArray(state.purchaseHistory) ? state.purchaseHistory : [];
+        if (safeHistory.includes(itemId)) {
           return { success: false, message: 'Ya lo tienes' };
         }
         if (state.wayCoins < item.price) {
@@ -229,7 +230,8 @@ export const useRewardsStore = create<RewardsState>()(
         
       awardAchievement: (id) =>
         set((state) => {
-          if (!state.achievements.includes(id)) {
+          const safeAchievements = Array.isArray(state.achievements) ? state.achievements : [];
+          if (!safeAchievements.includes(id)) {
             state.achievements.push(id);
           }
         }),
@@ -325,7 +327,8 @@ export const useRewardsStore = create<RewardsState>()(
           const relevantMissions = MISSIONS_CATALOG.filter((m) => m.category === category);
           
           relevantMissions.forEach((m) => {
-            if (!state.claimedMissions.includes(m.id)) {
+            const safeClaimed = Array.isArray(state.claimedMissions) ? state.claimedMissions : [];
+            if (!safeClaimed.includes(m.id)) {
               const current = state.missionProgress[m.id] || 0;
               state.missionProgress[m.id] = current + amount;
             }
@@ -336,7 +339,8 @@ export const useRewardsStore = create<RewardsState>()(
       claimMissionReward: (missionId) => {
         set((state) => {
           const mission = MISSIONS_CATALOG.find((m) => m.id === missionId);
-          if (mission && !state.claimedMissions.includes(missionId)) {
+          const safeClaimed = Array.isArray(state.claimedMissions) ? state.claimedMissions : [];
+          if (mission && !safeClaimed.includes(missionId)) {
             state.wayCoins += mission.rewardCoins;
             state.totalXp += mission.rewardXp;
             state.claimedMissions.push(missionId);
@@ -389,7 +393,8 @@ export const useRewardsStore = create<RewardsState>()(
           // Item si existe
           if (milestone.reward.item) {
             const item = SHOP_CATALOG.find(i => i.id === milestone.reward.item);
-            if (item && !state.purchaseHistory.includes(item.id as any)) {
+            const safeHistory = Array.isArray(state.purchaseHistory) ? state.purchaseHistory : [];
+            if (item && !safeHistory.includes(item.id as any)) {
               state.purchaseHistory.push(item.id as any);
               state.inventory.push({
                 id: item.id,
@@ -455,7 +460,8 @@ export const useRewardsStore = create<RewardsState>()(
 
       unlockSecret: (secretId) => {
         set((state) => {
-          if (state.unlockedSecrets.includes(secretId)) return;
+          const safeUnlocked = Array.isArray(state.unlockedSecrets) ? state.unlockedSecrets : [];
+          if (safeUnlocked.includes(secretId)) return;
           
           const secret = SECRET_CARDS.find((s) => s.id === secretId);
           if (!secret) return;

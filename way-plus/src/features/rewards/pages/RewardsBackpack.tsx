@@ -21,7 +21,7 @@ export const RewardsBackpack: React.FC = () => {
     equipPart, 
     totalXp, 
     ownedStickers,
-    unlockedSecrets,
+    unlockedSecrets = [],
     exchangeDuplicates 
   } = useRewardsStore();
   const { playSFX } = useAudio();

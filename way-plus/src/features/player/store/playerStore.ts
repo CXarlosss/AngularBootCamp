@@ -89,8 +89,9 @@ export const usePlayerStore = create<PlayerState>()(
       completeWay: (wayId, attempts) =>
         set((state) => {
           if (!state.profile.completedWays) state.profile.completedWays = [];
-          if (!state.profile.completedWays.includes(wayId)) {
-            state.profile.completedWays.push(wayId);
+          const safeCompleted = Array.isArray(state.profile.completedWays) ? state.profile.completedWays : [];
+          if (!safeCompleted.includes(wayId)) {
+            state.profile.completedWays = [...safeCompleted, wayId];
           }
           state.session.attempts[wayId] = attempts;
           

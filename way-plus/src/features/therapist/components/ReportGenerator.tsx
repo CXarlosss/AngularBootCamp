@@ -70,9 +70,9 @@ export const ReportGenerator: React.FC = () => {
         ],
         weeklyData,
         wayBreakdown: [
-          { category: 'Relajación', count: completedWays.filter(id => id.includes('relax')).length },
-          { category: 'Autonomía', count: completedWays.filter(id => id.includes('autonomy')).length },
-          { category: 'Asertividad', count: completedWays.filter(id => id.includes('assertive')).length },
+          { category: 'Relajación', count: completedWays.filter(id => typeof id === 'string' && id.includes('relax')).length },
+          { category: 'Autonomía', count: completedWays.filter(id => typeof id === 'string' && id.includes('autonomy')).length },
+          { category: 'Asertividad', count: completedWays.filter(id => typeof id === 'string' && id.includes('assertive')).length },
         ],
       });
     } catch (error) {
