@@ -79,7 +79,7 @@ export class WorkoutService {
           log.loggedDate instanceof Date
             ? log.loggedDate.toISOString().split('T')[0]
             : typeof log.loggedDate === 'string'
-              ? log.loggedDate.split('T')[0]
+              ? (log.loggedDate as any).split('T')[0]
               : new Date().toISOString().split('T')[0],
         completed: log.completed,
       },
@@ -100,7 +100,7 @@ export class WorkoutService {
         completed_at:
           s.completedAt instanceof Date
             ? s.completedAt.toISOString()
-            : (s.completedAt ?? new Date().toISOString()),
+            : ((s.completedAt as any) ?? new Date().toISOString()),
       }));
 
       const { error: sError } = await this.sb
