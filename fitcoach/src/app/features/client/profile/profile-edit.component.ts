@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ProfileService, Goal, Level } from './profile.service';
 import { WeightLogService } from '../progress/weight-bottom-sheet/weight-log.service';
+import { RankCardComponent } from '../../../shared/components/rank-card/rank-card.component';
 
 interface GoalOption { value: Goal; label: string; emoji: string; }
 interface LevelOption { value: Level; label: string; sub: string; emoji: string; }
@@ -13,7 +14,7 @@ interface LevelOption { value: Level; label: string; sub: string; emoji: string;
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RankCardComponent],
   templateUrl: './profile-edit.component.html',
   styleUrl:    './profile-edit.component.scss',
 })

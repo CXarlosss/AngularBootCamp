@@ -11,12 +11,13 @@ import { AssignedRoutine }      from '../../../core/models/routine.model';
 import { WorkoutStore }         from '../../../state/workout.store';
 import { ProfileService }       from '../profile/profile.service';
 import { computed }             from '@angular/core';
+import { RankCardComponent }    from '../../../shared/components/rank-card/rank-card.component';
 
 @Component({
   selector: 'fc-client-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule],
+  imports: [CommonModule, RankCardComponent],
   template: `
     <div class="client-dash">
 
@@ -37,6 +38,11 @@ import { computed }             from '@angular/core';
           </div>
         </div>
       }
+
+      <!-- SISTEMA DE RANGOS -->
+      <div class="dash-rank-section" style="margin: 0 16px 20px;">
+        <app-rank-card />
+      </div>
 
       <div class="greeting">
         <h1 class="greeting-name">{{ greeting() }}, {{ firstName() }}</h1>

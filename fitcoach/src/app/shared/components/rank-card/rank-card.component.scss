@@ -1,0 +1,181 @@
+.rankup-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 16px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  animation: slideDown 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.rankup-icon {
+  font-size: 20px;
+}
+
+.rankup-title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #10b981;
+  letter-spacing: 0.5px;
+}
+
+.rankup-sub {
+  margin: 0;
+  font-size: 11px;
+  color: rgba(16, 185, 129, 0.8);
+}
+
+.rank-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 24px;
+  padding: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.rank-glow {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100px;
+  pointer-events: none;
+}
+
+.rank-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.rank-emblem {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.05);
+}
+
+.rank-meta {
+  flex: 1;
+}
+
+.rank-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.rank-name {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.div-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 6px;
+  border: 1px solid;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.rank-title {
+  margin: 0 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.pips {
+  display: flex;
+  gap: 4px;
+}
+
+.pip {
+  width: 22px;
+  height: 5px;
+  border-radius: 2px;
+  transition: all 0.5s ease;
+}
+
+.xp-labels {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.xp-cur {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.xp-nxt {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.xp-track {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.xp-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(0.19, 1, 0.22, 1);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.xp-hint {
+  margin: 0 0 16px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: center;
+  font-style: italic;
+}
+
+.xp-breakdown {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

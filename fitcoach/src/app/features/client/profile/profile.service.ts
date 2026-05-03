@@ -9,7 +9,6 @@ export type Level = 'beginner' | 'intermediate' | 'advanced';
 export interface ClientProfile {
   id:                 string;
   full_name:          string;
-  email:              string;
   height_cm:          number | null;
   birth_date:         string | null;
   goal:               Goal | null;
@@ -31,7 +30,7 @@ export class ProfileService {
 
     const { data, error } = await this.sb
       .from('profiles')
-      .select('id, full_name, email, height_cm, birth_date, goal, level, profile_completed')
+      .select('id, full_name, height_cm, birth_date, goal, level, profile_completed')
       .eq('id', userId)
       .single();
 
@@ -40,7 +39,7 @@ export class ProfileService {
     return data;
   }
 
-  async save(updates: Partial<Omit<ClientProfile, 'id' | 'email'>>): Promise<void> {
+  async save(updates: Partial<Omit<ClientProfile, 'id'>>): Promise<void> {
     const userId = this.auth.user()?.id;
     if (!userId) return;
 

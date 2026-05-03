@@ -38,6 +38,12 @@ export const CLIENT_ROUTES: Routes = [
           import('./chat/client-chat.component')
             .then(m => m.ClientChatComponent),
       },
+      {
+        path: 'rank',
+        loadComponent: () =>
+          import('./rank/rank-page.component')
+            .then(m => m.RankPageComponent),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ]
   },

@@ -1,0 +1,200 @@
+import { Injectable, inject, signal, computed } from '@angular/core';
+import { SupabaseService } from '../supabase.service';
+import { AuthService } from '../auth/auth.service';
+
+export interface RankDef {
+  level:    number;
+  emoji:    string;
+  name:     string;
+  title:    string;
+  quote:    string;
+  color:    string;
+  xpBase:   number;
+  xpStep:   number; // XP por cada una de las 4 divisiones
+}
+
+export interface AthleteRank {
+  xpTotal:    number;
+  rankLevel:  number;
+  daysXp:     number;
+  setsXp:     number;
+  progressXp: number;
+}
+
+export interface FullRank {
+  rank:       RankDef;
+  division:   number;   // 0-3 (0=IV, 3=I)
+  divLabel:   string;   // 'IV','III','II','I'
+  pct:        number;   // % dentro de la división actual
+  xpToNext:   number;
+  nextLabel:  string | null;
+}
+
+export const DIVISIONS = ['IV', 'III', 'II', 'I'];
+
+export const RANKS: RankDef[] = [
+  { level:0, emoji:'⚔️', name:'Recruta',
+    title:'Rango I · Nuevo soldado',
+    quote:'"Todo gran guerrero empezó aquí"',
+    color:'#b47828', xpBase:0,     xpStep:125  },
+  { level:1, emoji:'🛡️', name:'Legionario',
+    title:'Rango II · Legión Romana',
+    quote:'"Forjado en el campo de batalla"',
+    color:'#1D9E75', xpBase:500,   xpStep:375  },
+  { level:2, emoji:'🏛️', name:'Centurión',
+    title:'Rango III · Cien guerreros',
+    quote:'"Líder nato, disciplina de hierro"',
+    color:'#378ADD', xpBase:2000,  xpStep:750  },
+  { level:3, emoji:'🔱', name:'Tribuno',
+    title:'Rango IV · Tribuno militar',
+    quote:'"Los dioses observan tu ascenso"',
+    color:'#8B5CF6', xpBase:5000,  xpStep:1750 },
+  { level:4, emoji:'⚡', name:'Semidiós',
+    title:'Rango V · Hijo del Olimpo',
+    quote:'"Hércules reconoce tu fuerza"',
+    color:'#D97706', xpBase:12000, xpStep:4500 },
+  { level:5, emoji:'👑', name:'Campeón Olímpico',
+    title:'Rango VI · Dios del Olimpo',
+    quote:'"Zeus mismo inclina la cabeza"',
+    color:'#DC2626', xpBase:30000, xpStep:17500 },
+];
+
+@Injectable({ providedIn: 'root' })
+export class RankService {
+  private sb   = inject(SupabaseService).client;
+  private auth = inject(AuthService);
+
+  athleteRank = signal<AthleteRank | null>(null);
+  rankedUp    = signal<string | null>(null); 
+
+  // ─── Computed principal ────────────────────────────────────────────────────
+
+  fullRank = computed<FullRank | null>(() => {
+    const ar = this.athleteRank();
+    if (!ar) return null;
+    return this.calcFullRank(ar.xpTotal);
+  });
+
+  // ─── Cálculo ───────────────────────────────────────────────────────────────
+
+  calcFullRank(xp: number): FullRank {
+    let ri = 0;
+    for (let i = RANKS.length - 1; i >= 0; i--) {
+      if (xp >= RANKS[i].xpBase) { ri = i; break; }
+    }
+
+    const rank = RANKS[ri];
+    const rel  = xp - rank.xpBase;
+    
+    // División (0 a 3)
+    const di   = Math.min(3, Math.floor(rel / rank.xpStep));
+    const xpInDiv  = rel - (di * rank.xpStep);
+    const pct      = Math.round((xpInDiv / rank.xpStep) * 100);
+    const toNext   = rank.xpStep - xpInDiv;
+
+    let nextLabel: string | null = null;
+    if (di < 3) {
+      nextLabel = `${rank.name} ${DIVISIONS[di + 1]}`;
+    } else if (ri < RANKS.length - 1) {
+      nextLabel = `${RANKS[ri + 1].name} IV`;
+    }
+
+    return {
+      rank,
+      division:  di,
+      divLabel:  DIVISIONS[di],
+      pct:       Math.min(100, pct),
+      xpToNext:  toNext,
+      nextLabel,
+    };
+  }
+
+  // ─── Load ──────────────────────────────────────────────────────────────────
+
+  async load(): Promise<void> {
+    const user = this.auth.user();
+    if (!user) return;
+
+    const { data } = await this.sb
+      .from('athlete_ranks')
+      .select('*')
+      .eq('client_id', user.id)
+      .maybeSingle();
+
+    if (data) {
+      this.athleteRank.set({
+        xpTotal:    data.xp_total,
+        rankLevel:  data.rank_level,
+        daysXp:     data.days_xp,
+        setsXp:     data.sets_xp,
+        progressXp: data.progress_xp,
+      });
+    } else {
+      const { data: newData } = await this.sb
+        .from('athlete_ranks')
+        .insert({ client_id: user.id })
+        .select()
+        .maybeSingle();
+
+      if (newData) {
+        this.athleteRank.set({
+          xpTotal: 0, rankLevel: 0,
+          daysXp: 0, setsXp: 0, progressXp: 0
+        });
+      }
+    }
+  }
+
+  // ─── AddXP ────────────────────────────────────────────────────────────────
+
+  async addXP(params: {
+    daysXp:     number;
+    setsXp:     number;
+    progressXp: number;
+  }): Promise<void> {
+    const user = this.auth.user();
+    if (!user) return;
+
+    // Si no tenemos los datos cargados, los cargamos ahora
+    if (!this.athleteRank()) {
+      await this.load();
+    }
+    
+    const cur = this.athleteRank();
+    if (!cur) return;
+
+    const prevFull = this.calcFullRank(cur.xpTotal);
+    const newTotal = cur.xpTotal + params.daysXp + params.setsXp + params.progressXp;
+    const newFull  = this.calcFullRank(newTotal);
+    const newLevel = newFull.rank.level;
+
+    const didLevelUp = newFull.rank.level > prevFull.rank.level;
+    const didDivUp   = !didLevelUp && newFull.division > prevFull.division;
+
+    await this.sb
+      .from('athlete_ranks')
+      .update({
+        xp_total:    newTotal,
+        rank_level:  newLevel,
+        days_xp:     cur.daysXp + params.daysXp,
+        sets_xp:     cur.setsXp + params.setsXp,
+        progress_xp: cur.progressXp + params.progressXp,
+        updated_at:  new Date().toISOString(),
+      })
+      .eq('client_id', user.id);
+
+    this.athleteRank.set({
+      xpTotal:    newTotal,
+      rankLevel:  newLevel,
+      daysXp:     cur.daysXp + params.daysXp,
+      setsXp:     cur.setsXp + params.setsXp,
+      progressXp: cur.progressXp + params.progressXp,
+    });
+
+    if (didLevelUp || didDivUp) {
+      const label = `${newFull.rank.name} ${newFull.divLabel}`;
+      this.rankedUp.set(label);
+      setTimeout(() => this.rankedUp.set(null), 4000);
+    }
+  }
+}

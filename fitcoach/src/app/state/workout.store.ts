@@ -5,6 +5,7 @@ import { WorkoutService } from '../core/services/workout.service';
 import { v4 as uuid } from 'uuid';
 import { AuthService } from '../core/auth/auth.service';
 import { WorkoutEventsService } from '../core/services/workout-events.service';
+import { RankService } from '../core/services/rank.service';
 
 interface WorkoutState {
   activeLog: WorkoutLog | null;   // el entrenamiento en curso
@@ -32,7 +33,8 @@ export const WorkoutStore = signalStore(
     store,
     svc = inject(WorkoutService),
     auth = inject(AuthService),
-    events = inject(WorkoutEventsService)
+    events = inject(WorkoutEventsService),
+    rankSvc = inject(RankService)
   ) => ({
 
     async startWorkout(assignedRoutineId: string, routineId: string, clientId: string, dayId: string): Promise<void> {
@@ -148,6 +150,31 @@ export const WorkoutStore = signalStore(
       // 2. Finalizar sesión (marcar día y notificar)
       console.log('[WorkoutStore] Llamando a svc.finishWorkout...');
       await svc.finishWorkout(log.routineId, log.dayId, dayLabel);
+
+      // 3. Sistema de Rangos: Calcular y otorgar XP
+      const daysXp = 10;
+      const setsXp = log.sets.length;
+      let progressXp = 0;
+
+      // Comparar con historial para ver mejoras (PRs)
+      const exerciseWeights = new Map<string, number>();
+      log.sets.forEach(s => {
+        const cur = exerciseWeights.get(s.exerciseId) || 0;
+        if (s.weightKg > cur) exerciseWeights.set(s.exerciseId, s.weightKg);
+      });
+
+      exerciseWeights.forEach((weight, exId) => {
+        // Obtenemos el historial previo antes de este entrenamiento
+        const lastPerf = store.history().find(h => h.id !== log.id)?.sets.find(s => s.exerciseId === exId);
+        if (lastPerf && weight > lastPerf.weightKg) {
+          const improvement = weight - lastPerf.weightKg;
+          progressXp += Math.floor(improvement * 50);
+          console.log(`[RankSystem] ¡Mejora en ${exId}! +${improvement}kg = +${improvement * 50}XP`);
+        }
+      });
+
+      console.log(`[RankSystem] Otorgando XP: Días:${daysXp}, Series:${setsXp}, Progreso:${progressXp}`);
+      await rankSvc.addXP({ daysXp, setsXp, progressXp });
 
       console.log('[WorkoutStore] completeWorkout FIN (éxito)');
       patchState(store, {
