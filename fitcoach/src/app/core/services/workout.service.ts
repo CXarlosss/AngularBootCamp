@@ -82,7 +82,9 @@ export class WorkoutService {
         set_number: s.setNumber,
         weight_kg: s.weightKg,
         reps_done: s.repsDone,
-        completed_at: s.completedAt.toISOString(),
+        completed_at: s.completedAt instanceof Date
+          ? s.completedAt.toISOString()
+          : s.completedAt ?? new Date().toISOString(),
       }));
 
       const { error: sError } = await this.sb.from('set_logs').insert(setsToInsert);
