@@ -13,7 +13,11 @@ export class WorkoutService {
   /**
    * Finaliza el entrenamiento: marca el día como completado y notifica al coach.
    */
-  async finishWorkout(routineId: string, dayId: string, dayLabel: string): Promise<void> {
+  async finishWorkout(
+    routineId: string,
+    dayId: string,
+    dayLabel: string,
+  ): Promise<void> {
     console.log('[WorkoutService] finishWorkout INICIO');
     const userId = this.auth.user()?.id;
     if (!userId) {
@@ -34,22 +38,27 @@ export class WorkoutService {
       .single();
 
     if (!clientProfile?.coach_id) {
-      console.warn('[WorkoutService] finishWorkout: El cliente no tiene coach_id asignado');
+      console.warn(
+        '[WorkoutService] finishWorkout: El cliente no tiene coach_id asignado',
+      );
       return;
     }
 
     // 3. Crear notificación para el coach
-    console.log('[WorkoutService] Creando notificación para el coach:', clientProfile.coach_id);
+    console.log(
+      '[WorkoutService] Creando notificación para el coach:',
+      clientProfile.coach_id,
+    );
     await this.notifSvc.create(
       clientProfile.coach_id,
       'workout_completed',
       `💪 ${clientProfile.full_name ?? 'Tu cliente'} ha entrenado`,
       `Ha completado: ${dayLabel}`,
       {
-        client_id:  userId,
+        client_id: userId,
         routine_id: routineId,
-        day_id:     dayId,
-      }
+        day_id: dayId,
+      },
     );
     console.log('[WorkoutService] finishWorkout FIN');
   }
@@ -59,22 +68,28 @@ export class WorkoutService {
    */
   async saveWorkoutLog(log: WorkoutLog): Promise<void> {
     console.log('Guardando workout log:', log);
-    
-    const { error: wError } = await this.sb
-      .from('workout_logs')
-      .upsert({
+
+    const { error: wError } = await this.sb.from('workout_logs').upsert(
+      {
         id: log.id,
         client_id: log.clientId,
         assigned_routine_id: log.assignedRoutineId,
         day_id: log.dayId,
-        logged_date: log.loggedDate.toISOString().split('T')[0],
+        logged_date:
+          log.loggedDate instanceof Date
+            ? log.loggedDate.toISOString().split('T')[0]
+            : typeof log.loggedDate === 'string'
+              ? log.loggedDate.split('T')[0]
+              : new Date().toISOString().split('T')[0],
         completed: log.completed,
-      }, { onConflict: 'id' });
+      },
+      { onConflict: 'id' },
+    );
 
     if (wError) throw wError;
 
     if (log.sets.length > 0) {
-      const setsToInsert = log.sets.map(s => ({
+      const setsToInsert = log.sets.map((s) => ({
         id: s.id,
         workout_log_id: log.id,
         exercise_id: s.exerciseId,
@@ -82,15 +97,24 @@ export class WorkoutService {
         set_number: s.setNumber,
         weight_kg: s.weightKg,
         reps_done: s.repsDone,
-        completed_at: s.completedAt instanceof Date
-          ? s.completedAt.toISOString()
-          : s.completedAt ?? new Date().toISOString(),
+        completed_at:
+          s.completedAt instanceof Date
+            ? s.completedAt.toISOString()
+            : (s.completedAt ?? new Date().toISOString()),
       }));
 
-      const { error: sError } = await this.sb.from('set_logs').insert(setsToInsert);
+      const { error: sError } = await this.sb
+        .from('set_logs')
+        .insert(setsToInsert);
       if (sError) {
-        console.error('[WorkoutService] set_logs error DETALLE:', JSON.stringify(sError));
-        console.error('[WorkoutService] Primer set intentado:', JSON.stringify(setsToInsert[0]));
+        console.error(
+          '[WorkoutService] set_logs error DETALLE:',
+          JSON.stringify(sError),
+        );
+        console.error(
+          '[WorkoutService] Primer set intentado:',
+          JSON.stringify(setsToInsert[0]),
+        );
         throw sError;
       }
     }
@@ -99,16 +123,14 @@ export class WorkoutService {
   async assignRoutineToClient(
     clientId: string,
     routineId: string,
-    routineName: string
+    routineName: string,
   ): Promise<void> {
-    const { error } = await this.sb
-      .from('assigned_routines')
-      .insert({
-        client_id:  clientId,
-        routine_id: routineId,
-        start_date: new Date().toISOString().split('T')[0],
-        status:     'active',
-      });
+    const { error } = await this.sb.from('assigned_routines').insert({
+      client_id: clientId,
+      routine_id: routineId,
+      start_date: new Date().toISOString().split('T')[0],
+      status: 'active',
+    });
 
     if (error) {
       console.error('[WorkoutService] assignRoutine:', error.message);
@@ -120,27 +142,39 @@ export class WorkoutService {
       'routine_assigned',
       '📋 Nueva rutina asignada',
       `Tu entrenador te ha asignado: ${routineName}`,
-      { routine_id: routineId }
+      { routine_id: routineId },
     );
   }
 
-  async markDayCompleted(clientId: string, routineId: string, dayId: string): Promise<void> {
-    const isUUID = (str: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(str);
+  async markDayCompleted(
+    clientId: string,
+    routineId: string,
+    dayId: string,
+  ): Promise<void> {
+    const isUUID = (str: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        str,
+      );
     if (!dayId || !isUUID(dayId)) return;
 
-    const { error } = await this.sb
-      .from('completed_days')
-      .upsert({
-        client_id:    clientId,
-        routine_id:   routineId,
-        day_id:       dayId,
+    const { error } = await this.sb.from('completed_days').upsert(
+      {
+        client_id: clientId,
+        routine_id: routineId,
+        day_id: dayId,
         completed_at: new Date().toISOString(),
-      }, {
+      },
+      {
         onConflict: 'client_id,day_id',
         ignoreDuplicates: true,
-      });
+      },
+    );
 
-    if (error) console.error('[WorkoutService] Error en markDayCompleted:', error.message);
+    if (error)
+      console.error(
+        '[WorkoutService] Error en markDayCompleted:',
+        error.message,
+      );
   }
 
   async getClientHistory(clientId: string): Promise<WorkoutLog[]> {
@@ -151,12 +185,12 @@ export class WorkoutService {
       .order('logged_date', { ascending: false });
 
     if (error) throw error;
-    
-    return (data || []).map(w => ({
+
+    return (data || []).map((w) => ({
       id: w.id,
       clientId: w.client_id,
       assignedRoutineId: w.assigned_routine_id,
-      routineId: w.assigned_routine_id, 
+      routineId: w.assigned_routine_id,
       dayId: w.day_id,
       loggedDate: new Date(w.logged_date),
       completed: w.completed,
@@ -167,8 +201,8 @@ export class WorkoutService {
         setNumber: s.set_number,
         weightKg: s.weight_kg,
         repsDone: s.reps_done,
-        completedAt: new Date(s.completed_at)
-      }))
+        completedAt: new Date(s.completed_at),
+      })),
     }));
   }
 
@@ -191,7 +225,7 @@ export class WorkoutService {
       .eq('logged_date', today)
       .eq('completed', true)
       .maybeSingle();
-      
+
     return !!logs;
   }
 }

@@ -174,7 +174,9 @@ export const WorkoutStore = signalStore(
       });
 
       console.log(`[RankSystem] Otorgando XP: Días:${daysXp}, Series:${setsXp}, Progreso:${progressXp}`);
+      console.log('[RANK] Antes de addXP — athleteRank:', rankSvc.athleteRank());
       await rankSvc.addXP({ daysXp, setsXp, progressXp });
+      console.log('[RANK] Después de addXP — xp_total:', rankSvc.athleteRank()?.xpTotal);
 
       console.log('[WorkoutStore] completeWorkout FIN (éxito)');
       patchState(store, {
