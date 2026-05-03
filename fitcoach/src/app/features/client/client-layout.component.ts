@@ -1,12 +1,18 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterOutlet, RouterModule } from '@angular/router';
+import { UnreadMessagesService } from '../messages/unread-messages.service';
+import { AuthService } from '../../core/auth/auth.service';
+import { ProfileService } from './profile/profile.service';
+import { NotificationService } from '../../core/services/notification.service';
+import { NotificationToastComponent } from '../../core/components/notification-toast/notification-toast.component';
 
 @Component({
   selector: 'fc-client-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterModule],
+  imports: [CommonModule, RouterOutlet, RouterModule, NotificationToastComponent],
   template: `
+    <app-notification-toast />
     <main class="content-area">
       <router-outlet></router-outlet>
     </main>
@@ -44,8 +50,26 @@ import { Router, RouterOutlet, RouterModule } from '@angular/router';
         [class.active]="isActive('/client/chat')"
         (click)="navigate('/client/chat')"
       >
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <div class="icon-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          @if (unreadSvc.totalUnread() > 0) {
+            <span class="unread-badge">{{ unreadSvc.totalUnread() }}</span>
+          }
+        </div>
         <span>Chat</span>
+      </button>
+      <button 
+        class="nav-btn" 
+        [class.active]="isActive('/profile')"
+        (click)="navigate('/profile')"
+      >
+        <div class="icon-wrap">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          @if (!profileSvc.profile()?.profile_completed) {
+            <span class="nav-badge-dot"></span>
+          }
+        </div>
+        <span>Perfil</span>
       </button>
     </nav>
   `,
@@ -80,10 +104,54 @@ import { Router, RouterOutlet, RouterModule } from '@angular/router';
     .nav-btn.active span {
       color: var(--c-green);
     }
+
+    .icon-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
+    
+    .unread-badge {
+      position: absolute;
+      top: -6px; right: -8px;
+      background: #E24B4A;
+      color: white;
+      font-size: 9px;
+      font-weight: 600;
+      min-width: 16px; height: 16px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid #000;
+      padding: 0 4px;
+    }
+    .nav-badge-dot {
+      position: absolute;
+      top: -2px; right: -2px;
+      width: 8px; height: 8px;
+      background: #1D9E75;
+      border-radius: 50%;
+      border: 1.5px solid #000;
+    }
   `]
 })
-export class ClientLayoutComponent {
+export class ClientLayoutComponent implements OnInit, OnDestroy {
   private router = inject(Router);
+  private auth = inject(AuthService);
+  unreadSvc = inject(UnreadMessagesService);
+  profileSvc = inject(ProfileService);
+  private notifSvc = inject(NotificationService);
+
+  async ngOnInit() {
+    const userId = this.auth.profile()?.id;
+    if (userId) {
+      this.unreadSvc.loadUnread(userId);
+      this.unreadSvc.subscribeRealtime(userId);
+      
+      await this.notifSvc.load();
+      this.notifSvc.subscribe();
+    }
+  }
+
+  ngOnDestroy() {
+    this.unreadSvc.unsubscribe();
+    this.notifSvc.unsubscribe();
+  }
 
   isActive(route: string): boolean {
     return this.router.url.includes(route);

@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { ClientLayoutComponent } from './client-layout.component';
+import { workoutDayGuard } from '../../core/guards/workout-day.guard';
 
 export const CLIENT_ROUTES: Routes = [
   {
@@ -14,6 +15,13 @@ export const CLIENT_ROUTES: Routes = [
       },
       {
         path: 'workout',
+        loadComponent: () =>
+          import('./today-workout/today-workout.component')
+            .then(m => m.TodayWorkoutComponent),
+      },
+      {
+        path: 'workout/:dayId',
+        canActivate: [workoutDayGuard],
         loadComponent: () =>
           import('./today-workout/today-workout.component')
             .then(m => m.TodayWorkoutComponent),

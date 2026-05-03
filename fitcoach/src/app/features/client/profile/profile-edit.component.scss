@@ -1,0 +1,170 @@
+.profile-screen {
+  min-height: 100vh;
+  background: var(--color-background-secondary);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: var(--color-background-primary);
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  position: sticky; top: 0; z-index: 10;
+
+  h1 { font-size: 16px; font-weight: 500; color: var(--color-text-primary); }
+}
+
+.back-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 0.5px solid var(--color-border-secondary);
+  background: none; font-size: 16px; cursor: pointer;
+  color: var(--color-text-secondary);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.profile-body {
+  padding: 16px 16px calc(90px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: 12px;
+}
+
+.section-card {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 16px;
+  padding: 14px 16px;
+}
+
+.section-label {
+  font-size: 11px; font-weight: 500;
+  color: var(--color-text-secondary);
+  text-transform: uppercase; letter-spacing: .05em;
+  margin-bottom: 12px;
+}
+
+.text-input {
+  width: 100%;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 10px; padding: 12px 14px;
+  font-size: 15px; font-family: inherit;
+  color: var(--color-text-primary); outline: none;
+
+  &:focus { border-color: #1D9E75; }
+  &::placeholder { color: var(--color-text-secondary); }
+}
+
+.field-row {
+  display: flex; gap: 10px;
+}
+
+.field-col { flex: 1; }
+
+.field-label {
+  font-size: 11px; color: var(--color-text-secondary);
+  display: block; margin-bottom: 6px;
+}
+
+.number-input-wrap {
+  position: relative;
+}
+
+.number-input {
+  width: 100%;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 10px; padding: 12px 32px 12px 14px;
+  font-size: 18px; font-weight: 500;
+  font-family: inherit; color: var(--color-text-primary);
+  outline: none; text-align: center;
+
+  &:focus { border-color: #1D9E75; }
+  // Ocultar flechas nativas
+  &::-webkit-outer-spin-button,
+  &::-webkit-inner-spin-button { -webkit-appearance: none; }
+  -moz-appearance: textfield;
+}
+
+.unit {
+  position: absolute; right: 10px; top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px; color: var(--color-text-secondary);
+}
+
+// Objetivos
+.goal-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.goal-card {
+  display: flex; flex-direction: column;
+  align-items: center; gap: 6px;
+  padding: 14px 10px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 12px; cursor: pointer;
+  transition: all .15s; font-family: inherit;
+  width: 100%; color: var(--color-text-primary);
+
+  &:hover  { border-color: #1D9E75; }
+  &.selected {
+    border-color: #1D9E75;
+    background: #0d2d1e;
+  }
+}
+
+.goal-emoji { font-size: 22px; }
+.goal-label {
+  font-size: 12px; font-weight: 500;
+  color: var(--color-text-secondary);
+  text-align: center; line-height: 1.3;
+
+  .goal-card.selected & { color: #1D9E75; }
+}
+
+// Nivel
+.level-list { display: flex; flex-direction: column; gap: 8px; }
+
+.level-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 12px; cursor: pointer;
+  transition: all .15s; font-family: inherit;
+  text-align: left;
+  width: 100%; color: var(--color-text-primary);
+
+  &:hover   { border-color: #1D9E75; }
+  &.selected {
+    border-color: #1D9E75;
+    background: #0d2d1e;
+  }
+}
+
+.level-emoji { font-size: 20px; flex-shrink: 0; }
+.level-text  { flex: 1; display: flex; flex-direction: column; gap: 1px; }
+.level-name  { font-size: 13px; font-weight: 500; color: var(--color-text-primary); }
+.level-sub   { font-size: 11px; color: var(--color-text-secondary); }
+.level-check { font-size: 14px; color: #1D9E75; font-weight: 500; width: 16px; }
+
+// Save
+.save-btn {
+  width: 100%; padding: 16px;
+  background: #1D9E75; color: #fff;
+  border: none; border-radius: 14px;
+  font-size: 16px; font-weight: 500;
+  cursor: pointer; font-family: inherit;
+  margin-top: 4px; transition: opacity .15s, background .2s;
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &.done     { background: #0F6E56; }
+  &:hover:not(:disabled) { opacity: .92; }
+}
+
+.error-msg {
+  font-size: 13px; color: #E24B4A;
+  text-align: center; padding: 4px 0;
+}

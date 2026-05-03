@@ -1,165 +1,240 @@
-import { Component, inject, signal, OnInit, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router } from '@angular/router';
-import { ProgressStore } from '../../../state/progress.store';
-import { ProgressChartComponent } from '../../../shared/components/progress-chart/progress-chart.component';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { forkJoin } from 'rxjs';
+import { CoachClientService } from './coach-client.service';
+import { ClientKPIs, WeekDay, ExerciseProgress } from './client-detail.types';
+import { WeightEntry } from '../../../shared/components/weight-chart/weight-chart.component';
+import { ClientSummaryComponent } from './components/client-summary/client-summary.component';
+import { ClientProgressComponent } from './components/client-progress/client-progress.component';
+import { ClientPhotosComponent } from './components/client-photos/client-photos.component';
+import { ClientHistoryComponent } from './components/client-history/client-history.component';
 import { supabase } from '../../../core/supabase.client';
 
+type Tab = 'summary' | 'progress' | 'photos' | 'history';
+
 @Component({
-  selector: 'fc-client-detail',
+  selector: 'app-client-detail',
   standalone: true,
-  imports: [CommonModule, ProgressChartComponent],
+  imports: [
+    CommonModule,
+    RouterLink,
+    ClientSummaryComponent,
+    ClientProgressComponent,
+    ClientPhotosComponent,
+    ClientHistoryComponent,
+  ],
   template: `
-    <div class="detail-container">
-      <header class="detail-header">
-        <button class="btn-back" (click)="router.navigate(['/coach/dashboard'])">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <div class="detail-screen">
+      <!-- Topbar -->
+      <header class="topbar">
+        <button class="back-btn" routerLink="/coach/dashboard">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M19 12H5M12 19l-7-7 7-7"/>
           </svg>
         </button>
+        
+        <div class="avatar">{{ clientInitials() }}</div>
+        
         <div class="client-info">
-          <h1>{{ clientName() }}</h1>
-          <p class="status-badge" [class.active]="true">Cliente Activo</p>
-        </div>
-      </header>
-
-      <!-- ── KPI grid ── -->
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-label">Adherencia</div>
-          <div class="kpi-value positive">{{ progressStore.adherencePct() }}%</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Récord Actual</div>
-          <div class="kpi-value">{{ progressStore.maxWeight() }}kg</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Mejora Total</div>
-          <div class="kpi-value positive">+{{ progressStore.improvement() }}kg</div>
-        </div>
-        <div class="kpi-card">
-          <div class="kpi-label">Sesiones</div>
-          <div class="kpi-value">{{ progressStore.totalSessions() }}</div>
-        </div>
-      </div>
-
-      <!-- ── Gráfica de Progreso Real (Chart.js) ── -->
-      <section class="section-card">
-        <div class="section-header">
-          <h2>Evolución de Rendimiento</h2>
-          <div class="chart-controls">
-            <select (change)="onExerciseChange($event)" class="select-ex">
-              @for (ex of progressStore.exercises(); track ex.name) {
-                <option [value]="ex.name">{{ ex.name }}</option>
-              }
-            </select>
-            <div class="metric-tabs">
-              <button [class.active]="metric() === 'maxWeight'" (click)="metric.set('maxWeight')">Peso</button>
-              <button [class.active]="metric() === 'totalVol'" (click)="metric.set('totalVol')">Volumen</button>
-            </div>
+          <h2>{{ clientName() }}</h2>
+          <div class="sub">
+            <span>{{ activeRoutine() || 'Sin rutina asignada' }}</span>
+            <span class="dot-sep">•</span>
+            <span class="badge" [class.active]="isActiveToday()">
+              {{ isActiveToday() ? 'Activo hoy' : 'Sin actividad hoy' }}
+            </span>
           </div>
         </div>
         
-        <div class="chart-height">
-          @if (progressStore.selectedExercise()) {
-            <fc-progress-chart 
-              [exercise]="progressStore.selectedExercise()"
-              [metric]="metric()"
-            />
-          } @else {
-            <p class="empty-msg text-center">Este cliente aún no tiene datos de entrenamiento registrados.</p>
-          }
+        <div class="actions">
+          <button class="icon-btn chat-btn" (click)="goToChat()">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
         </div>
-      </section>
+      </header>
 
-      <!-- ── Fotos de Progreso ── -->
-      <section class="section-card">
-        <div class="section-header">
-          <h2>Galería de Evolución</h2>
-        </div>
-        <div class="photos-grid">
-          @if (progressStore.photos().length === 0) {
-            <p class="empty-msg">No hay fotos de progreso disponibles.</p>
+      <!-- Tabs -->
+      <nav class="tab-row">
+        @for (tab of tabs; track tab.key) {
+          <button
+            class="tab"
+            [class.active]="activeTab() === tab.key"
+            (click)="setTab(tab.key)">
+            {{ tab.label }}
+          </button>
+        }
+      </nav>
+
+      <!-- Content -->
+      <div class="tab-content" [class.loading]="loading()">
+        @if (loading()) {
+          <div class="loader-wrap">
+            <div class="loader"></div>
+          </div>
+        } @else {
+          @switch (activeTab()) {
+            @case ('summary') {
+              <app-client-summary
+                [kpis]="kpis()"
+                [weekDays]="weekDays()"
+                [exerciseProgress]="exerciseProgress()"
+                [weightHistory]="weightHistory()"
+                [loading]="loading()"
+                [clientId]="clientId()" />
+            }
+            @case ('progress') {
+              <app-client-progress [clientId]="clientId()" />
+            }
+            @case ('photos') {
+              <app-client-photos [clientId]="clientId()" />
+            }
+            @case ('history') {
+              <app-client-history [clientId]="clientId()" />
+            }
           }
-          @for (photo of progressStore.photos(); track photo.id) {
-            <div class="photo-card">
-              <img [src]="photo.url" />
-              <div class="photo-overlay">
-                <span>{{ photo.takenAt | date:'dd MMM yyyy' }}</span>
-              </div>
-            </div>
-          }
-        </div>
-      </section>
+        }
+      </div>
     </div>
   `,
   styles: [`
-    .detail-container { padding: 24px; max-width: 1100px; margin: 0 auto; color: white; animation: fadeIn 0.4s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .detail-screen { min-height: 100vh; background: #080a0f; color: white; padding-bottom: 40px; }
 
-    .detail-header { display: flex; align-items: center; gap: 20px; margin-bottom: 32px; }
-    .btn-back { background: rgba(255,255,255,0.05); border: none; color: white; padding: 12px; border-radius: 14px; cursor: pointer; transition: 0.2s; }
-    .btn-back:hover { background: rgba(255,255,255,0.1); transform: scale(1.05); }
-    .client-info h1 { margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px; }
-    .status-badge { background: #1D9E75; color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; display: inline-block; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    /* Topbar */
+    .topbar { display: flex; align-items: center; padding: 16px; gap: 12px; position: sticky; top: 0; background: rgba(8,10,15,0.8); backdrop-filter: blur(10px); z-index: 10; }
+    .back-btn { background: none; border: none; color: #888; cursor: pointer; padding: 4px; }
+    .avatar { width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #1D9E75, #158062); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 18px; color: white; }
+    .client-info { flex: 1; }
+    .client-info h2 { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+    .sub { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #666; margin-top: 2px; }
+    .dot-sep { opacity: 0.3; }
+    .badge { padding: 2px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); font-weight: 600; font-size: 10px; text-transform: uppercase; }
+    .badge.active { background: rgba(29, 158, 117, 0.1); color: #1D9E75; }
+
+    .actions { display: flex; gap: 8px; }
+    .icon-btn { background: rgba(255,255,255,0.05); border: none; color: white; width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
+    .chat-btn:hover { background: rgba(29, 158, 117, 0.2); color: #1D9E75; }
+
+    /* Tabs */
+    .tab-row { display: flex; padding: 4px 16px; border-bottom: 1px solid rgba(255,255,255,0.05); overflow-x: auto; scrollbar-width: none; }
+    .tab-row::-webkit-scrollbar { display: none; }
+    .tab { background: none; border: none; color: #555; padding: 12px 16px; font-size: 14px; font-weight: 600; cursor: pointer; position: relative; white-space: nowrap; transition: 0.2s; }
+    .tab.active { color: #1D9E75; }
+    .tab.active::after { content: ''; position: absolute; bottom: 0; left: 16px; right: 16px; height: 3px; background: #1D9E75; border-radius: 3px 3px 0 0; }
+
+    /* Content */
+    .tab-content { min-height: 300px; position: relative; }
+    .tab-content.loading { opacity: 0.5; }
     
-    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 32px; }
-    .kpi-card { background: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%); border: 1px solid rgba(255,255,255,0.06); padding: 24px; border-radius: 20px; transition: 0.3s; }
-    .kpi-card:hover { transform: translateY(-4px); border-color: rgba(29, 158, 117, 0.3); }
-    .kpi-label { color: #888; font-size: 14px; font-weight: 500; margin-bottom: 8px; }
-    .kpi-value { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
-    .positive { color: #1D9E75; }
+    .loader-wrap { position: absolute; top: 100px; left: 0; right: 0; display: flex; justify-content: center; }
+    .loader { width: 30px; height: 30px; border: 3px solid rgba(255,255,255,0.1); border-top-color: #1D9E75; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .section-card { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 28px; border-radius: 24px; margin-bottom: 32px; }
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
-    h2 { margin: 0; font-size: 20px; font-weight: 700; }
-    
-    .chart-controls { display: flex; gap: 12px; align-items: center; }
-    .select-ex { background: #1a1a1a; color: white; border: 1px solid #333; padding: 10px 16px; border-radius: 12px; font-size: 14px; outline: none; transition: 0.2s; min-width: 180px; }
-    .select-ex:focus { border-color: #1D9E75; }
-
-    .metric-tabs { display: flex; background: rgba(255,255,255,0.05); padding: 4px; border-radius: 10px; }
-    .metric-tabs button { background: none; border: none; color: #888; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s; }
-    .metric-tabs button.active { background: #1D9E75; color: white; box-shadow: 0 4px 12px rgba(29, 158, 117, 0.3); }
-
-    .chart-height { height: 320px; width: 100%; position: relative; }
-
-    .photos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
-    .photo-card { position: relative; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; cursor: pointer; }
-    .photo-card:hover { transform: scale(1.03); border-color: #1D9E75; }
-    .photo-card img { width: 100%; aspect-ratio: 4/5; object-fit: cover; }
-    .photo-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 12px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); color: white; font-size: 11px; text-align: center; }
-    
-    .empty-msg { color: #666; font-style: italic; width: 100%; }
-    .text-center { text-align: center; }
+    .placeholder-view { padding: 80px 40px; text-align: center; color: #444; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+    .placeholder-view p { font-size: 14px; font-weight: 500; }
   `]
 })
 export class ClientDetailComponent implements OnInit {
-  progressStore = inject(ProgressStore);
-  route         = inject(ActivatedRoute);
-  router        = inject(Router);
-  
-  clientName = signal('Cargando...');
-  metric = signal<'maxWeight' | 'totalVol'>('maxWeight');
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private coachClient = inject(CoachClientService);
 
-  async ngOnInit() {
-    const clientId = this.route.snapshot.paramMap.get('clientId');
-    if (clientId) {
-      const { data } = await supabase.from('profiles').select('full_name').eq('id', clientId).single();
-      if (data) {
-        this.clientName.set(data.full_name);
-        await this.progressStore.load(clientId);
-      } else {
-        // Si el cliente no existe, volvemos
-        this.router.navigate(['/coach/dashboard']);
-      }
-    } else {
+  clientId = signal<string>('');
+  clientName = signal<string>('Cargando...');
+  activeRoutine = signal<string | null>(null);
+  isActiveToday = signal<boolean>(false);
+  activeTab = signal<Tab>('summary');
+  loading = signal(true);
+
+  kpis = signal<ClientKPIs | null>(null);
+  weekDays = signal<WeekDay[]>([]);
+  exerciseProgress = signal<ExerciseProgress[]>([]);
+  weightHistory = signal<WeightEntry[]>([]);
+
+  tabs: { key: Tab; label: string }[] = [
+    { key: 'summary', label: 'Resumen' },
+    { key: 'progress', label: 'Progreso' },
+    { key: 'photos', label: 'Fotos' },
+    { key: 'history', label: 'Historial' },
+  ];
+
+  clientInitials = computed(() => {
+    const name = this.clientName();
+    if (name === 'Cargando...') return '';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  });
+
+  ngOnInit() {
+    // Usamos 'clientId' como está en coach.routes.ts actual
+    const id = this.route.snapshot.paramMap.get('clientId') || this.route.snapshot.paramMap.get('id') || '';
+    if (!id) {
       this.router.navigate(['/coach/dashboard']);
+      return;
     }
+    this.clientId.set(id);
+    this.loadClientInfo(id);
+    this.loadData(id);
   }
 
-  onExerciseChange(event: Event) {
-    const val = (event.target as HTMLSelectElement).value;
-    this.progressStore.selectExercise(val);
+  async loadClientInfo(id: string) {
+    const { data } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', id)
+      .single();
+    
+    if (data) {
+      this.clientName.set(data.full_name);
+    }
+
+    // Consultar rutina activa (simplificado)
+    const { data: routine } = await supabase
+      .from('client_routines')
+      .select('routines(name)')
+      .eq('client_id', id)
+      .eq('status', 'active')
+      .maybeSingle();
+    
+    if (routine) {
+      this.activeRoutine.set((routine as any).routines?.name);
+    }
+
+    // Consultar si ha entrenado hoy
+    const today = new Date().toISOString().split('T')[0];
+    const { data: todayDone } = await supabase
+      .from('completed_days')
+      .select('id')
+      .eq('user_id', id)
+      .gte('completed_at', today)
+      .maybeSingle();
+    
+    this.isActiveToday.set(!!todayDone);
+  }
+
+  loadData(clientId: string) {
+    this.loading.set(true);
+    
+    forkJoin([
+      this.coachClient.getClientKPIs(clientId),
+      this.coachClient.getCurrentWeekDays(clientId),
+      this.coachClient.getExerciseProgress(clientId),
+      this.coachClient.getWeightHistory(clientId),
+    ]).subscribe(([kpis, days, progress, weights]) => {
+      this.kpis.set(kpis);
+      this.weekDays.set(days);
+      this.exerciseProgress.set(progress);
+      this.weightHistory.set(weights);
+      this.loading.set(false);
+    });
+  }
+
+  setTab(tab: Tab) {
+    this.activeTab.set(tab);
+  }
+
+  goToChat() {
+    this.router.navigate(['/coach/inbox'], { queryParams: { client: this.clientId() } });
   }
 }

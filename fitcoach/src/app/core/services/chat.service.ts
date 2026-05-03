@@ -1,12 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../supabase.client';
 import { ChatMessage, Conversation, MessageType } from '../../state/chat.store';
 import { environment } from '../../../environments/environment';
+import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   private sb      = supabase;
+  private notifSvc = inject(NotificationService);
   private channel: RealtimeChannel | null = null;
 
   // ── Realtime ──────────────────────────────────────────────────────
@@ -73,6 +75,27 @@ export class ChatService {
       status:      'sent',
     });
     if (error) throw error;
+
+    // Notificar al receptor
+    try {
+      const { data: sender } = await this.sb
+        .from('profiles')
+        .select('full_name, role')
+        .eq('id', senderId)
+        .single();
+      
+      const senderName = sender?.full_name ?? 'Alguien';
+
+      await this.notifSvc.create(
+        receiverId,
+        'new_message',
+        sender?.role === 'coach' ? '💬 Mensaje de tu entrenador' : `💬 ${senderName}`,
+        content.length > 60 ? content.substring(0, 60) + '…' : content,
+        { sender_id: senderId }
+      );
+    } catch (e) {
+      console.error('[ChatService] Error al notificar mensaje:', e);
+    }
   }
 
   async getHistory(myId: string, partnerId: string): Promise<ChatMessage[]> {
@@ -119,7 +142,7 @@ export class ChatService {
           )
           .order('created_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         // Contador de no leídos
         const { count } = await this.sb

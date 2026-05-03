@@ -3,6 +3,7 @@ import { Injectable, signal, computed } from '@angular/core';
 @Injectable({ providedIn: 'root' })
 export class RestTimerService {
   private intervalId: ReturnType<typeof setInterval> | null = null;
+  private endTime: number | null = null;
 
   remaining  = signal(0);
   total      = signal(0);
@@ -19,16 +20,26 @@ export class RestTimerService {
     this.total.set(seconds);
     this.remaining.set(seconds);
     this.isRunning.set(true);
+    
+    // Guardamos el momento exacto en el que debería terminar
+    this.endTime = Date.now() + (seconds * 1000);
 
     this.intervalId = setInterval(() => {
-      this.remaining.update(r => {
-        if (r <= 1) {
-          this.finish();
-          return 0;
-        }
-        return r - 1;
-      });
-    }, 1000);
+      this.updateTimer();
+    }, 200); // Actualizamos más a menudo para suavidad, pero basándonos en el reloj real
+  }
+
+  private updateTimer(): void {
+    if (!this.endTime) return;
+
+    const now = Date.now();
+    const diff = Math.max(0, Math.ceil((this.endTime - now) / 1000));
+
+    this.remaining.set(diff);
+
+    if (diff <= 0) {
+      this.finish();
+    }
   }
 
   skip(): void { this.finish(); }
@@ -38,6 +49,7 @@ export class RestTimerService {
       clearInterval(this.intervalId);
       this.intervalId = null;
     }
+    this.endTime = null;
     this.isRunning.set(false);
   }
 
@@ -45,7 +57,9 @@ export class RestTimerService {
     this.stop();
     this.remaining.set(0);
     // Vibración en móvil al terminar el descanso
-    if ('vibrate' in navigator) navigator.vibrate([200, 100, 200]);
+    if ('vibrate' in navigator) {
+      navigator.vibrate([300, 100, 300]);
+    }
   }
 
   formatTime(seconds: number): string {
@@ -54,3 +68,4 @@ export class RestTimerService {
     return `${m}:${s.toString().padStart(2, '0')}`;
   }
 }
+

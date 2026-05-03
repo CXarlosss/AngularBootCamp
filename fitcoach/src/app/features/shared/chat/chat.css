@@ -240,8 +240,28 @@
 
 /* ── Responsive ── */
 @media (max-width: 768px) {
-  .inbox-layout { grid-template-columns: 1fr; }
-  .conv-list { display: none; }
-  .inbox-layout.show-list .conv-list { display: flex; }
-  .inbox-layout.show-list .chat-window { display: none; }
+  .inbox-layout { 
+    grid-template-columns: 1fr; 
+    height: calc(100dvh - 52px); /* Subtract header height */
+  }
+  
+  /* Show list by default on mobile if no chat is selected */
+  .conv-list { 
+    display: flex; 
+    width: 100%;
+    border-right: none;
+  }
+  
+  .chat-main {
+    display: none;
+  }
+
+  .inbox-layout:has(fc-chat-window) .conv-list {
+    display: none;
+  }
+
+  .inbox-layout:has(fc-chat-window) .chat-main {
+    display: flex;
+    flex: 1;
+  }
 }

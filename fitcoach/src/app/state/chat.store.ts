@@ -100,13 +100,20 @@ export const ChatStore = signalStore(
 
       // Suscribirse a mensajes nuevos en tiempo real
       chatSvc.subscribeToConversation(myId, partnerId, (msg) => {
-        const owned = { ...msg, isOwn: msg.senderId === myId };
-        patchState(store, {
-          messages: [...store.messages(), owned],
-        });
-        // Marcar como leído inmediatamente si estamos en esta conversación
-        if (msg.receiverId === myId) {
-          chatSvc.markAsRead([msg.id]);
+        // IMPORTANTE: Verificar que el mensaje pertenece a la conversación abierta
+        const isFromPartner = msg.senderId === partnerId;
+        const isToPartner   = msg.receiverId === partnerId;
+
+        if (isFromPartner || isToPartner) {
+          const owned = { ...msg, isOwn: msg.senderId === myId };
+          patchState(store, {
+            messages: [...store.messages(), owned],
+          });
+          
+          // Marcar como leído inmediatamente si estamos en esta conversación
+          if (msg.receiverId === myId) {
+            chatSvc.markAsRead([msg.id]);
+          }
         }
       });
     },

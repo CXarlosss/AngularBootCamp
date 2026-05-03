@@ -5,12 +5,14 @@ export interface SetLog {
   setNumber: number;
   weightKg: number;
   repsDone: number;
+  completedAt: Date;
 }
 
 export interface WorkoutLog {
   id: string;
   clientId: string;
   assignedRoutineId: string;
+  routineId: string;
   dayId: string;
   loggedDate: Date;
   completed: boolean;

@@ -73,4 +73,21 @@ export class ClientRoutineService {
       status:    data.status as any,
     };
   }
+
+  async getCompletedDays(clientId: string, routineId: string): Promise<string[]> {
+    if (!clientId || !routineId) return [];
+    
+    const { data, error } = await this.sb
+      .from('completed_days')
+      .select('day_id')
+      .eq('client_id', clientId)
+      .eq('routine_id', routineId);
+
+    if (error) {
+      console.error('Error fetching completed days:', error);
+      return [];
+    }
+
+    return (data || []).map(row => row.day_id);
+  }
 }

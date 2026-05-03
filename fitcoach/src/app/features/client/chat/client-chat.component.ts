@@ -3,6 +3,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 import { Router }             from '@angular/router';
 import { CommonModule }       from '@angular/common';
 import { ChatWindowComponent } from '../../shared/chat/chat-window.component';
+import { UnreadMessagesService } from '../../messages/unread-messages.service';
 
 @Component({
   selector: 'fc-client-chat',
@@ -55,6 +56,7 @@ import { ChatWindowComponent } from '../../shared/chat/chat-window.component';
 export class ClientChatComponent implements OnInit {
   auth = inject(AuthService);
   router = inject(Router);
+  unreadSvc = inject(UnreadMessagesService);
 
   coachId   = signal<string | null>(null);
   coachName = signal<string>('Tu entrenador');
@@ -63,6 +65,8 @@ export class ClientChatComponent implements OnInit {
     const profile = this.auth.profile();
     if (profile?.coachId) {
       this.coachId.set(profile.coachId);
+      // Marcar mensajes del coach como leídos
+      await this.unreadSvc.markAsRead(profile.id, profile.coachId);
     }
   }
 }

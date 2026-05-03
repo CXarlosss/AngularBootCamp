@@ -13,7 +13,7 @@ declare const Chart: any;
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="chart-wrap">
+    <div class="chart-wrap" style="position: relative; width: 100%; height: 280px; margin-top: 10px;">
       <canvas #chartCanvas></canvas>
     </div>
   `,
@@ -26,10 +26,8 @@ export class ProgressChartComponent implements AfterViewInit, OnDestroy {
   private chart: any = null;
 
   constructor(private cdr: ChangeDetectorRef) {
-    // Reaccionar a cambios en los datos con effect()
     effect(() => {
       const ex = this.exercise();
-      // Esperar al siguiente tick para que el DOM exista
       if (ex) {
         setTimeout(() => {
           if (!this.chart) this.initChart();
@@ -40,7 +38,7 @@ export class ProgressChartComponent implements AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    // Inicialización delegada al effect()
+    // Initialized by effect
   }
 
   ngOnDestroy(): void {
@@ -48,81 +46,106 @@ export class ProgressChartComponent implements AfterViewInit, OnDestroy {
   }
 
   private initChart(): void {
-    const ctx  = this.canvasRef.nativeElement.getContext('2d')!;
+    const ctx = this.canvasRef.nativeElement.getContext('2d')!;
     const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-    const gridColor   = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-    const labelColor  = isDark ? '#888780' : '#73726c';
+    const gridColor = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
+    const labelColor = isDark ? 'rgba(255,255,255,0.4)' : '#666';
 
     this.chart = new Chart(ctx, {
       type: 'line',
-      data: { labels: [], datasets: [this.buildDataset([])] },
+      data: { labels: [], datasets: [this.buildDataset([], ctx)] },
       options: {
-        responsive:          true,
+        responsive: true,
         maintainAspectRatio: false,
-        animation:           { duration: 400, easing: 'easeOutCubic' },
+        layout: {
+          padding: { top: 10, right: 10, bottom: 0, left: -5 }
+        },
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: isDark ? '#2C2C2A' : '#fff',
-            borderColor:     isDark ? '#444441' : '#D3D1C7',
-            borderWidth:     0.5,
-            titleColor:      isDark ? '#c2c0b6' : '#3d3d3a',
-            bodyColor:       isDark ? '#888780' : '#73726c',
-            padding:         10,
+            mode: 'index',
+            intersect: false,
+            backgroundColor: isDark ? '#1a1d24' : '#fff',
+            titleColor: isDark ? '#fff' : '#000',
+            bodyColor: isDark ? 'rgba(255,255,255,0.7)' : '#444',
+            borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            borderWidth: 1,
+            padding: 12,
+            cornerRadius: 12,
+            displayColors: false,
             callbacks: {
-              label: (ctx: any) =>
-                this.metric() === 'maxWeight'
-                  ? `${ctx.parsed.y} kg`
-                  : `${ctx.parsed.y.toLocaleString()} kg vol.`,
-            },
-          },
+              label: (ctx: any) => 
+                this.metric() === 'maxWeight' 
+                  ? `🚀 Récord: ${ctx.parsed.y} kg`
+                  : `📊 Vol: ${ctx.parsed.y.toLocaleString()} kg`
+            }
+          }
         },
         scales: {
           x: {
-            grid:  { color: gridColor },
-            ticks: { color: labelColor, font: { size: 11 } },
-          },
-          y: {
-            grid:  { color: gridColor },
+            grid: { display: false },
             ticks: {
               color: labelColor,
-              font:  { size: 11 },
-              callback: (v: number) =>
-                this.metric() === 'maxWeight' ? `${v}kg` : `${v}`,
-            },
+              font: { size: 10, weight: '600' },
+              maxRotation: 0,
+              autoSkip: true,
+              maxTicksLimit: 5
+            }
           },
-        },
-      },
+          y: {
+            min: 0,
+            beginAtZero: true,
+            grace: '15%',
+            grid: { color: gridColor, drawBorder: false },
+            ticks: {
+              color: labelColor,
+              font: { size: 10, weight: '600' },
+              maxTicksLimit: 6,
+              callback: (v: any) => this.metric() === 'maxWeight' ? `${v}kg` : v >= 1000 ? `${(v/1000).toFixed(1)}k` : v
+            }
+          }
+        }
+      }
     });
   }
 
   private updateChart(ex: ExerciseProgress): void {
     if (!this.chart) return;
-    const pts    = ex.dataPoints;
-    const labels = pts.map(p =>
+    const pts = ex.dataPoints;
+    const labels = pts.map(p => 
       p.date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
     );
-    const values = pts.map(p =>
+    const values = pts.map(p => 
       this.metric() === 'maxWeight' ? p.maxWeight : Math.round(p.totalVol)
     );
 
-    this.chart.data.labels           = labels;
-    this.chart.data.datasets[0]      = this.buildDataset(values);
-    this.chart.update('active');
+    this.chart.data.labels = labels;
+    const ctx = this.canvasRef.nativeElement.getContext('2d')!;
+    this.chart.data.datasets[0] = this.buildDataset(values, ctx);
+    this.chart.update('none'); // Update without animation for smoother data swaps
   }
 
-  private buildDataset(data: number[]) {
+  private buildDataset(data: number[], ctx: CanvasRenderingContext2D) {
     const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
+    const color = isDark ? '#1D9E75' : '#158062';
+    
+    const gradient = ctx.createLinearGradient(0, 0, 0, 280);
+    gradient.addColorStop(0, isDark ? 'rgba(29, 158, 117, 0.3)' : 'rgba(21, 128, 98, 0.2)');
+    gradient.addColorStop(1, 'rgba(29, 158, 117, 0)');
+
     return {
       data,
-      borderColor:     isDark ? '#85B7EB' : '#185FA5',
-      backgroundColor: isDark ? 'rgba(133,183,235,0.08)' : 'rgba(24,95,165,0.06)',
-      borderWidth:     1.5,
-      pointRadius:     3,
-      pointHoverRadius: 5,
-      pointBackgroundColor: isDark ? '#85B7EB' : '#185FA5',
-      tension:         0.35,
-      fill:            true,
+      borderColor: color,
+      borderWidth: 3.5,
+      backgroundColor: gradient,
+      fill: true,
+      tension: 0.45,
+      pointRadius: 5,
+      pointHoverRadius: 8,
+      pointBackgroundColor: color,
+      pointBorderColor: isDark ? '#080a0f' : '#fff',
+      pointBorderWidth: 2.5,
+      spanGaps: true
     };
   }
 }

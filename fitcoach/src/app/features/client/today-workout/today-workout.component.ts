@@ -3,6 +3,7 @@ import {
   ChangeDetectionStrategy, OnInit, OnDestroy, effect, ElementRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
 import { WorkoutStore }    from '../../../state/workout.store';
 import { ClientRoutineService } from '../../../core/services/client-routine.service';
@@ -13,6 +14,7 @@ import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.
 import { HapticService }     from '../../../core/services/haptic.service';
 import { AssignedRoutine, Exercise, RoutineDay } from '../../../core/models/routine.model';
 import { SetLog }          from '../../../core/models/workout-log.model';
+import { FormsModule }     from '@angular/forms';
 
 interface ExerciseState {
   exercise:      Exercise;
@@ -25,7 +27,7 @@ interface ExerciseState {
   selector: 'fc-today-workout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, SetLoggerComponent, SkeletonComponent],
+  imports: [CommonModule, FormsModule, SetLoggerComponent, SkeletonComponent],
   template: `
     <div class="workout-screen">
 
@@ -40,18 +42,18 @@ interface ExerciseState {
 
         <!-- Anillo de progreso reactivo (Circunferencia: 2 * PI * 18 = 113.1) -->
         <div class="ring-wrapper overall-ring">
-          <svg viewBox="0 0 44 44" width="44" height="44">
-            <circle cx="22" cy="22" r="18"
-              fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="3"/>
-            <circle cx="22" cy="22" r="18"
+          <svg viewBox="0 0 44 44" width="48" height="48">
+            <circle cx="22" cy="22" r="19"
+              fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="2.5"/>
+            <circle cx="22" cy="22" r="19"
               fill="none"
-              [attr.stroke]="allDone() ? '#1D9E75' : '#1D9E75'"
+              stroke="#1D9E75"
               stroke-width="3"
-              [attr.stroke-dasharray]="(overallProgress() / 100 * 113.1) + ' 113.1'"
-              stroke-dashoffset="28.27"
+              [attr.stroke-dasharray]="(overallProgress() / 100 * 119.38) + ' 119.38'"
+              stroke-dashoffset="29.84"
               stroke-linecap="round"
               transform="rotate(-90 22 22)"
-              style="transition: stroke-dasharray .4s ease"/>
+              style="transition: stroke-dasharray .6s cubic-bezier(0.16, 1, 0.3, 1)"/>
           </svg>
           <div class="ring-text" [class.complete]="allDone()">
             @if (allDone()) { ✓ } @else { {{ overallProgress() }}% }
@@ -63,21 +65,24 @@ interface ExerciseState {
       @if (timer.isRunning()) {
         <div class="rest-overlay">
           <div class="rest-card">
-            <p class="rest-label">Descansando</p>
+            <p class="rest-label">Tiempo de descanso</p>
             <div class="rest-circle">
-              <svg viewBox="0 0 100 100" width="140" height="140">
-                <circle cx="50" cy="50" r="44" fill="none"
-                  stroke="rgba(255,255,255,0.04)" stroke-width="6"/>
-                <circle cx="50" cy="50" r="44" fill="none"
-                  stroke="#1D9E75" stroke-width="6"
-                  [attr.stroke-dasharray]="(276 - (timer.progress() * 2.76)) + ' 276'"
-                  stroke-dashoffset="69"
+              <svg viewBox="0 0 100 100" width="200" height="200">
+                <circle cx="50" cy="50" r="48" fill="none"
+                  stroke="rgba(255,255,255,0.04)" stroke-width="4"/>
+                <circle cx="50" cy="50" r="48" fill="none"
+                  stroke="#1D9E75" stroke-width="4"
+                  [attr.stroke-dasharray]="(301.59 - (timer.progress() * 3.0159)) + ' 301.59'"
+                  stroke-dashoffset="75.4"
                   stroke-linecap="round"
-                  transform="rotate(-90 50 50)"/>
+                  transform="rotate(-90 50 50)"
+                  style="transition: stroke-dasharray 1s linear"/>
               </svg>
               <span class="rest-time">{{ timer.remaining() }}</span>
             </div>
-            <button class="btn-skip" (click)="timer.skip()">Saltar descanso</button>
+            <button class="btn-skip" (click)="timer.skip()">
+              Saltar descanso
+            </button>
           </div>
         </div>
       }
@@ -87,6 +92,15 @@ interface ExerciseState {
           @for (i of [1,2,3,4]; track i) {
             <fc-skeleton type="exercise-card" />
           }
+        } @else if (isDayDone()) {
+          <div class="empty-state">
+            <div class="empty-illustration">✅</div>
+            <p>¡Entrenamiento completado!</p>
+            <span class="empty-sub">Ya has dado el máximo por hoy. Descansa y vuelve mañana 💪</span>
+            <button class="btn-back-dash" (click)="router.navigate(['/client/dashboard'])">
+              Volver al inicio
+            </button>
+          </div>
         } @else if (exerciseStates().length === 0) {
           <div class="empty-state">
             <div class="empty-illustration">🏋️</div>
@@ -175,6 +189,57 @@ interface ExerciseState {
       }
 
     </div>
+
+    @if (editingSet(); as set) {
+      <div class="edit-overlay" (click)="editingSet.set(null)">
+        <div class="edit-modal" (click)="$event.stopPropagation()">
+          <header class="edit-header">
+            <h3>Editar Serie {{ set.setNumber }}</h3>
+            <p>{{ set.exerciseName }}</p>
+          </header>
+          
+          <div class="edit-body">
+            <div class="edit-field">
+              <label>Peso (kg)</label>
+              <div class="edit-stepper">
+                <button (click)="adjustEditWeight(-0.5)">−</button>
+                <input
+                  type="number"
+                  step="0.5"
+                  inputmode="decimal"
+                  [ngModel]="editWeight()"
+                  (ngModelChange)="editWeight.set(+$event)"
+                >
+                <button (click)="adjustEditWeight(0.5)">+</button>
+              </div>
+            </div>
+            
+            <div class="edit-field">
+              <label>Reps</label>
+              <div class="edit-stepper">
+                <button (click)="adjustEditReps(-1)">−</button>
+                <input
+                  type="number"
+                  [ngModel]="editReps()"
+                  (ngModelChange)="editReps.set(+$event)"
+                >
+                <button (click)="adjustEditReps(1)">+</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="edit-footer">
+            <button class="btn-delete" (click)="deleteSet(set)" title="Eliminar serie">
+              🗑️
+            </button>
+            <div class="footer-main-btns">
+              <button class="btn-cancel" (click)="editingSet.set(null)">Cancelar</button>
+              <button class="btn-save" (click)="saveEdit(set)">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
   `,
   styleUrls: ['./today-workout.component.css']
 })
@@ -191,6 +256,14 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   activeExerciseIndex = signal(0);
   activeRoutine = signal<AssignedRoutine | null>(null);
   selectedDayId = signal<string | null>(null);
+  isDayDone     = signal(false);
+  editingSet    = signal<SetLog | null>(null);
+  
+  // Señales auxiliares para el formulario de edición
+  editWeight    = signal(0);
+  editReps      = signal(10);
+
+  protected Math = Math;
 
   constructor() {
     // Efecto para auto-scrollear al ejercicio activo
@@ -246,7 +319,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   overallProgress = computed(() => {
     const states = this.exerciseStates();
     if (!states.length) return 0;
-    const totalSets    = states.reduce((s, e) => s + e.exercise.sets, 0);
+    const totalSets    = states.reduce((s, e) => s + Number(e.exercise.sets || 0), 0);
     const completedSets = states.reduce((s, e) => s + e.completedSets.length, 0);
     return totalSets > 0 ? Math.round((completedSets / totalSets) * 100) : 0;
   });
@@ -266,26 +339,59 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   );
 
   async ngOnInit(): Promise<void> {
-    const user = this.auth.profile();
-    if (!user) return;
+    console.log('[TodayWorkout] ngOnInit INICIO');
+    
+    // Si no hay perfil, esperamos a que el Signal lo tenga (reactivo)
+    const profile = this.auth.profile();
+    if (!profile) {
+      console.log('[TodayWorkout] Esperando a que cargue el perfil...');
+      const sub = toObservable(this.auth.profile).subscribe(p => {
+        if (p) {
+          console.log('[TodayWorkout] Perfil cargado diferido. Iniciando...');
+          this.initWorkout(p.id);
+          sub.unsubscribe();
+        }
+      });
+    } else {
+      this.initWorkout(profile.id);
+    }
+  }
 
+  private async initWorkout(clientId: string) {
+    console.log('[TodayWorkout] initWorkout para:', clientId);
     this.selectedDayId.set(this.route.snapshot.queryParams['dayId'] ?? null);
 
     try {
-      const assigned = await this.clientRoutineSvc.getActiveRoutine(user.id);
+      const assigned = await this.clientRoutineSvc.getActiveRoutine(clientId);
       this.activeRoutine.set(assigned);
+      console.log('[TodayWorkout] Rutina activa cargada:', assigned?.id);
 
-      // Cargamos el historial ANTES de iniciar para detectar si ya terminamos hoy
-      await this.workoutStore.loadHistory(user.id);
+      await this.workoutStore.loadHistory(clientId);
 
       if (assigned) {
         const day = this.todayDay();
         if (day) {
-          this.workoutStore.startWorkout(assigned.id, user.id, day.id);
+          console.log('[TodayWorkout] Evaluando día:', day.id);
+          const isDone = await this.workoutStore.isDayCompleted(clientId, day.id);
+          
+          if (isDone) {
+            this.isDayDone.set(true);
+            console.log('[TodayWorkout] El día ya consta como completado. Bloqueando sesión.');
+          } else {
+            console.log('[TodayWorkout] Iniciando nueva sesión de entrenamiento...');
+            this.workoutStore.startWorkout(assigned.id, assigned.routineId, clientId, day.id);
+          }
+        } else {
+          console.warn('[TodayWorkout] No se encontró el día especificado en la rutina');
         }
+      } else {
+        console.warn('[TodayWorkout] El cliente no tiene ninguna rutina activa asignada');
       }
+    } catch (err) {
+      console.error('[TodayWorkout] Error crítico en inicialización:', err);
     } finally {
       this.isLoading.set(false);
+      console.log('[TodayWorkout] ngOnInit FINALIZADO (loading: false)');
     }
   }
 
@@ -300,7 +406,10 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   }
 
   lastSet(state: ExerciseState): SetLog | null {
-    return state.completedSets[state.completedSets.length - 1] ?? null;
+    const sessionLast = state.completedSets[state.completedSets.length - 1];
+    if (sessionLast) return sessionLast;
+    // Si es la primera serie de la sesión, buscamos en el historial
+    return this.workoutStore.getLastPerformance(state.exercise.id);
   }
 
   setActiveExercise(index: number): void {
@@ -315,6 +424,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     set: Omit<SetLog, 'id'>,
     exercise: Exercise
   ): void {
+    console.log('[TodayWorkout] Recibida serie para:', exercise.name, set);
     this.workoutStore.logSet(set);
     this.haptic.trigger('light');
 
@@ -333,13 +443,51 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   }
 
   editSet(set: SetLog): void {
-    // En v2: abrir mini-modal para corregir peso/reps
-    console.log('edit set', set.id);
+    console.log('[FIX-EDIT] Abriendo modal para:', set.id);
+    this.editWeight.set(set.weightKg);
+    this.editReps.set(set.repsDone);
+    this.editingSet.set({ ...set });
+    this.haptic.trigger('light');
+  }
+
+  adjustEditWeight(delta: number): void {
+    const next = Math.round((this.editWeight() + delta) * 10) / 10;
+    this.editWeight.set(Math.max(0, next));
+    this.haptic.trigger('light');
+  }
+
+  adjustEditReps(delta: number): void {
+    this.editReps.set(Math.max(1, this.editReps() + delta));
+    this.haptic.trigger('light');
+  }
+
+  saveEdit(originalSet: SetLog): void {
+    console.log('[FIX-EDIT] Guardando cambios:', { 
+      id: originalSet.id, 
+      weight: this.editWeight(), 
+      reps: this.editReps() 
+    });
+    
+    this.workoutStore.updateSet(
+      originalSet.id, 
+      this.editWeight(), 
+      this.editReps()
+    );
+    this.editingSet.set(null);
+    this.haptic.trigger('medium');
+  }
+
+  deleteSet(set: SetLog): void {
+    console.log('[TodayWorkout] Ejecutando deleteSet para ID:', set.id);
+    this.workoutStore.removeSet(set.id);
+    this.editingSet.set(null);
+    this.haptic.trigger('heavy');
   }
 
   async completeWorkout(): Promise<void> {
+    const label = this.todayDay()?.label || 'Entrenamiento';
     this.haptic.trigger('complete');
-    await this.workoutStore.completeWorkout();
+    await this.workoutStore.completeWorkout(label);
     this.router.navigate(['/client/progress']);
   }
 

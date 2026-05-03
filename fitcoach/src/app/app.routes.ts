@@ -4,6 +4,10 @@ import { authGuard, coachGuard, clientGuard } from './core/auth/role.guard';
 export const routes: Routes = [
   { path: '', redirectTo: 'auth/login', pathMatch: 'full' },
   {
+    path: 'register',
+    loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent),
+  },
+  {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.AUTH_ROUTES),
   },
@@ -16,5 +20,10 @@ export const routes: Routes = [
     path: 'client',
     canActivate: [authGuard, clientGuard],
     loadChildren: () => import('./features/client/client.routes').then(m => m.CLIENT_ROUTES),
+  },
+  {
+    path: 'profile',
+    loadComponent: () => import('./features/client/profile/profile-edit.component').then(m => m.ProfileEditComponent),
+    canActivate: [authGuard]
   },
 ];

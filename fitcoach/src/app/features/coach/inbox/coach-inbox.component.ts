@@ -5,6 +5,7 @@ import {
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChatStore, Conversation } from '../../../state/chat.store';
 import { AuthService } from '../../../core/auth/auth.service';
+import { UnreadMessagesService } from '../../../features/messages/unread-messages.service';
 import { ChatWindowComponent } from '../../shared/chat/chat-window.component';
 
 @Component({
@@ -76,6 +77,7 @@ import { ChatWindowComponent } from '../../shared/chat/chat-window.component';
 export class CoachInboxComponent implements OnInit {
   store    = inject(ChatStore);
   auth     = inject(AuthService);
+  unreadSvc = inject(UnreadMessagesService);
   selected = signal<Conversation | null>(null);
 
   async ngOnInit(): Promise<void> {
@@ -84,6 +86,10 @@ export class CoachInboxComponent implements OnInit {
 
   select(conv: Conversation): void {
     this.selected.set(conv);
+    const coachId = this.auth.profile()?.id;
+    if (coachId) {
+      this.unreadSvc.markAsRead(coachId, conv.partnerId);
+    }
   }
 
   initials(name: string): string {

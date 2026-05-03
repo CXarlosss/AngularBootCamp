@@ -458,3 +458,118 @@
   .kpi-grid { padding: 0 16px; }
   .content-grid { padding: 10px 16px 24px; }
 }
+
+/* Indicador de estado del cliente */
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.invite-btn {
+  padding: 6px 14px;
+  background: #0F6E56;
+  color: #9FE1CB;
+  border: none;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 8px;
+  display: block;
+  transition: all .2s;
+  border: 0.5px solid rgba(29, 158, 117, 0.3);
+}
+
+.invite-btn:hover {
+  background: #1D9E75;
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+
+@media (max-width: 768px) {
+  .dash-layout {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 52px 1fr !important; /* Fixed header height */
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  .sidebar {
+    flex-direction: row !important;
+    height: 52px !important;
+    padding: 0 8px !important;
+    border-right: none !important;
+    border-bottom: 0.5px solid rgba(255,255,255,0.06) !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 4px !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    z-index: 100 !important;
+  }
+
+  .sidebar::-webkit-scrollbar { display: none !important; }
+
+  .sidebar-logo {
+    margin-bottom: 0 !important;
+    margin-right: 12px !important;
+    padding: 0 4px !important;
+    white-space: nowrap !important;
+    font-size: 14px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .nav-section {
+    flex-direction: row !important;
+    gap: 2px !important;
+    flex: 1 !important;
+    justify-content: flex-start !important;
+    display: flex !important;
+  }
+
+  .nav-item {
+    padding: 6px 10px !important;
+    white-space: nowrap !important;
+    font-size: 11px !important;
+    width: auto !important;
+    flex-shrink: 0 !important;
+  }
+
+  .sidebar-bottom { display: none !important; }
+
+  .dash-main {
+    height: 100% !important;
+    overflow-y: auto !important;
+  }
+
+  .dash-header {
+    padding: 14px 16px 0 !important;
+    margin-bottom: 12px !important;
+  }
+
+  .dash-greeting { font-size: 18px !important; }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    padding: 0 16px !important;
+    gap: 8px !important;
+    margin-bottom: 14px !important;
+  }
+
+  .content-grid {
+    grid-template-columns: 1fr !important;
+    padding: 0 16px 40px !important;
+    gap: 10px !important;
+  }
+
+  .right-col {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+}
+

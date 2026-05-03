@@ -1,0 +1,163 @@
+<div class="progress-screen">
+
+  @if (loading()) {
+    <div class="skeleton-screen">
+      <div class="skeleton-kpi-row">
+        @for (i of [1,2,3,4]; track i) {
+          <div class="skeleton-card"></div>
+        }
+      </div>
+      <div class="skeleton-chart"></div>
+      <div class="skeleton-chart" style="margin-top: 16px;"></div>
+    </div>
+  } @else {
+
+    <!-- KPIs principales -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card">
+        <span class="kpi-label">Adherencia</span>
+        <span class="kpi-value">{{ stats()?.adherencePercent ?? 0 }}%</span>
+        <div class="kpi-bar">
+          <div class="kpi-bar-fill"
+               [style.width.%]="stats()?.adherencePercent ?? 0">
+          </div>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <span class="kpi-label">Racha actual</span>
+        <span class="kpi-value">{{ stats()?.currentStreak ?? 0 }}d</span>
+        <span class="kpi-sub">días seguidos</span>
+      </div>
+
+      <div class="kpi-card">
+        <span class="kpi-label">Días completados</span>
+        <span class="kpi-value">{{ stats()?.totalDaysCompleted ?? 0 }}</span>
+        <span class="kpi-sub">últimas 6 semanas</span>
+      </div>
+
+      <div class="kpi-card">
+        <span class="kpi-label">Mejor progreso</span>
+        <span class="kpi-value">
+          @if (stats()?.bestWeightImprovement != null) {
+            +{{ stats()!.bestWeightImprovement | number:'1.0-1' }}kg
+          } @else {
+            —
+          }
+        </span>
+        <span class="kpi-sub">en un ejercicio</span>
+      </div>
+
+    </div>
+
+    <!-- Adherencia semanal -->
+    @if (stats()?.weeklyAdherence?.length) {
+      <div class="section-card">
+        <p class="section-title">Adherencia semanal</p>
+        <div class="weekly-bars">
+          @for (bar of stats()!.weeklyAdherence; track bar.weekLabel) {
+            <div class="bar-col">
+              <div class="bar-track">
+                <div class="bar-fill"
+                     [style.height.%]="bar.percent"
+                     [class.full]="bar.percent >= 100"
+                     [class.good]="bar.percent >= 80 && bar.percent < 100"
+                     [class.low]="bar.percent < 60">
+                </div>
+              </div>
+              <span class="bar-label">{{ bar.weekLabel }}</span>
+              <span class="bar-pct">{{ bar.percent }}%</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- MEJORA EN EJERCICIOS (NUEVA SECCIÓN) -->
+    <div class="section-card">
+      <div class="weight-header">
+        <p class="section-title">Mejora en ejercicios</p>
+        
+        @if (store.exercises().length) {
+          <div class="custom-select-container">
+            <button class="custom-select-trigger" (click)="toggleDropdown()">
+              {{ store.selected() || 'Seleccionar...' }}
+              <span class="chevron" [class.open]="dropdownOpen()">▼</span>
+            </button>
+            
+            @if (dropdownOpen()) {
+              <div class="custom-dropdown-list fade-in">
+                @for (ex of store.exercises(); track ex.name) {
+                  <div class="dropdown-item" 
+                       [class.active]="ex.name === store.selected()"
+                       (click)="onExerciseChange(ex.name)">
+                    {{ ex.name }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+
+      @if (store.selectedExercise()) {
+        <fc-progress-chart [exercise]="store.selectedExercise()" />
+      } @else {
+        <div class="empty-chart">
+          <p>No hay datos de fuerza registrados aún</p>
+          <span class="sub-empty">Completa entrenamientos para ver tu evolución</span>
+        </div>
+      }
+    </div>
+
+    <!-- Peso -->
+    <div class="section-card">
+      <div class="weight-header">
+        <p class="section-title">Evolución de peso</p>
+        <button class="add-weight-btn" (click)="sheetOpen.set(true)">
+          + Registrar
+        </button>
+      </div>
+
+      @if (lastWeight() != null) {
+        <div class="weight-kpi-row">
+          <div>
+            <span class="weight-big">{{ lastWeight()! | number:'1.1-1' }} kg</span>
+            @if (weightDelta() != null) {
+              <span class="weight-delta" [class.loss]="weightDelta()! < 0">
+                {{ weightDelta()! > 0 ? '↑' : '↓' }}
+                {{ weightDelta()! | number:'1.0-1' }} kg total
+              </span>
+            }
+          </div>
+          <span class="days-ago">
+            {{ daysAgo() === 0 ? 'Hoy' : daysAgo() === 1 ? 'Ayer' : 'Hace ' + daysAgo() + 'd' }}
+          </span>
+        </div>
+      }
+
+      @if (weightHistory().length >= 2) {
+        <app-weight-chart [entries]="weightHistory()" />
+      } @else {
+        <div class="empty-chart">
+          <p>Registra al menos 2 pesajes para ver la gráfica de peso</p>
+          <button (click)="sheetOpen.set(true)">Registrar ahora</button>
+        </div>
+      }
+    </div>
+
+  }
+
+  <!-- FAB -->
+  @if (!loading()) {
+    <button class="fab" (click)="sheetOpen.set(true)" aria-label="Registrar peso">+</button>
+  }
+
+  @if (sheetOpen()) {
+    <app-weight-bottom-sheet
+      (close)="sheetOpen.set(false)"
+      (saved$)="onWeightSaved($event)" />
+  }
+
+</div>

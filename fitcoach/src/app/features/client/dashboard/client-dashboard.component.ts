@@ -9,6 +9,7 @@ import { AuthService }         from '../../../core/auth/auth.service';
 import { ClientRoutineService } from '../../../core/services/client-routine.service';
 import { AssignedRoutine }      from '../../../core/models/routine.model';
 import { WorkoutStore }         from '../../../state/workout.store';
+import { ProfileService }       from '../profile/profile.service';
 import { computed }             from '@angular/core';
 
 @Component({
@@ -24,11 +25,24 @@ import { computed }             from '@angular/core';
         <div class="header-av">{{ initials(auth.profile()?.fullName ?? '') }}</div>
       </header>
 
+      @if (profileSvc.profile(); as p) {
+        <div class="profile-banner" (click)="router.navigate(['/profile'])">
+          <div class="profile-avatar">{{ p.full_name[0] }}</div>
+          <div class="profile-info">
+            <span class="profile-name">{{ p.full_name }}</span>
+            <span class="profile-meta">
+              {{ profileSvc.goalEmoji(p.goal) }} {{ profileSvc.goalLabel(p.goal) }}
+              @if (profileSvc.age(p)) { · {{ profileSvc.age(p) }} años }
+            </span>
+          </div>
+        </div>
+      }
+
       <div class="greeting">
         <h1 class="greeting-name">{{ greeting() }}, {{ firstName() }}</h1>
         <p class="greeting-sub">
           @if (routine()) { 
-            @if (visibleDays().length > 0) { Tienes trabajo pendiente esta semana }
+            @if (pendingDaysCount() > 0) { Tienes trabajo pendiente esta semana }
             @else { ¡Has completado todos los entrenamientos de esta rutina! 🚀 }
           }
           @else { Tu entrenador aún no te ha asignado una rutina }
@@ -39,7 +53,7 @@ import { computed }             from '@angular/core';
         <div class="routine-card">
           <div class="rc-header">
             <div class="rc-badge">Rutina activa</div>
-            <span class="rc-total">{{ visibleDays().length }} / {{ r.routine?.days?.length }} restantes</span>
+            <span class="rc-total">{{ pendingDaysCount() }} / {{ r.routine?.days?.length }} pendientes</span>
           </div>
           <h2 class="rc-name">{{ r.routine?.name }}</h2>
           <p class="rc-meta">
@@ -47,22 +61,30 @@ import { computed }             from '@angular/core';
           </p>
           
           <div class="rc-days">
-            @for (day of visibleDays(); track day.id) {
-              <div class="day-chip interactive" (click)="startWorkout(day.id)">
+            @for (day of routineDaysStatus(); track day.id) {
+              <div 
+                class="day-chip interactive" 
+                [class.done]="day.isCompleted"
+                (click)="!day.isCompleted && startWorkout(day.id)"
+              >
                 <span class="day-label">{{ day.label }}</span>
-                <span class="day-count">{{ day.exercises.length }} ejercicios</span>
+                @if (day.isCompleted) {
+                  <span class="day-count">✓ Completado</span>
+                } @else {
+                  <span class="day-count">{{ day.exercises.length }} ejercicios</span>
+                }
               </div>
             }
 
-            @if (visibleDays().length === 0) {
+            @if (pendingDaysCount() === 0) {
               <div class="all-done-msg">
-                💪 Todo completado por ahora. ¡Buen trabajo!
+                ¡Semana completada! Tu coach te asignará una nueva rutina pronto.
               </div>
             }
           </div>
 
-          @if (visibleDays().length > 0) {
-            <button class="btn-start" (click)="startWorkout(visibleDays()[0].id)">
+          @if (pendingDaysCount() > 0) {
+            <button class="btn-start" (click)="startFirstPendingWorkout()">
               Continuar entrenamiento
             </button>
           }
@@ -87,24 +109,35 @@ export class ClientDashboardComponent implements OnInit {
   auth    = inject(AuthService);
   router  = inject(Router);
   workoutStore = inject(WorkoutStore);
+  profileSvc = inject(ProfileService);
   private clientRoutineSvc = inject(ClientRoutineService);
 
   routine = signal<AssignedRoutine | null>(null);
+  completedDaysList = signal<string[]>([]);
 
-  visibleDays = computed(() => {
+  routineDaysStatus = computed(() => {
     const r = this.routine();
     const history = this.workoutStore.history();
+    const dbCompleted = this.completedDaysList();
     if (!r || !r.routine?.days) return [];
 
-    // Filtramos los días que ya tienen un log completado para ESTA asignación específica
-    return r.routine.days.filter(day => {
-      const isCompleted = history.some(log => 
+    return r.routine.days.map(day => {
+      const isCompletedInHistory = history.some(log => 
         log.assignedRoutineId === r.id && 
         log.dayId === day.id &&
         log.completed
       );
-      return !isCompleted;
+      const isCompletedInDB = dbCompleted.includes(day.id);
+      
+      return {
+        ...day,
+        isCompleted: isCompletedInHistory || isCompletedInDB
+      };
     });
+  });
+
+  pendingDaysCount = computed(() => {
+    return this.routineDaysStatus().filter(d => !d.isCompleted).length;
   });
 
   greeting = () => {
@@ -141,20 +174,51 @@ export class ClientDashboardComponent implements OnInit {
     }
   }
 
+  isLoading = signal(true);
+
   private async loadData(clientId: string) {
     console.log('[Dashboard] Cargando datos para:', clientId);
-    const [r] = await Promise.all([
-      this.clientRoutineSvc.getActiveRoutine(clientId),
-      this.workoutStore.loadHistory(clientId)
-    ]);
-    this.routine.set(r);
+    this.isLoading.set(true);
+    try {
+      const [assigned] = await Promise.all([
+        this.clientRoutineSvc.getActiveRoutine(clientId),
+        this.workoutStore.loadHistory(clientId)
+      ]);
+      
+      this.routine.set(assigned);
+
+      if (assigned) {
+        const completedDays = await this.clientRoutineSvc.getCompletedDays(clientId, assigned.routineId);
+        // Fix: completedDays ya es string[], no hace falta map d.day_id
+        this.completedDaysList.set(completedDays);
+        console.log('[Dashboard] Días completados cargados:', completedDays);
+      }
+    } catch (err) {
+      console.error('[Dashboard] Error cargando datos:', err);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
-  startWorkout(dayId?: string): void {
-    if (dayId) {
-      this.router.navigate(['/client/workout'], { queryParams: { dayId } });
-    } else {
-      this.router.navigate(['/client/workout']);
+  startWorkout(dayId: string): void {
+    console.log('[Dashboard] startWorkout click con dayId:', dayId);
+    const day = this.routineDaysStatus().find(d => d.id === dayId);
+    if (day?.isCompleted) {
+      console.warn('[Dashboard] El día ya está completado, abortando navegación');
+      return;
+    }
+
+    this.router.navigate(['/client/workout'], { 
+      queryParams: { dayId } 
+    }).then(nav => {
+      console.log('[Dashboard] Navegación a workout exitosa:', nav);
+    });
+  }
+
+  startFirstPendingWorkout(): void {
+    const next = this.routineDaysStatus().find(d => !d.isCompleted);
+    if (next) {
+      this.startWorkout(next.id);
     }
   }
 }

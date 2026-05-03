@@ -23,15 +23,16 @@ import { HapticService } from '../../../core/services/haptic.service';
         <div class="input-group">
           <label>Peso (kg)</label>
           <div class="stepper">
-            <button type="button" (click)="adjustWeight(-2.5)">−</button>
+            <button type="button" (click)="adjustWeight(-0.5)">−</button>
             <input
               type="number"
-              step="2.5"
+              step="0.5"
+              inputmode="decimal"
               min="0"
               [ngModel]="weight()"
               (ngModelChange)="weight.set(+$event)"
             />
-            <button type="button" (click)="adjustWeight(2.5)">+</button>
+            <button type="button" (click)="adjustWeight(0.5)">+</button>
           </div>
         </div>
 
@@ -83,7 +84,7 @@ export class SetLoggerComponent {
 
   adjustWeight(delta: number): void {
     this.haptic.trigger('light');
-    this.weight.update(w => Math.max(0, +(w + delta).toFixed(1)));
+    this.weight.update(w => Math.max(0, Math.round((w + delta) * 10) / 10));
   }
 
   adjustReps(delta: number): void {
@@ -98,6 +99,7 @@ export class SetLoggerComponent {
       setNumber:    this.setNumber(),
       weightKg:     this.weight(),
       repsDone:     this.reps(),
+      completedAt:  new Date(),
     });
   }
 }

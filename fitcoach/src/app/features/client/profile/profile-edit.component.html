@@ -1,0 +1,117 @@
+<div class="profile-screen">
+
+  <header class="profile-header">
+    <button class="back-btn" (click)="router.navigate(['/client'])">←</button>
+    <h1>Mi perfil</h1>
+    <span></span>
+  </header>
+
+  <div class="profile-body">
+
+    <!-- Nombre -->
+    <div class="section-card">
+      <p class="section-label">Nombre</p>
+      <input
+        class="text-input"
+        type="text"
+        [ngModel]="name()"
+        (ngModelChange)="name.set($event)"
+        placeholder="Tu nombre completo" />
+    </div>
+
+    <!-- Datos físicos -->
+    <div class="section-card">
+      <p class="section-label">Datos físicos</p>
+
+      <div class="field-row">
+        <div class="field-col">
+          <label class="field-label">Peso actual</label>
+          <div class="number-input-wrap">
+            <input
+              class="number-input"
+              type="number"
+              [ngModel]="weightKg()"
+              (ngModelChange)="weightKg.set(+$event)"
+              placeholder="75"
+              min="30" max="250" />
+            <span class="unit">kg</span>
+          </div>
+        </div>
+
+        <div class="field-col">
+          <label class="field-label">Altura</label>
+          <div class="number-input-wrap">
+            <input
+              class="number-input"
+              type="number"
+              [ngModel]="heightCm()"
+              (ngModelChange)="heightCm.set(+$event)"
+              placeholder="175"
+              min="100" max="230" />
+            <span class="unit">cm</span>
+          </div>
+        </div>
+      </div>
+
+      <label class="field-label" style="margin-top:12px">Fecha de nacimiento</label>
+      <input
+        class="text-input"
+        type="date"
+        [ngModel]="birthDate()"
+        (ngModelChange)="birthDate.set($event)" />
+    </div>
+
+    <!-- Objetivo -->
+    <div class="section-card">
+      <p class="section-label">Objetivo principal</p>
+      <div class="goal-grid">
+        @for (g of goals; track g.value) {
+          <button
+            class="goal-card"
+            [class.selected]="goal() === g.value"
+            (click)="setGoal(g.value)">
+            <span class="goal-emoji">{{ g.emoji }}</span>
+            <span class="goal-label">{{ g.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Nivel -->
+    <div class="section-card">
+      <p class="section-label">Nivel de experiencia</p>
+      <div class="level-list">
+        @for (l of levels; track l.value) {
+          <button
+            class="level-row"
+            [class.selected]="level() === l.value"
+            (click)="setLevel(l.value)">
+            <span class="level-emoji">{{ l.emoji }}</span>
+            <div class="level-text">
+              <span class="level-name">{{ l.label }}</span>
+              <span class="level-sub">{{ l.sub }}</span>
+            </div>
+            <span class="level-check">
+              @if (level() === l.value) { ✓ }
+            </span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Error -->
+    @if (error()) {
+      <p class="error-msg">{{ error() }}</p>
+    }
+
+    <!-- CTA -->
+    <button
+      class="save-btn"
+      [class.done]="saved()"
+      [disabled]="saving()"
+      (click)="save()">
+      {{ saved() ? '✓ Guardado' : saving() ? 'Guardando...' : 'Guardar cambios' }}
+    </button>
+
+  </div>
+</div>

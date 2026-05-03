@@ -1,11 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { supabase } from '../supabase.client';
 import { Routine, RoutineDay, Exercise } from '../models/routine.model';
 import { environment } from '../../../environments/environment';
+import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class RoutineService {
   private sb = supabase;
+  private notifSvc = inject(NotificationService);
 
   async saveRoutine(routine: Routine): Promise<Routine> {
     // Guardamos rutina + días + ejercicios en transacción lógica
@@ -54,6 +56,29 @@ export class RoutineService {
     }));
     const { error } = await this.sb.from('assigned_routines').insert(rows);
     if (error) throw error;
+
+    // Notificar a cada cliente
+    try {
+      const { data: routine } = await this.sb
+        .from('routines')
+        .select('name')
+        .eq('id', routineId)
+        .single();
+      
+      const routineName = routine?.name || 'Nueva rutina';
+
+      for (const clientId of clientIds) {
+        await this.notifSvc.create(
+          clientId,
+          'routine_assigned',
+          '📋 Nueva rutina asignada',
+          `Tu entrenador te ha asignado: ${routineName}`,
+          { routine_id: routineId }
+        );
+      }
+    } catch (e) {
+      console.error('[RoutineService] Error al notificar clientes:', e);
+    }
   }
 
   async getCoachTemplates(coachId: string): Promise<Routine[]> {
