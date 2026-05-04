@@ -49,6 +49,7 @@ interface PlayerState {
   completeDailyChallenge: () => void;
   
   completeTutorial: () => void;
+  syncFromCloud: (data: Partial<PlayerProfile>) => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
@@ -147,6 +148,12 @@ export const usePlayerStore = create<PlayerState>()(
       completeTutorial: () =>
         set((state) => {
           state.profile.tutorialCompleted = true;
+        }),
+      
+      syncFromCloud: (data: Partial<PlayerProfile>) =>
+        set((state) => {
+          if (data.completedWays) state.profile.completedWays = data.completedWays;
+          if (data.currentLevel) state.profile.currentLevel = data.currentLevel;
         }),
     })),
     {

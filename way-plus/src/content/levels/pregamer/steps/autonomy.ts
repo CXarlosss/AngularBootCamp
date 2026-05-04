@@ -143,9 +143,90 @@ export const autonomyStep: Step = {
       metadata: { skillTag: 'autonomy.identity', difficulty: 2, estimatedTime: 45 }
     },
     {
-      id: 'way-15',
+      id: 'way-12',
       stepId: 'step-autonomy-1',
       order: 6,
+      type: 'double-choice',
+      stimulus: {
+        image: 'https://img.icons8.com/color/512/toothbrush.png',
+        text: '¿Te cepillas los dientes después de cada comida?'
+      },
+      options: [
+        {
+          id: 'opt-12a',
+          image: 'https://img.icons8.com/color/512/dentist.png',
+          label: 'Sí, siempre',
+          isCorrect: true,
+          feedback: { visual: 'happy' }
+        },
+        {
+          id: 'opt-12b',
+          image: 'https://img.icons8.com/color/512/tooth.png',
+          label: 'A veces se me olvida',
+          isCorrect: false,
+          feedback: { visual: 'sad' }
+        }
+      ],
+      metadata: { skillTag: 'autonomy.hygiene.teeth', difficulty: 1, estimatedTime: 30 }
+    },
+    {
+      id: 'way-13',
+      stepId: 'step-autonomy-1',
+      order: 7,
+      type: 'double-choice',
+      stimulus: {
+        image: 'https://img.icons8.com/color/512/clothes.png',
+        text: '¿Sabes vestirte solo y ponerte los zapatos?'
+      },
+      options: [
+        {
+          id: 'opt-13a',
+          image: 'https://img.icons8.com/color/512/trousers.png',
+          label: 'Sí, yo solo',
+          isCorrect: true,
+          feedback: { visual: 'happy' }
+        },
+        {
+          id: 'opt-13b',
+          image: 'https://img.icons8.com/color/512/helper.png',
+          label: 'Me tienen que ayudar',
+          isCorrect: false,
+          feedback: { visual: 'sad' }
+        }
+      ],
+      metadata: { skillTag: 'autonomy.selfcare.dressing', difficulty: 2, estimatedTime: 45 }
+    },
+    {
+      id: 'way-14',
+      stepId: 'step-autonomy-1',
+      order: 8,
+      type: 'double-choice',
+      stimulus: {
+        image: 'https://img.icons8.com/color/512/box.png',
+        text: '¿Recoges tus juguetes y cuidas tus cosas?'
+      },
+      options: [
+        {
+          id: 'opt-14a',
+          image: 'https://img.icons8.com/color/512/cleaning-service.png',
+          label: 'Sí, lo recojo todo',
+          isCorrect: true,
+          feedback: { visual: 'happy' }
+        },
+        {
+          id: 'opt-14b',
+          image: 'https://img.icons8.com/color/512/messy.png',
+          label: 'Lo dejo todo tirado',
+          isCorrect: false,
+          feedback: { visual: 'sad' }
+        }
+      ],
+      metadata: { skillTag: 'autonomy.responsibility.tidying', difficulty: 1, estimatedTime: 30 }
+    },
+    {
+      id: 'way-15',
+      stepId: 'step-autonomy-1',
+      order: 9,
       type: 'double-choice',
       stimulus: {
         image: 'https://img.icons8.com/color/512/wash-your-hands.png',

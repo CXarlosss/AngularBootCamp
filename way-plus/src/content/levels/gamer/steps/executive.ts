@@ -52,7 +52,44 @@ export const executiveStep: Step = {
         { id: "shoes", image: "https://img.icons8.com/color/512/shoes.png", label: "Zapatos", isCorrect: false, position: { x: 80, y: 80 } },
       ] as any,
       metadata: { skillTag: "motor.tracing.daily", difficulty: 1, estimatedTime: 60 }
+    },
+    {
+      id: "gamer-seq-2",
+      stepId: "step-gamer-executive",
+      order: 4,
+      type: "sequencing",
+      stimulus: {
+        image: "https://img.icons8.com/color/512/shower.png",
+        text: "¿Cuál es el orden para ducharte solo? Pon los pasos en orden:"
+      },
+      options: [
+        { id: "d1", image: "https://img.icons8.com/color/512/t-shirt.png", label: "Quitar ropa", order: 0 },
+        { id: "d2", image: "https://img.icons8.com/color/512/shower.png", label: "Mojarse", order: 1 },
+        { id: "d3", image: "https://img.icons8.com/color/512/shampoo.png", label: "Jabón y champú", order: 2 },
+        { id: "d4", image: "https://img.icons8.com/color/512/faucet.png", label: "Aclararse", order: 3 },
+        { id: "d5", image: "https://img.icons8.com/color/512/towel.png", label: "Secarse", order: 4 },
+        { id: "d6", image: "https://img.icons8.com/color/512/pajamas.png", label: "Ponerse pijama", order: 5 },
+      ] as any,
+      metadata: { skillTag: "executive.sequencing.hygiene", difficulty: 3, estimatedTime: 120 }
+    },
+    {
+      id: "gamer-seq-3",
+      stepId: "step-gamer-executive",
+      order: 5,
+      type: "sequencing",
+      stimulus: {
+        image: "https://img.icons8.com/color/512/backpack.png",
+        text: "¿Cómo preparas tu mochila para el cole? Ordena los pasos:"
+      },
+      options: [
+        { id: "m1", image: "https://img.icons8.com/color/512/checklist.png", label: "Mirar horario", order: 0 },
+        { id: "m2", image: "https://img.icons8.com/color/512/books.png", label: "Meter libros", order: 1 },
+        { id: "m3", image: "https://img.icons8.com/color/512/pencil-case.png", label: "Meter estuche", order: 2 },
+        { id: "m4", image: "https://img.icons8.com/color/512/sandwich.png", label: "Meter merienda", order: 3 },
+        { id: "m5", image: "https://img.icons8.com/color/512/zipper.png", label: "Cerrar cremallera", order: 4 },
+      ] as any,
+      metadata: { skillTag: "executive.sequencing.organization", difficulty: 3, estimatedTime: 120 }
     }
   ],
-  completionReward: { coins: 200, xp: 250, item: "cape-magic" }
+  completionReward: { coins: 300, xp: 400, item: "cape-magic" }
 };

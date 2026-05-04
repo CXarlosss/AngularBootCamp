@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+﻿import { useState, useCallback } from 'react';
 import type { DailyReward } from '../utils/dailyChestUtils';
 import { getRandomReward, isChestAvailable } from '../utils/dailyChestUtils';
 import { audioService } from '@/core/utils/audioService';
@@ -8,15 +8,12 @@ export function useDailyChest(lastOpenedDate: string | null, onClaim: (reward: D
   const [reward, setReward] = useState<DailyReward | null>(null);
   const [showModal, setShowModal] = useState(false);
 
-  const available = isChestAvailable(lastOpenedDate);
+  const available = lastOpenedDate ? isChestAvailable(lastOpenedDate) : true;
 
   const openChest = useCallback(() => {
     if (!available || isOpening) return;
-
     setIsOpening(true);
-    audioService.playSFX('success'); 
-
-    // Animation delay
+    audioService.playSFX('success');
     setTimeout(() => {
       const newReward = getRandomReward();
       setReward(newReward);
@@ -33,13 +30,5 @@ export function useDailyChest(lastOpenedDate: string | null, onClaim: (reward: D
     }
   }, [reward, onClaim]);
 
-  return {
-    available,
-    isOpening,
-    reward,
-    showModal,
-    openChest,
-    claimReward,
-    setShowModal
-  };
+  return { available, isOpening, reward, showModal, openChest, claimReward, setShowModal };
 }

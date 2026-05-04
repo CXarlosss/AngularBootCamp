@@ -10,15 +10,18 @@ export default defineConfig({
     tailwindcss(),
   ],
   server: {
-    hmr: {
-      protocol: 'ws',
-      host: 'localhost',
-      port: 5173,
-    }
+    port: 5174,
+    strictPort: true,
   },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      'react': path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
     },
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'zustand', 'framer-motion'],
+    force: true,
   },
 })

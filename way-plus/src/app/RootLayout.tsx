@@ -19,6 +19,7 @@ import { SecretManager } from '@/features/rewards/components/SecretManager';
 import { AchievementManager } from '@/features/rewards/components/AchievementManager';
 import { AmbientPlayer } from '@/core/components/AmbientPlayer';
 import { SoundToggle } from '@/core/components/SoundToggle';
+import { audioService } from '@/core/utils/audioService';
 
 /* ─── Config ─────────────────────────────────────────────────────── */
 
@@ -186,6 +187,21 @@ function BottomNav() {
 export function RootLayout() {
   const { pathname } = useLocation();
   const therapist = isTherapist(pathname);
+  
+  // Audio Unlocker: Browsers block AudioContext until a user gesture
+  React.useEffect(() => {
+    const unlockAudio = () => {
+      audioService.unlock();
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+    window.addEventListener('click', unlockAudio);
+    window.addEventListener('touchstart', unlockAudio);
+    return () => {
+      window.removeEventListener('click', unlockAudio);
+      window.removeEventListener('touchstart', unlockAudio);
+    };
+  }, []);
 
   /*
     SCROLL CONTRACT

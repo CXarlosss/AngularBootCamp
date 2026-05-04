@@ -95,7 +95,8 @@ export const useTherapistStore = create<TherapistState>()(
     selectPatient: (id) => set((state) => { 
       state.selectedPatientId = id; 
       localStorage.setItem('way-active-patient', id);
-      window.location.reload();
+      // Navigate and reload to ensure all stores (player, rewards) reload with the new patient ID
+      window.location.href = `/therapist/patient/${id}`;
     }),
     setDateRange: (range) => set((state) => { state.dateRange = range; }),
     addPatient: (patient) => set((state) => { state.patients.push(patient); }),

@@ -14,11 +14,17 @@ import type { Step } from '@/core/engine/types';
 import { relaxationStep } from './levels/pregamer/steps/relaxation';
 import { autonomyStep } from './levels/pregamer/steps/autonomy';
 import { assertivenessStep } from './levels/pregamer/steps/assertiveness';
+import { executiveStep } from './levels/gamer/steps/executive';
+import { flexibilityStep } from './levels/gamer/steps/flexibility';
+import { inhibitionStep } from './levels/gamer/steps/inhibition';
 
 export const ALL_STEPS: Record<string, Step> = {
   'step-relaxation-1': relaxationStep,
   'step-autonomy-1': autonomyStep,
   'step-3-assertiveness': assertivenessStep,
+  'step-gamer-executive': executiveStep,
+  'step-gamer-flexibility': flexibilityStep,
+  'step-gamer-inhibition': inhibitionStep,
 };
 
 async function loadLocalSteps(): Promise<Record<string, Step>> {
@@ -82,27 +88,38 @@ export const registry = {
    * Resolution order: memory → cloud → IndexedDB → local static.
    */
   async getStepsForLevel(levelId: string): Promise<Step[]> {
-    // 1. Memory hit
-    const cached = Array.from(memCache.values()).filter(s => s.levelId === levelId);
-    if (cached.length > 0) return cached.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-    // 2. Try cloud (non-blocking)
+    // 1. Try cloud first if online (Primary source)
     if (navigator.onLine) {
       try {
         const cloudSteps = await fetchFromCloud(levelId);
         if (cloudSteps && cloudSteps.length > 0) {
+          // Clear old versions from memCache for this level to avoid duplicates
+          Array.from(memCache.keys()).forEach(key => {
+            const s = memCache.get(key);
+            if (s && (s.levelId === levelId || (s as any).level_id === levelId)) {
+              memCache.delete(key);
+            }
+          });
+
           cloudSteps.forEach(s => {
             if (s && s.id) {
               memCache.set(s.id, s);
               idbSet(s.id, s).catch(() => {});
             }
           });
-          return cloudSteps.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+
+          const sorted = cloudSteps.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          console.log('[WAY+] Raw steps from registry (cloud):', sorted);
+          return sorted;
         }
       } catch (e) {
-        console.error('[Registry] Cloud fetch error:', e);
+        console.error('[Registry] Cloud fetch error, falling back:', e);
       }
     }
+
+    // 2. Memory hit (if cloud failed or we already have the "best" version)
+    const cached = Array.from(memCache.values()).filter(s => s.levelId === levelId || (s as any).level_id === levelId);
+    if (cached.length > 0) return cached.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
     // 3. IndexedDB
     // TEMPORARILY DISABLED: Ignoring IndexedDB steps if they have 0 ways (bad sync state)
@@ -120,7 +137,10 @@ export const registry = {
     const local = await loadLocalSteps();
     const localForLevel = Object.values(local).filter(s => s.levelId === levelId);
     localForLevel.forEach(s => memCache.set(s.id, s));
-    return localForLevel.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    
+    const finalSteps = localForLevel.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    console.log('[WAY+] Raw steps from registry (local fallback):', finalSteps);
+    return finalSteps;
   },
 
   /**

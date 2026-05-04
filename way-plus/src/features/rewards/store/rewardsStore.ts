@@ -483,11 +483,13 @@ export const useRewardsStore = create<RewardsState>()(
         return {
           ...merged,
           inventory: merged.inventory || currentState.inventory,
-          collectedStickers: merged.collectedStickers || [],
+          ownedStickers: merged.ownedStickers || {},
           achievements: merged.achievements || [],
           purchaseHistory: merged.purchaseHistory || currentState.purchaseHistory,
           claimedMissions: merged.claimedMissions || [],
           unlockedSecrets: merged.unlockedSecrets || [],
+          ownedBoosts: merged.ownedBoosts || {},
+          missionProgress: merged.missionProgress || {},
         };
       },
       storage: {

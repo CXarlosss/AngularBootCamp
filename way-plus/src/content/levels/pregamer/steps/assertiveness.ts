@@ -89,13 +89,67 @@ export const assertivenessStep: Step = {
       metadata: { skillTag: "assertiveness.social.play", difficulty: 1, estimatedTime: 30 }
     },
     {
+      id: "way-39",
+      stepId: "step-3-assertiveness",
+      order: 4,
+      type: "double-choice",
+      stimulus: {
+        image: "https://img.icons8.com/color/512/stop-sign.png",
+        text: "¿Dices 'NO' cuando algo no te gusta o te hace sentir mal?"
+      },
+      options: [
+        {
+          id: "opt-39a",
+          image: "https://img.icons8.com/color/512/thumbs-up.png",
+          label: "Sí, digo lo que no me gusta",
+          isCorrect: true,
+          feedback: { visual: "happy" }
+        },
+        {
+          id: "opt-39b",
+          image: "https://img.icons8.com/color/512/thumbs-down.png",
+          label: "Me callo y me aguanto",
+          isCorrect: false,
+          feedback: { visual: "sad" }
+        }
+      ],
+      metadata: { skillTag: "assertiveness.boundaries.no", difficulty: 2, estimatedTime: 45 }
+    },
+    {
+      id: "way-40",
+      stepId: "step-3-assertiveness",
+      order: 5,
+      type: "double-choice",
+      stimulus: {
+        image: "https://img.icons8.com/color/512/high-five.png",
+        text: "¿Pides perdón si haces algo mal o molestas a alguien sin querer?"
+      },
+      options: [
+        {
+          id: "opt-40a",
+          image: "https://img.icons8.com/color/512/handshake.png",
+          label: "Sí, pido perdón",
+          isCorrect: true,
+          feedback: { visual: "happy" }
+        },
+        {
+          id: "opt-40b",
+          image: "https://img.icons8.com/color/512/angry.png",
+          label: "No pido perdón nunca",
+          isCorrect: false,
+          feedback: { visual: "sad" }
+        }
+      ],
+      metadata: { skillTag: "assertiveness.responsibility.sorry", difficulty: 1, estimatedTime: 30 }
+    },
+    {
       id: "way-41",
       stepId: "step-3-assertiveness",
       order: 6,
       type: "double-choice",
       stimulus: {
         image: "https://img.icons8.com/color/512/shield.png",
-        text: "¿Cómo te defiendes si se burlan de ti o te acusan de algo que no es verdad?"
+        text: "¿Cómo te defiendes si se burlan de ti o te acusan de algo que es mentira?"
       },
       options: [
         {

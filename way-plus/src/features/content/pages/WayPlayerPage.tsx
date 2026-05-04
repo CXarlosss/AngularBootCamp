@@ -44,10 +44,10 @@ function WayProgress({ current, total, stepLabel }: {
         <span>{stepLabel}</span>
         <span>{current}/{total}</span>
       </div>
-      <div className="progress-track" style={{ height: 7 }}>
+      <div className="progress-track" style={{ height: 10, borderRadius: 20 }}>
         <div
           className="progress-fill"
-          style={{ width: `${(current / total) * 100}%`, transition: 'width 0.5s ease' }}
+          style={{ width: `${(current / total) * 100}%`, transition: 'width 0.8s cubic-bezier(0.34, 1.56, 0.64, 1)' }}
         />
       </div>
     </div>

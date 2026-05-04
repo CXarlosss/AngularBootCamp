@@ -8,36 +8,55 @@ export const contentService = {
       return [];
     }
 
-    const { data: steps, error } = await supabase
+    const { data, error } = await supabase
       .from('steps')
       .select(`*, ways (*)`)
       .eq('level_id', levelId)
       .order('order_index');
-
     if (error) {
       console.error('[ContentService] Error fetching steps:', error.message);
       return [];
     }
 
+    const steps = data as any[];
+    
+    const transformImageUrl = (path: string) => {
+      if (!path) return '';
+      if (path.startsWith('http') || path.startsWith('data:') || path.startsWith('/')) return path;
+      // Assume it's a file in the 'pictograms' bucket
+      return `https://bbarfrolxffbzakcfnzd.supabase.co/storage/v1/object/public/pictograms/${path}`;
+    };
+
     return (steps ?? []).map((s: any) => ({
       id: s.id,
-      levelId: s.level_id,
       title: s.title,
       subtitle: s.subtitle,
       theme: s.theme,
-      order: s.order_index,
+      isPublished: s.is_published,
       ways: (s.ways ?? [])
         .filter((w: any) => w.is_published)
-        .map((w: any) => ({
-          id: w.id,
-          stepId: w.step_id,
-          type: w.type,
-          order: w.order_index,
-          stimulus: w.stimulus,
-          options: w.options,
-          metadata: w.metadata,
-        })),
-      completionReward: { coins: 100, xp: 150 },
+        .map((w: any) => {
+          console.log(`[ContentService] Mapping way ${w.id}:`, w);
+          return {
+            id: w.id,
+            type: w.type,
+            title: w.title,
+            name: w.name,
+            stimulus: {
+              ...w.stimulus,
+              image: transformImageUrl(w.stimulus?.image)
+            },
+            options: (w.options ?? []).map((o: any) => ({
+              id: o.id || Math.random().toString(),
+              label: o.label || o.text || o.name || o.title || o.description || 'Opción',
+              image: transformImageUrl(o.image || o.picto || o.icon),
+              isCorrect: o.isCorrect ?? o.is_correct ?? false,
+              feedback: o.feedback || { visual: 'happy' }
+            })),
+            modelingVideoUrl: w.modeling_video_url,
+            difficulty: w.difficulty
+          };
+        })
     }));
   },
 

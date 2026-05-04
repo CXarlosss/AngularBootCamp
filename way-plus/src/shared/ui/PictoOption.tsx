@@ -13,55 +13,45 @@ interface Props {
 export const PictoOption: React.FC<Props> = ({ option, onSelect, disabled, className }) => {
   return (
     <motion.button
-      whileHover={{ scale: 1.02, translateY: -2 }}
+      whileHover={{ scale: 1.02, y: -2 }}
       whileTap={{ scale: 0.95 }}
       onClick={onSelect}
       disabled={disabled}
-      style={{
-        position: 'relative',
-        minHeight: 120,
-        width: '100%',
-        borderRadius: 32,
-        backgroundColor: '#ffffff',
-        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-        overflow: 'hidden',
-        border: '4px solid #f1f5f9',
-        transition: 'all 0.3s',
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        opacity: disabled ? 0.7 : 1,
-        // Using a basic fallback for hover state simulation (the framer-motion does the heavy lifting)
-      }}
-      aria-label={option.label}
+      className={cn(
+        "relative w-full min-h-[140px] rounded-[32px] bg-white shadow-xl border-4 border-slate-100 transition-all cursor-pointer flex flex-col items-center justify-center p-4 gap-3 text-center",
+        disabled && "opacity-70 cursor-not-allowed",
+        className
+      )}
     >
-      <div style={{ display: 'flex', alignItems: 'center', height: '100%', padding: '16px 24px', gap: 24 }}>
-        <div style={{
-          width: 80, height: 80, flexShrink: 0, backgroundColor: '#f8fafc',
-          borderRadius: 16, padding: 8, display: 'flex', alignItems: 'center', justifyContent: 'center'
-        }}>
+      {/* Pictogram Container */}
+      <div className="w-20 h-20 flex-shrink-0 bg-slate-50 rounded-2xl p-3 flex items-center justify-center shadow-inner border border-slate-100/50 overflow-hidden">
+        {option.image ? (
           <img 
             src={option.image} 
             alt={option.label}
-            style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+            className="w-full h-full object-contain"
             loading="lazy"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              (e.target as any).parentElement.innerHTML = '<span class="text-3xl">🎯</span>';
+            }}
           />
-        </div>
-        
-        <div style={{ flex: 1, textAlign: 'left' }}>
-          <span style={{ 
-            fontSize: 24, fontWeight: 900, color: '#1e293b', 
-            letterSpacing: '-0.5px', lineHeight: 1.2, textTransform: 'uppercase' 
-          }}>
-            {option.label}
-          </span>
-        </div>
+        ) : (
+          <span className="text-3xl">🎯</span>
+        )}
       </div>
       
-      {/* Decorative inner shadow */}
-      <div style={{
-        position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
-        pointerEvents: 'none', boxShadow: 'inset 0 0 20px rgba(0,0,0,0.01)'
-      }} />
+      {/* Label */}
+      <div className="w-full px-1">
+        <span 
+          className="text-lg font-black uppercase tracking-tight leading-tight block"
+          style={{ color: '#1E293B' }}
+        >
+          {option.label || `Opción ${option.id.slice(0,4)}`}
+        </span>
+      </div>
+      
+      <div className="absolute inset-0 pointer-events-none rounded-[32px] shadow-[inset_0_0_20px_rgba(0,0,0,0.02)]" />
     </motion.button>
   );
 };
-

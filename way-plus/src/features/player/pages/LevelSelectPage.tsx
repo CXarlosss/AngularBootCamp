@@ -3,329 +3,176 @@ import React, { useMemo, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '../store/playerStore';
-import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { registry } from '@/content/registry';
-import { TutorialTour } from '../components/TutorialTour';
-import { MilestoneOverlay } from '../components/MilestoneOverlay';
-import { DailyChest } from '@/features/rewards/components/DailyChest';
-import { StreakTracker } from '@/features/rewards/components/StreakTracker';
-import { AdventureMap } from '../components/AdventureMap';
-import { MissionBanner } from '@/features/rewards/components/MissionBanner';
+import { audioService } from '@/core/utils/audioService';
 import type { Step } from '@/core/engine/types';
-import { useAudio } from '@/core/hooks/useAudio';
-import { CategoryIcon, type Category } from '@/core/components/CategoryIcon';
 
-const C = {
-  indigo:      '#4F46E5',
-  indigoLight: '#E8E9FF',
-  slate:       '#64748B',
-  slateLight:  '#F1F5F9',
-  slateDark:   '#1E293B',
-  text:        '#1E1B4B',
-  white:       '#ffffff',
-  emerald:     '#10B981',
-  amber:       '#F59E0B',
-  rose:        '#F43F5E',
-  purple:      '#8B5CF6',
-};
-
-const THEME_COLORS: Record<string, { bg: string; iconBg: string; text: string }> = {
-  relaxation:    { bg: '#ECFDF5', iconBg: '#D1FAE5', text: '#065F46' },
-  'self-esteem': { bg: '#F5F3FF', iconBg: '#EDE9FE', text: '#5B21B6' },
-  assertiveness: { bg: '#FFF1F2', iconBg: '#FFE4E6', text: '#9F1239' },
-  autonomy:      { bg: '#FFFBEB', iconBg: '#FEF3C7', text: '#92400E' },
-  default:       { bg: '#F8FAFC', iconBg: '#F1F5F9', text: '#475569' },
-};
-
+/**
+ * Premium LevelSelectPage
+ * Fully styled with Tailwind 4 and Framer Motion.
+ */
 export function LevelSelectPage() {
   const navigate = useNavigate();
-  const { profile, dailyChallenge, setDailyChallenge } = usePlayerStore();
-  const completedWays = useMemo(() => {
-    const raw = profile?.completedWays;
-    return Array.isArray(raw) ? raw : [];
-  }, [profile?.completedWays]);
-  const { playSFX } = useAudio();
-  const { 
-    wayCoins, 
-    lastDailyChestOpened, 
-    claimDailyReward,
-    streakDays,
-    lastStreakBonusDate,
-    claimStreakBonus,
-    claimStreakMilestone
-  } = useRewardsStore();
+  const { profile } = usePlayerStore();
   const [steps, setSteps] = useState<Step[]>([]);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'map' | 'list'>('map');
-  
+
+  // Safe access to completedWays
+  const completedWays = useMemo(() => {
+    return Array.isArray(profile?.completedWays) ? profile.completedWays : [];
+  }, [profile?.completedWays]);
+
   useEffect(() => {
     if (!profile?.currentLevel) return;
     setLoading(true);
-    registry.getStepsForLevel(profile.currentLevel).then(res => {
-      console.log('[WAY+] Raw steps from registry:', res);
-      const safeRes = Array.isArray(res) ? res : [];
-      setSteps(safeRes);
-      setLoading(false);
-
-      // Generar desafío diario
-      const today = new Date().toISOString().split('T')[0];
-      if (dailyChallenge?.date !== today && safeRes.length > 0) {
-        const randomStep = safeRes[Math.floor(Math.random() * safeRes.length)];
-        if (randomStep?.ways?.length > 0) {
-          const randomWay = randomStep.ways[Math.floor(Math.random() * randomStep.ways.length)];
-          if (randomWay?.id) setDailyChallenge(randomWay.id);
-        }
-      }
-    });
-  }, [profile?.currentLevel, dailyChallenge?.date, setDailyChallenge]);
-
-  const uniqueSteps = useMemo(() => {
-    if (!steps) return [];
-    const seenIds = new Set<string>();
-    const seenTitles = new Set<string>();
     
-    return steps.filter((step: Step) => {
-      if (!step) return false;
-      const titleKey = step.title?.trim().toLowerCase() || '';
-      if (seenIds.has(step.id) || (titleKey && seenTitles.has(titleKey))) return false;
-      
-      seenIds.add(step.id);
-      if (titleKey) seenTitles.add(titleKey);
-      return true;
-    });
-  }, [steps]);
+    // Load steps with a slight artificial delay for a smooth transition
+    registry.getStepsForLevel(profile.currentLevel)
+      .then(res => {
+        setSteps(Array.isArray(res) ? res : []);
+      })
+      .catch(err => {
+        console.error('[WAY+] Error loading steps:', err);
+      })
+      .finally(() => {
+        setTimeout(() => setLoading(false), 300);
+      });
+  }, [profile?.currentLevel]);
 
-  // Cálculo de progreso robusto
-  const { totalWaysInLevel, completedCount } = useMemo(() => {
-    if (!steps || !profile) return { totalWaysInLevel: 0, completedCount: 0 };
-    
-    const safeCompleted = Array.isArray(completedWays) ? completedWays : [];
-    const completedSet = new Set(safeCompleted);
-    let total = 0;
-    let completed = 0;
-    
-    steps.forEach(s => {
-      if (s && Array.isArray(s.ways)) {
-        total += s.ways.length;
-        s.ways.forEach(w => {
-          if (w && w.id && completedSet.has(w.id)) completed++;
-        });
-      }
-    });
-    
-    return { totalWaysInLevel: total, completedCount: completed };
-  }, [steps, completedWays]);
-
-  const progressPct = totalWaysInLevel > 0 ? Math.round((completedCount / totalWaysInLevel) * 100) : 0;
+  const handleLevelClick = (stepId: string) => {
+    audioService.playSFX('click');
+    navigate(`/play/${profile?.currentLevel}/${stepId}`);
+  };
 
   if (loading) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: C.indigo, fontWeight: 700 }}>
-        Cargando módulos...
-      </div>
-    );
-  }
-
-  if (!profile) {
-    return (
-      <div style={{ padding: 40, textAlign: 'center', color: C.rose }}>
-        Error: Perfil no encontrado. Reinstala la app.
+      <div className="flex flex-col items-center justify-center min-h-screen bg-indigo-50 p-8">
+        <div className="spinner mb-4"></div>
+        <p className="font-bold text-indigo-600 animate-pulse">Cargando tu mapa...</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: '20px 16px 100px', display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <TutorialTour />
-      
-      {/* Welcome Card */}
-      <header style={{
-        background: 'linear-gradient(135deg, #E0E7FF, #EEF2FF)',
-        borderRadius: 32,
-        padding: 24,
-        boxShadow: '0 4px 20px rgba(79,70,229,0.08)',
-        border: '1px solid #fff'
-      }}>
-        <div style={{ fontSize: 14, fontWeight: 700, color: C.indigo, marginBottom: 4 }}>
-          ¡Hola! 👋
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 8 }}>
-          <h1 style={{ fontSize: 28, fontWeight: 900, color: C.text, letterSpacing: '-0.5px', margin: 0 }}>
-            ¿Listo para jugar hoy?
-          </h1>
-          <div style={{
-            background: 'white', padding: '6px 14px', borderRadius: 20,
-            display: 'flex', alignItems: 'center', gap: 6,
-            boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #E8E9FF'
-          }}>
-            <span style={{ fontSize: 18 }}>🏅</span>
-            <span style={{ fontWeight: 900, color: C.text, fontSize: 16 }}>{wayCoins || 0}</span>
+    <div className="min-h-screen bg-[#F0F4FF] pb-32">
+      {/* Compact Header */}
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="pt-8 px-6 pb-6 text-center"
+      >
+        <div className="flex justify-between items-center max-w-sm mx-auto mb-6">
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border-2 border-slate-100 shadow-sm">
+             <span className="text-lg">🧠</span>
+             <span className="text-[10px] font-black text-slate-400 tracking-widest">WAY+</span>
           </div>
-          <button
-            onClick={() => { playSFX('click'); navigate('/backpack'); }}
-            style={{
-              background: 'white', padding: '6px 14px', borderRadius: 20,
-              display: 'flex', alignItems: 'center', gap: 6,
-              boxShadow: '0 4px 10px rgba(0,0,0,0.05)', border: '1px solid #E8E9FF',
-              cursor: 'pointer'
-            }}
-          >
-            <span style={{ fontSize: 18 }}>🎒</span>
-            <span style={{ fontWeight: 900, color: C.text, fontSize: 13, textTransform: 'uppercase' }}>Mochila</span>
-          </button>
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-2xl border-2 border-slate-100 shadow-sm">
+             <span className="text-indigo-600 font-black">🪙</span>
+             <span className="text-sm font-black text-indigo-950">{profile?.coins || 0}</span>
+          </div>
         </div>
-        <div style={{ fontSize: 13, fontWeight: 600, color: C.slate, marginBottom: 12 }}>
-          Progreso {(profile?.currentLevel || 'pregamer').toUpperCase()} — {completedCount}/{totalWaysInLevel} WAYS
-        </div>
-        <div style={{ height: 10, background: 'rgba(255,255,255,0.5)', borderRadius: 5, overflow: 'hidden' }}>
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${Math.min(100, progressPct)}%` }}
-            transition={{ duration: 1, ease: 'easeOut' }}
-            style={{ height: '100%', background: C.indigo, borderRadius: 5 }}
-          />
-        </div>
-      </header>
+        <h1 className="text-2xl font-black text-indigo-950 uppercase tracking-tight">Tus Retos</h1>
+        <p className="text-slate-400 text-[10px] font-bold tracking-widest uppercase">Camino al aprendizaje</p>
+      </motion.div>
 
-      {/* Daily Mystery Chest */}
-      <DailyChest 
-        lastOpenedDate={lastDailyChestOpened}
-        onClaimReward={claimDailyReward}
-      />
-
-      {/* Fire Streak Tracker */}
-      <StreakTracker
-        streakDays={streakDays}
-        lastBonusDate={lastStreakBonusDate}
-        onClaimBonus={claimStreakBonus}
-        onMilestoneReached={claimStreakMilestone}
-      />
-
-      <MissionBanner />
-
-      {/* View Toggle */}
-      <div style={{ 
-        display: 'flex', background: '#F1F5F9', padding: 4, borderRadius: 16, 
-        gap: 4, alignSelf: 'center', marginBottom: 8
-      }}>
-        <button
-          onClick={() => { playSFX('click'); setViewMode('map'); }}
-          style={{
-            padding: '8px 20px', borderRadius: 12, border: 'none',
-            background: viewMode === 'map' ? C.white : 'transparent',
-            color: viewMode === 'map' ? C.indigo : C.slate,
-            fontWeight: 800, fontSize: 13, cursor: 'pointer',
-            boxShadow: viewMode === 'map' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none'
-          }}
-        >
-          🗺️ Mapa
-        </button>
-        <button
-          onClick={() => { playSFX('click'); setViewMode('list'); }}
-          style={{
-            padding: '8px 20px', borderRadius: 12, border: 'none',
-            background: viewMode === 'list' ? C.white : 'transparent',
-            color: viewMode === 'list' ? C.indigo : C.slate,
-            fontWeight: 800, fontSize: 13, cursor: 'pointer',
-            boxShadow: viewMode === 'list' ? '0 2px 8px rgba(0,0,0,0.05)' : 'none'
-          }}
-        >
-          📋 Lista
-        </button>
-      </div>
-
-      <AnimatePresence mode="wait">
-        {viewMode === 'map' ? (
-          <motion.div
-            key="map"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 1.05 }}
-          >
-            <AdventureMap 
-              steps={uniqueSteps}
-              completedWays={completedWays}
-              currentLevelId={profile?.currentLevel || ''}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="list"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            style={{ display: 'flex', flexDirection: 'column', gap: 16 }}
-          >
-            <h2 style={{ fontSize: 12, fontWeight: 800, color: C.slate, textTransform: 'uppercase', letterSpacing: '1px' }}>
-              Módulos {profile?.currentLevel?.toUpperCase() || ''}
-            </h2>
+      {/* Tighter Grid */}
+      <div className="px-6 space-y-3 max-w-sm mx-auto">
+        <AnimatePresence mode="popLayout">
+          {steps.map((step, idx) => {
+            if (!step) return null;
             
-            {uniqueSteps.map((step: Step) => {
-              if (!step) return null;
-              const theme = THEME_COLORS[step.theme] || THEME_COLORS.default;
-              const pictoRaw = step.ways?.[0]?.stimulus?.image;
-              const isUrl = typeof pictoRaw === 'string' && (pictoRaw?.includes('/') || pictoRaw?.startsWith('http') || pictoRaw?.startsWith('data:'));
-              
-              const stepCompletedCount = (step?.ways || []).filter(w => w?.id && Array.isArray(completedWays) && completedWays.includes(w.id)).length;
-              const stepTotalCount = step?.ways?.length || 0;
-              const stepProgressPct = stepTotalCount > 0 ? Math.round((stepCompletedCount / stepTotalCount) * 100) : 0;
+            const ways = Array.isArray(step.ways) ? step.ways : [];
+            const doneCount = ways.filter(w => w && w.id && completedWays.includes(w.id)).length;
+            const progressPercent = ways.length > 0 ? (doneCount / ways.length) * 100 : 0;
+            const isCompleted = progressPercent === 100 && ways.length > 0;
 
-              return (
-                <motion.div
-                  key={step.id}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => {
-                    playSFX('click');
-                    navigate(`/play/${profile.currentLevel}/${step.id}`);
-                  }}
-                  style={{
-                    background: theme.bg,
-                    borderRadius: 32,
-                    padding: 24,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 16,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
-                    border: `1.5px solid ${theme.iconBg}`,
-                    cursor: 'pointer',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, position: 'relative', zIndex: 1 }}>
-                    <div style={{
-                      width: 64, height: 64, borderRadius: 20,
-                      background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      boxShadow: `0 4px 12px rgba(0,0,0,0.05)`,
-                      border: `2px solid ${theme.iconBg}`,
-                      overflow: 'hidden'
-                    }}>
-                      <CategoryIcon category={step.theme as Category} size={48} />
+            return (
+              <motion.div
+                key={step.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: idx * 0.05 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => handleLevelClick(step.id)}
+                onMouseEnter={() => audioService.playSFX('hover')}
+                className={`
+                  relative overflow-hidden cursor-pointer
+                  bg-white rounded-[28px] border-b-4 border-slate-200 
+                  p-4 transition-all duration-200
+                  ${isCompleted ? 'border-emerald-200 shadow-emerald-100/50' : 'hover:border-indigo-300 hover:shadow-lg'}
+                `}
+              >
+                <div className="relative flex items-center gap-4">
+                  {/* Compact Icon */}
+                  <div className={`
+                    w-14 h-14 rounded-2xl flex items-center justify-center text-3xl
+                    shadow-sm border-2 border-white/50
+                    ${isCompleted ? 'bg-emerald-50' : 'bg-indigo-50'}
+                  `}>
+                    {getThemeEmoji(step.theme)}
+                  </div>
+
+                  <div className="flex-1 text-left">
+                    <div className={`
+                      text-[9px] font-black px-2 py-0.5 rounded-full inline-block mb-1
+                      ${isCompleted ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'}
+                    `}>
+                      {step.theme || 'MÓDULO'}
                     </div>
-                    <div>
-                      <h3 style={{ fontSize: 20, fontWeight: 900, color: C.text, margin: 0 }}>{step.title}</h3>
-                      <p style={{ fontSize: 14, fontWeight: 500, color: theme.text, margin: '2px 0 0', opacity: 0.8 }}>
-                        {step.subtitle}
-                      </p>
+                    <h3 className="text-sm font-black text-indigo-950 leading-tight uppercase line-clamp-1">{step.title}</h3>
+                    
+                    {/* Tiny Progress Bar */}
+                    <div className="flex items-center gap-2 mt-2">
+                      <div className="progress-track flex-1" style={{ height: 8 }}>
+                        <motion.div 
+                          initial={{ width: 0 }}
+                          animate={{ width: `${progressPercent}%` }}
+                          className="progress-fill"
+                          style={{ 
+                            background: isCompleted ? 'linear-gradient(90deg, #10B981, #34D399)' : undefined 
+                          }}
+                        />
+                      </div>
+                      <span className={`text-[10px] font-black ${isCompleted ? 'text-emerald-600' : 'text-indigo-400'}`}>
+                        {Math.round(progressPercent)}%
+                      </span>
                     </div>
                   </div>
 
-                  <div style={{ width: '100%', height: 6, background: 'rgba(0,0,0,0.05)', borderRadius: 3, position: 'relative', zIndex: 1 }}>
-                    <div style={{ 
-                      width: `${stepProgressPct}%`, 
-                      height: '100%', background: theme.text, borderRadius: 3, opacity: 0.6 
-                    }} />
-                  </div>
+                  {isCompleted ? (
+                    <div className="text-emerald-500 text-xl font-bold">✓</div>
+                  ) : (
+                    <div className="text-slate-300 text-xs font-black">→</div>
+                  )}
+                </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
 
-                  <div style={{ fontSize: 11, fontWeight: 700, color: theme.text, opacity: 0.6, position: 'relative', zIndex: 1 }}>
-                    {stepCompletedCount}/{stepTotalCount} WAYS · {stepProgressPct}%
-                  </div>
-                </motion.div>
-              );
-            })}
-          </motion.div>
+        {steps.length === 0 && !loading && (
+          <div className="text-center py-8 px-6 bg-white/50 rounded-3xl border border-white shadow-sm">
+            <p className="text-indigo-950 font-black text-sm">¡Mapa en construcción!</p>
+          </div>
         )}
-      </AnimatePresence>
+      </div>
+      
+      {/* Footer Decoration */}
+      <div className="mt-12 text-center opacity-30 select-none pointer-events-none">
+        <span className="text-4xl font-black text-indigo-900 tracking-tighter italic">WAY+</span>
+      </div>
     </div>
   );
+}
+
+function getThemeEmoji(theme?: string) {
+  switch (theme?.toLowerCase()) {
+    case 'relaxation': return '🧘';
+    case 'autonomy': return '🧗';
+    case 'self-esteem': return '💖';
+    case 'assertiveness': return '🗣️';
+    case 'executive': return '🧠';
+    default: return '🌟';
+  }
 }

@@ -1,33 +1,15 @@
+// src/features/player/pages/StepDetailsPage.tsx
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { usePlayerStore } from '../store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { registry } from '@/content/registry';
-import type { Step, Way } from '@/core/engine/types';
+import type { Step } from '@/core/engine/types';
 
-const C = {
-  indigo:      '#4F46E5',
-  indigoLight: '#E8E9FF',
-  slate:       '#64748B',
-  slateLight:  '#F1F5F9',
-  slateDark:   '#1E293B',
-  text:        '#1E1B4B',
-  white:       '#ffffff',
-  emerald:     '#10B981',
-  amber:       '#F59E0B',
-  rose:        '#F43F5E',
-  purple:      '#8B5CF6',
-};
-
-const THEME_COLORS: Record<string, { bg: string; iconBg: string; text: string }> = {
-  relaxation:    { bg: '#ECFDF5', iconBg: '#D1FAE5', text: '#065F46' },
-  'self-esteem': { bg: '#F5F3FF', iconBg: '#EDE9FE', text: '#5B21B6' },
-  assertiveness: { bg: '#FFF1F2', iconBg: '#FFE4E6', text: '#9F1239' },
-  autonomy:      { bg: '#FFFBEB', iconBg: '#FEF3C7', text: '#92400E' },
-  default:       { bg: '#F8FAFC', iconBg: '#F1F5F9', text: '#475569' },
-};
-
+/**
+ * Centered StepDetailsPage
+ */
 export function StepDetailsPage() {
   const { stepId } = useParams<{ stepId: string }>();
   const navigate = useNavigate();
@@ -46,16 +28,14 @@ export function StepDetailsPage() {
     });
   }, [stepId]);
 
-  const completedWays = useMemo(() => new Set(profile.completedWays || []), [profile.completedWays]);
+  const completedWays = useMemo(() => new Set(profile?.completedWays || []), [profile?.completedWays]);
   
-  // Detect completion and award card
   useEffect(() => {
     if (step && !loading) {
       const stepWays = step.ways.map(w => w.id);
       const doneInStep = stepWays.filter(id => completedWays.has(id));
       
       if (doneInStep.length === stepWays.length && stepWays.length > 0) {
-        // Award card based on theme
         const themeCards: Record<string, string> = {
           relaxation: 'card-001',
           autonomy: 'card-004',
@@ -70,112 +50,86 @@ export function StepDetailsPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: 40, textAlign: 'center', color: C.indigo, fontWeight: 700 }}>
-        Cargando retos...
+      <div className="flex flex-col items-center justify-center min-h-screen bg-[#DDE0FF]">
+        <div className="spinner mb-4"></div>
+        <p className="font-bold text-indigo-600 animate-pulse uppercase tracking-widest text-sm">Cargando retos...</p>
       </div>
     );
   }
 
   if (!step) {
     return (
-      <div style={{ padding: 40, textAlign: 'center' }}>
-        <p>No se encontró el módulo.</p>
-        <button onClick={() => navigate('/')}>Volver</button>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-white p-8 text-center">
+        <div className="text-6xl mb-6">😕</div>
+        <h2 className="text-2xl font-black text-slate-800 mb-2">¡Ups! No encontramos el módulo</h2>
+        <p className="text-slate-500 mb-8 font-medium">Parece que este camino aún no ha sido mapeado.</p>
+        <button 
+          onClick={() => navigate('/')}
+          className="bg-indigo-600 text-white font-black px-8 py-4 rounded-3xl shadow-xl shadow-indigo-200"
+        >
+          Volver al Mapa
+        </button>
       </div>
     );
   }
 
-  const theme = THEME_COLORS[step.theme] || THEME_COLORS.default;
+  const doneCount = Array.from(completedWays).filter(id => step.ways.some(w => w.id === id)).length;
+  const totalCount = step.ways.length;
+  const progressPercent = totalCount > 0 ? (doneCount / totalCount) * 100 : 0;
 
   return (
-    <div style={{ 
-      minHeight: '100vh', 
-      background: theme.bg,
-      padding: '24px 16px 120px' 
-    }}>
-      {/* Header */}
-      <header style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 32 }}>
+    <div className="min-h-screen bg-[#F8FAFF] pb-32">
+      {/* Compact Header */}
+      <header className="pt-8 px-6 pb-6 text-center">
         <motion.button
           whileTap={{ scale: 0.9 }}
           onClick={() => navigate('/')}
-          style={{
-            width: 48, height: 48, borderRadius: 16,
-            background: C.white, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
-            cursor: 'pointer', fontSize: 20, color: C.indigo
-          }}
+          className="w-10 h-10 rounded-xl bg-white flex items-center justify-center border-2 border-slate-100 shadow-sm mb-4 mx-auto text-indigo-600 font-bold"
         >
           ←
         </motion.button>
-        <div>
-          <h1 style={{ fontSize: 24, fontWeight: 900, color: C.text, margin: 0 }}>{step.title}</h1>
-          <p style={{ fontSize: 14, fontWeight: 600, color: theme.text, margin: 0, opacity: 0.7 }}>
-            Selecciona un WAY para jugar
-          </p>
+        <div className="inline-block bg-indigo-50 text-indigo-600 text-[9px] font-black px-2 py-0.5 rounded-full tracking-wider uppercase mb-2">
+          {step.theme || 'MÓDULO'}
         </div>
+        <h1 className="text-xl font-black text-indigo-950 leading-tight mb-1 uppercase line-clamp-2">{step.title}</h1>
+        <p className="text-slate-400 font-bold text-[10px] uppercase tracking-widest">Elige un camino</p>
       </header>
 
-      {/* Ways List */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16 }}>
+      {/* Compact Ways List */}
+      <div className="px-6 space-y-3 max-w-sm mx-auto">
         {step.ways.map((way, idx) => {
           const isCompleted = completedWays.has(way.id);
-          const isUrl = typeof way.stimulus?.image === 'string' && (way.stimulus.image.includes('/') || way.stimulus.image.startsWith('http') || way.stimulus.image.startsWith('data:'));
-
+          
           return (
             <motion.div
               key={way.id}
+              whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(`/play/${profile.currentLevel}/${step.id}/${way.id}`)}
-              style={{
-                background: C.white,
-                borderRadius: 24,
-                padding: 16,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16,
-                boxShadow: isCompleted ? 'none' : '0 4px 12px rgba(0,0,0,0.03)',
-                border: isCompleted ? `2px solid ${C.emerald}22` : `2px solid transparent`,
-                opacity: isCompleted ? 0.8 : 1,
-                cursor: 'pointer',
-                position: 'relative'
-              }}
+              onClick={() => navigate(`/play/${profile?.currentLevel}/${step.id}/${way.id}`)}
+              className={`
+                relative flex items-center gap-4 p-4 rounded-[24px] cursor-pointer transition-all duration-300
+                ${isCompleted ? 'bg-emerald-50 border-2 border-emerald-100' : 'bg-white shadow-md border-2 border-transparent'}
+              `}
             >
-              <div style={{
-                width: 56, height: 56, borderRadius: 16,
-                background: isCompleted ? C.emerald : theme.iconBg,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 24, color: isCompleted ? C.white : theme.text,
-                fontWeight: 900
-              }}>
+              <div className={`
+                w-12 h-12 rounded-xl flex items-center justify-center text-xl font-black shadow-sm
+                ${isCompleted ? 'bg-emerald-500 text-white' : 'bg-indigo-50 text-indigo-600'}
+              `}>
                 {isCompleted ? '✓' : idx + 1}
               </div>
               
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>
+              <div className="flex-1">
+                <div className="text-sm font-black text-indigo-950 uppercase tracking-tight">
                   WAY {idx + 1}
                 </div>
-                <div style={{ fontSize: 12, fontWeight: 600, color: C.slate }}>
-                  {way.metadata.skillTag.split('.').pop()?.toUpperCase() || 'RETO'}
+                <div className="text-[9px] font-black text-slate-400 tracking-wider uppercase">
+                  {way.name || 'Jugar ahora'}
                 </div>
               </div>
 
-              {way.stimulus?.image && (
-                <div style={{ width: 40, height: 40, opacity: 0.5 }}>
-                   {isUrl ? (
-                    <img src={way.stimulus.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                  ) : (
-                    <span style={{ fontSize: 24 }}>{way.stimulus.image}</span>
-                  )}
-                </div>
-              )}
-
               {isCompleted && (
-                 <div style={{ 
-                   position: 'absolute', top: 12, right: 12,
-                   background: C.emerald, color: '#fff', 
-                   fontSize: 10, fontWeight: 900, padding: '2px 8px', borderRadius: 8
-                 }}>
-                   COMPLETADO
+                 <div className="bg-emerald-100 text-emerald-700 text-[8px] font-black px-2 py-1 rounded-full uppercase">
+                   OK
                  </div>
               )}
             </motion.div>
@@ -183,24 +137,21 @@ export function StepDetailsPage() {
         })}
       </div>
       
-      {/* Step Progress Footer */}
-      <div style={{
-        position: 'fixed', bottom: 0, left: 0, right: 0,
-        background: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(10px)',
-        padding: '20px 16px 40px',
-        borderTop: `1px solid ${C.indigoLight}`,
-        display: 'flex', flexDirection: 'column', gap: 8
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, fontWeight: 800, color: C.text }}>
-          <span>PROGRESO DEL MÓDULO</span>
-          <span>{Array.from(completedWays).filter(id => step.ways.some(w => w.id === id)).length}/{step.ways.length}</span>
-        </div>
-        <div style={{ height: 10, background: C.slateLight, borderRadius: 5, overflow: 'hidden' }}>
-          <motion.div 
-            initial={{ width: 0 }}
-            animate={{ width: `${step.ways.length > 0 ? (Array.from(completedWays).filter(id => step.ways.some(w => w.id === id)).length / step.ways.length) * 100 : 0}%` }}
-            style={{ height: '100%', background: C.emerald, borderRadius: 5 }}
-          />
+      {/* Centered Progress Footer */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-100 p-6 pb-10 z-50">
+        <div className="max-w-xl mx-auto space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">PROGRESO DEL MÓDULO</span>
+            <span className="text-sm font-black text-indigo-600">{doneCount} / {totalCount}</span>
+          </div>
+          <div className="h-4 bg-slate-100 rounded-full overflow-hidden border-2 border-white shadow-inner">
+            <motion.div 
+              initial={{ width: 0 }}
+              animate={{ width: `${progressPercent}%` }}
+              transition={{ duration: 1, ease: "circOut" }}
+              className="h-full bg-emerald-500 rounded-full shadow-[0_0_12px_rgba(16,185,129,0.3)]"
+            />
+          </div>
         </div>
       </div>
     </div>

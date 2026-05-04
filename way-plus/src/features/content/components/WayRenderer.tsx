@@ -88,24 +88,26 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
       case 'double-choice':
       default:
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 40, width: '100%', maxWidth: 512, margin: '0 auto', padding: '16px 8px' }}>
-             {/* Stimulus Section */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, width: '100%', maxWidth: 400, margin: '0 auto', padding: '12px 16px' }}>
+             {/* Compact Stimulus Section */}
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 16 }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}
             >
               <div style={{ 
-                margin: '0 auto', width: 160, height: 160, backgroundColor: 'white', borderRadius: 40, 
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)', 
-                padding: 24, border: '4px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                margin: '0 auto', width: 140, height: 140, backgroundColor: 'white', borderRadius: 32, 
+                boxShadow: '0 15px 20px -5px rgba(0, 0, 0, 0.08)', 
+                padding: 20, border: '4px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' 
               }}>
                 <img src={way.stimulus.image} alt="Estímulo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
               </div>
               {way.stimulus.text && (
-                <h2 style={{ fontSize: 24, fontWeight: 900, color: '#1e293b', letterSpacing: '-0.5px', lineHeight: 1.2, textTransform: 'uppercase' }}>
-                  {way.stimulus.text}
-                </h2>
+                <div style={{ padding: '0 10px' }}>
+                  <h2 style={{ fontSize: 18, fontWeight: 900, color: '#1e293b', letterSpacing: '-0.3px', lineHeight: 1.2, textTransform: 'uppercase', margin: 0 }}>
+                    {way.stimulus.text}
+                  </h2>
+                </div>
               )}
             </motion.div>
 

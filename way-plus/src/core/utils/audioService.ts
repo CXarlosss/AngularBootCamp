@@ -9,10 +9,12 @@ export type AmbientZone = 'home' | 'relax' | 'bravery' | 'shop' | 'album' | 'zen
 
 class AudioService {
   private static instance: AudioService;
+  private interacted = false;
   private ctx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
   private currentAmbient: { zone: AmbientZone; stop: () => void } | null = null;
   private enabled = true;
+  private queuedAmbient: AmbientZone | null = null;
 
   private constructor() {}
 
@@ -23,18 +25,56 @@ class AudioService {
     return AudioService.instance;
   }
 
-  private initContext() {
-    if (!this.ctx) {
-      this.ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      this.masterGain = this.ctx.createGain();
-      this.masterGain.connect(this.ctx.destination);
-      this.masterGain.gain.value = 0.5;
+  /**
+   * Must be called from a user gesture (click/touchstart) to enable audio.
+   */
+  unlock() {
+    if (this.interacted) return;
+    this.interacted = true;
+    
+    const { ctx } = this.initContext();
+    if (ctx && ctx.state === 'suspended') {
+      ctx.resume().then(() => {
+        if (this.queuedAmbient) {
+          const zone = this.queuedAmbient;
+          this.queuedAmbient = null;
+          this.playAmbient(zone);
+        }
+      });
     }
-    if (this.ctx.state === 'suspended') {
-      this.ctx.resume();
+    
+    // Play a silent buffer to fully unlock on iOS
+    if (ctx) {
+      const buffer = ctx.createBuffer(1, 1, 22050);
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.connect(ctx.destination);
+      source.start(0);
     }
-    return { ctx: this.ctx, master: this.masterGain! };
   }
+
+  private initContext() {
+    if (!this.interacted) return { ctx: null, master: null };
+
+    if (!this.ctx) {
+      try {
+        const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
+        if (!AudioContextClass) return { ctx: null, master: null };
+        
+        this.ctx = new AudioContextClass();
+        this.masterGain = this.ctx.createGain();
+        this.masterGain.connect(this.ctx.destination);
+        this.masterGain.gain.value = this.enabled ? 0.5 : 0;
+      } catch (e) {
+        console.warn('[AudioService] Initialization failed:', e);
+        return { ctx: null, master: null };
+      }
+    }
+    
+    return { ctx: this.ctx, master: this.masterGain };
+  }
+
+
 
   toggle(enabled?: boolean) {
     this.enabled = enabled ?? !this.enabled;
@@ -49,6 +89,7 @@ class AudioService {
   playSFX(type: SoundType) {
     if (!this.enabled) return;
     const { ctx, master } = this.initContext();
+    if (!ctx || !master) return;
 
     switch (type) {
       case 'click':
@@ -197,6 +238,15 @@ class AudioService {
     
     this.stopAmbient();
     const { ctx, master } = this.initContext();
+    
+    if (!ctx || !master) {
+      // Store intended zone so it can be resumed later if needed
+      this.currentAmbient = { zone, stop: () => {} };
+      if (!this.interacted) {
+        this.queuedAmbient = zone;
+      }
+      return;
+    }
 
     let stopFn = () => {};
 

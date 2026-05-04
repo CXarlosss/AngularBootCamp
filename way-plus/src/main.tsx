@@ -9,9 +9,12 @@ createRoot(document.getElementById('root')!).render(
   <App />
 )
 
-// Register Service Worker for offline support
+// Unregister stale Service Workers to avoid 'Failed to convert value to Response' errors
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(console.error);
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister();
+    }
   });
 }
+

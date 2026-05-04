@@ -88,11 +88,16 @@ export const AdventureMap: React.FC<Props> = ({
   const isUnlocked = (index: number) => {
     if (index === 0) return true;
     const prevWay = allWays[index - 1];
-    if (!prevWay) return false;
-    return (completedWays || []).includes(prevWay.id);
+    if (!prevWay?.id) return false;
+    const safeCompleted = Array.isArray(completedWays) ? completedWays : [];
+    return safeCompleted.includes(prevWay.id);
   };
 
-  const isCompleted = (wayId: string) => wayId ? (completedWays || []).includes(wayId) : false;
+  const isCompleted = (wayId: string) => {
+    if (!wayId) return false;
+    const safeCompleted = Array.isArray(completedWays) ? completedWays : [];
+    return safeCompleted.includes(wayId);
+  };
 
   if (allWays.length === 0) {
     return <div className="adventure-map-empty">Cargando retos...</div>;
