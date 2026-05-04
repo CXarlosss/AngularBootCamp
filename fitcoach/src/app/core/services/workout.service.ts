@@ -86,7 +86,11 @@ export class WorkoutService {
       { onConflict: 'id' },
     );
 
-    if (wError) throw wError;
+    // ← NO hacer throw — dejar que el flujo continúe
+    if (wError) {
+      console.error('[WorkoutService] workout_logs error:', wError.message);
+      return; // salir pero NO lanzar excepción
+    }
 
     if (log.sets.length > 0) {
       const setsToInsert = log.sets.map((s) => ({
@@ -106,16 +110,14 @@ export class WorkoutService {
       const { error: sError } = await this.sb
         .from('set_logs')
         .insert(setsToInsert);
+
       if (sError) {
+        // ← Log del error pero NO throw — continuar con XP y completed_days
+        console.error('[WorkoutService] set_logs error:', sError.message);
         console.error(
-          '[WorkoutService] set_logs error DETALLE:',
-          JSON.stringify(sError),
-        );
-        console.error(
-          '[WorkoutService] Primer set intentado:',
+          '[WorkoutService] Primer set:',
           JSON.stringify(setsToInsert[0]),
         );
-        throw sError;
       }
     }
   }

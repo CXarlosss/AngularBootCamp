@@ -40,34 +40,49 @@ export class ProgressService {
     const sixWeeksAgo = new Date();
     sixWeeksAgo.setDate(sixWeeksAgo.getDate() - 42);
 
-    // ✅ Columna real: client_id (no user_id)
-    const { data, error } = await this.sb
+    // Intentar completed_days primero
+    const { data: cdData } = await this.sb
       .from('completed_days')
       .select('completed_at')
       .eq('client_id', userId)
-      .gte('completed_at', sixWeeksAgo.toISOString())
-      .order('completed_at', { ascending: false });
+      .gte('completed_at', sixWeeksAgo.toISOString());
 
-    if (error) {
-      console.error('[ProgressService] completed_days error:', error.message);
-      return this.emptyAdherence();
+    // Fallback a workout_logs si completed_days está vacío
+    let rows: { completed_at: string }[] = cdData ?? [];
+
+    if (!rows.length) {
+      const { data: wlData } = await this.sb
+        .from('workout_logs')
+        .select('created_at')
+        .eq('client_id', userId)
+        .eq('completed', true)
+        .gte('created_at', sixWeeksAgo.toISOString());
+
+      rows = (wlData ?? []).map((r) => ({ completed_at: r.created_at }));
     }
 
-    const rows = data ?? [];
     const uniqueDays = new Set(
-      rows.map(r => new Date(r.completed_at).toDateString())
+      rows.map((r) => new Date(r.completed_at).toDateString()),
     );
 
     const totalDaysCompleted = uniqueDays.size;
     const currentStreak = this.calcStreak(uniqueDays);
 
     const expected = 30; // 6 semanas * 5 días
-    const adherencePercent = Math.min(100, Math.round((totalDaysCompleted / expected) * 100));
+    const adherencePercent = Math.min(
+      100,
+      Math.round((totalDaysCompleted / expected) * 100),
+    );
 
     // Mapear para las barras semanales
     const weeklyAdherence = this.calcWeeklyBars(rows);
 
-    return { adherencePercent, currentStreak, totalDaysCompleted, weeklyAdherence };
+    return {
+      adherencePercent,
+      currentStreak,
+      totalDaysCompleted,
+      weeklyAdherence,
+    };
   }
 
   private calcStreak(uniqueDays: Set<string>): number {

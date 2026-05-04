@@ -1,0 +1,218 @@
+.avatar-frame-wrap {
+  position: relative;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.avatar-inner {
+  width: 85%;
+  height: 85%;
+  border-radius: 50%;
+  background: var(--color-background-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 2;
+  position: relative;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-initials {
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1;
+  user-select: none;
+}
+
+// ─── Marcos de rango ───────────────────────────────────────────────────────
+
+// Rank 0 — Recruta: sin marco, avatar atenuado
+.frame-rank-0 {
+  .avatar-inner { opacity: 0.7; }
+}
+
+// Rank 1 — Legionario: bronce
+.frame-rank-1 {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2.5px solid #b47828;
+    box-shadow: 0 0 8px rgba(180,120,40,0.4);
+    z-index: 1;
+  }
+}
+
+// Rank 2 — Centurión: plata
+.frame-rank-2 {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2.5px solid #94a3b8;
+    box-shadow: 0 0 10px rgba(148,163,184,0.5),
+                inset 0 0 6px rgba(148,163,184,0.1);
+    z-index: 1;
+  }
+}
+
+// Rank 3 — Tribuno: esmeralda
+.frame-rank-3 {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 3px solid #1D9E75;
+    box-shadow: 0 0 12px rgba(29,158,117,0.5),
+                0 0 24px rgba(29,158,117,0.2);
+    z-index: 1;
+  }
+}
+
+// Rank 4 — Semidiós: dorado pulsante
+.frame-rank-4 {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: 50%;
+    border: 3px solid #D97706;
+    box-shadow: 0 0 14px rgba(217,119,6,0.6),
+                0 0 28px rgba(217,119,6,0.3);
+    animation: pulse-gold 2s ease-in-out infinite;
+    z-index: 1;
+    will-change: box-shadow;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::before { animation: none; }
+  }
+}
+
+// Rank 5 — Zeus: carmesí rotante
+.frame-rank-5 {
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 50%;
+    border: 3px solid #DC2626;
+    box-shadow: 0 0 16px rgba(220,38,38,0.7),
+                0 0 32px rgba(220,38,38,0.4);
+    animation: pulse-red 1.5s ease-in-out infinite;
+    z-index: 1;
+    will-change: box-shadow;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0%,
+      rgba(220,38,38,0.3) 25%,
+      transparent 50%,
+      rgba(220,38,38,0.3) 75%,
+      transparent 100%
+    );
+    animation: rotate-conic 4s linear infinite;
+    z-index: 0;
+    will-change: transform;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    &::before, &::after { animation: none; }
+  }
+}
+
+// ─── Marcos especiales ─────────────────────────────────────────────────────
+
+.frame-streak-layer {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: linear-gradient(var(--color-background-primary), var(--color-background-primary)) padding-box,
+              linear-gradient(135deg, #ff6b35, #f7c59f, #ff6b35) border-box;
+  animation: rotate-fire 3s linear infinite;
+  z-index: 3;
+  will-change: transform;
+
+  @media (prefers-reduced-motion: reduce) { animation: none; }
+}
+
+.frame-pr-layer {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: linear-gradient(var(--color-background-primary), var(--color-background-primary)) padding-box,
+              linear-gradient(135deg, #378ADD, #8B5CF6, #378ADD) border-box;
+  z-index: 3;
+}
+
+.frame-coach-layer {
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,215,0,0.6);
+  box-shadow: 0 0 10px rgba(255,215,0,0.3);
+  z-index: 3;
+}
+
+// Badge emoji en esquina
+.special-badge {
+  position: absolute;
+  bottom: -2px;
+  left: -2px;
+  font-size: 11px;
+  z-index: 5;
+  line-height: 1;
+}
+
+.rank-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  font-size: 11px;
+  z-index: 5;
+  line-height: 1;
+  background: var(--color-background-primary);
+  border-radius: 50%;
+  padding: 1px;
+}
+
+// ─── Animaciones ───────────────────────────────────────────────────────────
+
+@keyframes pulse-gold {
+  0%, 100% { box-shadow: 0 0 14px rgba(217,119,6,0.6), 0 0 28px rgba(217,119,6,0.3); }
+  50%       { box-shadow: 0 0 20px rgba(217,119,6,0.8), 0 0 40px rgba(217,119,6,0.4); }
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 16px rgba(220,38,38,0.7), 0 0 32px rgba(220,38,38,0.4); }
+  50%       { box-shadow: 0 0 24px rgba(220,38,38,0.9), 0 0 48px rgba(220,38,38,0.6); }
+}
+
+@keyframes rotate-conic {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes rotate-fire {
+  to { filter: hue-rotate(30deg) brightness(1.1); }
+}

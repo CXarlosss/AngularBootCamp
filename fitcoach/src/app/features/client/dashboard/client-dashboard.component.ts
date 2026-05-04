@@ -12,30 +12,49 @@ import { WorkoutStore }         from '../../../state/workout.store';
 import { ProfileService }       from '../profile/profile.service';
 import { computed }             from '@angular/core';
 import { RankCardComponent }    from '../../../shared/components/rank-card/rank-card.component';
+import { AvatarFrameComponent } from '../../../shared/components/avatar-frame/avatar-frame.component';
+import { InitialsPipe }         from '../../../shared/pipes/initials.pipe';
+import { RankService }          from '../../../core/services/rank.service';
+import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
+import { RouterModule }         from '@angular/router';
 
 @Component({
   selector: 'fc-client-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RankCardComponent],
+  imports: [CommonModule, RankCardComponent, AvatarFrameComponent, InitialsPipe, ProfileBannerComponent, RouterModule],
   template: `
     <div class="client-dash">
 
       <header class="client-header">
         <div class="header-logo">Fit<span>Coach</span></div>
-        <div class="header-av">{{ initials(auth.profile()?.fullName ?? '') }}</div>
+        <app-avatar-frame
+          [initials]="auth.profile()?.fullName | initials"
+          [rankLevel]="rankSvc.fullRank()?.rank?.level ?? 0"
+          [equippedSpecial]="auth.profile()?.equippedFrame ?? null"
+          [size]="32"
+          [showBadge]="false" />
       </header>
 
       @if (profileSvc.profile(); as p) {
-        <div class="profile-banner" (click)="router.navigate(['/profile'])">
-          <div class="profile-avatar">{{ p.full_name[0] }}</div>
-          <div class="profile-info">
-            <span class="profile-name">{{ p.full_name }}</span>
-            <span class="profile-meta">
-              {{ profileSvc.goalEmoji(p.goal) }} {{ profileSvc.goalLabel(p.goal) }}
-              @if (profileSvc.age(p)) { · {{ profileSvc.age(p) }} años }
-            </span>
-          </div>
+        <div style="margin: 0 16px 12px;">
+          <app-profile-banner
+            [name]="p.full_name"
+            [initials]="p.full_name | initials"
+            [rankLevel]="rankSvc.fullRank()?.rank?.level ?? 0"
+            [rankName]="rankSvc.fullRank()?.rank?.name ?? 'Recruta'"
+            [rankEmoji]="rankSvc.fullRank()?.rank?.emoji ?? '⚔️'"
+            [divLabel]="rankSvc.fullRank()?.divLabel ?? 'IV'"
+            [xpTotal]="rankSvc.athleteRank()?.xpTotal ?? 0"
+            [goal]="profileSvc.goalLabel(p.goal)"
+            [goalEmoji]="profileSvc.goalEmoji(p.goal)"
+            [bannerColor]="p.banner_color ?? 'c0'"
+            [bannerPattern]="p.banner_pattern ?? 'p0'"
+            [equippedFrame]="p.equipped_frame" />
+          
+          <button class="customize-btn" routerLink="/client/profile/banner">
+            🎨 Personalizar banner
+          </button>
         </div>
       }
 
@@ -116,6 +135,7 @@ export class ClientDashboardComponent implements OnInit {
   router  = inject(Router);
   workoutStore = inject(WorkoutStore);
   profileSvc = inject(ProfileService);
+  rankSvc = inject(RankService);
   private clientRoutineSvc = inject(ClientRoutineService);
 
   routine = signal<AssignedRoutine | null>(null);
@@ -188,7 +208,8 @@ export class ClientDashboardComponent implements OnInit {
     try {
       const [assigned] = await Promise.all([
         this.clientRoutineSvc.getActiveRoutine(clientId),
-        this.workoutStore.loadHistory(clientId)
+        this.workoutStore.loadHistory(clientId),
+        this.profileSvc.load()
       ]);
       
       this.routine.set(assigned);

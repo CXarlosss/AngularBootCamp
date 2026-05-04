@@ -21,9 +21,4 @@ export const routes: Routes = [
     canActivate: [authGuard, clientGuard],
     loadChildren: () => import('./features/client/client.routes').then(m => m.CLIENT_ROUTES),
   },
-  {
-    path: 'profile',
-    loadComponent: () => import('./features/client/profile/profile-edit.component').then(m => m.ProfileEditComponent),
-    canActivate: [authGuard]
-  },
 ];

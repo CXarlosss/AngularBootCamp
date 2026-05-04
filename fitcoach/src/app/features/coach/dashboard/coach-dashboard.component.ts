@@ -11,7 +11,7 @@ import { InviteModalComponent } from './invite-modal/invite-modal.component';
 @Component({
   selector: 'fc-coach-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, ClientCardComponent, InviteModalComponent],
+  imports: [CommonModule, ClientCardComponent, InviteModalComponent],
   templateUrl: './coach-dashboard.component.html',
   styleUrl: './coach-dashboard.component.css',
 })

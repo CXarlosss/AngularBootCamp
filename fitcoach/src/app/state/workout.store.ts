@@ -143,42 +143,55 @@ export const WorkoutStore = signalStore(
       patchState(store, { loading: true });
       const completed = { ...log, completed: true };
       
-      // 1. Guardar log detallado
-      console.log('[WorkoutStore] Guardando log detallado...');
-      await svc.saveWorkoutLog(completed);
+      // 1. Guardar log — si falla, continuamos igualmente
+      try {
+        console.log('[WorkoutStore] Guardando log detallado...');
+        await svc.saveWorkoutLog(completed);
+      } catch (e) {
+        console.error('[WorkoutStore] saveWorkoutLog falló, continuando...', e);
+      }
       
-      // 2. Finalizar sesión (marcar día y notificar)
-      console.log('[WorkoutStore] Llamando a svc.finishWorkout...');
-      await svc.finishWorkout(log.routineId, log.dayId, dayLabel);
+      // 2. Finalizar sesión — si falla, continuamos igualmente
+      try {
+        console.log('[WorkoutStore] Llamando a finishWorkout...');
+        await svc.finishWorkout(log.routineId, log.dayId, dayLabel);
+      } catch (e) {
+        console.error('[WorkoutStore] finishWorkout falló, continuando...', e);
+      }
 
-      // 3. Sistema de Rangos: Calcular y otorgar XP
-      const daysXp = 10;
-      const setsXp = log.sets.length;
-      let progressXp = 0;
+      // 3. XP — siempre se ejecuta
+      try {
+        const daysXp = 10;
+        const setsXp = log.sets.length;
+        let progressXp = 0;
 
-      // Comparar con historial para ver mejoras (PRs)
-      const exerciseWeights = new Map<string, number>();
-      log.sets.forEach(s => {
-        const cur = exerciseWeights.get(s.exerciseId) || 0;
-        if (s.weightKg > cur) exerciseWeights.set(s.exerciseId, s.weightKg);
-      });
+        const exerciseWeights = new Map<string, number>();
+        log.sets.forEach(s => {
+          const cur = exerciseWeights.get(s.exerciseId) ?? 0;
+          if ((s.weightKg ?? 0) > cur) exerciseWeights.set(s.exerciseId, s.weightKg ?? 0);
+        });
 
-      exerciseWeights.forEach((weight, exId) => {
-        // Obtenemos el historial previo antes de este entrenamiento
-        const lastPerf = store.history().find(h => h.id !== log.id)?.sets.find(s => s.exerciseId === exId);
-        if (lastPerf && weight > lastPerf.weightKg) {
-          const improvement = weight - lastPerf.weightKg;
-          progressXp += Math.floor(improvement * 50);
-          console.log(`[RankSystem] ¡Mejora en ${exId}! +${improvement}kg = +${improvement * 50}XP`);
-        }
-      });
+        exerciseWeights.forEach((weight, exId) => {
+          // Obtenemos el historial previo antes de este entrenamiento
+          const lastPerf = store.history()
+            .find(h => h.id !== log.id)
+            ?.sets.find(s => s.exerciseId === exId);
+            
+          if (lastPerf && weight > (lastPerf.weightKg ?? 0)) {
+            const improvement = weight - (lastPerf.weightKg ?? 0);
+            progressXp += Math.floor(improvement * 50);
+            console.log(`[RANK] Mejora en ${exId}: +${improvement}kg = +${improvement * 50}XP`);
+          }
+        });
 
-      console.log(`[RankSystem] Otorgando XP: Días:${daysXp}, Series:${setsXp}, Progreso:${progressXp}`);
-      console.log('[RANK] Antes de addXP — athleteRank:', rankSvc.athleteRank());
-      await rankSvc.addXP({ daysXp, setsXp, progressXp });
-      console.log('[RANK] Después de addXP — xp_total:', rankSvc.athleteRank()?.xpTotal);
+        console.log(`[RANK] addXP — días:${daysXp} series:${setsXp} progreso:${progressXp}`);
+        await rankSvc.addXP({ daysXp, setsXp, progressXp });
+        console.log('[RANK] XP guardado. Total:', rankSvc.athleteRank()?.xpTotal);
+      } catch (e) {
+        console.error('[WorkoutStore] addXP falló:', e);
+      }
 
-      console.log('[WorkoutStore] completeWorkout FIN (éxito)');
+      console.log('[WorkoutStore] completeWorkout FIN');
       patchState(store, {
         activeLog: null,
         history: [completed, ...store.history()],

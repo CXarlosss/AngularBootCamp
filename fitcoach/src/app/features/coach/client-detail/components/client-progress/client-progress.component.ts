@@ -36,15 +36,16 @@ import { ProgressChartComponent } from '../../../../../shared/components/progres
       </div>
     </section>
 
-    <!-- Historico de records -->
     <section class="section-card">
       <h3>Historial de Records</h3>
       <div class="records-list">
-        @for (dp of progressStore.selectedExercise()?.dataPoints; track dp.date.getTime()) {
-          <div class="record-row">
-            <span class="date">{{ dp.date | date:'dd MMM yyyy' }}</span>
-            <span class="val">{{ dp.maxWeight }}kg</span>
-          </div>
+        @if (progressStore.selectedExercise(); as ex) {
+          @for (dp of ex.dataPoints; track dp.date.getTime()) {
+            <div class="record-row">
+              <span class="date">{{ dp.date | date:'dd MMM yyyy' }}</span>
+              <span class="val">{{ dp.maxWeight }}kg</span>
+            </div>
+          }
         }
       </div>
     </section>

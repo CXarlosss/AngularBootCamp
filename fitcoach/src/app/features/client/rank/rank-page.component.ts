@@ -1,7 +1,8 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { RankService, RANKS, DIVISIONS } from '../../../core/services/rank.service';
+import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-rank-page',
@@ -102,7 +103,11 @@ import { RankService, RANKS, DIVISIONS } from '../../../core/services/rank.servi
                         {{ fr.divLabel }}
                       </span>
                     } @else {
-                      <span class="status-pill locked">Bloqueado</span>
+                      @if (auth.isCoach()) {
+                        <span class="status-pill preview">Vista previa</span>
+                      } @else {
+                        <span class="status-pill locked">Bloqueado</span>
+                      }
                     }
                   </div>
                 }
@@ -146,6 +151,8 @@ import { RankService, RANKS, DIVISIONS } from '../../../core/services/rank.servi
 export class RankPageComponent implements OnInit {
   readonly svc = inject(RankService);
   readonly router = inject(Router);
+  readonly auth = inject(AuthService);
+  
   readonly allRanks = RANKS;
   readonly divisions = DIVISIONS;
 

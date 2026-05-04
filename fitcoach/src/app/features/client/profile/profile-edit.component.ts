@@ -2,94 +2,106 @@ import {
   Component, OnInit, inject, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { ProfileService, Goal, Level } from './profile.service';
-import { WeightLogService } from '../progress/weight-bottom-sheet/weight-log.service';
-import { RankCardComponent } from '../../../shared/components/rank-card/rank-card.component';
-
-interface GoalOption { value: Goal; label: string; emoji: string; }
-interface LevelOption { value: Level; label: string; sub: string; emoji: string; }
+import { RouterModule } from '@angular/router';
+import { ProfileService } from './profile.service';
+import { AvatarFrameComponent } from '../../../shared/components/avatar-frame/avatar-frame.component';
+import { InitialsPipe }         from '../../../shared/pipes/initials.pipe';
+import { RankService }          from '../../../core/services/rank.service';
+import { AuthService }          from '../../../core/auth/auth.service';
+import { ProfileBannerComponent } from './profile-banner/profile-banner.component';
 
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [CommonModule, FormsModule, RankCardComponent],
-  templateUrl: './profile-edit.component.html',
-  styleUrl:    './profile-edit.component.scss',
+  imports: [CommonModule, AvatarFrameComponent, InitialsPipe, RouterModule, ProfileBannerComponent],
+  providers: [ProfileService],
+  template: `
+    <div class="client-dash">
+      <header class="client-header">
+        <div class="header-logo">Fit<span>Coach</span></div>
+        <button class="back-btn" [routerLink]="isCoach() ? '/coach/dashboard' : '/client/dashboard'">←</button>
+      </header>
+
+      <div class="profile-scroll">
+        <!-- Banner Reutilizado (Igual que el dashboard) -->
+        @if (profile(); as p) {
+          <div style="margin: 16px 20px 12px;">
+            <app-profile-banner
+              [name]="p.full_name"
+              [initials]="p.full_name | initials"
+              [rankLevel]="rankSvc.fullRank()?.rank?.level ?? 0"
+              [rankName]="rankSvc.fullRank()?.rank?.name ?? 'Recruta'"
+              [rankEmoji]="rankSvc.fullRank()?.rank?.emoji ?? '⚔️'"
+              [divLabel]="rankSvc.fullRank()?.divLabel ?? 'IV'"
+              [xpTotal]="rankSvc.athleteRank()?.xpTotal ?? 0"
+              [goal]="profileSvc.goalLabel(p.goal)"
+              [goalEmoji]="profileSvc.goalEmoji(p.goal)"
+              [bannerColor]="p.banner_color ?? 'c0'"
+              [bannerPattern]="p.banner_pattern ?? 'p0'"
+              [equippedFrame]="p.equipped_frame ?? null" />
+          </div>
+        }
+
+        <!-- Card de Rango Detallada -->
+        <div class="dash-card" style="margin: 0 20px 24px;">
+          <div class="xp-container">
+            <div class="xp-header">
+              <span>Nivel {{ rankSvc.fullRank()?.rank?.level }}</span>
+              <span>{{ rankSvc.athleteRank()?.xpTotal | number }} XP</span>
+            </div>
+            <div class="xp-bar-bg">
+              <div class="xp-bar-fill" [style.width.%]="rankSvc.fullRank()?.pct"></div>
+            </div>
+            <p class="xp-next">Faltan {{ rankSvc.fullRank()?.xpToNext | number }} XP para el siguiente rango</p>
+          </div>
+        </div>
+
+        <!-- Opciones de Personalización -->
+        <p class="section-lbl" style="margin-left: 24px;">Personalización</p>
+        
+        <div class="nav-cards" style="padding: 0 20px;">
+          <button class="menu-item" routerLink="frames">
+            <span class="menu-icon">🖼️</span>
+            <div class="menu-text">
+              <span class="menu-title">Marcos de Avatar</span>
+              <span class="menu-sub">Cambia el estilo de tu foto</span>
+            </div>
+            <span class="menu-arrow">→</span>
+          </button>
+
+          <button class="menu-item" routerLink="banner">
+            <span class="menu-icon">🎨</span>
+            <div class="menu-text">
+              <span class="menu-title">Banner de Perfil</span>
+              <span class="menu-sub">Colores y patrones de fondo</span>
+            </div>
+            <span class="menu-arrow">→</span>
+          </button>
+        </div>
+
+        <div style="padding: 32px 20px;">
+          <button class="logout-btn" (click)="auth.logout()">
+            Cerrar Sesión
+          </button>
+        </div>
+      </div>
+    </div>
+  `,
+  styleUrl: './profile-edit.component.scss',
 })
 export class ProfileEditComponent implements OnInit {
-  private profileSvc = inject(ProfileService);
-  private weightSvc  = inject(WeightLogService);
-  protected router     = inject(Router);
-
-  // Form state
-  name      = signal('');
-  weightKg  = signal<number | null>(null);
-  heightCm  = signal<number | null>(null);
-  birthDate = signal('');
-  goal      = signal<Goal | null>(null);
-  level     = signal<Level | null>(null);
-
-  saving  = signal(false);
-  saved   = signal(false);
-  error   = signal('');
-
-  readonly goals: GoalOption[] = [
-    { value: 'fat_loss',    label: 'Perder grasa',   emoji: '🔥' },
-    { value: 'muscle_gain', label: 'Ganar músculo',  emoji: '💪' },
-    { value: 'strength',    label: 'Fuerza máxima',  emoji: '🏋️' },
-    { value: 'health',      label: 'Salud general',  emoji: '🌱' },
-  ];
-
-  readonly levels: LevelOption[] = [
-    { value: 'beginner',     label: 'Principiante', sub: 'Menos de 1 año',    emoji: '🌱' },
-    { value: 'intermediate', label: 'Intermedio',   sub: '1–3 años',           emoji: '⚡' },
-    { value: 'advanced',     label: 'Avanzado',     sub: '3+ años',            emoji: '🔱' },
-  ];
+  auth    = inject(AuthService);
+  profileSvc = inject(ProfileService);
+  rankSvc = inject(RankService);
+  profile = this.profileSvc.profile; 
+  isCoach = signal(false);
 
   async ngOnInit() {
-    const p = await this.profileSvc.load();
-    if (p) {
-      this.name.set(p.full_name ?? '');
-      this.heightCm.set(p.height_cm);
-      this.birthDate.set(p.birth_date ?? '');
-      this.goal.set(p.goal);
-      this.level.set(p.level);
-    }
-    // Cargar último peso registrado
-    const lastEntry = await this.weightSvc.getLastEntry();
-    if (lastEntry) this.weightKg.set(lastEntry.weight_kg);
-  }
-
-  setGoal(g: Goal)   { this.goal.set(g); }
-  setLevel(l: Level) { this.level.set(l); }
-
-  async save() {
-    this.saving.set(true);
-    this.error.set('');
-
-    try {
-      // Guardar perfil
-      await this.profileSvc.save({
-        full_name:  this.name().trim() || undefined,
-        height_cm:  this.heightCm() ?? undefined,
-        birth_date: this.birthDate() || undefined,
-        goal:       this.goal() ?? undefined,
-        level:      this.level() ?? undefined,
-      } as any);
-
-      // Si hay peso nuevo, guardarlo en weight_logs
-      if (this.weightKg()) {
-        await this.weightSvc.logWeight(this.weightKg()!);
-      }
-
-      this.saved.set(true);
-      setTimeout(() => this.router.navigate(['/client']), 1200); // Redirigir a client, que es la ruta raíz del cliente
-
-    } catch (e: any) {
-      this.error.set('Error guardando. Inténtalo de nuevo.');
-      this.saving.set(false);
-    }
+    await this.rankSvc.load();
+    await this.profileSvc.load();
+    
+    // Detectar si es coach para el botón de volver
+    const role = (this.auth as any).userRole?.() ?? 'client';
+    this.isCoach.set(role === 'coach');
   }
 }

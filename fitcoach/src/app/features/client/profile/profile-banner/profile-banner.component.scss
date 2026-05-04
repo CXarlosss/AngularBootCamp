@@ -1,0 +1,159 @@
+.banner {
+  position: relative;
+  height: 110px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 0.5px solid var(--color-border-tertiary);
+  transition: background .4s ease;
+}
+
+.banner-pattern {
+  position: absolute;
+  inset: 0;
+  transition: all .3s;
+
+  &.pat-solid   { /* sin patrón */ }
+
+  &.pat-marble  {
+    background-image: repeating-linear-gradient(
+      45deg,
+      rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
+      transparent 1px, transparent 8px
+    );
+  }
+
+  &.pat-stone   {
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 6px),
+      repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 6px);
+  }
+
+  &.pat-stars   {
+    background-image: radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
+  &.pat-fire    {
+    background-image:
+      radial-gradient(ellipse at 20% 90%, rgba(255,100,0,0.35) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 90%, rgba(220,38,38,0.35) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 60%, rgba(251,146,60,0.2) 0%, transparent 40%);
+  }
+
+  &.pat-olympus {
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(255,215,0,0.06) 0px, rgba(255,215,0,0.06) 1px,
+      transparent 1px, transparent 12px
+    );
+  }
+
+  &.pat-waves {
+    background-image: repeating-linear-gradient(
+      -45deg, transparent, transparent 5px,
+      rgba(255,255,255,.08) 5px, rgba(255,255,255,.08) 6px
+    );
+  }
+
+  &.pat-dots {
+    background-image: radial-gradient(circle, rgba(255,255,255,.18) 1.5px, transparent 1.5px);
+    background-size: 10px 10px;
+  }
+
+  &.pat-diamond {
+    background-image:
+      repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 14px),
+      repeating-linear-gradient(-45deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 14px);
+  }
+
+  &.pat-circuit {
+    background-image:
+      repeating-linear-gradient(0deg, rgba(29,158,117,.1) 0px, rgba(29,158,117,.1) 1px, transparent 1px, transparent 20px),
+      repeating-linear-gradient(90deg, rgba(29,158,117,.1) 0px, rgba(29,158,117,.1) 1px, transparent 1px, transparent 20px);
+  }
+
+  &.pat-hex {
+    background-image: 
+      linear-gradient(120deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+      linear-gradient(60deg, rgba(255,255,255,0.05) 25%, transparent 25%);
+    background-size: 15px 25px;
+  }
+
+  &.pat-cross {
+    background: 
+      radial-gradient(circle, transparent 20%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.2) 80%, transparent 80%, transparent),
+      radial-gradient(circle, transparent 20%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.2) 80%, transparent 80%, transparent) 25px 25px,
+      linear-gradient(rgba(255,255,255,0.03) 2px, transparent 2px) 0 -1px,
+      linear-gradient(90deg, rgba(255,255,255,0.03) 2px, transparent 2px) -1px 0;
+    background-size: 50px 50px, 50px 50px, 25px 25px, 25px 25px;
+  }
+}
+
+.banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.65) 0%,
+    rgba(0,0,0,0.1)  50%,
+    transparent      100%
+  );
+}
+
+.banner-content {
+  position: absolute;
+  inset: 0;
+  padding: 12px 14px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.banner-info { flex: 1; min-width: 0; }
+
+.banner-name {
+  font-size: 17px;
+  font-weight: 500;
+  color: #fff;
+  margin: 0 0 2px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.banner-meta {
+  font-size: 12px;
+  color: rgba(255,255,255,0.7);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.div-label {
+  background: rgba(255,255,255,0.15);
+  padding: 1px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.banner-goal {
+  font-size: 11px;
+  color: rgba(255,255,255,0.5);
+  margin: 3px 0 0;
+}
+
+.banner-xp {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.8);
+  background: rgba(0,0,0,0.35);
+  padding: 4px 10px;
+  border-radius: 20px;
+  align-self: flex-start;
+  margin-top: 8px;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}

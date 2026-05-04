@@ -44,6 +44,24 @@ export const CLIENT_ROUTES: Routes = [
           import('./rank/rank-page.component')
             .then(m => m.RankPageComponent),
       },
+      {
+        path: 'profile/frames',
+        loadComponent: () =>
+          import('./profile/frame-selector/frame-selector.component')
+            .then(m => m.FrameSelectorComponent),
+      },
+      {
+        path: 'profile/banner',
+        loadComponent: () =>
+          import('./profile/banner-selector/banner-selector.component')
+            .then(m => m.BannerSelectorComponent),
+      },
+      {
+        path: 'profile',
+        loadComponent: () =>
+          import('./profile/profile-edit.component')
+            .then(m => m.ProfileEditComponent),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ]
   },

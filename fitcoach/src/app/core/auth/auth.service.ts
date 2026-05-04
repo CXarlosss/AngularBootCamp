@@ -188,7 +188,7 @@ export class AuthService {
 
   // ── Helpers ───────────────────────────────────────────────────────
 
-  private async loadProfile(userId: string): Promise<void> {
+  async loadProfile(userId: string): Promise<void> {
     const { data } = await this.sb
       .from('profiles')
       .select('*')
@@ -202,6 +202,11 @@ export class AuthService {
         role:      data.role,
         avatarUrl: data.avatar_url,
         coachId:   data.coach_id,
+        equippedFrame: data.equipped_frame,
+        unlockedFrames: data.unlocked_frames,
+        bannerColor: data.banner_color,
+        bannerPattern: data.banner_pattern,
+        unlockedBanners: data.unlocked_banners,
       });
     }
   }

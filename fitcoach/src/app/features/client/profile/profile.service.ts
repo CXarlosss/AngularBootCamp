@@ -14,6 +14,11 @@ export interface ClientProfile {
   goal:               Goal | null;
   level:              Level | null;
   profile_completed:  boolean;
+  equipped_frame:     string | null;
+  unlocked_frames:    string[];
+  banner_color:       string | null;
+  banner_pattern:     string | null;
+  unlocked_banners:    string[];
 }
 
 @Injectable({ providedIn: 'root' })
@@ -30,7 +35,7 @@ export class ProfileService {
 
     const { data, error } = await this.sb
       .from('profiles')
-      .select('id, full_name, height_cm, birth_date, goal, level, profile_completed')
+      .select('id, full_name, height_cm, birth_date, goal, level, profile_completed, equipped_frame, unlocked_frames, banner_color, banner_pattern, unlocked_banners')
       .eq('id', userId)
       .single();
 

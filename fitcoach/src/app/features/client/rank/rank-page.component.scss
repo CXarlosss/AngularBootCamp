@@ -249,6 +249,12 @@
   &.locked {
     color: rgba(255, 255, 255, 0.3);
   }
+
+  &.preview {
+    background: rgba(217, 119, 6, 0.1);
+    color: #D97706;
+    border: 0.5px solid rgba(217, 119, 6, 0.3);
+  }
 }
 
 /* Guide Section */

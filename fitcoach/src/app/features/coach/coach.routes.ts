@@ -54,6 +54,18 @@ export const COACH_ROUTES: Routes = [
           import('./invite-codes/invite-codes.component')
             .then(m => m.InviteCodesComponent),
       },
+      {
+        path: 'profile',
+        loadComponent: () => import('../client/profile/profile-edit.component').then(m => m.ProfileEditComponent),
+      },
+      {
+        path: 'profile/banner',
+        loadComponent: () => import('../client/profile/banner-selector/banner-selector.component').then(m => m.BannerSelectorComponent),
+      },
+      {
+        path: 'profile/frames',
+        loadComponent: () => import('../client/profile/frame-selector/frame-selector.component').then(m => m.FrameSelectorComponent),
+      },
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
     ]
   }

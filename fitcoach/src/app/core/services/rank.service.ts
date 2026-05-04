@@ -148,46 +148,54 @@ export class RankService {
   // ─── AddXP ────────────────────────────────────────────────────────────────
 
   async addXP(params: {
-    daysXp:     number;
-    setsXp:     number;
+    daysXp: number;
+    setsXp: number;
     progressXp: number;
   }): Promise<void> {
-    const user = this.auth.user();
-    if (!user) return;
+    const userId = (this.auth as any).currentUser()?.id ?? this.auth.user()?.id;
+    if (!userId) {
+      console.error('[RankService] addXP: no hay userId');
+      return;
+    }
 
-    // Si no tenemos los datos cargados, los cargamos ahora
+    // Auto-load si no hay datos
     if (!this.athleteRank()) {
+      console.log('[RankService] Cargando datos antes de addXP...');
       await this.load();
     }
-    
+
     const cur = this.athleteRank();
-    if (!cur) return;
+    if (!cur) {
+      console.error('[RankService] addXP: athleteRank sigue null después de load');
+      return;
+    }
 
     const prevFull = this.calcFullRank(cur.xpTotal);
-    const newTotal = cur.xpTotal + params.daysXp + params.setsXp + params.progressXp;
-    const newFull  = this.calcFullRank(newTotal);
+    const newTotal =
+      cur.xpTotal + params.daysXp + params.setsXp + params.progressXp;
+    const newFull = this.calcFullRank(newTotal);
     const newLevel = newFull.rank.level;
 
     const didLevelUp = newFull.rank.level > prevFull.rank.level;
-    const didDivUp   = !didLevelUp && newFull.division > prevFull.division;
+    const didDivUp = !didLevelUp && newFull.division > prevFull.division;
 
     await this.sb
       .from('athlete_ranks')
       .update({
-        xp_total:    newTotal,
-        rank_level:  newLevel,
-        days_xp:     cur.daysXp + params.daysXp,
-        sets_xp:     cur.setsXp + params.setsXp,
+        xp_total: newTotal,
+        rank_level: newLevel,
+        days_xp: cur.daysXp + params.daysXp,
+        sets_xp: cur.setsXp + params.setsXp,
         progress_xp: cur.progressXp + params.progressXp,
-        updated_at:  new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       })
-      .eq('client_id', user.id);
+      .eq('client_id', userId);
 
     this.athleteRank.set({
-      xpTotal:    newTotal,
-      rankLevel:  newLevel,
-      daysXp:     cur.daysXp + params.daysXp,
-      setsXp:     cur.setsXp + params.setsXp,
+      xpTotal: newTotal,
+      rankLevel: newLevel,
+      daysXp: cur.daysXp + params.daysXp,
+      setsXp: cur.setsXp + params.setsXp,
       progressXp: cur.progressXp + params.progressXp,
     });
 

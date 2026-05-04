@@ -393,10 +393,12 @@
 .qa-green { background: #0F2E22; }
 .qa-blue  { background: #0C1E3A; }
 .qa-teal  { background: #0A2422; }
+.qa-purple { background: #1A0D2E; }
 
 .quick-action:hover .qa-green { background: #0F6E56; }
 .quick-action:hover .qa-blue  { background: #1a3a6e; }
 .quick-action:hover .qa-teal  { background: #085041; }
+.quick-action:hover .qa-purple { background: #4C1D95; }
 
 .qa-text { flex: 1; }
 .qa-label { font-size: 13px; font-weight: 500; color: #e8e6df; }

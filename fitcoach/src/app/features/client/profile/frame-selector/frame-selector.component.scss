@@ -1,0 +1,137 @@
+.selector-screen {
+  min-height: 100vh;
+  background: var(--color-background-primary);
+  padding: 20px 16px 100px;
+}
+
+.selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 30px;
+
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .back-btn {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--color-text-primary);
+    padding: 0;
+    cursor: pointer;
+  }
+}
+
+.preview-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  background: var(--color-background-secondary);
+  padding: 30px;
+  border-radius: 20px;
+  margin-bottom: 30px;
+  text-align: center;
+
+  .preview-info {
+    .preview-rank {
+      font-weight: 600;
+      font-size: 1.1rem;
+      margin: 0;
+    }
+    .preview-special {
+      color: var(--color-primary);
+      font-size: 0.9rem;
+      margin-top: 4px;
+      font-weight: 500;
+    }
+  }
+}
+
+.section-lbl {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+  margin-bottom: 15px;
+  padding-left: 4px;
+}
+
+.frame-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.frame-item {
+  background: var(--color-background-secondary);
+  border-radius: 16px;
+  padding: 16px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+
+  &.active, &.selected {
+    border-color: var(--color-primary);
+    background: rgba(29, 158, 117, 0.05);
+  }
+
+  &.locked {
+    opacity: 0.6;
+    filter: grayscale(0.5);
+  }
+
+  .frame-name {
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin: 0;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+  }
+
+  .frame-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+
+    &.active {
+      background: var(--color-primary);
+      color: white;
+    }
+    &.locked {
+      background: var(--color-background-primary);
+      color: var(--color-text-secondary);
+    }
+    &.done {
+      background: rgba(29, 158, 117, 0.1);
+      color: var(--color-primary);
+    }
+  }
+}
+
+.btn-remove {
+  width: 100%;
+  padding: 14px;
+  background: var(--color-background-secondary);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: #DC2626;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-top: 10px;
+  cursor: pointer;
+}
