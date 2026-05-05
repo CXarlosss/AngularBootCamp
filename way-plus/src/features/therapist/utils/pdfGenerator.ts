@@ -16,6 +16,7 @@ interface ReportData {
   alerts: Array<{ title: string; message: string; type: string }>;
   weeklyData: Array<{ day: string; relaxation: boolean; roleplay: boolean; selfcheck: boolean }>;
   wayBreakdown: Array<{ category: string; count: number }>;
+  audience?: 'clinical' | 'family';
 }
 
 export async function generateWAYReport(data: ReportData): Promise<void> {
@@ -55,7 +56,8 @@ export async function generateWAYReport(data: ReportData): Promise<void> {
   
   doc.setFontSize(22);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Informe de Evolución`, pageWidth / 2, 100, { align: 'center' });
+  const mainTitle = data.audience === 'family' ? 'Resumen de Progreso Familiar' : 'Informe de Evolución Clínica';
+  doc.text(mainTitle, pageWidth / 2, 100, { align: 'center' });
   doc.setFontSize(16);
   doc.setFont('helvetica', 'normal');
   doc.text(`${data.patient.name}`, pageWidth / 2, 110, { align: 'center' });
@@ -102,7 +104,9 @@ export async function generateWAYReport(data: ReportData): Promise<void> {
     `Durante el periodo analizado, ${data.patient.name} ha completado el ${completionRate}% de los retos propuestos,`,
     `demostrando ${data.streakDays > 3 ? 'una adherencia notable al tratamiento' : 'fluctuaciones en la adherencia que requieren atención'}.`,
     `Se han registrado ${data.relaxationSessions} sesiones de relajación y ${data.roleplaySessions} prácticas de roleplay en entorno natural.`,
-    `El perfil económico-conductual identificado es: "${data.economicProfile}" (ratio de ahorro: ${Math.round(data.savingRatio * 100)}%).`,
+    data.audience === 'family' 
+      ? `En el área de gestión de recompensas, ${data.patient.name} muestra un perfil tipo: "${data.economicProfile}".`
+      : `El perfil económico-conductual identificado es: "${data.economicProfile}" (ratio de ahorro: ${Math.round(data.savingRatio * 100)}%).`,
   ].join(' ');
   
   doc.text(narrative, 20, 85, { maxWidth: pageWidth - 40, align: 'justify' });
@@ -185,7 +189,8 @@ export async function generateWAYReport(data: ReportData): Promise<void> {
   doc.addPage();
   doc.setTextColor(...COLORS.primary);
   doc.setFontSize(18);
-  doc.text('5. Alertas y Recomendaciones Clínicas', 20, 25);
+  const sectionTitle = data.audience === 'family' ? '5. Sugerencias para Casa' : '5. Alertas y Recomendaciones Clínicas';
+  doc.text(sectionTitle, 20, 25);
   
   let alertY = 40;
   data.alerts.forEach((alert, i) => {

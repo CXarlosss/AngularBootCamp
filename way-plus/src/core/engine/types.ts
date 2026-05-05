@@ -34,6 +34,7 @@ export interface Way {
     difficulty: 1 | 2 | 3;
     estimatedTime: number; // segundos
   };
+  source?: string;
 }
 
 export interface Step {
@@ -74,4 +75,5 @@ export interface PlayerProfile {
   completedWays: string[];
   streakDays: number;
   tutorialCompleted: boolean;
+  coins?: number;
 }

@@ -20,6 +20,9 @@ interface Props {
 }
 
 export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId }) => {
+  console.log('[WAY SOURCE]', way.source); 
+  console.log('[WAY SKILL TAG]', way.metadata?.skillTag);
+
   const [celebration, setCelebration] = useState<{
     show: boolean;
     type: 'happy' | 'sad' | 'step-complete' | 'annex-complete';

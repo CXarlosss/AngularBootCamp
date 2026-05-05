@@ -11,6 +11,7 @@ export const ReportGenerator: React.FC = () => {
   const { selectedPatientId, patients } = useTherapistStore();
   const { profile, relaxationLog = {}, roleplayLog = {}, weeklyCheck = {} } = usePlayerStore();
   const { streakDays, totalXp, purchaseHistory, wayCoins } = useRewardsStore();
+  const [audience, setAudience] = useState<'clinical' | 'family'>('clinical');
 
   const patient = patients.find(p => p.id === selectedPatientId);
   if (!patient) return null;
@@ -74,6 +75,7 @@ export const ReportGenerator: React.FC = () => {
           { category: 'Autonomía', count: completedWays.filter(id => typeof id === 'string' && id.includes('autonomy')).length },
           { category: 'Asertividad', count: completedWays.filter(id => typeof id === 'string' && id.includes('assertive')).length },
         ],
+        audience,
       });
     } catch (error) {
       console.error('Error generating report:', error);
@@ -83,28 +85,47 @@ export const ReportGenerator: React.FC = () => {
   };
 
   return (
-    <motion.button
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-      onClick={handleGenerate}
-      disabled={generating}
-      className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-lg
-        ${generating 
-          ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' 
-          : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 shadow-indigo-100'
-        }`}
-    >
-      {generating ? (
-        <>
-          <Loader2 className="animate-spin" size={20} />
-          <span>Generando...</span>
-        </>
-      ) : (
-        <>
-          <FileText size={20} />
-          <span>Generar Informe Clínico</span>
-        </>
-      )}
-    </motion.button>
+    <div className="flex flex-col gap-3">
+      <div className="flex bg-slate-100 p-1 rounded-xl">
+        <button 
+          onClick={() => setAudience('clinical')}
+          className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${audience === 'clinical' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}
+        >
+          🩺 Uso Clínico
+        </button>
+        <button 
+          onClick={() => setAudience('family')}
+          className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${audience === 'family' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500'}`}
+        >
+          👨‍👩‍👧‍👦 Familiar
+        </button>
+      </div>
+
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleGenerate}
+        disabled={generating}
+        className={`w-full flex items-center justify-center gap-3 px-6 py-4 rounded-2xl font-black uppercase tracking-widest text-sm transition-all shadow-lg
+          ${generating 
+            ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none' 
+            : audience === 'family' 
+              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-emerald-100'
+              : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white hover:from-indigo-700 hover:to-violet-700 shadow-indigo-100'
+          }`}
+      >
+        {generating ? (
+          <>
+            <Loader2 className="animate-spin" size={20} />
+            <span>Generando...</span>
+          </>
+        ) : (
+          <>
+            <FileText size={20} />
+            <span>Generar Informe {audience === 'clinical' ? 'Clínico' : 'Familiar'}</span>
+          </>
+        )}
+      </motion.button>
+    </div>
   );
 };

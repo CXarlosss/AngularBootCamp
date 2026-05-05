@@ -29,6 +29,7 @@ export const contentService = {
 
     return (steps ?? []).map((s: any) => ({
       id: s.id,
+      levelId: s.level_id,
       title: s.title,
       subtitle: s.subtitle,
       theme: s.theme,
@@ -54,7 +55,9 @@ export const contentService = {
               feedback: o.feedback || { visual: 'happy' }
             })),
             modelingVideoUrl: w.modeling_video_url,
-            difficulty: w.difficulty
+            difficulty: w.difficulty,
+            source: w.source,
+            metadata: w.metadata
           };
         })
     }));

@@ -155,13 +155,6 @@ export function WayPlayerPage() {
     setShowBoostSelector(false);
   };
 
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-        <div className="spinner" />
-      </div>
-    );
-  }
 
   if (!step || !currentWay) {
     return (
@@ -210,40 +203,50 @@ export function WayPlayerPage() {
       {/* ── Way content ────────────────────────────────────────────── */}
       <div className="page-padding">
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 24 }}>
-          <h1 style={{
-            fontSize: 24, fontWeight: 900, color: '#1E1B4B',
-            textAlign: 'center', margin: 0,
-          }}>
-            {currentWay.title ?? currentWay.name ?? 'Reto'}
-          </h1>
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => audioService.speak(currentWay.title ?? currentWay.name ?? '')}
-            style={{
-              background: '#fff', border: '2px solid #E8E9FF',
-              borderRadius: '50%', width: 44, height: 44, fontSize: 18,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 10px rgba(79,70,229,0.1)'
-            }}
-          >
-            🔊
-          </motion.button>
+          {loading ? (
+            <div className="h-8 w-48 bg-slate-100 animate-pulse rounded-lg" />
+          ) : (
+            <>
+              <h1 style={{
+                fontSize: 24, fontWeight: 900, color: '#1E1B4B',
+                textAlign: 'center', margin: 0,
+              }}>
+                {currentWay?.title ?? currentWay?.name ?? 'Reto'}
+              </h1>
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => audioService.speak(currentWay?.title ?? currentWay?.name ?? '')}
+                style={{
+                  background: '#fff', border: '2px solid #E8E9FF',
+                  borderRadius: '50%', width: 44, height: 44, fontSize: 18,
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 10px rgba(79,70,229,0.1)'
+                }}
+              >
+                🔊
+              </motion.button>
+            </>
+          )}
         </div>
 
         <AnimatePresence mode="wait">
-          <motion.div
-            key={currentWay.id}
-            initial={{ opacity: 0, x: 30 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -30 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-          >
-            <WayRenderer
-              way={currentWay}
-              onComplete={handleWayComplete}
-              activeBoostId={selectedBoostId}
-            />
-          </motion.div>
+          {loading ? (
+            <div className="w-full max-w-md aspect-video bg-slate-50 animate-pulse rounded-[32px] mx-auto" />
+          ) : currentWay && (
+            <motion.div
+              key={currentWay.id}
+              initial={{ opacity: 0, x: 30 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -30 }}
+              transition={{ duration: 0.22, ease: 'easeOut' }}
+            >
+              <WayRenderer
+                way={currentWay}
+                onComplete={handleWayComplete}
+                activeBoostId={selectedBoostId}
+              />
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 

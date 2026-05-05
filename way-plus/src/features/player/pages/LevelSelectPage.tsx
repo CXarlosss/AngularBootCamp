@@ -35,7 +35,7 @@ export function LevelSelectPage() {
         console.error('[WAY+] Error loading steps:', err);
       })
       .finally(() => {
-        setTimeout(() => setLoading(false), 300);
+        setLoading(false);
       });
   }, [profile?.currentLevel]);
 
@@ -44,14 +44,6 @@ export function LevelSelectPage() {
     navigate(`/play/${profile?.currentLevel}/${stepId}`);
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-indigo-50 p-8">
-        <div className="spinner mb-4"></div>
-        <p className="font-bold text-indigo-600 animate-pulse">Cargando tu mapa...</p>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-[#F0F4FF] pb-32">
@@ -78,8 +70,23 @@ export function LevelSelectPage() {
       {/* Tighter Grid */}
       <div className="px-6 space-y-3 max-w-sm mx-auto">
         <AnimatePresence mode="popLayout">
-          {steps.map((step, idx) => {
-            if (!step) return null;
+          {loading ? (
+            // Skeleton State
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={`skeleton-${i}`} className="bg-white rounded-[28px] border-b-4 border-slate-100 p-4 animate-pulse">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-slate-100" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-3 w-16 bg-slate-100 rounded-full" />
+                    <div className="h-4 w-3/4 bg-slate-100 rounded-lg" />
+                    <div className="h-2 w-full bg-slate-50 rounded-full mt-2" />
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            steps.map((step, idx) => {
+              if (!step) return null;
             
             const ways = Array.isArray(step.ways) ? step.ways : [];
             const doneCount = ways.filter(w => w && w.id && completedWays.includes(w.id)).length;
@@ -148,7 +155,8 @@ export function LevelSelectPage() {
                 </div>
               </motion.div>
             );
-          })}
+          })
+        )}
         </AnimatePresence>
 
         {steps.length === 0 && !loading && (

@@ -17,8 +17,7 @@ const C = {
 
 export function TherapistDashboard() {
   const navigate = useNavigate();
-  const selectPatient = useTherapistStore(s => s.selectPatient);
-  const addPatient = useTherapistStore(s => s.addPatient);
+  const { selectPatient, addPatient, patients } = useTherapistStore();
   const [isAuthorized, setIsAuthorized] = React.useState(false);
   const [showAddModal, setShowAddModal] = React.useState(false);
   const [newPatient, setNewPatient] = React.useState({ name: '', age: 6, avatar: '👤' });
