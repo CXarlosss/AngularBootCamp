@@ -9,9 +9,10 @@ import { ClientSummaryComponent } from './components/client-summary/client-summa
 import { ClientProgressComponent } from './components/client-progress/client-progress.component';
 import { ClientPhotosComponent } from './components/client-photos/client-photos.component';
 import { ClientHistoryComponent } from './components/client-history/client-history.component';
+import { ClientIdentityViewComponent } from './components/client-identity-view/client-identity-view.component';
 import { supabase } from '../../../core/supabase.client';
 
-type Tab = 'summary' | 'progress' | 'photos' | 'history';
+type Tab = 'summary' | 'progress' | 'photos' | 'history' | 'identity';
 
 @Component({
   selector: 'app-client-detail',
@@ -23,6 +24,7 @@ type Tab = 'summary' | 'progress' | 'photos' | 'history';
     ClientProgressComponent,
     ClientPhotosComponent,
     ClientHistoryComponent,
+    ClientIdentityViewComponent,
   ],
   template: `
     <div class="detail-screen">
@@ -94,6 +96,11 @@ type Tab = 'summary' | 'progress' | 'photos' | 'history';
             @case ('history') {
               <app-client-history [clientId]="clientId()" />
             }
+            @case ('identity') {
+              <app-client-identity-view 
+                [clientId]="clientId()" 
+                [clientName]="clientName()" />
+            }
           }
         }
       </div>
@@ -155,6 +162,7 @@ export class ClientDetailComponent implements OnInit {
 
   tabs: { key: Tab; label: string }[] = [
     { key: 'summary', label: 'Resumen' },
+    { key: 'identity', label: 'Identidad' },
     { key: 'progress', label: 'Progreso' },
     { key: 'photos', label: 'Fotos' },
     { key: 'history', label: 'Historial' },

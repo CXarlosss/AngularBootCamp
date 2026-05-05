@@ -4,11 +4,18 @@ import { ChatStore } from './state/chat.store';
 import { WorkoutEventsService } from './core/services/workout-events.service';
 import { ChatService } from './core/services/chat.service';
 
+import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
+import { UnlockCelebrationComponent } from './shared/components/unlock-celebration/unlock-celebration.component';
+
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet],
-  template: `<router-outlet />`,
+  imports: [RouterOutlet, ToastContainerComponent, UnlockCelebrationComponent],
+  template: `
+    <router-outlet />
+    <app-toast-container />
+    <app-unlock-celebration />
+  `,
 })
 export class App implements OnInit {
   private chatStore    = inject(ChatStore);

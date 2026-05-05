@@ -12,11 +12,13 @@ import {
   BANNER_COLORS, BANNER_PATTERNS,
   BannerColor, BannerPattern
 } from '../profile-banner/banner.types';
+import { ToastService } from '../../../../shared/services/toast/toast.service';
+import { QuickActionsComponent, QuickFilter } from '../../../../shared/components/quick-actions/quick-actions.component';
 
 @Component({
   selector: 'app-banner-selector',
   standalone: true,
-  imports: [CommonModule, ProfileBannerComponent],
+  imports: [CommonModule, ProfileBannerComponent, QuickActionsComponent],
   template: `
     <div class="selector-screen">
 
@@ -50,9 +52,17 @@ import {
         </div>
 
         <!-- Colores -->
-        <p class="section-lbl">Colores del Banner</p>
+        <div class="section-header-flex">
+          <p class="section-lbl">Personalizar</p>
+        </div>
+        
+        <app-quick-actions
+          (filterChange)="onFilterChange($event)"
+          (random)="randomize()" />
+
+        <p class="section-lbl" style="margin-top: 16px;">Colores</p>
         <div class="color-row">
-          @for (c of colors; track c.id) {
+          @for (c of filteredColors(); track c.id) {
             <div class="color-swatch"
               [class.on]="selectedColor() === c.id"
               [class.locked]="!isUnlocked(c.id)"
@@ -69,9 +79,9 @@ import {
           }
         </div>
 
-        <p class="section-lbl">Patrones de Textura</p>
+        <p class="section-lbl">Patrones</p>
         <div class="pattern-row">
-          @for (p of patterns; track p.id) {
+          @for (p of filteredPatterns(); track p.id) {
             <div class="pattern-card"
               [class.on]="selectedPattern() === p.id"
               [class.locked]="!isUnlocked(p.id)"
@@ -123,6 +133,7 @@ export class BannerSelectorComponent implements OnInit {
   public auth      = inject(AuthService);
   public profileSvc = inject(ProfileService);
   readonly rankSvc  = inject(RankService);
+  private toast     = inject(ToastService);
 
   profileName = signal('');
   initials    = signal('');
@@ -133,9 +144,28 @@ export class BannerSelectorComponent implements OnInit {
   saving          = signal(false);
   isLockedOpen    = signal(false);
   isCoach         = signal(false);
+  activeFilter    = signal<QuickFilter>('all');
 
   readonly colors   = BANNER_COLORS;
   readonly patterns = BANNER_PATTERNS;
+
+  filteredColors = computed(() => {
+    const f = this.activeFilter();
+    return BANNER_COLORS.filter(c => {
+      if (f === 'unlocked') return this.isUnlocked(c.id);
+      if (f === 'locked')   return !this.isUnlocked(c.id);
+      return true;
+    });
+  });
+
+  filteredPatterns = computed(() => {
+    const f = this.activeFilter();
+    return BANNER_PATTERNS.filter(p => {
+      if (f === 'unlocked') return this.isUnlocked(p.id);
+      if (f === 'locked')   return !this.isUnlocked(p.id);
+      return true;
+    });
+  });
 
   async ngOnInit() {
     await this.rankSvc.load();
@@ -201,6 +231,23 @@ export class BannerSelectorComponent implements OnInit {
     await this.save();
   }
 
+  onFilterChange(f: QuickFilter) {
+    this.activeFilter.set(f);
+  }
+
+  randomize() {
+    const freeColors   = BANNER_COLORS.filter(c => this.isUnlocked(c.id));
+    const freePatterns = BANNER_PATTERNS.filter(p => this.isUnlocked(p.id));
+
+    const randColor   = freeColors[Math.floor(Math.random() * freeColors.length)];
+    const randPattern = freePatterns[Math.floor(Math.random() * freePatterns.length)];
+
+    this.selectedColor.set(randColor.id);
+    this.selectedPattern.set(randPattern.id);
+    this.toast.info('Combinación aleatoria', `${randColor.label} + ${randPattern.label}`);
+    this.save();
+  }
+
   previewStyle = computed(() => {
     const color = BANNER_COLORS.find(c => c.id === this.selectedColor());
     return color ? `background: ${color.gradient}` : '';
@@ -219,19 +266,25 @@ export class BannerSelectorComponent implements OnInit {
     if (!userId) return;
 
     this.saving.set(true);
-    await this.sb
-      .from('profiles')
-      .update({
-        banner_color:     this.selectedColor(),
-        banner_pattern:   this.selectedPattern(),
-        unlocked_banners: this.unlockedIds(),
-      })
-      .eq('id', userId);
+    try {
+      await this.sb
+        .from('profiles')
+        .update({
+          banner_color:     this.selectedColor(),
+          banner_pattern:   this.selectedPattern(),
+          unlocked_banners: this.unlockedIds(),
+        })
+        .eq('id', userId);
 
-    // Actualizar localmente para que se vea al volver
-    await this.auth.loadProfile(userId);
-    await this.profileSvc.load();
-    
-    this.saving.set(false);
+      // Actualizar localmente para que se vea al volver
+      await this.auth.loadProfile(userId);
+      await this.profileSvc.load();
+      
+      this.toast.success('Banner guardado', 'Tu nuevo look ya está activo');
+    } catch (e) {
+      this.toast.error('Error al guardar', 'Inténtalo de nuevo');
+    } finally {
+      this.saving.set(false);
+    }
   }
 }
