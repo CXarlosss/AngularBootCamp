@@ -3,6 +3,7 @@ import { SupabaseService } from '../supabase.service';
 import { AuthService } from '../auth/auth.service';
 
 export interface RankDef {
+  id:       string;
   level:    number;
   emoji:    string;
   name:     string;
@@ -33,27 +34,27 @@ export interface FullRank {
 export const DIVISIONS = ['IV', 'III', 'II', 'I'];
 
 export const RANKS: RankDef[] = [
-  { level:0, emoji:'⚔️', name:'Recruta',
+  { id: 'recruit', level:0, emoji:'⚔️', name:'Recruta',
     title:'Rango I · Nuevo soldado',
     quote:'"Todo gran guerrero empezó aquí"',
     color:'#b47828', xpBase:0,     xpStep:125  },
-  { level:1, emoji:'🛡️', name:'Legionario',
+  { id: 'legionary', level:1, emoji:'🛡️', name:'Legionario',
     title:'Rango II · Legión Romana',
     quote:'"Forjado en el campo de batalla"',
     color:'#1D9E75', xpBase:500,   xpStep:375  },
-  { level:2, emoji:'🏛️', name:'Centurión',
+  { id: 'centurion', level:2, emoji:'🏛️', name:'Centurión',
     title:'Rango III · Cien guerreros',
     quote:'"Líder nato, disciplina de hierro"',
     color:'#378ADD', xpBase:2000,  xpStep:750  },
-  { level:3, emoji:'🔱', name:'Tribuno',
+  { id: 'tribune', level:3, emoji:'🔱', name:'Tribuno',
     title:'Rango IV · Tribuno militar',
     quote:'"Los dioses observan tu ascenso"',
     color:'#8B5CF6', xpBase:5000,  xpStep:1750 },
-  { level:4, emoji:'⚡', name:'Semidiós',
+  { id: 'demigod', level:4, emoji:'⚡', name:'Semidiós',
     title:'Rango V · Hijo del Olimpo',
     quote:'"Hércules reconoce tu fuerza"',
     color:'#D97706', xpBase:12000, xpStep:4500 },
-  { level:5, emoji:'👑', name:'Campeón Olímpico',
+  { id: 'zeus', level:5, emoji:'👑', name:'Campeón Olímpico',
     title:'Rango VI · Dios del Olimpo',
     quote:'"Zeus mismo inclina la cabeza"',
     color:'#DC2626', xpBase:30000, xpStep:17500 },
@@ -143,6 +144,24 @@ export class RankService {
         });
       }
     }
+  }
+
+  async getAthleteRank(clientId: string): Promise<AthleteRank | null> {
+    const { data } = await this.sb
+      .from('athlete_ranks')
+      .select('*')
+      .eq('client_id', clientId)
+      .maybeSingle();
+
+    if (!data) return null;
+
+    return {
+      xpTotal:    data.xp_total,
+      rankLevel:  data.rank_level,
+      daysXp:     data.days_xp,
+      setsXp:     data.sets_xp,
+      progressXp: data.progress_xp,
+    };
   }
 
   // ─── AddXP ────────────────────────────────────────────────────────────────

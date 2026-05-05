@@ -6,9 +6,9 @@ import { AuthService } from '../../core/auth/auth.service';
 import { ProfileService } from './profile/profile.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { NotificationToastComponent } from '../../core/components/notification-toast/notification-toast.component';
-import { ToastContainerComponent } from '../../../shared/components/toast-container/toast-container.component';
-import { UnlockCelebrationComponent } from '../../../shared/components/unlock-celebration/unlock-celebration.component';
-import { RankChangeDetectorService } from '../../../core/services/rank-change-detector.service';
+import { ToastContainerComponent } from '../../shared/components/toast-container/toast-container.component';
+import { UnlockCelebrationComponent } from '../../shared/components/unlock-celebration/unlock-celebration.component';
+import { RankChangeDetectorService } from '../../core/services/rank-change-detector.service';
 
 @Component({
   selector: 'fc-client-layout',

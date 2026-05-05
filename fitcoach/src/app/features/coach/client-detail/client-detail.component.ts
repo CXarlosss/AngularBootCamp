@@ -97,7 +97,7 @@ type Tab = 'summary' | 'progress' | 'photos' | 'history' | 'identity';
               <app-client-history [clientId]="clientId()" />
             }
             @case ('identity') {
-              <app-client-identity-view [clientId]="clientId()" />
+              <app-client-identity-view [clientId]="clientId()" [clientName]="clientName()" />
             }
           }
         }
