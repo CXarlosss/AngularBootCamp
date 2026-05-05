@@ -6,13 +6,27 @@ import { AuthService } from '../../core/auth/auth.service';
 import { ProfileService } from './profile/profile.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { NotificationToastComponent } from '../../core/components/notification-toast/notification-toast.component';
+import { ToastContainerComponent } from '../../../shared/components/toast-container/toast-container.component';
+import { UnlockCelebrationComponent } from '../../../shared/components/unlock-celebration/unlock-celebration.component';
+import { RankChangeDetectorService } from '../../../core/services/rank-change-detector.service';
 
 @Component({
   selector: 'fc-client-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, RouterModule, NotificationToastComponent],
+  imports: [
+    CommonModule, 
+    RouterOutlet, 
+    RouterModule, 
+    NotificationToastComponent,
+    ToastContainerComponent,
+    UnlockCelebrationComponent
+  ],
   template: `
+    <!-- Capas de feedback (Z-Index alto pero no bloqueantes) -->
     <app-notification-toast />
+    <app-toast-container />
+    <app-unlock-celebration />
+
     <main class="content-area">
       <router-outlet></router-outlet>
     </main>
@@ -136,6 +150,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   unreadSvc = inject(UnreadMessagesService);
   profileSvc = inject(ProfileService);
   private notifSvc = inject(NotificationService);
+  private rankDetector = inject(RankChangeDetectorService);
 
   async ngOnInit() {
     const userId = this.auth.profile()?.id;
@@ -145,6 +160,7 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
       
       await this.notifSvc.load();
       this.notifSvc.subscribe();
+      this.rankDetector.initialize();
     }
   }
 
