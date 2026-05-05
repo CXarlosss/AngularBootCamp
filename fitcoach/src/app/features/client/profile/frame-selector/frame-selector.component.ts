@@ -1,24 +1,17 @@
 import {
-  Component, OnInit, inject, signal, computed
+  Component, OnInit, inject, signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SupabaseService } from '../../../../core/supabase.service';
 import { AuthService } from '../../../../core/auth/auth.service';
 import { AvatarFrameComponent } from '../../../../shared/components/avatar-frame/avatar-frame.component';
+import { FRAME_DEFS, FrameDef, FrameId } from '../../../../shared/components/avatar-frame/avatar-frame.types';
 import { RankService } from '../../../../core/services/rank.service';
-import { ToastService } from '../../../../shared/services/toast/toast.service';
-import { RankProgressComponent } from '../../rank/rank-progress/rank-progress.component';
-import { FrameCardComponent, FrameDef } from '../components/frame-card/frame-card.component';
 
 @Component({
   selector: 'app-frame-selector',
   standalone: true,
-  imports: [
-    CommonModule, 
-    AvatarFrameComponent, 
-    RankProgressComponent, 
-    FrameCardComponent
-  ],
+  imports: [CommonModule, AvatarFrameComponent],
   template: `
     <div class="selector-screen">
 
@@ -44,29 +37,54 @@ import { FrameCardComponent, FrameDef } from '../components/frame-card/frame-car
         </div>
       </div>
 
-      <!-- PROGRESO DE RANGO -->
-      <div style="margin: 0 16px 24px;">
-        <app-rank-progress
-          [totalXp]="rankSvc.athleteRank()?.xpTotal ?? 0"
-          (onMotivate)="goToWorkouts()"
-          (onShare)="shareProgress()" />
+      <!-- Marcos de rango (solo lectura) -->
+      <p class="section-lbl">Marco de rango (automático)</p>
+      <div class="frame-grid">
+        @for (f of rankFrames; track f.id) {
+          <div class="frame-item"
+               [class.active]="isCurrentRankFrame(f)"
+               [class.locked]="isLocked(f)">
+            <app-avatar-frame
+              [initials]="initials()"
+              [rankLevel]="rankFrameLevel(f)"
+              [size]="52"
+              [showBadge]="false" />
+            <p class="frame-name">{{ f.name }}</p>
+            @if (isLocked(f)) {
+              <span class="frame-tag locked">{{ f.req }}</span>
+            } @else if (isCurrentRankFrame(f)) {
+              <span class="frame-tag active">Activo</span>
+            } @else {
+              <span class="frame-tag done">✓</span>
+            }
+          </div>
+        }
       </div>
 
       <!-- Marcos especiales -->
-      <div class="fs-section">
-        <p class="section-lbl">✨ Marcos Especiales</p>
-        
-        <div class="frame-grid">
-          @for (f of specialFrames(); track f.id) {
-            <app-frame-card
-              [frame]="f"
-              [isEquipped]="selected() === f.id"
-              [isUnlocked]="isUnlocked(f.id)"
-              [progress]="getFrameProgress(f.id)"
-              (equip)="equip($event)"
-              (unequip)="equip(null)" />
-          }
-        </div>
+      <p class="section-lbl">Marcos especiales</p>
+      <div class="frame-grid">
+        @for (f of specialFrames; track f.id) {
+          <div class="frame-item"
+               [class.selected]="selected() === f.id"
+               [class.locked]="!isUnlocked(f.id)"
+               (click)="isUnlocked(f.id) ? equip(f.id) : null">
+            <app-avatar-frame
+              [initials]="initials()"
+              [rankLevel]="rankSvc.fullRank()?.rank?.level ?? 0"
+              [equippedSpecial]="f.id"
+              [size]="52"
+              [showBadge]="false" />
+            <p class="frame-name">{{ f.name }}</p>
+            @if (!isUnlocked(f.id)) {
+              <span class="frame-tag locked">{{ f.req }}</span>
+            } @else if (selected() === f.id) {
+              <span class="frame-tag active">Equipado</span>
+            } @else {
+              <span class="frame-tag done">Equipar</span>
+            }
+          </div>
+        }
       </div>
 
       <!-- Quitar especial -->
@@ -83,47 +101,18 @@ import { FrameCardComponent, FrameDef } from '../components/frame-card/frame-car
 export class FrameSelectorComponent implements OnInit {
   private sb      = inject(SupabaseService).client;
   private auth    = inject(AuthService);
-  private toast   = inject(ToastService);
   readonly rankSvc = inject(RankService);
 
   initials       = signal('');
   selected       = signal<string | null>(null);
   unlockedFrames = signal<string[]>([]);
 
-  specialFrames = signal<FrameDef[]>([
-    {
-      id: 'llama_eterna',
-      name: 'Llama Eterna',
-      emoji: '🔥',
-      description: 'Racha de 30 días sin fallar ningún entrenamiento',
-      requirement: '30 días de racha',
-      animation: 'flame',
-      rarity: 'epic',
-    },
-    {
-      id: 'record_olympic',
-      name: 'Récord Olímpico',
-      emoji: '🏆',
-      description: '10 récords personales en un mes',
-      requirement: '10 récords/mes',
-      animation: 'gold',
-      rarity: 'legendary',
-    },
-    {
-      id: 'fav_coach',
-      name: 'Favorito del Coach',
-      emoji: '⭐',
-      description: 'El coach lo otorga manualmente',
-      requirement: 'Reconocimiento del coach',
-      animation: 'emerald',
-      rarity: 'rare',
-    },
-  ]);
+  readonly rankFrames    = FRAME_DEFS.filter(f => !f.isSpecial);
+  readonly specialFrames = FRAME_DEFS.filter(f => f.isSpecial);
 
-  selectedDef = computed(() => {
-    const sel = this.selected();
-    return sel ? this.specialFrames().find(f => f.id === sel) : null;
-  });
+  selectedDef = () => this.selected() && this.selected() !== 'rank'
+    ? FRAME_DEFS.find(f => f.id === this.selected())
+    : null;
 
   async ngOnInit() {
     await this.rankSvc.load();
@@ -143,7 +132,7 @@ export class FrameSelectorComponent implements OnInit {
       
       if (data.role === 'coach') {
         // Desbloquear todos los marcos
-        const allFrames = this.specialFrames().map(f => f.id);
+        const allFrames = FRAME_DEFS.map(f => f.id);
         this.unlockedFrames.set(allFrames);
       } else {
         this.unlockedFrames.set(data.unlocked_frames ?? []);
@@ -151,16 +140,25 @@ export class FrameSelectorComponent implements OnInit {
     }
   }
 
+  isCurrentRankFrame(f: FrameDef): boolean {
+    const level = this.rankSvc.fullRank()?.rank?.level ?? 0;
+    return f.id === `rank_${level}`;
+  }
+
+  rankFrameLevel(f: FrameDef): number {
+    return parseInt(f.id.replace('rank_', '')) || 0;
+  }
+
+  isLocked(f: FrameDef): boolean {
+    if (!f.isSpecial) {
+      const level = this.rankSvc.fullRank()?.rank?.level ?? 0;
+      return this.rankFrameLevel(f) > level;
+    }
+    return !this.isUnlocked(f.id);
+  }
 
   isUnlocked(id: string): boolean {
     return this.unlockedFrames().includes(id);
-  }
-
-  getFrameProgress(id: string): number {
-    // Lógica simulada de progreso
-    if (id === 'llama_eterna') return 60;
-    if (id === 'record_olympic') return 30;
-    return 0;
   }
 
   async equip(frameId: string | null) {
@@ -168,26 +166,11 @@ export class FrameSelectorComponent implements OnInit {
     if (!userId) return;
 
     this.selected.set(frameId);
-    
-    if (frameId) {
-      const frame = this.specialFrames().find(f => f.id === frameId);
-      this.toast.success('Marco equipado', `${frame?.name} ${frame?.emoji} activo`);
-    } else {
-      this.toast.info('Marco eliminado', 'Has vuelto al marco de rango');
-    }
 
     await this.sb
       .from('profiles')
       .update({ equipped_frame: frameId ?? 'rank' })
       .eq('id', userId);
-  }
-
-  goToWorkouts() {
-    this.toast.info('Redirigiendo...', 'Cargando tus entrenamientos recomendados');
-  }
-
-  shareProgress() {
-    this.toast.success('¡Progreso copiado!', 'Listo para compartir con tu coach');
   }
 
   goBack() { window.history.back(); }
