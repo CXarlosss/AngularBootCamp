@@ -236,6 +236,14 @@ export const registry = {
     }
   },
 
-  /** Expose current memory cache size for debugging. */
+  /** Get every way from every currently loaded step. */
+  getAllWays(): import('@/core/engine/types').Way[] {
+    const allWays: import('@/core/engine/types').Way[] = [];
+    memCache.forEach(step => {
+      if (step.ways) allWays.push(...step.ways);
+    });
+    return allWays;
+  },
+
   get cacheSize() { return memCache.size; },
 };

@@ -40,9 +40,9 @@ export const ClinicalRadar: React.FC<ClinicalRadarProps> = ({
   const profileLabel = useMemo(() => getProfileLabel(scores), [scores]);
 
   // SVG Radar Constants
-  const size = 300;
+  const size = 320;
   const center = size / 2;
-  const radius = size * 0.4;
+  const radius = size * 0.35; // Reducido para dar espacio a etiquetas
   const angleStep = (Math.PI * 2) / 5;
 
   const points = (s: CompetencyScores) => {
@@ -78,7 +78,13 @@ export const ClinicalRadar: React.FC<ClinicalRadarProps> = ({
       </div>
 
       <div className="radar-chart-wrapper">
-        <svg width={size} height={size} className="radar-svg">
+        <svg 
+          viewBox={`0 0 ${size} ${size}`} 
+          width="100%" 
+          height="100%" 
+          style={{ maxWidth: size, maxHeight: size, overflow: 'visible' }} 
+          className="radar-svg"
+        >
           {/* Background Grid */}
           {gridLevels.map(level => (
             <polygon
@@ -99,8 +105,8 @@ export const ClinicalRadar: React.FC<ClinicalRadarProps> = ({
             const angle = i * angleStep - Math.PI / 2;
             const x = center + radius * Math.cos(angle);
             const y = center + radius * Math.sin(angle);
-            const labelX = center + (radius + 25) * Math.cos(angle);
-            const labelY = center + (radius + 25) * Math.sin(angle);
+            const labelX = center + (radius + 32) * Math.cos(angle);
+            const labelY = center + (radius + 32) * Math.sin(angle);
             const keys: (keyof CompetencyScores)[] = ['autonomy', 'assertiveness', 'regulation', 'social', 'persistence'];
             
             return (

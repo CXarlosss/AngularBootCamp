@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTherapistStore } from '../store/therapistStore';
 import { SoundToggle } from '@/core/components/SoundToggle';
 import { SyncStatus } from '../components/SyncStatus';
 import { SecurityGate } from '@/shared/components/SecurityGate';
+import { patientService } from '@/core/services/patientService';
+
 
 const C = {
   indigo:      '#4F46E5',
@@ -18,9 +20,30 @@ const C = {
 export function TherapistDashboard() {
   const navigate = useNavigate();
   const { selectPatient, addPatient, patients } = useTherapistStore();
-  const [isAuthorized, setIsAuthorized] = React.useState(false);
-  const [showAddModal, setShowAddModal] = React.useState(false);
-  const [newPatient, setNewPatient] = React.useState({ name: '', age: 6, avatar: '👤' });
+  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newPatient, setNewPatient] = useState({ name: '', age: 6, avatar: '👤' });
+  
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function syncPatients() {
+      const remotePatients = await patientService.getAll();
+      if (remotePatients.length === 0) return;
+
+      // Sincronizar: añadir al store los que no estén ya (por UUID)
+      const { patients, addPatient } = useTherapistStore.getState();
+      const existingIds = new Set(patients.map(p => p.id));
+
+      remotePatients.forEach(p => {
+        if (!existingIds.has(p.id)) {
+          addPatient(p);
+        }
+      });
+    }
+    syncPatients();
+  }, []);
 
   if (!isAuthorized) {
     return (
@@ -32,22 +55,42 @@ export function TherapistDashboard() {
     );
   }
 
-  const handleAddPatient = () => {
-    if (!newPatient.name) return;
-    const id = `patient-${Date.now()}`;
-    addPatient({
-      id,
-      ...newPatient,
-      startDate: new Date().toISOString().split('T')[0],
-      lastSession: new Date().toISOString().split('T')[0],
-      currentLevel: 'pregamer',
-      objectives: []
-    });
-    setShowAddModal(false);
-    setNewPatient({ name: '', age: 6, avatar: '👤' });
-    
-    // Auto-select the new patient to activate their session
-    selectPatient(id);
+  const handleAddPatient = async () => {
+    if (!newPatient.name || isCreating) return;
+
+    setIsCreating(true);
+    setCreateError(null);
+
+    try {
+      const created = await patientService.create({
+        name: newPatient.name,
+        age: newPatient.age,
+        avatar: newPatient.avatar,
+      });
+
+      if (!created) throw new Error('No se pudo crear el paciente');
+
+      // Añadir al store con el UUID real de Supabase
+      addPatient({
+        ...created,
+        startDate: new Date().toISOString().split('T')[0],
+        lastSession: new Date().toISOString().split('T')[0],
+        objectives: [],
+        sessionQueue: [],
+      });
+
+      setShowAddModal(false);
+      setNewPatient({ name: '', age: 6, avatar: '👤' });
+
+      // Navegar al paciente con su UUID real
+      selectPatient(created.id);
+
+    } catch (e) {
+      console.error('[Dashboard] Error creating patient:', e);
+      setCreateError('No se pudo guardar el paciente. Inténtalo de nuevo.');
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   return (
@@ -117,6 +160,8 @@ export function TherapistDashboard() {
         </div>
       </main>
 
+
+
       {/* Modal Añadir Paciente Simple */}
       {showAddModal && (
         <div style={{
@@ -167,6 +212,15 @@ export function TherapistDashboard() {
                   </select>
                 </div>
               </div>
+              {createError && (
+                <div style={{
+                  padding: '8px 12px', borderRadius: 10,
+                  background: '#FEE2E2', color: '#F43F5E',
+                  fontSize: 12, fontWeight: 600,
+                }}>
+                  {createError}
+                </div>
+              )}
               <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
                 <button 
                   onClick={() => setShowAddModal(false)}
@@ -176,9 +230,15 @@ export function TherapistDashboard() {
                 </button>
                 <button 
                   onClick={handleAddPatient}
-                  style={{ flex: 1, padding: '14px', borderRadius: 14, border: 'none', background: C.indigo, color: 'white', fontWeight: 800, cursor: 'pointer' }}
+                  disabled={isCreating || !newPatient.name}
+                  style={{ 
+                    flex: 1, padding: '14px', borderRadius: 14, border: 'none', 
+                    background: C.indigo, color: 'white', fontWeight: 800, 
+                    opacity: (isCreating || !newPatient.name) ? 0.6 : 1,
+                    cursor: (isCreating || !newPatient.name) ? 'not-allowed' : 'pointer'
+                  }}
                 >
-                  Guardar
+                  {isCreating ? '⏳ Guardando…' : 'Añadir Paciente'}
                 </button>
               </div>
             </div>

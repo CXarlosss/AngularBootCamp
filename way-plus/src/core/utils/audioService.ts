@@ -4,7 +4,7 @@
  * PWA-friendly & Offline-ready.
  */
 
-export type SoundType = 'click' | 'hover' | 'success' | 'error' | 'chest' | 'milestone' | 'secret' | 'coins';
+export type SoundType = 'click' | 'hover' | 'success' | 'success_homework' | 'error' | 'chest' | 'milestone' | 'secret' | 'coins';
 export type AmbientZone = 'home' | 'relax' | 'bravery' | 'shop' | 'album' | 'zen' | 'zen-forest' | 'zen-waves' | 'zen-wind' | 'none';
 
 class AudioService {
@@ -101,6 +101,9 @@ class AudioService {
       case 'success':
         this.synthFanfare(ctx, master);
         break;
+      case 'success_homework':
+        this.synthHomeworkFanfare(ctx, master);
+        break;
       case 'error':
         this.synthBloop(ctx, master);
         break;
@@ -114,6 +117,27 @@ class AudioService {
         this.synthEpic(ctx, master);
         break;
     }
+  }
+
+  private synthHomeworkFanfare(ctx: AudioContext, dest: AudioNode) {
+    const t = ctx.currentTime;
+    // Armónicos más brillantes (G4 a C6) para resaltar sin aturdir
+    [392.00, 523.25, 659.25, 783.99, 987.77, 1046.50].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = i % 2 === 0 ? 'triangle' : 'sine';
+      osc.frequency.setValueAtTime(freq, t + i * 0.04);
+      
+      gain.gain.setValueAtTime(0, t + i * 0.04);
+      // Ganancia individual reducida (0.07 * 6 = 0.42) vs Standard (0.1 * 4 = 0.4)
+      gain.gain.linearRampToValueAtTime(0.07, t + i * 0.04 + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.01, t + i * 0.04 + 0.8);
+      
+      osc.connect(gain);
+      gain.connect(dest);
+      osc.start(t + i * 0.04);
+      osc.stop(t + i * 0.04 + 1.0);
+    });
   }
 
   private synthPop(ctx: AudioContext, dest: AudioNode) {

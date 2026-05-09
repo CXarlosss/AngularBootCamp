@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWayEngine } from '@/core/engine/useWayEngine';
+import { useConfigStore } from '@/core/stores/configStore';
 
 interface TracingWayProps {
   way: {
@@ -52,6 +53,8 @@ export const TracingWay: React.FC<TracingWayProps> = ({ way, onComplete }) => {
     setPath(prev => [...prev, pos]);
   };
 
+  const { reduceMotion, highAccessibility } = useConfigStore((s) => s.accessibility);
+
   const handleEnd = () => {
     if (!isDrawing) return;
     setIsDrawing(false);
@@ -62,12 +65,15 @@ export const TracingWay: React.FC<TracingWayProps> = ({ way, onComplete }) => {
     const correctOption = way.options.find(o => o.isCorrect)!;
     const dist = Math.hypot(lastPoint.x - correctOption.position.x, lastPoint.y - correctOption.position.y);
     
-    const isCorrect = dist < 15;
+    // Hit radius: 15% standard, 22% high accessibility
+    const threshold = highAccessibility ? 22 : 15;
+    const isCorrect = dist < threshold;
     setResult(isCorrect ? 'correct' : 'incorrect');
     
     if (isCorrect) {
       submitAnswer('correct');
-      setTimeout(onComplete, 3500);
+      const delay = reduceMotion ? 2000 : 3500;
+      setTimeout(onComplete, delay);
     } else {
       setTimeout(() => {
         setPath([]);
@@ -75,6 +81,7 @@ export const TracingWay: React.FC<TracingWayProps> = ({ way, onComplete }) => {
       }, 1500);
     }
   };
+
 
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto p-4">

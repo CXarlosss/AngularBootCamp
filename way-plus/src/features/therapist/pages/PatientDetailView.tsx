@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTherapistStore } from '../store/therapistStore';
@@ -10,8 +10,14 @@ import { EvolutionCharts } from '../components/EvolutionCharts';
 import { TherapistNotes } from '../components/TherapistNotes';
 import { ObjectivesTab } from '../components/ObjectivesTab';
 import { ReportGenerator } from '../components/ReportGenerator';
+import { SessionPreparation } from '../components/SessionPreparation';
+import { SessionSummaryTab } from '../components/SessionSummaryTab';
+import { PinConfig } from '../components/PinConfig';
 import { SyncStatus } from '../components/SyncStatus';
 import { SoundToggle } from '@/core/components/SoundToggle';
+import { useConfigStore } from '@/core/stores/configStore';
+import { PatientAnalyticsView } from '../components/PatientAnalyticsView';
+import { HomeworkPlanner } from '../components/HomeworkPlanner';
 
 const C = {
   indigo:      '#4F46E5',
@@ -26,6 +32,34 @@ const C = {
   bg:      '#F8FAFF',
   white:   '#ffffff',
 };
+
+function SettingToggle({ label, description, active, onToggle }: { label: string, description: string, active: boolean, onToggle: () => void }) {
+  return (
+    <div 
+      onClick={onToggle}
+      style={{
+        padding: 16, borderRadius: 20, border: `1.5px solid ${active ? C.indigo : C.border}`,
+        background: active ? '#EEEDFE' : 'white', cursor: 'pointer', transition: 'all 0.2s',
+        display: 'flex', flexDirection: 'column', gap: 4
+      }}
+    >
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontWeight: 800, color: C.text }}>{label}</span>
+        <div style={{ 
+          width: 36, height: 18, borderRadius: 18, background: active ? C.indigo : '#D1D5DB',
+          position: 'relative', transition: 'background 0.2s'
+        }}>
+          <div style={{ 
+            width: 12, height: 12, borderRadius: '50%', background: 'white',
+            position: 'absolute', top: 3, left: active ? 21 : 3, transition: 'left 0.2s'
+          }} />
+        </div>
+      </div>
+      <span style={{ fontSize: 10, color: C.muted, fontWeight: 500, lineHeight: 1.3 }}>{description}</span>
+    </div>
+  );
+}
+
 
 function Card({ children, style = {} }: { children: React.ReactNode; style?: React.CSSProperties }) {
   return (
@@ -71,7 +105,41 @@ export function PatientDetailView() {
   const navigate = useNavigate();
   const patients = useTherapistStore(s => s.patients);
   const patient = patients.find(p => p.id === patientId);
-  const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'objectives' | 'notes' | 'recommendations'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'analytics' | 'objectives' | 'notes' | 'recommendations' | 'config' | 'summary' | 'homework'>('overview');
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  // Sync with URL params if any
+  const searchParams = useMemo(() => new URLSearchParams(window.location.search), [window.location.search]);
+  
+  const selectPatient = useTherapistStore(s => s.selectPatient);
+  const selectedPatientIdFromStore = useTherapistStore(s => s.selectedPatientId);
+
+  useEffect(() => {
+    if (patientId && patientId !== selectedPatientIdFromStore) {
+      // Usamos una versión suave de select que no provoque redirect infinito
+      useTherapistStore.setState({ selectedPatientId: patientId });
+      sessionStorage.setItem('way-active-patient', patientId);
+    }
+  }, [patientId, selectedPatientIdFromStore]);
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    const sid = searchParams.get('sessionId');
+    if (tab === 'summary' && sid) {
+      setActiveTab('summary');
+      setSelectedSessionId(sid);
+    }
+  }, [searchParams]);
+
+  const { 
+    accessibility, 
+    performance, 
+    setReduceMotion, 
+    setHighAccessibility, 
+    setPerformanceMode, 
+    setShowTextLabels 
+  } = useConfigStore();
+
 
   const { totalXp = 0, streakDays = 0 } = useRewardsStore();
   const completedWays = usePlayerStore(s => s.profile.completedWays) ?? [];
@@ -124,39 +192,55 @@ export function PatientDetailView() {
         </Card>
 
         <div style={{
-          display: 'flex', gap: 20, borderBottom: `2px solid ${C.border}`,
-          padding: '0 8px', marginBottom: 8
+          display: 'flex', 
+          justifyContent: 'center', 
+          width: '100%', 
+          borderBottom: `2px solid ${C.border}`,
+          marginBottom: 24, 
+          position: 'sticky', 
+          top: 70, 
+          background: 'rgba(248, 250, 255, 0.95)',
+          backdropFilter: 'blur(12px)', 
+          zIndex: 25,
+          padding: '4px 0'
         }}>
-          {[
-            { id: 'overview', label: 'Resumen', icon: '📋' },
-            { id: 'evolution', label: 'Evolución', icon: '📊' },
-            { id: 'objectives', label: 'Objetivos', icon: '🎯' },
-            { id: 'recommendations', label: 'Para Padres', icon: '💡' },
-            { id: 'notes', label: 'Notas Clínicas', icon: '📝' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              style={{
-                background: 'transparent', border: 'none',
-                padding: '12px 4px', cursor: 'pointer',
-                fontSize: 14, fontWeight: 700, color: activeTab === tab.id ? C.indigo : C.muted,
-                position: 'relative', display: 'flex', alignItems: 'center', gap: 8
-              }}
-            >
-              <span>{tab.icon}</span>
-              {tab.label}
-              {activeTab === tab.id && (
-                <motion.div
-                  layoutId="activeTab"
-                  style={{
-                    position: 'absolute', bottom: -2, left: 0, right: 0,
-                    height: 3, background: C.indigo, borderRadius: 3
-                  }}
-                />
-              )}
-            </button>
-          ))}
+          <div style={{ display: 'flex', gap: 32, padding: '0 20px' }}>
+            {[
+              { id: 'overview', label: 'Resumen', icon: '📋' },
+              { id: 'homework', label: 'Casa', icon: '🏠' },
+              { id: 'analytics', label: 'Telemetría', icon: '📡' },
+              { id: 'evolution', label: 'Evolución', icon: '📊' },
+              { id: 'objectives', label: 'Objetivos', icon: '🎯' },
+              { id: 'recommendations', label: 'Para Padres', icon: '💡' },
+              { id: 'config', label: 'Sesión', icon: '⚙️' },
+              { id: 'notes', label: 'Notas', icon: '📝' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                style={{
+                  background: 'transparent', border: 'none',
+                  padding: '16px 4px', cursor: 'pointer',
+                  fontSize: 14, fontWeight: 700, color: activeTab === tab.id ? C.indigo : C.muted,
+                  position: 'relative', display: 'flex', alignItems: 'center', gap: 8,
+                  transition: 'all 0.3s ease'
+                }}
+              >
+                <span style={{ fontSize: 18 }}>{tab.icon}</span>
+                <span style={{ opacity: activeTab === tab.id ? 1 : 0.7 }}>{tab.label}</span>
+                {activeTab === tab.id && (
+                  <motion.div
+                    layoutId="activeTab"
+                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
+                    style={{
+                      position: 'absolute', bottom: -2, left: 0, right: 0,
+                      height: 3, background: C.indigo, borderRadius: '3px 3px 0 0'
+                    }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
         </div>
 
         {activeTab === 'overview' && (
@@ -187,11 +271,72 @@ export function PatientDetailView() {
           </div>
         )}
 
+        {activeTab === 'homework' && <HomeworkPlanner patientId={patient.id} />}
+        {activeTab === 'analytics' && <PatientAnalyticsView patientId={patient.id} />}
+
         {activeTab === 'evolution' && <EvolutionCharts />}
         {activeTab === 'objectives' && <ObjectivesTab patient={patient} />}
         {activeTab === 'notes' && <TherapistNotes patientId={patient.id} />}
         {activeTab === 'recommendations' && <RecommendationManager patientId={patient.id} />}
+        
+        {activeTab === 'config' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <Card>
+              <SectionTitle>📱 Acceso del Niño</SectionTitle>
+              <PinConfig 
+                patientId={patient.id}
+                patientName={patient.name}
+                currentPin={patient.playerPin ?? '0000'}
+              />
+            </Card>
+
+            <SessionPreparation patientId={patient.id} />
+
+            <Card>
+              <SectionTitle>⚙️ Ajustes de Accesibilidad para {patient.name}</SectionTitle>
+              <p style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>
+                Estos ajustes se guardan automáticamente para este paciente y se aplicarán la próxima vez que inicie su sesión.
+              </p>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: 12 }}>
+                <SettingToggle 
+                  label="Modo TEA Alto" 
+                  description="Iconos simplificados y elementos táctiles más grandes."
+                  active={accessibility.highAccessibility}
+                  onToggle={() => setHighAccessibility(!accessibility.highAccessibility)}
+                />
+                <SettingToggle 
+                  label="Reducir Movimiento" 
+                  description="Desactiva animaciones intensas para niños sensibles."
+                  active={accessibility.reduceMotion}
+                  onToggle={() => setReduceMotion(!accessibility.reduceMotion)}
+                />
+                <SettingToggle 
+                  label="Modo Rendimiento" 
+                  description="Desactiva efectos visuales para mayor velocidad."
+                  active={performance.disableFilters}
+                  onToggle={() => setPerformanceMode(!performance.disableFilters)}
+                />
+                <SettingToggle 
+                  label="Etiquetas de Texto" 
+                  description="Muestra u oculta los nombres bajo los pictogramas."
+                  active={accessibility.showTextLabels}
+                  onToggle={() => setShowTextLabels(!accessibility.showTextLabels)}
+                />
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'summary' && selectedSessionId && (
+          <SessionSummaryTab 
+            patientId={patient.id} 
+            sessionId={selectedSessionId} 
+            onBack={() => setActiveTab('config')} 
+          />
+        )}
       </main>
+
     </div>
   );
 }

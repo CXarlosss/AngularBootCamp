@@ -12,16 +12,16 @@ import { MemoryWay } from '../strategies/MemoryWay';
 import { TracingWay } from '../strategies/TracingWay';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
+import { useConfigStore } from '@/core/stores/configStore';
 
 interface Props {
   way: Way;
-  onComplete: () => void;
+  onComplete: (summary: { duration_seconds: number; attempts: number; completed: boolean }) => void;
   activeBoostId?: string | null;
 }
 
 export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId }) => {
-  console.log('[WAY SOURCE]', way.source); 
-  console.log('[WAY SKILL TAG]', way.metadata?.skillTag);
+  // Debug logs removed for production performance
 
   const [celebration, setCelebration] = useState<{
     show: boolean;
@@ -42,6 +42,8 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
     setAdaptive(adjustment);
   }, [way.id]);
 
+  const { reduceMotion } = useConfigStore((s) => s.accessibility);
+
   const handleDoubleChoiceSelect = (optionId: string) => {
     const option = way.options.find(o => o.id === optionId);
     if (!option) return;
@@ -59,18 +61,21 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
 
       completeWay(way.id, attempts + 1);
       
-      const coinsBase = 10;
-      const finalCoins = activeBoostId === 'double_coins' ? coinsBase * 2 : coinsBase;
-      
       celebrateCompletion('way');
       setCelebration({ show: true, type: 'happy' });
       
-      setTimeout(onComplete, 3500); 
+      const delay = reduceMotion ? 2000 : 3500;
+      setTimeout(() => {
+        onComplete({
+          duration_seconds: Math.floor((Date.now() - startTime) / 1000),
+          attempts: attempts + 1,
+          completed: true
+        });
+      }, delay); 
     } else {
       if (activeBoostId === 'extra_life' && !extraLifeUsed) {
         setExtraLifeUsed(true);
-        audioService.playSFX('success'); // Feedback de que se salvó
-        // No mostramos triste, solo un aviso
+        audioService.playSFX('success');
         return;
       }
       
@@ -83,18 +88,18 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
   const renderStrategy = () => {
     switch (way.type) {
       case 'sequencing':
-        return <SequencingWay way={way as any} onComplete={onComplete} />;
+        return <SequencingWay way={way as any} onComplete={() => onComplete({ duration_seconds: 0, attempts: 1, completed: true })} />;
       case 'memory':
-        return <MemoryWay way={way as any} onComplete={onComplete} />;
+        return <MemoryWay way={way as any} onComplete={() => onComplete({ duration_seconds: 0, attempts: 1, completed: true })} />;
       case 'tracing':
-        return <TracingWay way={way as any} onComplete={onComplete} />;
+        return <TracingWay way={way as any} onComplete={() => onComplete({ duration_seconds: 0, attempts: 1, completed: true })} />;
       case 'double-choice':
       default:
         return (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, width: '100%', maxWidth: 400, margin: '0 auto', padding: '12px 16px' }}>
              {/* Compact Stimulus Section */}
             <motion.div 
-              initial={{ opacity: 0, scale: 0.9 }}
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}
             >
@@ -136,11 +141,30 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
                 </div>
               ))}
             </div>
+
+            {/* Manual Continue Button (Visible during celebration) */}
+            <AnimatePresence>
+              {celebration.show && celebration.type === 'happy' && (
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => onComplete({
+                    duration_seconds: Math.floor((Date.now() - startTime) / 1000),
+                    attempts: attempts + 1,
+                    completed: true
+                  })}
+                  className="mt-4 bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black text-lg shadow-lg hover:bg-indigo-700 transition-colors pointer-events-auto z-50"
+                >
+                  SIGUIENTE ➔
+                </motion.button>
+              )}
+            </AnimatePresence>
           </div>
         );
 
     }
   };
+
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center min-h-[70vh]">

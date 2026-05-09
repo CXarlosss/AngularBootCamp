@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { audioService } from '@/core/utils/audioService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useConfigStore } from '@/core/stores/configStore';
 
 interface CelebrationOverlayProps {
   show: boolean;
@@ -13,6 +14,8 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
   show, type, coins = 0, onComplete 
 }) => {
   const [phase, setPhase] = useState<'enter' | 'coins' | 'exit'>('enter');
+  const { reduceMotion } = useConfigStore((s) => s.accessibility);
+  const { disableFilters } = useConfigStore((s) => s.performance);
   
   useEffect(() => {
     if (!show) {
@@ -23,7 +26,6 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
     const timer1 = setTimeout(() => setPhase('coins'), 800);
     const timer2 = setTimeout(() => {
       setPhase('exit');
-      // Esperamos un poco más para que la animación de salida se vea antes de llamar a onComplete si fuera necesario
       setTimeout(() => onComplete?.(), 500);
     }, 3000);
     
@@ -38,7 +40,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
   const particles = ['🥇', '⭐', '✨', '🎉', '🌈', '💎'];
 
   return (
-    <AnimatePresence>
+    <AnimatePresence mode="wait">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -51,12 +53,13 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
       >
         <div style={{
           position: 'absolute', top: 0, right: 0, bottom: 0, left: 0,
-          backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)'
+          backgroundColor: 'rgba(0,0,0,0.4)', 
+          backdropFilter: disableFilters ? 'none' : 'blur(4px)'
         }} />
         
-        {type !== 'sad' && (
+        {type !== 'sad' && !reduceMotion && (
           <div style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, overflow: 'hidden' }}>
-            {Array.from({ length: 30 }).map((_, i) => (
+            {Array.from({ length: 20 }).map((_, i) => (
               <motion.div
                 key={i}
                 initial={{ 
@@ -83,19 +86,19 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
         )}
         
         <motion.div
-          initial={{ scale: 0, rotate: -15 }}
-          animate={{ scale: 1, rotate: 0 }}
+          initial={reduceMotion ? { opacity: 0, y: 20 } : { scale: 0, rotate: -15 }}
+          animate={{ scale: 1, rotate: 0, opacity: 1, y: 0 }}
           exit={{ scale: 0, opacity: 0 }}
           style={{
             position: 'relative', backgroundColor: 'white', borderRadius: 48,
-            padding: 48, boxShadow: '0 35px 60px -15px rgba(0,0,0,0.3)', textAlign: 'center',
-            maxWidth: 384, margin: '0 16px', border: '8px solid white'
+            padding: 48, boxShadow: disableFilters ? '0 10px 30px rgba(0,0,0,0.2)' : '0 35px 60px -15px rgba(0,0,0,0.3)', 
+            textAlign: 'center', maxWidth: 384, margin: '0 16px', border: '8px solid white'
           }}
         >
           <div style={{ position: 'absolute', top: -64, left: '50%', transform: 'translateX(-50%)' }}>
             {type === 'happy' && (
               <motion.div 
-                animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }} 
+                animate={reduceMotion ? {} : { scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }} 
                 transition={{ repeat: Infinity, duration: 2 }}
                 style={{ fontSize: 96, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))', whiteSpace: 'nowrap' }}
               >
@@ -107,7 +110,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
             )}
             {type === 'step-complete' && (
               <motion.div 
-                animate={{ rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] }}
+                animate={reduceMotion ? {} : { rotate: [0, 15, -15, 0], scale: [1, 1.2, 1] }}
                 transition={{ duration: 1, repeat: Infinity }}
                 style={{ fontSize: 128, filter: 'drop-shadow(0 20px 13px rgba(0,0,0,0.15))' }}
               >
@@ -152,7 +155,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
           <AnimatePresence>
             {phase === 'coins' && coins > 0 && (
               <motion.div
-                initial={{ y: 20, opacity: 0, scale: 0.5 }}
+                initial={reduceMotion ? { opacity: 0 } : { y: 20, opacity: 0, scale: 0.5 }}
                 animate={{ y: 0, opacity: 1, scale: 1 }}
                 style={{
                   marginTop: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
@@ -160,7 +163,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
                 }}
               >
                 <motion.span 
-                  animate={{ rotateY: 360 }}
+                  animate={reduceMotion ? {} : { rotateY: 360 }}
                   transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
                   style={{ fontSize: 36 }}
                 >
@@ -175,3 +178,4 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
     </AnimatePresence>
   );
 };
+

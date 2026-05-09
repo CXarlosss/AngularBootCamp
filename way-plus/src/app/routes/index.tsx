@@ -1,6 +1,7 @@
 import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { RootLayout } from '@/app/RootLayout';
+import { ProtectedRoute } from '@/app/components/ProtectedRoute';
 
 // Error Boundary Fallback Component
 const ErrorFallback = ({ error }: { error: any }) => (
@@ -24,6 +25,7 @@ const ErrorFallback = ({ error }: { error: any }) => (
 );
 
 // Lazy imports (Handling named exports)
+const PlayerLoginPage = lazy(() => import('@/features/player/pages/PlayerLoginPage').then(m => ({ default: m.PlayerLoginPage })));
 const LevelSelectPage = lazy(() => import('@/features/player/pages/LevelSelectPage').then(m => ({ default: m.LevelSelectPage })));
 const StepDetailsPage = lazy(() => import('@/features/player/pages/StepDetailsPage').then(m => ({ default: m.StepDetailsPage })));
 const WayPlayerPage = lazy(() => import('@/features/content/pages/WayPlayerPage').then(m => ({ default: m.WayPlayerPage })));
@@ -39,6 +41,10 @@ const WayEditorPage = lazy(() => import('@/features/editor/pages/WayEditorPage')
 const ZenModePage = lazy(() => import('@/features/annexes/pages/ZenModePage').then(m => ({ default: m.ZenModePage })));
 const ParentsDashboard = lazy(() => import('@/features/parents/pages/ParentsDashboard').then(m => ({ default: m.ParentsDashboard })));
 const PatientDetailView = lazy(() => import('@/features/therapist/pages/PatientDetailView').then(m => ({ default: m.PatientDetailView })));
+const SessionPlayerPage = lazy(() => import('@/features/player/pages/SessionPlayerPage').then(m => ({ default: m.SessionPlayerPage })));
+const SessionModePage = lazy(() => import('@/features/player/pages/SessionModePage').then(m => ({ default: m.SessionModePage })));
+
+
 
 const Load = (Component: React.ComponentType) => (
   <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', fontWeight: 800, color: '#4F46E5' }}>Cargando módulo...</div>}>
@@ -54,6 +60,14 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: Load(LevelSelectPage) },
       { 
+        path: 'player', 
+        element: Load(PlayerLoginPage) 
+      },
+      { 
+        path: 'player/home', 
+        element: Load(LevelSelectPage) 
+      },
+      { 
         path: 'auth', 
         element: Load(AuthPage) 
       },
@@ -66,20 +80,30 @@ export const router = createBrowserRouter([
         element: Load(WayPlayerPage) 
       },
       { 
+        path: 'play/session', 
+        element: Load(SessionPlayerPage) 
+      },
+      { 
+        path: 'session/:patientId', 
+        element: Load(SessionPlayerPage) 
+      },
+
+
+      { 
         path: 'editor', 
         element: Load(WayEditorPage) 
       },
       { 
         path: 'therapist', 
-        element: Load(TherapistDashboard) 
+        element: <ProtectedRoute>{Load(TherapistDashboard)}</ProtectedRoute>
       },
       { 
         path: 'therapist/patient/:patientId', 
-        element: Load(PatientDetailView) 
+        element: <ProtectedRoute>{Load(PatientDetailView)}</ProtectedRoute>
       },
       { 
         path: 'terapeuta', 
-        element: Load(TherapistDashboard) 
+        element: <ProtectedRoute>{Load(TherapistDashboard)}</ProtectedRoute>
       },
       { 
         path: 'annexes', 

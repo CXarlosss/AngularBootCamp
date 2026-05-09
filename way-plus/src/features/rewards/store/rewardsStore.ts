@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import { SHOP_CATALOG } from '../data/shopCatalog';
 import { BOOSTS_CATALOG } from '../data/boosts';
@@ -112,8 +111,7 @@ const INITIAL_INVENTORY: RewardItem[] = [
 ];
 
 export const useRewardsStore = create<RewardsState>()(
-  persist(
-    immer((set, get) => ({
+  immer((set, get) => ({
       wayCoins: 500,
       totalXp: 0,
       currentAvatar: DEFAULT_AVATAR,
@@ -228,13 +226,26 @@ export const useRewardsStore = create<RewardsState>()(
           state.lastActiveDate = today;
         }),
         
-      awardAchievement: (id) =>
+      awardAchievement: async (achievementId: string) => {
         set((state) => {
-          const safeAchievements = Array.isArray(state.achievements) ? state.achievements : [];
-          if (!safeAchievements.includes(id)) {
-            state.achievements.push(id);
+          if (state.achievements.includes(achievementId)) return;
+          state.achievements.push(achievementId);
+          // Recompensas genéricas ya que no tenemos catálogo de logros aún
+          state.totalXp += 50;
+          state.wayCoins += 20;
+        });
+
+        // Push explícito a Supabase
+        const patientId = sessionStorage.getItem('way-active-patient');
+        if (patientId) {
+          try {
+            const { syncService } = await import('@/core/services/syncService');
+            await syncService.pushAchievement(patientId, achievementId);
+          } catch (e) {
+            console.warn('[RewardsStore] pushAchievement falló, SyncEngine reintentará:', e);
           }
-        }),
+        }
+      },
 
       unlockSticker: (stickerId, forceShiny = false) => {
         set((state) => {
@@ -475,38 +486,5 @@ export const useRewardsStore = create<RewardsState>()(
       },
 
       clearSecretCelebration: () => set((state) => { state.newSecretAwarded = null; })
-    })),
-    { 
-      name: 'way-plus-rewards',
-      merge: (persistedState: any, currentState) => {
-        const merged = { ...currentState, ...persistedState };
-        return {
-          ...merged,
-          inventory: merged.inventory || currentState.inventory,
-          ownedStickers: merged.ownedStickers || {},
-          achievements: merged.achievements || [],
-          purchaseHistory: merged.purchaseHistory || currentState.purchaseHistory,
-          claimedMissions: merged.claimedMissions || [],
-          unlockedSecrets: merged.unlockedSecrets || [],
-          ownedBoosts: merged.ownedBoosts || {},
-          missionProgress: merged.missionProgress || {},
-        };
-      },
-      storage: {
-        getItem: (name) => {
-          const patientId = localStorage.getItem('way-active-patient') || 'demo-1';
-          const str = localStorage.getItem(`${name}-${patientId}`);
-          return str ? JSON.parse(str) : null;
-        },
-        setItem: (name, value) => {
-          const patientId = localStorage.getItem('way-active-patient') || 'demo-1';
-          localStorage.setItem(`${name}-${patientId}`, JSON.stringify(value));
-        },
-        removeItem: (name) => {
-          const patientId = localStorage.getItem('way-active-patient') || 'demo-1';
-          localStorage.removeItem(`${name}-${patientId}`);
-        }
-      }
-    }
-  )
+    }))
 );

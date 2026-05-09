@@ -8,7 +8,11 @@ import { MilestoneOverlay } from '@/features/player/components/MilestoneOverlay'
 import { registry } from '@/content/registry';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { audioService } from '@/core/utils/audioService';
+import { useConfigStore } from '@/core/stores/configStore';
 import { BoostSelector } from '@/features/rewards/components/BoostSelector';
+import { HomeworkCelebration } from '@/features/player/components/HomeworkCelebration';
+import { homeworkService } from '@/core/services/homeworkService';
+import { syncService } from '@/core/services/syncService';
 import type { Step, Way } from '@/core/engine/types';
 
 /* ─── Back button ────────────────────────────────────────────────────── */
@@ -60,11 +64,13 @@ export function WayPlayerPage() {
     levelId: string; stepId: string; wayId: string;
   }>();
   const navigate = useNavigate();
+  const { reduceMotion } = useConfigStore((s) => s.accessibility);
+  const { disableFilters } = useConfigStore((s) => s.performance);
 
   const completeWay = usePlayerStore(state => state.completeWay);
   const completedWays = usePlayerStore(state => state.profile?.completedWays || []);
   const { celebrateCompletion, addCoins, checkAndUpdateStreak } = useRewardsStore();
-  const { dailyChallenge, completeDailyChallenge } = usePlayerStore();
+  const { dailyChallenge, completeDailyChallenge, profile } = usePlayerStore();
 
   const [celebration, setCelebration] = useState<{
     show: boolean; type: 'happy' | 'sad' | 'step-complete' | 'annex-complete'; coins: number;
@@ -91,6 +97,22 @@ export function WayPlayerPage() {
   const currentWay = ways[currentIdx] ?? null;
   const isLastWay = currentIdx === ways.length - 1;
 
+  // Predictive prefetching for the next way
+  useEffect(() => {
+    const nextIdx = currentIdx + 1;
+    const nextWay = ways[nextIdx];
+    if (nextWay) {
+      const urls = [
+        nextWay.stimulus?.image,
+        ...(nextWay.options?.map(o => o.image) || [])
+      ].filter((u): u is string => typeof u === 'string');
+      
+      import('@/core/utils/preloadService').then(({ preloadImages }) => {
+        preloadImages(urls).catch(() => console.warn('Preload failed for way:', nextWay.id));
+      });
+    }
+  }, [currentIdx, ways]);
+
   // Lectura automática al entrar
   useEffect(() => {
     if (currentWay && !celebration.show) {
@@ -102,7 +124,25 @@ export function WayPlayerPage() {
     }
   }, [currentWay, celebration.show]);
 
-  const handleWayComplete = useCallback(() => {
+
+  const [showHomeworkCelebration, setShowHomeworkCelebration] = useState(false);
+  const [isHomework, setIsHomework] = useState(false);
+  const wayStartTime = useRef<number>(Date.now());
+
+  // Reset clock on new way
+  useEffect(() => {
+    wayStartTime.current = Date.now();
+  }, [wayId]);
+
+  // Check if this is homework
+  useEffect(() => {
+    const patientId = sessionStorage.getItem('way-active-patient');
+    if (patientId && wayId) {
+      homeworkService.isHomework(patientId, wayId).then(setIsHomework);
+    }
+  }, [wayId]);
+
+  const handleWayComplete = useCallback((_summary?: any) => {
     if (!currentWay) return;
     
     // 1. Marcar como completado
@@ -118,13 +158,55 @@ export function WayPlayerPage() {
     }
 
     // 3. Decidir tipo de celebración
-    if (isLastWay) {
+    if (isHomework) {
+      setShowHomeworkCelebration(true);
+      
+      // Log con flag de refuerzo terapéutico
+      syncService.logActivity({
+        patientId: sessionStorage.getItem('way-active-patient') || '',
+        wayId: currentWay.id,
+        action: 'way_completed',
+        attempts: 1,
+        metadata: { 
+          isHomework: true, 
+          bonus,
+          timeSpentMs: Date.now() - (wayStartTime.current || 0)
+        }
+      });
+
+      // La navegación ocurrirá después de la celebración (3.5s)
+      const nextWay = ways[currentIdx + 1];
+      setTimeout(() => {
+        if (isLastWay) {
+          celebrateCompletion('step');
+          setShowMilestone(true);
+        } else if (nextWay) {
+          navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
+        } else {
+          navigate(`/play/${levelId}/${stepId}`);
+        }
+      }, 3500);
+    } else if (isLastWay) {
       // HITO: Módulo completo
       celebrateCompletion('step');
       setShowMilestone(true);
     } else {
-      // ÉXITO: Way individual
+      // ÉXITO: Way individual estándar
       celebrateCompletion('way');
+      
+      // Log estándar
+      syncService.logActivity({
+        patientId: sessionStorage.getItem('way-active-patient') || '',
+        wayId: currentWay.id,
+        action: 'way_completed',
+        attempts: 1,
+        metadata: { 
+          isHomework: false, 
+          bonus,
+          timeSpentMs: Date.now() - (wayStartTime.current || 0)
+        }
+      });
+
       setCelebration({ 
         show: true, 
         type: 'happy', 
@@ -139,7 +221,7 @@ export function WayPlayerPage() {
         }, 3000); 
       }
     }
-  }, [currentWay, isLastWay, ways, currentIdx, levelId, stepId, navigate, completeWay, celebrateCompletion, dailyChallenge, completeDailyChallenge, addCoins]);
+  }, [currentWay, isLastWay, ways, currentIdx, levelId, stepId, navigate, completeWay, celebrateCompletion, dailyChallenge, completeDailyChallenge, addCoins, isHomework]);
 
   const handleCelebrationDone = () => {
     setCelebration(c => ({ ...c, show: false }));
@@ -184,8 +266,8 @@ export function WayPlayerPage() {
         position: 'sticky',
         top: 0,
         zIndex: 20,
-        background: 'rgba(244,245,255,0.95)',
-        backdropFilter: 'blur(8px)',
+        background: disableFilters ? '#F4F5FF' : 'rgba(244,245,255,0.95)',
+        backdropFilter: disableFilters ? 'none' : 'blur(8px)',
         padding: '12px 16px',
         display: 'flex',
         alignItems: 'center',
@@ -214,7 +296,7 @@ export function WayPlayerPage() {
                 {currentWay?.title ?? currentWay?.name ?? 'Reto'}
               </h1>
               <motion.button
-                whileTap={{ scale: 0.9 }}
+                whileTap={reduceMotion ? {} : { scale: 0.9 }}
                 onClick={() => audioService.speak(currentWay?.title ?? currentWay?.name ?? '')}
                 style={{
                   background: '#fff', border: '2px solid #E8E9FF',
@@ -231,13 +313,15 @@ export function WayPlayerPage() {
 
         <AnimatePresence mode="wait">
           {loading ? (
-            <div className="w-full max-w-md aspect-video bg-slate-50 animate-pulse rounded-[32px] mx-auto" />
+            <div key="loader" className="w-full max-w-md aspect-video bg-slate-50 animate-pulse rounded-[32px] mx-auto flex items-center justify-center">
+              <span className="text-slate-300 font-bold">Cargando...</span>
+            </div>
           ) : currentWay && (
             <motion.div
               key={currentWay.id}
-              initial={{ opacity: 0, x: 30 }}
+              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, x: 30 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -30 }}
+              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, x: -30 }}
               transition={{ duration: 0.22, ease: 'easeOut' }}
             >
               <WayRenderer
@@ -249,6 +333,7 @@ export function WayPlayerPage() {
           )}
         </AnimatePresence>
       </div>
+
 
       {/* ── Celebration overlay ─────────────────────────────────────── */}
       <CelebrationOverlay
@@ -276,6 +361,13 @@ export function WayPlayerPage() {
           onStart={handleStartWithBoost}
         />
       )}
+
+      <HomeworkCelebration
+        show={showHomeworkCelebration}
+        playerName={profile?.name || ''}
+        playerAvatar={profile?.avatar || ''}
+        onComplete={() => setShowHomeworkCelebration(false)}
+      />
     </>
   );
 }

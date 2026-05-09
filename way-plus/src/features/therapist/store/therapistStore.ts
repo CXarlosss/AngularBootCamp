@@ -24,6 +24,9 @@ export interface Patient {
   lastSession: string;
   currentLevel: string;
   objectives: TherapeuticObjective[];
+  playerPin?: string;
+  sessionQueue?: string[];
+  homeworkWayIds?: string[];
 }
 
 interface TherapistState {
@@ -39,62 +42,17 @@ interface TherapistState {
   deleteObjective: (patientId: string, objectiveId: string) => void;
 }
 
+
 export const useTherapistStore = create<TherapistState>()(
   persist(
     immer((set) => ({
-    patients: [
-      {
-        id: 'demo-1',
-        name: 'Lucía',
-        avatar: '🦄',
-        age: 5,
-        diagnosis: 'TEA Nivel 1',
-        startDate: '2026-03-15',
-        lastSession: '2026-04-21',
-        currentLevel: 'pregamer',
-        objectives: [
-          {
-            id: 'obj-1',
-            title: 'Iniciación Social',
-            description: 'Saludar a 3 compañeros al llegar.',
-            category: 'social',
-            targetValue: 10,
-            currentValue: 4,
-            unit: 'veces',
-            status: 'in_progress',
-            createdAt: '2026-04-15'
-          }
-        ]
-      },
-      {
-        id: 'demo-2',
-        name: 'Marcos',
-        avatar: '🐉',
-        age: 7,
-        diagnosis: 'TDAH',
-        startDate: '2026-04-01',
-        lastSession: '2026-04-22',
-        currentLevel: 'pregamer',
-        objectives: []
-      },
-      {
-        id: 'demo-3',
-        name: 'Sofía',
-        avatar: '🐱',
-        age: 6,
-        diagnosis: 'Dificultades Pragmáticas',
-        startDate: '2026-04-10',
-        lastSession: '2026-04-23',
-        currentLevel: 'pregamer',
-        objectives: []
-      }
-    ],
-    selectedPatientId: localStorage.getItem('way-active-patient') || 'demo-1',
+    patients: [],
+    selectedPatientId: sessionStorage.getItem('way-active-patient') || null,
     dateRange: 'week',
     
     selectPatient: (id) => set((state) => { 
       state.selectedPatientId = id; 
-      localStorage.setItem('way-active-patient', id);
+      sessionStorage.setItem('way-active-patient', id);
       // Navigate and reload to ensure all stores (player, rewards) reload with the new patient ID
       window.location.href = `/therapist/patient/${id}`;
     }),
@@ -133,6 +91,8 @@ export const useTherapistStore = create<TherapistState>()(
         p.objectives = p.objectives.filter(o => o.id !== objId);
       }
     }),
+
+
   })),
   {
     name: 'way-plus-therapist',

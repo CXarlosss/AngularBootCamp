@@ -112,15 +112,24 @@ export class RankService {
 
   // ─── Load ──────────────────────────────────────────────────────────────────
 
-  async load(): Promise<void> {
-    const user = this.auth.user();
-    if (!user) return;
+  async load(userId?: string): Promise<void> {
+    const id = userId ?? this.auth.user()?.id;
+    if (!id) {
+      console.warn('[RankService] load: no hay id de usuario');
+      return;
+    }
 
-    const { data } = await this.sb
+    console.log('[RankService] Cargando rango para:', id);
+    const { data, error } = await this.sb
       .from('athlete_ranks')
       .select('*')
-      .eq('client_id', user.id)
+      .eq('client_id', id)
       .maybeSingle();
+
+    if (error) {
+      console.error('[RankService] Error cargando rango:', error);
+      return;
+    }
 
     if (data) {
       this.athleteRank.set({
@@ -131,18 +140,23 @@ export class RankService {
         progressXp: data.progress_xp,
       });
     } else {
-      const { data: newData } = await this.sb
+      console.log('[RankService] No existe registro, creando uno nuevo para:', id);
+      const { data: newData, error: insError } = await this.sb
         .from('athlete_ranks')
-        .insert({ client_id: user.id })
+        .insert({ client_id: id })
         .select()
         .maybeSingle();
 
-      if (newData) {
-        this.athleteRank.set({
-          xpTotal: 0, rankLevel: 0,
-          daysXp: 0, setsXp: 0, progressXp: 0
-        });
+      if (insError) {
+        console.error('[RankService] Error al crear registro de rango:', insError);
+        return;
       }
+
+      // Si newData es null (puede pasar por RLS tras insert), inicializamos a mano
+      this.athleteRank.set({
+        xpTotal: 0, rankLevel: 0,
+        daysXp: 0, setsXp: 0, progressXp: 0
+      });
     }
   }
 
@@ -171,7 +185,7 @@ export class RankService {
     setsXp: number;
     progressXp: number;
   }): Promise<void> {
-    const userId = (this.auth as any).currentUser()?.id ?? this.auth.user()?.id;
+    const userId = this.auth.user()?.id;
     if (!userId) {
       console.error('[RankService] addXP: no hay userId');
       return;
@@ -179,8 +193,8 @@ export class RankService {
 
     // Auto-load si no hay datos
     if (!this.athleteRank()) {
-      console.log('[RankService] Cargando datos antes de addXP...');
-      await this.load();
+      console.log('[RankService] Datos de rango ausentes. Intentando carga forzada...');
+      await this.load(userId);
     }
 
     const cur = this.athleteRank();

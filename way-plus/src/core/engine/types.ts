@@ -76,4 +76,5 @@ export interface PlayerProfile {
   streakDays: number;
   tutorialCompleted: boolean;
   coins?: number;
+  sessionQueue?: string[];
 }

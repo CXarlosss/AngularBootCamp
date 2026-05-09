@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { FileText, Loader2 } from 'lucide-react';
+import { FileText, Loader2, Download } from 'lucide-react';
 import { useTherapistStore } from '../store/therapistStore';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { generateWAYReport } from '../utils/pdfGenerator';
+import { analyticsService } from '@/core/services/analyticsService';
 
 export const ReportGenerator: React.FC = () => {
   const [generating, setGenerating] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const { selectedPatientId, patients } = useTherapistStore();
   const { profile, relaxationLog = {}, roleplayLog = {}, weeklyCheck = {} } = usePlayerStore();
   const { streakDays, totalXp, purchaseHistory, wayCoins } = useRewardsStore();
@@ -84,6 +86,48 @@ export const ReportGenerator: React.FC = () => {
     }
   };
 
+  const handleDownloadCSV = async () => {
+    if (!selectedPatientId) return;
+    setDownloading(true);
+    try {
+      const history = await analyticsService.getActivityHistory(selectedPatientId);
+      if (history.length === 0) {
+        alert("No hay datos de actividad para exportar.");
+        return;
+      }
+
+      const headers = ["fecha", "way_id", "categoria", "accion", "intentos", "tiempo_ms"];
+      const rows = history.map(h => [
+        h.fecha,
+        h.way_id,
+        h.categoria,
+        h.accion,
+        h.intentos,
+        h.tiempo_ms
+      ]);
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(r => r.join(","))
+      ].join("\n");
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `historial_${patient.name.toLowerCase().replace(/\s+/g, '_')}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error exporting CSV:', error);
+      alert("Error al exportar el historial.");
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3">
       <div className="flex bg-slate-100 p-1 rounded-xl">
@@ -123,6 +167,30 @@ export const ReportGenerator: React.FC = () => {
           <>
             <FileText size={20} />
             <span>Generar Informe {audience === 'clinical' ? 'Clínico' : 'Familiar'}</span>
+          </>
+        )}
+      </motion.button>
+
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={handleDownloadCSV}
+        disabled={downloading}
+        className={`w-full flex items-center justify-center gap-3 px-6 py-3 rounded-2xl font-black uppercase tracking-widest text-xs transition-all border-2
+          ${downloading 
+            ? 'border-slate-100 text-slate-400 cursor-not-allowed' 
+            : 'border-indigo-100 text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200'
+          }`}
+      >
+        {downloading ? (
+          <>
+            <Loader2 className="animate-spin" size={18} />
+            <span>Preparando CSV...</span>
+          </>
+        ) : (
+          <>
+            <Download size={18} />
+            <span>Descargar Historial (CSV)</span>
           </>
         )}
       </motion.button>

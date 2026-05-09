@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import { immer } from 'zustand/middleware/immer';
 import type { PlayerProfile } from '@/core/engine/types';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
@@ -49,141 +48,116 @@ interface PlayerState {
   completeDailyChallenge: () => void;
   
   completeTutorial: () => void;
-  syncFromCloud: (data: Partial<PlayerProfile>) => void;
+  syncFromCloud: (data: Partial<PlayerProfile & { patientId?: string; name?: string; avatar?: string }>) => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
-  persist(
-    immer((set) => ({
-      profile: {
-        id: '1',
-        name: 'Gamer',
-        avatar: 'unicorn',
-        currentLevel: 'pregamer',
-        completedWays: [],
-        streakDays: 0,
-        tutorialCompleted: false,
-      },
-      session: {
-        activeWay: null,
-        attempts: {},
-        startTime: null,
-      },
-      
-      relaxationLog: {},
-      weeklyCheck: {},
-      roleplayLog: {},
-      dailyChallenge: {
-        wayId: null,
-        date: null,
-        completed: false
-      },
+  immer((set) => ({
+    profile: {
+      id: '1',
+      name: 'Gamer',
+      avatar: 'unicorn',
+      currentLevel: 'pregamer',
+      completedWays: [],
+      streakDays: 0,
+      tutorialCompleted: false,
+      sessionQueue: [],
+    },
+    session: {
+      activeWay: null,
+      attempts: {},
+      startTime: null,
+    },
+    
+    relaxationLog: {},
+    weeklyCheck: {},
+    roleplayLog: {},
+    dailyChallenge: {
+      wayId: null,
+      date: null,
+      completed: false
+    },
 
-      setName: (name) => 
-        set((state) => {
-          state.profile.name = name;
-        }),
-      setAvatar: (avatarId) =>
-        set((state) => {
-          state.profile.avatar = avatarId;
-        }),
-      completeWay: (wayId, attempts) =>
-        set((state) => {
-          if (!state.profile.completedWays) state.profile.completedWays = [];
-          const safeCompleted = Array.isArray(state.profile.completedWays) ? state.profile.completedWays : [];
-          if (!safeCompleted.includes(wayId)) {
-            state.profile.completedWays = [...safeCompleted, wayId];
-          }
-          state.session.attempts[wayId] = attempts;
-          
-          // Trigger mission progress
-          useRewardsStore.getState().updateMissionProgress('complete_ways', 1);
-
-          if (attempts === 1) {
-            state.profile.streakDays += 1;
-          }
-        }),
-      resetSession: () =>
-        set((state) => {
-          state.session = {
-            activeWay: null,
-            attempts: {},
-            startTime: Date.now(),
-          };
-        }),
-        
-      logRelaxation: (date, data) =>
-        set((state) => {
-          state.relaxationLog[date] = data;
-        }),
-        
-      toggleWeeklyCheck: (itemId, date) =>
-        set((state) => {
-          const key = `${itemId}-${date}`;
-          state.weeklyCheck[key] = !state.weeklyCheck[key];
-        }),
-        
-      logRoleplay: (date, wayId) =>
-        set((state) => {
-          if (!state.roleplayLog[date]) state.roleplayLog[date] = [];
-          if (!(state.roleplayLog[date] || []).includes(wayId)) {
-            state.roleplayLog[date].push(wayId);
-          }
-        }),
-
-      setDailyChallenge: (wayId) =>
-        set((state) => {
-          state.dailyChallenge = {
-            wayId,
-            date: new Date().toISOString().split('T')[0],
-            completed: false
-          };
-        }),
-
-      completeDailyChallenge: () =>
-        set((state) => {
-          state.dailyChallenge.completed = true;
-        }),
-
-      completeTutorial: () =>
-        set((state) => {
-          state.profile.tutorialCompleted = true;
-        }),
-      
-      syncFromCloud: (data: Partial<PlayerProfile>) =>
-        set((state) => {
-          if (data.completedWays) state.profile.completedWays = data.completedWays;
-          if (data.currentLevel) state.profile.currentLevel = data.currentLevel;
-        }),
-    })),
-    {
-      name: 'way-plus-storage',
-      merge: (persistedState: any, currentState) => {
-        const merged = { ...currentState, ...persistedState };
-        if (merged.profile) {
-          merged.profile = {
-            ...currentState.profile,
-            ...merged.profile,
-            completedWays: Array.isArray(merged.profile.completedWays) ? merged.profile.completedWays : []
-          };
+    setName: (name) => 
+      set((state) => {
+        state.profile.name = name;
+      }),
+    setAvatar: (avatarId) =>
+      set((state) => {
+        state.profile.avatar = avatarId;
+      }),
+    completeWay: (wayId, attempts) =>
+      set((state) => {
+        if (!state.profile.completedWays) state.profile.completedWays = [];
+        const safeCompleted = Array.isArray(state.profile.completedWays) ? state.profile.completedWays : [];
+        if (!safeCompleted.includes(wayId)) {
+          state.profile.completedWays = [...safeCompleted, wayId];
         }
-        return merged;
-      },
-      storage: {
-        getItem: (name) => {
-          const patientId = localStorage.getItem('way-active-patient') || 'demo-1';
-          const str = localStorage.getItem(`${name}-${patientId}`);
-          return str ? JSON.parse(str) : null;
-        },
-        setItem: (name, value) => {
-          const patientId = localStorage.getItem('way-active-patient') || 'demo-1';
-          localStorage.setItem(`${name}-${patientId}`, JSON.stringify(value));
-        },
-        removeItem: (name) => {
-          const patientId = localStorage.getItem('way-active-patient') || 'demo-1';
-          localStorage.removeItem(`${name}-${patientId}`);
+        state.session.attempts[wayId] = attempts;
+        
+        // Trigger mission progress
+        useRewardsStore.getState().updateMissionProgress('complete_ways', 1);
+
+        if (attempts === 1) {
+          state.profile.streakDays += 1;
         }
-      }
-    }
-  )
+      }),
+    resetSession: () =>
+      set((state) => {
+        state.session = {
+          activeWay: null,
+          attempts: {},
+          startTime: Date.now(),
+        };
+      }),
+      
+    logRelaxation: (date, data) =>
+      set((state) => {
+        state.relaxationLog[date] = data;
+      }),
+      
+    toggleWeeklyCheck: (itemId, date) =>
+      set((state) => {
+        const key = `${itemId}-${date}`;
+        state.weeklyCheck[key] = !state.weeklyCheck[key];
+      }),
+      
+    logRoleplay: (date, wayId) =>
+      set((state) => {
+        if (!state.roleplayLog[date]) state.roleplayLog[date] = [];
+        if (!(state.roleplayLog[date] || []).includes(wayId)) {
+          state.roleplayLog[date].push(wayId);
+        }
+      }),
+
+    setDailyChallenge: (wayId) =>
+      set((state) => {
+        state.dailyChallenge = {
+          wayId,
+          date: new Date().toISOString().split('T')[0],
+          completed: false
+        };
+      }),
+
+    completeDailyChallenge: () =>
+      set((state) => {
+        state.dailyChallenge.completed = true;
+      }),
+
+    completeTutorial: () =>
+      set((state) => {
+        state.profile.tutorialCompleted = true;
+      }),
+    
+    syncFromCloud: (data: Partial<PlayerProfile & { patientId?: string; name?: string; avatar?: string }>) =>
+      set((state) => {
+        // Actualizar ID del perfil con el patientId real
+        if (data.patientId) state.profile.id = data.patientId;
+        if (data.name) state.profile.name = data.name;
+        if (data.avatar) state.profile.avatar = data.avatar;
+        if (data.completedWays) state.profile.completedWays = data.completedWays;
+        if (data.currentLevel) state.profile.currentLevel = data.currentLevel;
+        if (data.sessionQueue) state.profile.sessionQueue = data.sessionQueue ?? [];
+      }),
+  }))
 );

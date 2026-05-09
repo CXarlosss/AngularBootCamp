@@ -1,145 +1,200 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+/**
+ * AuthPage.tsx
+ * Autenticación via magic link (email).
+ */
+
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '@/app/providers/AuthContext';
+
+const C = {
+  indigo:   '#4F46E5',
+  indigoLt: '#EEF2FF',
+  text:     '#1E1B4B',
+  muted:    '#6B7280',
+  border:   '#E2E8F0',
+  white:    '#ffffff',
+  bg:       '#F8FAFF',
+  emerald:  '#10B981',
+  rose:     '#EF4444',
+};
+
+type PageState = 'form' | 'sent' | 'error';
 
 export const AuthPage: React.FC = () => {
   const navigate = useNavigate();
-  const { signIn, signUp } = useAuth();
-  const [isLogin, setIsLogin] = useState(true);
+  const location = useLocation();
+  const { user, loading, signInWithMagicLink } = useAuth();
+
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [name, setName] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [pageState, setPageState] = useState<PageState>('form');
+  const [errorMsg, setErrorMsg] = useState('');
+  const [isSending, setIsSending] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) {
+      const from = (location.state as any)?.from?.pathname ?? '/therapist';
+      navigate(from, { replace: true });
+    }
+  }, [user, loading, navigate, location.state]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setError('');
+    if (!email.trim() || isSending) return;
 
-    try {
-      if (isLogin) {
-        const result = await signIn(email, password);
-        if (result?.error) throw result.error;
-        if (!result) throw new Error('Servicio de autenticación no disponible');
-      } else {
-        const result = await signUp(email, password, { 
-          full_name: name, 
-          role: 'therapist' 
-        });
-        if (result?.error) throw result.error;
-        if (!result) throw new Error('Servicio de autenticación no disponible');
-      }
-      navigate('/terapeuta');
-    } catch (err: any) {
-      setError(err.message || 'Error de autenticación');
-    } finally {
-      setLoading(false);
+    setIsSending(true);
+    setErrorMsg('');
+
+    const { error } = await signInWithMagicLink(email.trim().toLowerCase());
+
+    if (error) {
+      setErrorMsg(error.message ?? 'Error al enviar el enlace. Inténtalo de nuevo.');
+      setPageState('error');
+    } else {
+      setPageState('sent');
     }
+    setIsSending(false);
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-6 font-outfit">
+    <div style={{
+      minHeight: '100dvh',
+      background: 'linear-gradient(135deg, #EEF2FF 0%, #F8FAFF 50%, #F0FDF4 100%)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: 24,
+    }}>
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 16 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md"
+        style={{
+          width: '100%', maxWidth: 420,
+          background: C.white, borderRadius: 28,
+          padding: 40, boxShadow: '0 20px 60px rgba(79,70,229,0.12)',
+          border: `1px solid ${C.border}`,
+        }}
       >
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <motion.div 
-            animate={{ rotate: [0, 10, -10, 0] }}
-            transition={{ duration: 5, repeat: Infinity }}
-            className="text-6xl mb-4"
-          >
-            🧠
-          </motion.div>
-          <h1 className="text-4xl font-black text-slate-800 tracking-tight">WAY+</h1>
-          <p className="text-slate-500 font-bold mt-2 italic text-sm">Tu plataforma de terapia clínica SaaS</p>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ fontSize: 48, marginBottom: 12 }}>🎮</div>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: C.text, margin: 0 }}>WAY+</h1>
+          <p style={{ color: C.muted, fontSize: 14, margin: '6px 0 0' }}>
+            Panel terapéutico
+          </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-2xl border-4 border-white p-10">
-          <h2 className="text-2xl font-black text-slate-800 mb-8 text-center">
-            {isLogin ? '¡Hola de nuevo!' : 'Crea tu cuenta'}
-          </h2>
+        <AnimatePresence mode="wait">
+          {pageState === 'form' && (
+            <motion.div
+              key="form"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: C.text, margin: '0 0 8px' }}>
+                Accede a tu panel
+              </h2>
+              <p style={{ color: C.muted, fontSize: 13, margin: '0 0 24px', lineHeight: 1.5 }}>
+                Introduce tu email y te enviaremos un enlace de acceso. Sin contraseñas.
+              </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {!isLogin && (
-              <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Nombre clínico</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="w-full px-5 py-4 rounded-2xl border-4 border-slate-50 focus:border-indigo-200 focus:outline-none bg-slate-50/50 transition-all font-bold text-slate-700"
-                  placeholder="Dra. Lucía Méndez"
-                />
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                <div>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: C.muted, display: 'block', marginBottom: 6 }}>
+                    Email profesional
+                  </label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={e => setEmail(e.target.value)}
+                    placeholder="maite@clinica.es"
+                    required
+                    autoFocus
+                    style={{
+                      width: '100%', padding: '12px 16px', borderRadius: 14,
+                      border: `1.5px solid ${C.border}`, fontSize: 14,
+                      color: C.text, outline: 'none', boxSizing: 'border-box',
+                      fontFamily: 'inherit',
+                    }}
+                  />
+                </div>
+
+                <motion.button
+                  type="submit"
+                  whileTap={{ scale: 0.98 }}
+                  disabled={isSending || !email.trim()}
+                  style={{
+                    background: C.indigo, color: C.white, border: 'none',
+                    padding: '14px', borderRadius: 14, fontWeight: 800,
+                    fontSize: 15, cursor: isSending ? 'wait' : 'pointer',
+                    opacity: (isSending || !email.trim()) ? 0.6 : 1,
+                    transition: 'opacity 0.2s',
+                  }}
+                >
+                  {isSending ? 'Enviando…' : 'Enviar enlace de acceso →'}
+                </motion.button>
+              </form>
+            </motion.div>
+          )}
+
+          {pageState === 'sent' && (
+            <motion.div
+              key="sent"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              style={{ textAlign: 'center', padding: '8px 0' }}
+            >
+              <div style={{ fontSize: 56, marginBottom: 20 }}>📬</div>
+              <h2 style={{ fontSize: 20, fontWeight: 900, color: C.text, margin: '0 0 12px' }}>
+                ¡Revisa tu email!
+              </h2>
+              <p style={{ color: C.muted, fontSize: 14, lineHeight: 1.6, margin: '0 0 24px' }}>
+                Hemos enviado un enlace de acceso a <strong style={{ color: C.indigo }}>{email}</strong>.
+                Haz clic en él para entrar al panel.
+              </p>
+              <div style={{
+                background: C.indigoLt, borderRadius: 14, padding: '12px 16px',
+                fontSize: 12, color: C.indigo, fontWeight: 600, marginBottom: 20,
+              }}>
+                💡 El enlace caduca en 1 hora. Revisa también la carpeta de spam.
               </div>
-            )}
-
-            <div>
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email profesional</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full px-5 py-4 rounded-2xl border-4 border-slate-50 focus:border-indigo-200 focus:outline-none bg-slate-50/50 transition-all font-bold text-slate-700"
-                placeholder="lucia@clinica.es"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                minLength={6}
-                className="w-full px-5 py-4 rounded-2xl border-4 border-slate-50 focus:border-indigo-200 focus:outline-none bg-slate-50/50 transition-all font-bold text-slate-700"
-                placeholder="••••••••"
-              />
-            </div>
-
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="bg-rose-50 text-rose-600 text-xs font-bold p-4 rounded-2xl border-2 border-rose-100 italic"
+              <button
+                onClick={() => { setPageState('form'); setEmail(''); }}
+                style={{
+                  background: 'none', border: 'none', color: C.muted,
+                  fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  textDecoration: 'underline',
+                }}
               >
-                ⚠️ {error}
-              </motion.div>
-            )}
+                Usar otro email
+              </button>
+            </motion.div>
+          )}
 
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              disabled={loading}
-              type="submit"
-              className="w-full py-5 rounded-2xl bg-indigo-600 text-white font-black text-lg shadow-xl shadow-indigo-100 hover:bg-indigo-700 disabled:bg-slate-300 transition-all border-b-4 border-indigo-900/20"
+          {pageState === 'error' && (
+            <motion.div
+              key="error"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              style={{ textAlign: 'center', padding: '8px 0' }}
             >
-              {loading ? '⏳ PROCESANDO...' : isLogin ? 'ENTRAR AL PANEL' : 'REGISTRARME'}
-            </motion.button>
-          </form>
-
-          <div className="mt-8 text-center">
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-indigo-600 font-black text-sm hover:text-indigo-800 transition-colors uppercase tracking-widest"
-            >
-              {isLogin ? '¿No tienes cuenta? Regístrate gratis' : '¿Ya tienes cuenta? Inicia sesión'}
-            </button>
-          </div>
-        </div>
-
-        {/* Footer */}
-        <p className="text-center text-[10px] font-black text-slate-400 mt-10 uppercase tracking-[0.2em]">
-          WAY+ CLOUD • CIFRADO AES-256 • RGPD COMPLIANT
-        </p>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>⚠️</div>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: C.rose, margin: '0 0 8px' }}>
+                Error al enviar
+              </h2>
+              <p style={{ color: C.muted, fontSize: 13, margin: '0 0 20px' }}>{errorMsg}</p>
+              <button
+                onClick={() => setPageState('form')}
+                style={{
+                  background: C.indigo, color: C.white, border: 'none',
+                  padding: '12px 24px', borderRadius: 12,
+                  fontWeight: 800, fontSize: 14, cursor: 'pointer',
+                }}
+              >
+                Intentar de nuevo
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
     </div>
   );

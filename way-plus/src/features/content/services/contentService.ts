@@ -37,7 +37,6 @@ export const contentService = {
       ways: (s.ways ?? [])
         .filter((w: any) => w.is_published)
         .map((w: any) => {
-          console.log(`[ContentService] Mapping way ${w.id}:`, w);
           return {
             id: w.id,
             type: w.type,
@@ -73,9 +72,12 @@ export const contentService = {
       id: way.id,
       step_id: stepId,
       type: way.type,
+      name: way.name,
+      title: way.title,
       order_index: way.order,
       stimulus: way.stimulus,
       options: way.options,
+      source: way.source,
       metadata: way.metadata,
       is_published: true,
     });
