@@ -13,6 +13,8 @@ import { TracingWay } from '../strategies/TracingWay';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { useConfigStore } from '@/core/stores/configStore';
+import { useWayImage, getWayPlaceholder } from '@/core/services/wayImageService';
+import { cn } from '@/shared/lib/utils';
 
 interface Props {
   way: Way;
@@ -43,6 +45,7 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
   }, [way.id]);
 
   const { reduceMotion } = useConfigStore((s) => s.accessibility);
+  const { src: situationImg, loaded: imgLoaded } = useWayImage(way.stepNumber || 1, way.wayNumber || 1);
 
   const handleDoubleChoiceSelect = (optionId: string) => {
     const option = way.options.find(o => o.id === optionId);
@@ -96,67 +99,122 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
       case 'double-choice':
       default:
         return (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20, width: '100%', maxWidth: 400, margin: '0 auto', padding: '12px 16px' }}>
-             {/* Compact Stimulus Section */}
-            <motion.div 
-              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.9 }}
+          <div className="w-full max-w-2xl mx-auto px-4 pb-12 flex flex-col items-center gap-4 sm:gap-8 relative z-10">
+            {/* Situational Scene Container */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              style={{ width: '100%', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: 12 }}
+              className="w-full relative group"
             >
-              <div style={{ 
-                margin: '0 auto', width: 140, height: 140, backgroundColor: 'white', borderRadius: 32, 
-                boxShadow: '0 15px 20px -5px rgba(0, 0, 0, 0.08)', 
-                padding: 20, border: '4px solid #f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' 
-              }}>
-                <img src={way.stimulus.image} alt="Estímulo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+              <div className="relative aspect-[16/10] w-full rounded-3xl sm:rounded-[3rem] overflow-hidden bg-slate-100 border-4 sm:border-[12px] border-white shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] sm:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.3)]">
+                {/* Image Layer */}
+                <motion.img 
+                  src={situationImg} 
+                  alt="Situación" 
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  style={{ opacity: imgLoaded ? 1 : 0 }}
+                />
+                
+                {/* Fallback/Loader */}
+                {!imgLoaded && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-slate-50">
+                    <motion.div 
+                      animate={{ rotate: 360 }} 
+                      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                      className="text-5xl"
+                    >
+                      🎨
+                    </motion.div>
+                  </div>
+                )}
+
+                {/* Decorative Overlays */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute top-6 left-6 flex gap-2">
+                  <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-sm border border-white/50 flex items-center gap-2">
+                    <span className="text-lg">📍</span>
+                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Contexto Real</span>
+                  </div>
+                </div>
               </div>
-              {way.stimulus.text && (
-                <div style={{ padding: '0 10px' }}>
-                  <h2 style={{ fontSize: 18, fontWeight: 900, color: '#1e293b', letterSpacing: '-0.3px', lineHeight: 1.2, textTransform: 'uppercase', margin: 0 }}>
+              
+              {/* Floating Element - Stimulus */}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="absolute -bottom-4 sm:-bottom-6 left-1/2 -translate-x-1/2 w-[90%] sm:w-[85%] bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-[2.5rem] p-3 sm:p-6 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.1)] sm:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] border border-white flex items-center gap-3 sm:gap-6"
+              >
+                {way.stimulus.image && (
+                  <div className="w-12 h-12 sm:w-20 sm:h-20 bg-indigo-50 rounded-xl sm:rounded-2xl p-2 sm:p-3 flex items-center justify-center shrink-0 shadow-inner">
+                    <img src={way.stimulus.image} alt="Ref" className="w-full h-full object-contain" />
+                  </div>
+                )}
+                <div className="flex-1">
+                  <h2 className="text-base sm:text-2xl font-black text-slate-800 leading-tight tracking-tight">
                     {way.stimulus.text}
                   </h2>
+                  <div className="h-1 w-8 sm:h-1.5 sm:w-12 bg-indigo-500 rounded-full mt-1 sm:mt-2" />
                 </div>
-              )}
+              </motion.div>
             </motion.div>
 
-            {/* Options Grid - Single column for mobile accessibility */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, width: '100%' }}>
-              {way.options.map((option) => (
-                <div key={option.id} style={{ 
-                  borderRadius: 32,
-                  ...(celebration.show && celebration.type === 'happy' && option.isCorrect ? {
-                    border: '4px solid #34d399', backgroundColor: '#ecfdf5', boxShadow: '0 0 0 4px #d1fae5'
-                  } : {}),
-                  // Efecto de HINT
-                  ...(activeBoostId === 'hint' && option.isCorrect ? {
-                    boxShadow: '0 0 20px #fbbf24',
-                    border: '2px dashed #fbbf24'
-                  } : {})
-                }}>
+            {/* Spacer for the floating stimulus */}
+            <div className="h-4" />
+
+            {/* Options Section */}
+            <div className="w-full grid grid-cols-1 gap-5 mt-4">
+              <div className="flex items-center justify-center gap-3 mb-2 opacity-50">
+                <div className="h-px w-full bg-slate-200" />
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Toca la opción correcta</span>
+                <div className="h-px w-full bg-slate-200" />
+              </div>
+
+              {way.options.map((option, idx) => (
+                <motion.div 
+                  key={option.id}
+                  initial={{ opacity: 0, x: idx % 2 === 0 ? -20 : 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.4 + (idx * 0.1) }}
+                  className="relative group"
+                >
                   <PictoOption
                     option={option}
                     onSelect={() => handleDoubleChoiceSelect(option.id)}
                     disabled={celebration.show}
+                    className={cn(
+                      "hover:ring-4 hover:ring-indigo-100 transition-all",
+                      celebration.show && celebration.type === 'happy' && option.isCorrect && "ring-8 ring-emerald-400 scale-[1.03] z-20 shadow-[0_30px_60px_-15px_rgba(16,185,129,0.4)]"
+                    )}
                   />
-                </div>
+                  {/* Option Badge */}
+                  <div className="absolute top-4 left-4 bg-slate-100/50 backdrop-blur-md w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-slate-400 border border-white pointer-events-none group-hover:bg-indigo-500 group-hover:text-white transition-colors">
+                    {String.fromCharCode(65 + idx)}
+                  </div>
+                </motion.div>
               ))}
             </div>
 
-            {/* Manual Continue Button (Visible during celebration) */}
+            {/* Next Button Overlay */}
             <AnimatePresence>
               {celebration.show && celebration.type === 'happy' && (
-                <motion.button
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  onClick={() => onComplete({
-                    duration_seconds: Math.floor((Date.now() - startTime) / 1000),
-                    attempts: attempts + 1,
-                    completed: true
-                  })}
-                  className="mt-4 bg-indigo-600 text-white px-8 py-3 rounded-2xl font-black text-lg shadow-lg hover:bg-indigo-700 transition-colors pointer-events-auto z-50"
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
                 >
-                  SIGUIENTE ➔
-                </motion.button>
+                  <button
+                    onClick={() => onComplete({
+                      duration_seconds: Math.floor((Date.now() - startTime) / 1000),
+                      attempts: attempts + 1,
+                      completed: true
+                    })}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-12 py-5 rounded-[2.5rem] font-black text-xl shadow-[0_20px_50px_rgba(79,70,229,0.5)] flex items-center gap-3 active:scale-95 transition-all"
+                  >
+                    CONTINUAR ➔
+                  </button>
+                </motion.div>
               )}
             </AnimatePresence>
           </div>
@@ -167,7 +225,23 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
 
 
   return (
-    <div className="relative w-full flex flex-col items-center justify-center min-h-[70vh]">
+    <div className="relative w-full flex flex-col items-center justify-center min-h-[85vh] overflow-hidden" style={{
+      background: 'radial-gradient(circle at 50% -20%, #F8FAFF 0%, #EEF2FF 100%)'
+    }}>
+      {/* Background Decorations */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        <motion.div 
+          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+          style={{ position: 'absolute', top: '-10%', left: '-10%', width: '40%', height: '40%', background: 'radial-gradient(circle, rgba(79,70,229,0.03) 0%, transparent 70%)', borderRadius: '50%' }}
+        />
+        <motion.div 
+          animate={{ scale: [1.2, 1, 1.2], rotate: [90, 0, 90] }}
+          transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+          style={{ position: 'absolute', bottom: '-5%', right: '-5%', width: '50%', height: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.03) 0%, transparent 70%)', borderRadius: '50%' }}
+        />
+      </div>
+
       <CelebrationOverlay 
         show={celebration.show} 
         type={celebration.type} 

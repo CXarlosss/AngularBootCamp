@@ -27,6 +27,7 @@ export interface Patient {
   playerPin?: string;
   sessionQueue?: string[];
   homeworkWayIds?: string[];
+  gender?: 'male' | 'female';
 }
 
 interface TherapistState {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { patientService } from '@/core/services/patientService';
 import { registry } from '@/content/registry';
+import { normalizeWayText } from '@/shared/lib/way-text-utils';
 import type { Way } from '@/core/engine/types';
 
 interface Props {
@@ -110,7 +111,7 @@ export function HomeworkPlanner({ patientId }: Props) {
                 />
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <p style={{ fontSize: 13, fontWeight: 700, color: '#1E1B4B', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {way.title}
+                    {normalizeWayText(way.title)}
                   </p>
                   <p style={{ fontSize: 10, color: '#6B7280', margin: 0 }}>{way.id}</p>
                 </div>

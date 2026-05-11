@@ -155,6 +155,7 @@ export const usePlayerStore = create<PlayerState>()(
         if (data.patientId) state.profile.id = data.patientId;
         if (data.name) state.profile.name = data.name;
         if (data.avatar) state.profile.avatar = data.avatar;
+        if (data.gender) state.profile.gender = data.gender;
         if (data.completedWays) state.profile.completedWays = data.completedWays;
         if (data.currentLevel) state.profile.currentLevel = data.currentLevel;
         if (data.sessionQueue) state.profile.sessionQueue = data.sessionQueue ?? [];

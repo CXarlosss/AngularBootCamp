@@ -25,9 +25,36 @@ if (typeof window !== 'undefined') {
     if (message.includes('No Listener')) return;
     originalError.apply(console, args);
   };
+
+  window.addEventListener('unhandledrejection', (event) => {
+    const msg = event.reason?.message || '';
+    if (msg.includes('tabs:outgoing') || msg.includes('No Listener')) {
+      event.stopImmediatePropagation();
+      event.preventDefault();
+    }
+  });
 }
 
+import { audioService } from '@/core/utils/audioService';
+
 export default function App() {
+  React.useEffect(() => {
+    const handleInteraction = () => {
+      audioService.unlock();
+      // Una vez desbloqueado, ya no necesitamos el listener
+      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener('mousedown', handleInteraction);
+    };
+
+    window.addEventListener('touchstart', handleInteraction, { once: true });
+    window.addEventListener('mousedown', handleInteraction, { once: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener('mousedown', handleInteraction);
+    };
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

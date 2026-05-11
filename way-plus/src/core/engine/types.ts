@@ -19,6 +19,8 @@ export interface Way {
   name?: string;
   title?: string;
   stepId: string;
+  stepNumber?: number;    // Para mapeo de imágenes situacionales
+  wayNumber?: number;     // Para mapeo de imágenes situacionales
   type: WayType;
   order: number;
   modelingVideoUrl?: string; // Vídeo de modelado (10-15s)
@@ -40,6 +42,7 @@ export interface Way {
 export interface Step {
   id: string;
   levelId: string;
+  stepNumber?: number;
   title: string;
   subtitle?: string;
   theme: 'relaxation' | 'self-esteem' | 'assertiveness' | string;
@@ -71,6 +74,7 @@ export interface PlayerProfile {
   id: string;
   name: string;
   avatar: string; // URL or ID
+  gender?: 'male' | 'female';
   currentLevel: string;
   completedWays: string[];
   streakDays: number;

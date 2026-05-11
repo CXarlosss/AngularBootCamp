@@ -2,6 +2,7 @@ import React, { Suspense, lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { RootLayout } from '@/app/RootLayout';
 import { ProtectedRoute } from '@/app/components/ProtectedRoute';
+import { ScrollToTop } from '@/app/components/ScrollToTop';
 
 // Error Boundary Fallback Component
 const ErrorFallback = ({ error }: { error: any }) => (
@@ -26,6 +27,7 @@ const ErrorFallback = ({ error }: { error: any }) => (
 
 // Lazy imports (Handling named exports)
 const PlayerLoginPage = lazy(() => import('@/features/player/pages/PlayerLoginPage').then(m => ({ default: m.PlayerLoginPage })));
+const PlayerStartPage = lazy(() => import('@/features/player/pages/PlayerStartPage').then(m => ({ default: m.PlayerStartPage })));
 const LevelSelectPage = lazy(() => import('@/features/player/pages/LevelSelectPage').then(m => ({ default: m.LevelSelectPage })));
 const StepDetailsPage = lazy(() => import('@/features/player/pages/StepDetailsPage').then(m => ({ default: m.StepDetailsPage })));
 const WayPlayerPage = lazy(() => import('@/features/content/pages/WayPlayerPage').then(m => ({ default: m.WayPlayerPage })));
@@ -34,7 +36,7 @@ const RelaxationTrackerPage = lazy(() => import('@/features/annexes/pages/Relaxa
 const SelfCheckPage = lazy(() => import('@/features/annexes/pages/SelfCheckPage').then(m => ({ default: m.SelfCheckPage })));
 const RoleplayGuidePage = lazy(() => import('@/features/annexes/pages/RoleplayGuidePage').then(m => ({ default: m.RoleplayGuidePage })));
 const RewardsBackpack = lazy(() => import('@/features/rewards/pages/RewardsBackpack').then(m => ({ default: m.RewardsBackpack })));
-const RewardsShopPage = lazy(() => import('@/features/rewards/pages/RewardsShopPage').then(m => ({ default: m.RewardsShopPage })));
+const EscaparateIlusiones = lazy(() => import('@/features/rewards/pages/EscaparateIlusiones').then(m => ({ default: m.EscaparateIlusiones })));
 const AuthPage = lazy(() => import('@/features/auth/pages/AuthPage').then(m => ({ default: m.AuthPage })));
 const TherapistDashboard = lazy(() => import('@/features/therapist/pages/TherapistDashboard').then(m => ({ default: m.TherapistDashboard })));
 const WayEditorPage = lazy(() => import('@/features/editor/pages/WayEditorPage').then(m => ({ default: m.WayEditorPage })));
@@ -44,10 +46,9 @@ const PatientDetailView = lazy(() => import('@/features/therapist/pages/PatientD
 const SessionPlayerPage = lazy(() => import('@/features/player/pages/SessionPlayerPage').then(m => ({ default: m.SessionPlayerPage })));
 const SessionModePage = lazy(() => import('@/features/player/pages/SessionModePage').then(m => ({ default: m.SessionModePage })));
 
-
-
 const Load = (Component: React.ComponentType) => (
   <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', fontWeight: 800, color: '#4F46E5' }}>Cargando módulo...</div>}>
+    <ScrollToTop />
     <Component />
   </Suspense>
 );
@@ -58,9 +59,13 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     errorElement: <ErrorFallback error={{ message: 'Error crítico en el router' }} />,
     children: [
-      { index: true, element: Load(LevelSelectPage) },
+      { index: true, element: Load(PlayerStartPage) },
       { 
         path: 'player', 
+        element: Load(PlayerStartPage) 
+      },
+      { 
+        path: 'player/login', 
         element: Load(PlayerLoginPage) 
       },
       { 
@@ -115,7 +120,11 @@ export const router = createBrowserRouter([
       },
       { 
         path: 'shop', 
-        element: Load(RewardsShopPage) 
+        element: Load(EscaparateIlusiones) 
+      },
+      { 
+        path: 'escaparate', 
+        element: Load(EscaparateIlusiones) 
       },
       { 
         path: 'annexes/relaxation', 

@@ -5,7 +5,7 @@
  */
 
 export type SoundType = 'click' | 'hover' | 'success' | 'success_homework' | 'error' | 'chest' | 'milestone' | 'secret' | 'coins';
-export type AmbientZone = 'home' | 'relax' | 'bravery' | 'shop' | 'album' | 'zen' | 'zen-forest' | 'zen-waves' | 'zen-wind' | 'none';
+export type AmbientZone = 'home' | 'relax' | 'bravery' | 'shop' | 'album' | 'zen' | 'zen-forest' | 'zen-waves' | 'zen-stream' | 'none';
 
 class AudioService {
   private static instance: AudioService;
@@ -74,8 +74,6 @@ class AudioService {
     return { ctx: this.ctx, master: this.masterGain };
   }
 
-
-
   toggle(enabled?: boolean) {
     this.enabled = enabled ?? !this.enabled;
     if (this.masterGain) {
@@ -121,15 +119,14 @@ class AudioService {
 
   private synthHomeworkFanfare(ctx: AudioContext, dest: AudioNode) {
     const t = ctx.currentTime;
-    // Armónicos más brillantes (G4 a C6) para resaltar sin aturdir
-    [392.00, 523.25, 659.25, 783.99, 987.77, 1046.50].forEach((freq, i) => {
+    // Restauración de frecuencias originales G4-B4-D5-F5-G5-C6 (G Major Dominant 느낌)
+    [392.00, 493.88, 587.33, 698.46, 783.99, 1046.50].forEach((freq, i) => {
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = i % 2 === 0 ? 'triangle' : 'sine';
       osc.frequency.setValueAtTime(freq, t + i * 0.04);
       
       gain.gain.setValueAtTime(0, t + i * 0.04);
-      // Ganancia individual reducida (0.07 * 6 = 0.42) vs Standard (0.1 * 4 = 0.4)
       gain.gain.linearRampToValueAtTime(0.07, t + i * 0.04 + 0.03);
       gain.gain.exponentialRampToValueAtTime(0.01, t + i * 0.04 + 0.8);
       
@@ -264,7 +261,6 @@ class AudioService {
     const { ctx, master } = this.initContext();
     
     if (!ctx || !master) {
-      // Store intended zone so it can be resumed later if needed
       this.currentAmbient = { zone, stop: () => {} };
       if (!this.interacted) {
         this.queuedAmbient = zone;
@@ -293,8 +289,8 @@ class AudioService {
       case 'zen-waves':
         stopFn = this.startZenWaves(ctx, master);
         break;
-      case 'zen-wind':
-        stopFn = this.startZenWind(ctx, master);
+      case 'zen-stream':
+        stopFn = this.startZenStream(ctx, master);
         break;
     }
 
@@ -327,7 +323,7 @@ class AudioService {
       osc.stop(ctx.currentTime + delay + 2);
     };
 
-    const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
+    const notes = [261.63, 329.63, 392.00, 523.25];
     let count = 0;
     const interval = setInterval(() => {
       playNote(notes[count % notes.length], 0);
@@ -347,7 +343,7 @@ class AudioService {
     const gain = ctx.createGain();
     
     osc1.frequency.value = 100;
-    osc2.frequency.value = 104; // 4Hz binaural beat
+    osc2.frequency.value = 104;
     
     gain.gain.value = 0;
     gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 2);
@@ -398,9 +394,7 @@ class AudioService {
     const bufferSize = 2 * ctx.sampleRate;
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-      output[i] = Math.random() * 2 - 1;
-    }
+    for (let i = 0; i < bufferSize; i++) output[i] = Math.random() * 2 - 1;
 
     const whiteNoise = ctx.createBufferSource();
     whiteNoise.buffer = noiseBuffer;
@@ -489,7 +483,7 @@ class AudioService {
     };
   }
 
-  private startZenWind(ctx: AudioContext, dest: AudioNode) {
+  private startZenStream(ctx: AudioContext, dest: AudioNode) {
     const bufferSize = 2 * ctx.sampleRate;
     const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
@@ -499,22 +493,37 @@ class AudioService {
     noise.buffer = noiseBuffer;
     noise.loop = true;
 
-    const filter = ctx.createBiquadFilter();
-    filter.type = 'bandpass';
-    filter.Q.value = 10;
+    const lpFilter = ctx.createBiquadFilter();
+    lpFilter.type = 'lowpass';
+    lpFilter.frequency.value = 1500;
 
     const gain = ctx.createGain();
     gain.gain.value = 0;
     gain.gain.linearRampToValueAtTime(0.1, ctx.currentTime + 2);
     gain.connect(dest);
 
-    noise.connect(filter);
-    filter.connect(gain);
+    noise.connect(lpFilter);
+    lpFilter.connect(gain);
     noise.start();
 
+    // Simular burbujeo con osciladores de frecuencia aleatoria
+    const bubbles: {osc: OscillatorNode, g: GainNode}[] = [];
     const interval = setInterval(() => {
-      filter.frequency.exponentialRampToValueAtTime(400 + Math.random() * 600, ctx.currentTime + 2);
-    }, 3000);
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(400 + Math.random() * 800, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(200 + Math.random() * 400, ctx.currentTime + 0.3);
+      
+      g.gain.setValueAtTime(0, ctx.currentTime);
+      g.gain.linearRampToValueAtTime(0.03, ctx.currentTime + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.3);
+      
+      osc.connect(g);
+      g.connect(gain);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    }, 150);
 
     return () => {
       clearInterval(interval);
@@ -523,16 +532,52 @@ class AudioService {
     };
   }
 
-  // --- TTS remains but simplified ---
-  speak(text: string) {
+  // --- TTS ENHANCED ---
+
+  private getSpanishFemaleVoice(): SpeechSynthesisVoice | null {
+    const voices = window.speechSynthesis.getVoices();
+    // Prioridad: Google, Monica/Helena (Microsoft), cualquier española femenina
+    return voices.find(v => v.lang.startsWith('es') && (v.name.includes('Google') || v.name.includes('Monica') || v.name.includes('Helena') || v.name.includes('female'))) 
+      || voices.find(v => v.lang.startsWith('es')) 
+      || null;
+  }
+
+  speak(text: string, options?: { rate?: number; onWord?: (index: number) => void }) {
     if (!this.enabled) return;
     const synth = window.speechSynthesis;
     synth.cancel();
+
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'es-ES';
+    utterance.rate = options?.rate ?? 0.85; // Más lento para mejor comprensión
     utterance.pitch = 1.1;
+
+    const voice = this.getSpanishFemaleVoice();
+    if (voice) {
+      utterance.voice = voice;
+    } else {
+      synth.onvoiceschanged = () => {
+        utterance.voice = this.getSpanishFemaleVoice();
+        synth.onvoiceschanged = null;
+      };
+    }
+
+    if (options?.onWord) {
+      utterance.onboundary = (event) => {
+        if (event.name === 'word') {
+          const wordIndex = text.substring(0, event.charIndex).split(' ').length - 1;
+          options.onWord!(wordIndex);
+        }
+      };
+    }
+
     synth.speak(utterance);
+  }
+
+  stopSpeak() {
+    window.speechSynthesis.cancel();
   }
 }
 
 export const audioService = AudioService.getInstance();
+

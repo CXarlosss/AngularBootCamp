@@ -27,7 +27,7 @@ export const RelaxationTrackerPage: React.FC = () => {
   const [isPracticing, setIsPracticing] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300);
   const [checks, setChecks] = useState({
-    room: false, chair: false, posture: false, breathing: false, accompanied: false,
+    room: false, chair: false, posture: false, breathing: false, eyes: false, accompanied: false,
   });
   
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -98,6 +98,7 @@ export const RelaxationTrackerPage: React.FC = () => {
                 { key: 'chair', label: 'Silla cómoda', icon: '🪑' },
                 { key: 'posture', label: 'Pies en el suelo', icon: '🦶' },
                 { key: 'breathing', label: 'Respiro despacio', icon: '🌬️' },
+                { key: 'eyes', label: 'Cierro los ojos', icon: '😌' },
                 { key: 'accompanied', label: 'Estoy acompañado', icon: '🧑‍🤝‍🧑' },
               ].map((item) => {
                 const checked = checks[item.key as keyof typeof checks];

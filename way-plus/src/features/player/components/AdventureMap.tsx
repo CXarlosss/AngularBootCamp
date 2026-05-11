@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import type { Step, Way } from '@/core/engine/types';
+import { normalizeWayText } from '@/shared/lib/way-text-utils';
 import './AdventureMap.css';
 
 interface FlatWay extends Way {
@@ -170,7 +171,7 @@ export const AdventureMap: React.FC<Props> = ({
                   </div>
                 </div>
                 <div className="node-label">
-                  <span className="step-title">{way.title ?? way.stepTitle}</span>
+                  <span className="step-title">{normalizeWayText(way.title ?? way.stepTitle)}</span>
                 </div>
               </motion.div>
             );

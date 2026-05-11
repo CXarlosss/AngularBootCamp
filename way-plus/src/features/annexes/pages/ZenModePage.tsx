@@ -9,7 +9,7 @@ const ZEN_OPTIONS = [
   { id: 'zen',        label: 'Lluvia',    icon: <Droplets size={32} />,  color: '#60A5FA' },
   { id: 'zen-forest', label: 'Bosque',    icon: <TreePine size={32} />,  color: '#34D399' },
   { id: 'zen-waves',  label: 'Mar',       icon: <Waves size={32} />,     color: '#2DD4BF' },
-  { id: 'zen-wind',   label: 'Viento',    icon: <Wind size={32} />,      color: '#94A3B8' },
+  { id: 'zen-stream', label: 'Arroyo',    icon: <Waves size={32} />,     color: '#94A3B8' },
 ] as const;
 
 export function ZenModePage() {

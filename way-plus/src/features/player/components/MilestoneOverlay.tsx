@@ -47,44 +47,62 @@ export const MilestoneOverlay: React.FC<MilestoneOverlayProps> = ({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 999,
-            background: 'rgba(30, 27, 75, 0.95)', // Deep indigo
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: 24, textAlign: 'center'
-          }}
+          className="fixed inset-0 z-[999] flex items-center justify-center p-6 text-center overflow-hidden"
         >
-          <motion.div
-            initial={{ scale: 0.5, y: 50, opacity: 0 }}
-            animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.5, y: 50, opacity: 0 }}
-            transition={{ type: 'spring', damping: 15 }}
-            style={{
-              background: 'white', borderRadius: 40,
-              padding: '48px 32px', maxWidth: 400, width: '100%',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-              position: 'relative'
+          {/* Background Overlay - Aurora Glass */}
+          <div className="absolute inset-0 bg-[#0F172A]/90 backdrop-blur-md" />
+          <motion.div 
+            animate={{ 
+              scale: [1, 1.2, 1],
+              rotate: [0, 90, 180, 270, 360],
+              opacity: [0.2, 0.4, 0.2]
             }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.3)_0%,transparent_70%)]"
+          />
+
+          {/* Light Rays Effect */}
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none opacity-30"
+            style={{
+              background: 'conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.4) 20deg, transparent 40deg, rgba(255,255,255,0.4) 60deg, transparent 80deg, rgba(255,255,255,0.4) 100deg, transparent 120deg, rgba(255,255,255,0.4) 140deg, transparent 160deg, rgba(255,255,255,0.4) 180deg, transparent 200deg, rgba(255,255,255,0.4) 220deg, transparent 240deg, rgba(255,255,255,0.4) 260deg, transparent 280deg, rgba(255,255,255,0.4) 300deg, transparent 320deg, rgba(255,255,255,0.4) 340deg, transparent 360deg)',
+              maskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)',
+              WebkitMaskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)'
+            }}
+          />
+
+          <motion.div
+            initial={{ scale: 0.5, y: 100, opacity: 0 }}
+            animate={{ scale: 1, y: 0, opacity: 1 }}
+            exit={{ scale: 0.5, y: 100, opacity: 0 }}
+            transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+            className="relative z-10 bg-white/95 backdrop-blur-2xl rounded-[4rem] p-10 max-w-sm w-full shadow-[0_40px_100px_-15px_rgba(0,0,0,0.6)] border-[12px] border-white/50"
+            style={{ fontFamily: 'Outfit, sans-serif' }}
           >
-            <div style={{ fontSize: 80, marginBottom: 24 }}>🏆</div>
-            <h2 style={{ fontSize: 32, fontWeight: 900, color: '#1E1B4B', marginBottom: 12, lineHeight: 1.1 }}>
+            <div className="relative mb-8">
+              <motion.div 
+                animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
+                transition={{ duration: 4, repeat: Infinity }}
+                className="text-8xl filter drop-shadow-2xl"
+              >
+                🏆
+              </motion.div>
+            </div>
+
+            <h2 className="text-4xl font-black text-slate-800 mb-4 leading-none tracking-tight uppercase">
               {title}
             </h2>
-            <p style={{ fontSize: 18, color: '#6366F1', fontWeight: 700, marginBottom: 32 }}>
+            <p className="text-xl text-indigo-500 font-bold mb-10 leading-tight">
               {subtitle}
             </p>
 
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95, y: 0 }}
               onClick={onClose}
-              style={{
-                background: 'linear-gradient(135deg, #4F46E5, #818CF8)',
-                color: 'white', border: 'none', borderRadius: 24,
-                padding: '18px 40px', fontSize: 20, fontWeight: 900,
-                cursor: 'pointer', width: '100%',
-                boxShadow: '0 10px 20px rgba(79, 70, 229, 0.3)'
-              }}
+              className="w-full bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-[2.5rem] py-5 px-8 text-xl font-black shadow-[0_15px_30px_-5px_rgba(79,70,229,0.4)] border-b-[6px] border-indigo-900 active:border-b-0 transition-all uppercase tracking-widest"
             >
               ¡SOY UN CAMPEÓN!
             </motion.button>

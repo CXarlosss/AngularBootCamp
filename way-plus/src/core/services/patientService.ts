@@ -59,6 +59,7 @@ function supabaseToStore(p: SupabasePatient): Patient {
     objectives: [],
     sessionQueue: [],
     playerPin: p.player_pin ?? '0000',
+    gender: (p as any).gender || 'male',
   };
 }
 

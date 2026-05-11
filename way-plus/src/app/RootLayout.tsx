@@ -55,61 +55,82 @@ function AppHeader() {
       position: 'sticky',
       top: 0,
       zIndex: 40,
-      background: 'linear-gradient(135deg,#3730A3,#4F46E5)',
-      boxShadow: '0 4px 20px rgba(55,48,163,.3)',
+      background: 'rgba(255, 255, 255, 0.8)',
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      borderBottom: '1px solid rgba(79, 70, 229, 0.1)',
     }}>
       <div style={{
         maxWidth: 480,
         margin: '0 auto',
         padding: '0 16px',
-        height: 56,
+        height: 64,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
       }}>
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span style={{ fontSize: 22 }}>🧠</span>
+        <motion.div 
+          whileTap={{ scale: 0.95 }}
+          onClick={() => navigate('/')}
+          style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}
+        >
+          <div style={{
+            width: 36, height: 36, background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+            borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 12px rgba(79, 70, 229, 0.2)'
+          }}>
+            <span style={{ fontSize: 20 }}>🧠</span>
+          </div>
           <span style={{
             fontFamily: "'Outfit',sans-serif",
-            fontWeight: 800, fontSize: 20, color: '#fff', letterSpacing: '-0.5px',
+            fontWeight: 900, fontSize: 22, color: '#1E1B4B', letterSpacing: '-0.5px',
           }}>
-            WAY<span style={{ color: '#A5B4FC' }}>+</span>
+            WAY<span style={{ color: '#4F46E5' }}>+</span>
           </span>
-        </div>
+        </motion.div>
 
         {/* Stats */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           {streakDays > 0 && (
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 4,
-              background: 'rgba(245,158,11,.2)',
-              border: '1.5px solid rgba(245,158,11,.4)',
-              borderRadius: 20, padding: '4px 10px',
-            }}>
+            <motion.div 
+              initial={{ scale: 0 }} animate={{ scale: 1 }}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                background: '#FFFBEB',
+                border: '1.5px solid #FDE68A',
+                borderRadius: 14, padding: '4px 10px',
+              }}
+            >
               <span style={{ fontSize: 14 }}>🔥</span>
-              <span style={{ color: '#FCD34D', fontWeight: 700, fontSize: 13 }}>{streakDays}</span>
-            </div>
+              <span style={{ color: '#B45309', fontWeight: 800, fontSize: 13 }}>{streakDays}</span>
+            </motion.div>
           )}
           <div style={{
             display: 'flex', alignItems: 'center', gap: 4,
-            background: 'rgba(255,255,255,.12)',
-            border: '1.5px solid rgba(255,255,255,.2)',
-            borderRadius: 20, padding: '4px 10px',
+            background: '#F5F3FF',
+            border: '1.5px solid #DDD6FE',
+            borderRadius: 14, padding: '4px 10px',
           }}>
             <span style={{ fontSize: 14 }}>🪙</span>
-            <span style={{ color: '#fff', fontWeight: 700, fontSize: 13 }}>{wayCoins}</span>
+            <span style={{ color: '#5B21B6', fontWeight: 800, fontSize: 13 }}>{wayCoins}</span>
           </div>
+          
+          <div style={{ width: 1, height: 24, background: '#E2E8F0', margin: '0 4px' }} />
+          
           <SoundToggle />
+          
           <motion.button
-            whileTap={{ scale: 0.88 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => navigate('/backpack')}
             style={{
-              width: 38, height: 38, borderRadius: '50%',
-              background: 'rgba(255,255,255,.15)',
-              border: '2px solid rgba(255,255,255,.3)',
-              fontSize: 18, cursor: 'pointer',
+              width: 40, height: 40, borderRadius: 12,
+              background: '#fff',
+              border: '2px solid #E2E8F0',
+              fontSize: 22, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
             }}
           >
             {emoji}
@@ -119,6 +140,7 @@ function AppHeader() {
     </header>
   );
 }
+
 
 /* ─── Bottom Nav ──────────────────────────────────────────────────── */
 
@@ -130,17 +152,20 @@ function BottomNav() {
     <nav style={{
       position: 'fixed',
       bottom: 0,
-      /* Center on any screen width, capped at 480px */
       left: '50%',
       transform: 'translateX(-50%)',
       width: '100%',
       maxWidth: 480,
       zIndex: 40,
-      background: 'rgba(255,255,255,.97)',
-      backdropFilter: 'blur(10px)',
-      borderTop: '1px solid #E8E9FF',
-      paddingBottom: 'max(env(safe-area-inset-bottom),4px)',
+      background: 'rgba(255,255,255,0.9)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderTop: '1px solid rgba(79, 70, 229, 0.1)',
+      paddingBottom: 'max(env(safe-area-inset-bottom), 12px)',
+      paddingTop: 8,
       display: 'flex',
+      justifyContent: 'space-around',
+      boxShadow: '0 -8px 30px rgba(0,0,0,0.04)',
     }}>
       {NAV_ITEMS.map(item => {
         const active =
@@ -150,37 +175,43 @@ function BottomNav() {
         return (
           <motion.button
             key={item.path}
-            whileTap={{ scale: 0.85 }}
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.9 }}
             onClick={() => navigate(item.path)}
             style={{
-              flex: 1,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
               background: 'none', border: 'none', cursor: 'pointer',
-              paddingTop: 8, paddingBottom: 4,
-              minHeight: 52,
+              width: 64,
             }}
           >
-            <span style={{ fontSize: 20 }}>{item.icon}</span>
+            <div style={{
+              width: 42, height: 42,
+              borderRadius: 14,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: active ? '#4F46E5' : 'transparent',
+              color: active ? '#fff' : '#94A3B8',
+              fontSize: 22,
+              transition: 'all 0.2s',
+              boxShadow: active ? '0 8px 16px rgba(79, 70, 229, 0.2)' : 'none',
+            }}>
+              {item.icon}
+            </div>
             <span style={{
-              fontSize: 9,
-              fontWeight: active ? 700 : 500,
-              color: active ? '#4F46E5' : '#9CA3AF',
+              fontSize: 10,
+              fontWeight: 800,
+              color: active ? '#4F46E5' : '#64748B',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
             }}>
               {item.label}
             </span>
-            {active && (
-              <motion.div
-                layoutId="navDot"
-                style={{ width: 4, height: 4, borderRadius: 2, background: '#4F46E5' }}
-                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              />
-            )}
           </motion.button>
         );
       })}
     </nav>
   );
 }
+
 
 /* ─── Root Layout ─────────────────────────────────────────────────── */
 

@@ -57,12 +57,25 @@ img             { max-width: 100%; height: auto; display: block; }
 /* ── Page padding helper ─────────────────────────────────────── */
 .page-padding { padding: 20px 16px; }
 
-/* ── Card ────────────────────────────────────────────────────── */
+/* ── Premium Utilities ────────────────────────────────────────── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+}
+
+.premium-shadow {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.12), 0 10px 20px -5px rgba(0, 0, 0, 0.08);
+}
+
 .card {
   background: #fff;
-  border-radius: 20px;
-  border: 1.5px solid #E8E9FF;
-  box-shadow: 0 2px 12px rgba(79,70,229,.06);
+  border-radius: 32px;
+  border: 2px solid #F1F5F9;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.02), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+  padding: 24px;
 }
 
 /* ── Progress ────────────────────────────────────────────────── */

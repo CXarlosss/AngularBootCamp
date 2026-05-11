@@ -109,6 +109,16 @@ export const registry = {
           });
 
           const sorted = cloudSteps.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+          
+          // Inyectar números de paso y reto para el sistema de imágenes
+          sorted.forEach((step, sIdx) => {
+            step.stepNumber = sIdx + 1;
+            step.ways?.forEach((way, wIdx) => {
+              way.stepNumber = step.stepNumber;
+              way.wayNumber = wIdx + 1;
+            });
+          });
+
           console.log('[WAY+] Raw steps from registry (cloud):', sorted);
           return sorted;
         }
@@ -139,6 +149,16 @@ export const registry = {
     localForLevel.forEach(s => memCache.set(s.id, s));
     
     const finalSteps = localForLevel.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    
+    // Inyectar números de paso y reto para el sistema de imágenes
+    finalSteps.forEach((step, sIdx) => {
+      step.stepNumber = sIdx + 1;
+      step.ways?.forEach((way, wIdx) => {
+        way.stepNumber = step.stepNumber;
+        way.wayNumber = wIdx + 1;
+      });
+    });
+
     console.log('[WAY+] Raw steps from registry (local fallback):', finalSteps);
     return finalSteps;
   },

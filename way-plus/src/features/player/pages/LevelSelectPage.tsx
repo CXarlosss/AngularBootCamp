@@ -10,6 +10,7 @@ import type { Step, Way } from '@/core/engine/types';
 import { patientService } from '@/core/services/patientService';
 import { supabase } from '@/core/services/supabaseClient';
 import { homeworkService } from '@/core/services/homeworkService';
+import { normalizeWayText } from '@/shared/lib/way-text-utils';
 
 // ─── Paleta de colores por step ───────────────────────────────────────────────
 const STEP_COLORS = [
@@ -432,7 +433,7 @@ export const LevelSelectPage: React.FC = () => {
                   
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 22, fontWeight: 900, color: isDone ? '#6B7280' : '#1E1B4B', lineHeight: 1.1 }}>
-                      {way.title}
+                      {normalizeWayText(way.title)}
                     </div>
                     <div style={{ fontSize: 13, color: isDone ? '#9CA3AF' : '#F59E0B', fontWeight: 800, marginTop: 4 }}>
                       {isDone ? '✓ ¡LOGRADO!' : 'EJERCICIO ESPECIAL'}

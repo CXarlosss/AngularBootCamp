@@ -2,6 +2,8 @@ import React from 'react'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './styles/way-typography.css'
+import './styles/progress-fix.css'
 import './app/providers/i18n'
 import App from './App.tsx'
 

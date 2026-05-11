@@ -11,7 +11,9 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { sessionService, type PlannedSession, type SessionSummary } from '@/core/services/sessionService';
+import { normalizeWayText } from '@/shared/lib/way-text-utils';
 import { syncService } from '@/core/services/syncService';
+// ... rest of imports
 import { WayRenderer } from '@/features/content/components/WayRenderer';
 import { registry } from '@/content/registry';
 import { type Way, type Step } from '@/core/engine/types';
@@ -48,24 +50,27 @@ type PageState = 'loading' | 'error' | 'intro' | 'playing' | 'between' | 'finish
 function ProgressBar({ current, total }: { current: number; total: number }) {
   const pct = total > 0 ? (current / total) * 100 : 0;
   return (
-    <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 100,
-      background: C.white, borderBottom: `1px solid ${C.border}`,
-      padding: '12px 20px',
-      display: 'flex', alignItems: 'center', gap: 16,
-    }}>
-      <div style={{ fontSize: 13, fontWeight: 800, color: C.indigo, whiteSpace: 'nowrap' }}>
-        {current} / {total}
+    <div className="fixed top-4 left-4 right-4 z-[100] flex items-center gap-4 bg-white/60 backdrop-blur-2xl p-4 rounded-[28px] border border-white/50 shadow-[0_15px_40px_-10px_rgba(0,0,0,0.1)]">
+      <div className="flex flex-col">
+        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none mb-1">Tu Reto</span>
+        <div className="flex items-baseline gap-1">
+          <span className="text-2xl font-black text-[#0F172A] tabular-nums leading-none">{current}</span>
+          <span className="text-sm font-bold text-slate-400">/</span>
+          <span className="text-sm font-bold text-slate-400 tabular-nums">{total}</span>
+        </div>
       </div>
-      <div style={{ flex: 1, height: 8, background: C.border, borderRadius: 8, overflow: 'hidden' }}>
+
+      <div className="flex-1 h-3 bg-slate-100 rounded-full overflow-hidden border border-slate-50 relative">
         <motion.div
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.5, ease: 'easeOut' }}
-          style={{ height: '100%', background: C.indigo, borderRadius: 8 }}
+          transition={{ duration: 0.8, ease: [0.34, 1.56, 0.64, 1] }}
+          className="h-full bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 bg-[length:200%_100%] rounded-full shadow-[0_0_15px_rgba(79,70,229,0.3)]"
+          style={{ animation: 'shimmer 3s linear infinite' }}
         />
       </div>
-      <div style={{ fontSize: 20 }}>
-        {pct === 100 ? '🎉' : pct > 60 ? '⭐⭐⭐' : pct > 30 ? '⭐⭐' : '⭐'}
+
+      <div className="flex items-center justify-center w-12 h-12 bg-white rounded-2xl shadow-sm border border-slate-50 text-2xl">
+        {pct === 100 ? '🏆' : pct > 75 ? '💎' : pct > 40 ? '⭐' : '🌱'}
       </div>
     </div>
   );
@@ -74,42 +79,38 @@ function ProgressBar({ current, total }: { current: number; total: number }) {
 function IntroScreen({ patientName, totalWays, onStart }: {
   patientName: string; totalWays: number; onStart: () => void;
 }) {
-  const { reduceMotion } = useConfigStore(s => s.accessibility);
-
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      style={{
-        minHeight: '100dvh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        background: C.bg, padding: 32, textAlign: 'center', gap: 24,
-      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen flex flex-col items-center justify-center p-8 text-center gap-12 overflow-hidden relative"
+      style={{ background: 'radial-gradient(circle at 50% 50%, #F8FAFF 0%, #DDE4FF 100%)' }}
     >
       <motion.div
-        animate={reduceMotion ? {} : { y: [0, -8, 0] }}
-        transition={{ repeat: Infinity, duration: 2.5 }}
-        style={{ fontSize: 80 }}
+        animate={{ y: [0, -20, 0], rotate: [0, 5, -5, 0] }}
+        transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
+        className="relative"
       >
-        🎮
+        <div className="absolute inset-0 bg-indigo-400 blur-[80px] opacity-20 rounded-full" />
+        <span className="text-[120px] relative drop-shadow-2xl">🎮</span>
       </motion.div>
-      <h1 style={{ fontSize: 28, fontWeight: 900, color: C.text, margin: 0 }}>
-        {patientName ? `¡Hola, ${patientName}!` : '¡Hola, Aventurero!'}
-      </h1>
-      <p style={{ color: C.muted, fontSize: 16, margin: 0 }}>
-        Hoy tenemos <strong style={{ color: C.indigo }}>{totalWays} reto{totalWays !== 1 ? 's' : ''}</strong> preparados para ti.
-      </p>
+
+      <div className="space-y-4">
+        <h1 className="text-5xl font-black text-[#0F172A] tracking-tight leading-tight">
+          ¡HOLA,<br/>{patientName.toUpperCase()}!
+        </h1>
+        <p className="text-xl text-indigo-600 font-bold max-w-xs mx-auto">
+          Hoy tienes <span className="bg-indigo-100 px-3 py-1 rounded-xl text-indigo-700">{totalWays} retos</span> increíbles por completar.
+        </p>
+      </div>
+
       <motion.button
-        whileTap={{ scale: 0.96 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={onStart}
-        style={{
-          background: C.indigo, color: C.white, border: 'none',
-          padding: '18px 40px', borderRadius: 20,
-          fontWeight: 900, fontSize: 18, cursor: 'pointer',
-          boxShadow: '0 8px 24px rgba(79,70,229,0.35)',
-        }}
+        className="w-full max-w-sm py-6 bg-gradient-to-br from-indigo-600 to-indigo-700 text-white text-2xl font-black rounded-[32px] shadow-[0_20px_40px_rgba(79,70,229,0.3)] border-b-[8px] border-indigo-900 active:border-b-0 transition-all"
       >
-        ¡Empezar! 🚀
+        ¡VAMOS! 🚀
       </motion.button>
     </motion.div>
   );
@@ -123,61 +124,43 @@ function BetweenScreen({ nextWayName, currentIndex, total, onContinue, onSkip }:
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      style={{
-        minHeight: '100dvh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        background: `linear-gradient(160deg, #F8FAFF 0%, ${C.indigoLt} 100%)`,
-        padding: 32, textAlign: 'center', gap: 20,
-      }}
+      className="min-h-screen flex flex-col items-center justify-center p-8 text-center gap-10"
+      style={{ background: 'radial-gradient(circle at 50% 50%, #F0FDF4 0%, #E0F2FE 100%)' }}
     >
       <motion.div
-        initial={{ scale: 0 }}
-        animate={{ scale: 1 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-        style={{ fontSize: 64 }}
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ type: 'spring', stiffness: 200, damping: 15 }}
+        className="w-32 h-32 bg-white rounded-[40px] shadow-2xl flex items-center justify-center text-6xl border-8 border-emerald-100"
       >
-        ⭐
+        🌟
       </motion.div>
-      <h2 style={{ fontSize: 22, fontWeight: 900, color: C.text, margin: 0 }}>
-        ¡Reto completado!
-      </h2>
-      <div style={{
-        background: C.white, borderRadius: 20, padding: '16px 24px',
-        border: `1.5px solid ${C.border}`,
-      }}>
-        <div style={{ fontSize: 12, color: C.muted, marginBottom: 4 }}>Siguiente reto</div>
-        <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>{nextWayName}</div>
-        <div style={{ fontSize: 12, color: C.muted, marginTop: 4 }}>
-          {currentIndex + 1} de {total}
+
+      <div className="space-y-2">
+        <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tight">¡Genial!</h2>
+        <p className="text-emerald-600 font-black text-lg">RETO COMPLETADO</p>
+      </div>
+
+      <div className="w-full max-w-xs bg-white/60 backdrop-blur-lg rounded-[32px] p-8 border border-white shadow-xl">
+        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest block mb-3">Siguiente aventura</span>
+        <h3 className="text-2xl font-black text-indigo-950 leading-tight">{nextWayName}</h3>
+        <div className="mt-4 flex justify-center gap-2">
+          {Array.from({ length: total }).map((_, i) => (
+            <div key={i} className={`w-2 h-2 rounded-full ${i < currentIndex ? 'bg-emerald-400' : (i === currentIndex ? 'bg-indigo-400 w-4' : 'bg-slate-200')} transition-all`} />
+          ))}
         </div>
       </div>
 
-      {/* Botón grande — Maite controla el ritmo */}
       <motion.button
-        whileTap={{ scale: 0.97 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
         onClick={onContinue}
-        style={{
-          background: C.indigo, color: C.white, border: 'none',
-          padding: '18px 48px', borderRadius: 20,
-          fontWeight: 900, fontSize: 18, cursor: 'pointer',
-          boxShadow: '0 8px 24px rgba(79,70,229,0.35)',
-        }}
+        className="w-full max-w-sm py-6 bg-gradient-to-br from-emerald-500 to-emerald-600 text-white text-2xl font-black rounded-[32px] shadow-[0_20px_40px_rgba(16,185,129,0.3)] border-b-[8px] border-emerald-800 active:border-b-0 transition-all"
       >
-        Continuar →
+        SIGUIENTE →
       </motion.button>
 
-      {/* Saltar — muy discreto, solo para el terapeuta */}
-      <div style={{ position: 'fixed', bottom: 10, right: 10, opacity: 0.2 }}>
-        <button
-          onClick={onSkip}
-          style={{
-            background: 'none', border: 'none', color: C.muted,
-            fontSize: 10, fontWeight: 600, cursor: 'pointer',
-          }}
-        >
-          Saltar
-        </button>
-      </div>
+      <button onClick={onSkip} className="opacity-10 text-[10px] font-bold hover:opacity-100 transition-opacity">Saltar</button>
     </motion.div>
   );
 }
@@ -187,42 +170,36 @@ function FinishedScreen({ completedCount, totalCount, onViewSummary }: {
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      style={{
-        minHeight: '100dvh', display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        background: `linear-gradient(160deg, #F0FDF4, ${C.indigoLt})`,
-        padding: 32, textAlign: 'center', gap: 24,
-      }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen flex flex-col items-center justify-center p-8 text-center gap-10"
+      style={{ background: 'radial-gradient(circle at 50% 50%, #FFFBEB 0%, #FEF3C7 100%)' }}
     >
       <motion.div
-        animate={{ rotate: [0, -10, 10, -10, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 1, delay: 0.3 }}
-        style={{ fontSize: 80 }}
+        animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+        transition={{ duration: 0.5, repeat: 3 }}
+        className="text-9xl drop-shadow-2xl"
       >
         🏆
       </motion.div>
-      <h1 style={{ fontSize: 32, fontWeight: 900, color: C.text, margin: 0 }}>
-        ¡Sesión completada!
-      </h1>
-      <p style={{ color: C.muted, fontSize: 16 }}>
-        Has completado{' '}
-        <strong style={{ color: C.emerald }}>{completedCount}</strong>{' '}
-        de <strong>{totalCount}</strong> retos.
-      </p>
-      <motion.button
-        whileTap={{ scale: 0.97 }}
-        onClick={onViewSummary}
-        style={{
-          background: C.indigo, color: C.white, border: 'none',
-          padding: '16px 36px', borderRadius: 18,
-          fontWeight: 900, fontSize: 16, cursor: 'pointer',
-          boxShadow: '0 8px 24px rgba(79,70,229,0.3)',
-        }}
-      >
-        Ver resumen →
-      </motion.button>
+
+      <div className="space-y-4">
+        <h1 className="text-5xl font-black text-amber-950 tracking-tighter">¡LO LOGRASTE!</h1>
+        <p className="text-xl font-bold text-amber-700">
+          Has completado <span className="bg-white px-3 py-1 rounded-xl shadow-sm">{completedCount} / {totalCount}</span> retos hoy.
+        </p>
+      </div>
+
+      <div className="flex flex-col gap-4 w-full max-w-sm">
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={onViewSummary}
+          className="w-full py-6 bg-gradient-to-br from-amber-500 to-amber-600 text-white text-2xl font-black rounded-[32px] shadow-[0_20px_40px_rgba(245,158,11,0.3)] border-b-[8px] border-amber-800 active:border-b-0 transition-all"
+        >
+          VER MI PREMIO 💎
+        </motion.button>
+      </div>
     </motion.div>
   );
 }
@@ -486,7 +463,7 @@ export function SessionPlayerPage() {
         <ProgressBar current={currentIndex + 1} total={ways.length} />
         <div style={{ paddingTop: 60 }}>
           <BetweenScreen
-            nextWayName={nextItem.way.name ?? nextItem.way.title ?? 'Siguiente reto'}
+            nextWayName={normalizeWayText(nextItem.way.name ?? nextItem.way.title ?? 'Siguiente reto')}
             currentIndex={currentIndex + 1}
             total={ways.length}
             onContinue={handleContinue}
@@ -524,7 +501,7 @@ export function SessionPlayerPage() {
                 {currentItem.stepTitle}
               </div>
               <h2 style={{ fontSize: 20, fontWeight: 900, color: C.text, margin: 0 }}>
-                {currentItem.way.name ?? currentItem.way.title ?? ''}
+                {normalizeWayText(currentItem.way.name ?? currentItem.way.title ?? '')}
               </h2>
             </div>
 

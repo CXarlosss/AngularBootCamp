@@ -19,6 +19,21 @@
           keys.forEach(key => caches.delete(key));
         });
       }
+
+      // Suppress extension errors early
+      window.addEventListener('unhandledrejection', (event) => {
+        if (event.reason && event.reason.message && 
+           (event.reason.message.includes('tabs:outgoing') || event.reason.message.includes('No Listener'))) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+        }
+      });
+      window.addEventListener('error', (event) => {
+        if (event.message && (event.message.includes('tabs:outgoing') || event.message.includes('No Listener'))) {
+          event.stopImmediatePropagation();
+          event.preventDefault();
+        }
+      }, true);
     </script>
     
     <!-- PWA / iOS Meta Tags -->
