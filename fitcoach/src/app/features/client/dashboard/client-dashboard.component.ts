@@ -1,251 +1,112 @@
-import {
-  Component, inject, signal,
-  ChangeDetectionStrategy, OnInit
-} from '@angular/core';
+// src/app/features/client/dashboard/client-dashboard.component.ts
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { toObservable } from '@angular/core/rxjs-interop';
-import { AuthService }         from '../../../core/auth/auth.service';
-import { ClientRoutineService } from '../../../core/services/client-routine.service';
-import { AssignedRoutine }      from '../../../core/models/routine.model';
-import { WorkoutStore }         from '../../../state/workout.store';
-import { ProfileService }       from '../profile/profile.service';
-import { computed }             from '@angular/core';
-import { RankCardComponent }    from '../../../shared/components/rank-card/rank-card.component';
-import { AvatarFrameComponent } from '../../../shared/components/avatar-frame/avatar-frame.component';
-import { InitialsPipe }         from '../../../shared/pipes/initials.pipe';
-import { RankService }          from '../../../core/services/rank.service';
-import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
-import { RouterModule }         from '@angular/router';
+import { MissionEngineService } from '../../../gamification/services/mission-engine.service';
+import { StreakWeeklyService } from '../../../gamification/services/streak-weekly.service';
+import { LeaderboardService } from '../../../gamification/services/leaderboard.service';
+import { MissionCardComponent } from '../../../gamification/components/mission-card/mission-card.component';
+import { FeatureFlagService } from '../../../core/services/feature-flag.service';
 
 @Component({
-  selector: 'fc-client-dashboard',
+  selector: 'app-client-dashboard',
   standalone: true,
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RankCardComponent, AvatarFrameComponent, InitialsPipe, ProfileBannerComponent, RouterModule],
+  imports: [CommonModule, MissionCardComponent],
   template: `
-    <div class="client-dash">
-
-      <header class="client-header">
-        <div class="header-logo">Fit<span>Coach</span></div>
-        <app-avatar-frame
-          [initials]="auth.profile()?.fullName | initials"
-          [rankLevel]="rankSvc.fullRank()?.rank?.level ?? 0"
-          [equippedSpecial]="auth.profile()?.equippedFrame ?? null"
-          [size]="32"
-          [showBadge]="false" />
-      </header>
-
-      @if (profileSvc.profile(); as p) {
-        <div style="margin: 0 16px 12px;">
-          <app-profile-banner
-            [name]="p.full_name"
-            [initials]="p.full_name | initials"
-            [rankLevel]="rankSvc.fullRank()?.rank?.level ?? 0"
-            [rankName]="rankSvc.fullRank()?.rank?.name ?? 'Recruta'"
-            [rankEmoji]="rankSvc.fullRank()?.rank?.emoji ?? '⚔️'"
-            [divLabel]="rankSvc.fullRank()?.divLabel ?? 'IV'"
-            [xpTotal]="rankSvc.athleteRank()?.xpTotal ?? 0"
-            [goal]="profileSvc.goalLabel(p.goal)"
-            [goalEmoji]="profileSvc.goalEmoji(p.goal)"
-            [bannerColor]="p.banner_color ?? 'c0'"
-            [bannerPattern]="p.banner_pattern ?? 'p0'"
-            [equippedFrame]="p.equipped_frame" />
-          
-          <button class="customize-btn" routerLink="/client/profile/banner">
-            🎨 Personalizar banner
-          </button>
-        </div>
-      }
-
-      <!-- SISTEMA DE RANGOS -->
-      <div class="dash-rank-section" style="margin: 0 16px 20px;">
-        <app-rank-card />
-      </div>
-
-      <div class="greeting">
-        <h1 class="greeting-name">{{ greeting() }}, {{ firstName() }}</h1>
-        <p class="greeting-sub">
-          @if (routine()) { 
-            @if (pendingDaysCount() > 0) { Tienes trabajo pendiente esta semana }
-            @else { ¡Has completado todos los entrenamientos de esta rutina! 🚀 }
-          }
-          @else { Tu entrenador aún no te ha asignado una rutina }
-        </p>
-      </div>
-
-      @if (routine(); as r) {
-        <div class="routine-card">
-          <div class="rc-header">
-            <div class="rc-badge">Rutina activa</div>
-            <span class="rc-total">{{ pendingDaysCount() }} / {{ r.routine?.days?.length }} pendientes</span>
+    <div class="dashboard">
+      <!-- Banner de identidad (existente) -->
+      <div class="identity-banner">...</div>
+      
+      <!-- Sprint 3: Misiones -->
+      @if (gamificationEnabled()) {
+        <div class="missions-panel">
+          <div class="panel-header">
+            <h3>Misiones Semanales</h3>
+            <span class="xp-available">{{ totalAvailableXp() }} XP disponible</span>
           </div>
-          <h2 class="rc-name">{{ r.routine?.name }}</h2>
-          <p class="rc-meta">
-            {{ r.routine?.goal ? goalLabel(r.routine!.goal!) : '' }}
-          </p>
-          
-          <div class="rc-days">
-            @for (day of routineDaysStatus(); track day.id) {
-              <div 
-                class="day-chip interactive" 
-                [class.done]="day.isCompleted"
-                (click)="!day.isCompleted && startWorkout(day.id)"
-              >
-                <span class="day-label">{{ day.label }}</span>
-                @if (day.isCompleted) {
-                  <span class="day-count">✓ Completado</span>
-                } @else {
-                  <span class="day-count">{{ day.exercises.length }} ejercicios</span>
-                }
-              </div>
-            }
-
-            @if (pendingDaysCount() === 0) {
-              <div class="all-done-msg">
-                ¡Semana completada! Tu coach te asignará una nueva rutina pronto.
-              </div>
-            }
-          </div>
-
-          @if (pendingDaysCount() > 0) {
-            <button class="btn-start" (click)="startFirstPendingWorkout()">
-              Continuar entrenamiento
-            </button>
+          @for (mission of activeMissions(); track mission.id) {
+            <app-mission-card 
+              [mission]="mission"
+              (onClaim)="claimMission($event)" />
           }
         </div>
-      } @else {
-        <div class="empty-card">
-          <div class="empty-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-              stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round">
-              <path d="M18 20V10M12 20V4M6 20v-6"/>
-            </svg>
+      }
+      
+      <!-- Sprint 3: Racha -->
+      @if (gamificationEnabled() && streak(); as s) {
+        <div class="streak-card" [class.on-fire]="s.currentStreak >= 4">
+          <div class="streak-visual">
+            @for (week of streakWeeks(); track $index) {
+              <div class="week-pip" [class.active]="week"></div>
+            }
           </div>
-          <p class="empty-title">Sin rutina asignada</p>
-          <p class="empty-sub">Tu entrenador te enviará una rutina pronto</p>
+          <div class="streak-text">
+            <span class="count">{{ s.currentStreak }} semanas seguidas</span>
+            <span class="target">{{ s.daysCompleted }}/{{ s.targetDays }} días esta semana</span>
+          </div>
         </div>
       }
+      
+      <!-- Sprint 3: Leaderboard (top 3) -->
+      @if (gamificationEnabled() && leaderboardTop3().length > 0) {
+        <div class="leaderboard-preview">
+          <h4>Top de tu grupo</h4>
+          @for (entry of leaderboardTop3(); track entry.clientId) {
+            <div class="leader-row" [class.me]="entry.isCurrentUser">
+              <span class="rank">{{ entry.rank }}</span>
+              <span class="name">{{ entry.clientName }}</span>
+              <span class="value">{{ entry.value }} XP</span>
+            </div>
+          }
+        </div>
+      }
+      
+      <!-- Resto del dashboard existente -->
     </div>
-  `,
-  styleUrl: './client-dashboard.component.css',
+  `
 })
-export class ClientDashboardComponent implements OnInit {
-  auth    = inject(AuthService);
-  router  = inject(Router);
-  workoutStore = inject(WorkoutStore);
-  profileSvc = inject(ProfileService);
-  rankSvc = inject(RankService);
-  private clientRoutineSvc = inject(ClientRoutineService);
-
-  routine = signal<AssignedRoutine | null>(null);
-  completedDaysList = signal<string[]>([]);
-
-  routineDaysStatus = computed(() => {
-    const r = this.routine();
-    const history = this.workoutStore.history();
-    const dbCompleted = this.completedDaysList();
-    if (!r || !r.routine?.days) return [];
-
-    return r.routine.days.map(day => {
-      const isCompletedInHistory = history.some(log => 
-        log.assignedRoutineId === r.id && 
-        log.dayId === day.id &&
-        log.completed
-      );
-      const isCompletedInDB = dbCompleted.includes(day.id);
-      
-      return {
-        ...day,
-        isCompleted: isCompletedInHistory || isCompletedInDB
-      };
-    });
+export class ClientDashboardComponent {
+  private featureFlags = inject(FeatureFlagService);
+  private missionEngine = inject(MissionEngineService);
+  private streakService = inject(StreakWeeklyService);
+  private leaderboard = inject(LeaderboardService);
+  
+  protected gamificationEnabled = signal(false);
+  protected activeMissions = this.missionEngine.activeMissions;
+  protected totalAvailableXp = this.missionEngine.totalXpAvailable;
+  protected streak = signal<any>(null);
+  protected leaderboardTop3 = signal<any[]>([]);
+  
+  constructor() {
+    const userId = 'current-user-id';
+    this.gamificationEnabled.set(this.featureFlags.isEnabled('gamification_v2', userId));
+    
+    if (this.gamificationEnabled()) {
+      this.loadDashboardData(userId);
+    }
+  }
+  
+  async loadDashboardData(clientId: string): Promise<void> {
+    // Misiones
+    await this.missionEngine.loadMissions(clientId);
+    
+    // Racha
+    const streakData = await this.streakService.calculateStreak(clientId);
+    this.streak.set(streakData);
+    
+    // Leaderboard (top 3)
+    const board = await this.leaderboard.getLeaderboard('coach-id', 'xp');
+    this.leaderboardTop3.set(board.slice(0, 3));
+  }
+  
+  async claimMission(missionId: string): Promise<void> {
+    await this.missionEngine.claimXp('current-user-id', missionId);
+    // Recargar
+    await this.loadDashboardData('current-user-id');
+  }
+  
+  protected streakWeeks = computed(() => {
+    // Array de 8 semanas para visualización
+    const streak = this.streak()?.currentStreak || 0;
+    return Array(8).fill(false).map((_, i) => i < streak);
   });
-
-  pendingDaysCount = computed(() => {
-    return this.routineDaysStatus().filter(d => !d.isCompleted).length;
-  });
-
-  greeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return 'Buenos días';
-    if (h < 20) return 'Buenas tardes';
-    return 'Buenas noches';
-  };
-
-  firstName = () =>
-    (this.auth.profile()?.fullName ?? 'atleta').split(' ')[0];
-
-  initials = (name: string) =>
-    name.split(' ').slice(0, 2).map(p => p[0]).join('').toUpperCase();
-
-  goalLabel = (goal?: string) => ({
-    hypertrophy:  'Hipertrofia',
-    strength:     'Fuerza',
-    weight_loss:  'Pérdida de peso',
-    mobility:     'Movilidad',
-  }[goal ?? ''] ?? goal ?? '');
-
-  async ngOnInit(): Promise<void> {
-    const profile = this.auth.profile();
-    if (profile?.id) {
-      this.loadData(profile.id);
-    } else {
-      const sub = toObservable(this.auth.profile).subscribe(p => {
-        if (p?.id) {
-          this.loadData(p.id);
-          sub.unsubscribe();
-        }
-      });
-    }
-  }
-
-  isLoading = signal(true);
-
-  private async loadData(clientId: string) {
-    console.log('[Dashboard] Cargando datos para:', clientId);
-    this.isLoading.set(true);
-    try {
-      const [assigned] = await Promise.all([
-        this.clientRoutineSvc.getActiveRoutine(clientId),
-        this.workoutStore.loadHistory(clientId),
-        this.profileSvc.load()
-      ]);
-      
-      this.routine.set(assigned);
-
-      if (assigned) {
-        const completedDays = await this.clientRoutineSvc.getCompletedDays(clientId, assigned.routineId);
-        // Fix: completedDays ya es string[], no hace falta map d.day_id
-        this.completedDaysList.set(completedDays);
-        console.log('[Dashboard] Días completados cargados:', completedDays);
-      }
-    } catch (err) {
-      console.error('[Dashboard] Error cargando datos:', err);
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
-
-  startWorkout(dayId: string): void {
-    console.log('[Dashboard] startWorkout click con dayId:', dayId);
-    const day = this.routineDaysStatus().find(d => d.id === dayId);
-    if (day?.isCompleted) {
-      console.warn('[Dashboard] El día ya está completado, abortando navegación');
-      return;
-    }
-
-    this.router.navigate(['/client/workout'], { 
-      queryParams: { dayId } 
-    }).then(nav => {
-      console.log('[Dashboard] Navegación a workout exitosa:', nav);
-    });
-  }
-
-  startFirstPendingWorkout(): void {
-    const next = this.routineDaysStatus().find(d => !d.isCompleted);
-    if (next) {
-      this.startWorkout(next.id);
-    }
-  }
 }

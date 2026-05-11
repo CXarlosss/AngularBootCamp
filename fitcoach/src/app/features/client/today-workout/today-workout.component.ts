@@ -15,6 +15,8 @@ import { HapticService }     from '../../../core/services/haptic.service';
 import { AssignedRoutine, Exercise, RoutineDay } from '../../../core/models/routine.model';
 import { SetLog }          from '../../../core/models/workout-log.model';
 import { FormsModule }     from '@angular/forms';
+import { TelemetryService } from '../../../core/services/telemetry.service';
+
 
 interface ExerciseState {
   exercise:      Exercise;
@@ -250,7 +252,9 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   timer        = inject(RestTimerService);
   haptic       = inject(HapticService);
   router       = inject(Router);
+  private telemetry    = inject(TelemetryService);
   private route = inject(ActivatedRoute);
+
 
   isLoading = signal(true);
   activeExerciseIndex = signal(0);
@@ -440,7 +444,16 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     if (exercise.restSeconds > 0) {
       this.timer.start(exercise.restSeconds);
     }
+
+    // Telemetry
+    this.telemetry.track('set_saved', {
+      exercise_id: exercise.id,
+      weight: set.weightKg,
+      reps: set.repsDone,
+      input_method: 'quick-log' // Asumimos quick-log en esta vista
+    });
   }
+
 
   editSet(set: SetLog): void {
     console.log('[FIX-EDIT] Abriendo modal para:', set.id);
@@ -487,9 +500,18 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   async completeWorkout(): Promise<void> {
     const label = this.todayDay()?.label || 'Entrenamiento';
     this.haptic.trigger('complete');
+    
+    // Telemetry antes del redirect
+    this.telemetry.track('workout_completed', {
+      label: label,
+      total_sets: this.totalSets(),
+      total_volume: this.totalVolume()
+    });
+
     await this.workoutStore.completeWorkout(label);
     this.router.navigate(['/client/progress']);
   }
+
 
   confirmExit(): void {
     if (this.totalSets() > 0 && !this.allDone()) {
