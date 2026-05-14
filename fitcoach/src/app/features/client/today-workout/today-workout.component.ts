@@ -1,20 +1,19 @@
-import {
-  Component, inject, signal, computed,
-  ChangeDetectionStrategy, OnInit, OnDestroy, effect, ElementRef
-} from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit, OnDestroy, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
-import { WorkoutStore }    from '../../../state/workout.store';
+import { RealtimeChannel } from '@supabase/supabase-js';
+import { supabase } from '../../../core/supabase.client';
+import { WorkoutBlockedError } from '../../../core/models/errors.model';
+import { WorkoutStore } from '../../../state/workout.store';
 import { ClientRoutineService } from '../../../core/services/client-routine.service';
-import { AuthService }     from '../../../core/auth/auth.service';
+import { AuthService } from '../../../core/auth/auth.service';
 import { RestTimerService } from '../../../core/services/rest-timer.service';
 import { SetLoggerComponent } from '../../../shared/components/set-logger/set-logger.component';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
-import { HapticService }     from '../../../core/services/haptic.service';
-import { AssignedRoutine, Exercise, RoutineDay } from '../../../core/models/routine.model';
-import { SetLog }          from '../../../core/models/workout-log.model';
-import { FormsModule }     from '@angular/forms';
+import { HapticService } from '../../../core/services/haptic.service';
+import { AssignedRoutine, Exercise, RoutineDay, ExerciseState, SetLog } from '../../../core/models/routine.model';
+import { FormsModule } from '@angular/forms';
 import { TelemetryService } from '../../../core/services/telemetry.service';
 
 
@@ -242,10 +241,29 @@ interface ExerciseState {
         </div>
       </div>
     }
+
+    <!-- Capa 3: Modal de bloqueo remoto (Grace Period) -->
+    @if (isDayBlockedRemotely()) {
+      <div class="remote-block-overlay">
+        <div class="remote-block-modal">
+          <div class="modal-icon">🔒</div>
+          <h2>Entrenamiento Finalizado</h2>
+          <p>Esta sesión ha sido marcada como completada desde otro dispositivo.</p>
+          <div class="sets-summary">
+            <span class="count">{{ workoutStore.activeLog()?.sets?.length || 0 }}</span>
+            <span class="label">series registradas hoy</span>
+          </div>
+          <button class="btn-primary" (click)="router.navigate(['/client/progress'])">
+            Ver mi progreso
+          </button>
+        </div>
+      </div>
+    }
   `,
   styleUrls: ['./today-workout.component.css']
 })
 export class TodayWorkoutComponent implements OnInit, OnDestroy {
+  private sb = supabase;
   workoutStore = inject(WorkoutStore);
   clientRoutineSvc = inject(ClientRoutineService);
   auth         = inject(AuthService);
@@ -261,7 +279,9 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   activeRoutine = signal<AssignedRoutine | null>(null);
   selectedDayId = signal<string | null>(null);
   isDayDone     = signal(false);
+  isDayBlockedRemotely = signal(false);
   editingSet    = signal<SetLog | null>(null);
+  private completedDaysSub?: RealtimeChannel;
   
   // Señales auxiliares para el formulario de edición
   editWeight    = signal(0);
@@ -384,12 +404,9 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
           } else {
             console.log('[TodayWorkout] Iniciando nueva sesión de entrenamiento...');
             this.workoutStore.startWorkout(assigned.id, assigned.routineId, clientId, day.id);
+            this.subscribeToDayCompletion(clientId, day.id);
           }
-        } else {
-          console.warn('[TodayWorkout] No se encontró el día especificado en la rutina');
         }
-      } else {
-        console.warn('[TodayWorkout] El cliente no tiene ninguna rutina activa asignada');
       }
     } catch (err) {
       console.error('[TodayWorkout] Error crítico en inicialización:', err);
@@ -399,8 +416,31 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     }
   }
 
+  private subscribeToDayCompletion(clientId: string, dayId: string) {
+    this.completedDaysSub = this.sb
+      .channel('day-completion')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'completed_days',
+          filter: `client_id=eq.${clientId}`
+        },
+        (payload) => {
+          if (payload.new.day_id === dayId) {
+            console.log('[TodayWorkout] Realtime: día completado remotamente detectado.');
+            this.isDayBlockedRemotely.set(true);
+            this.haptic.trigger('heavy');
+          }
+        }
+      )
+      .subscribe();
+  }
+
   ngOnDestroy(): void {
     this.timer.stop();
+    this.completedDaysSub?.unsubscribe();
   }
 
   isExerciseDone(state: ExerciseState): boolean {
@@ -424,12 +464,23 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     return (this.workoutStore.activeLog()?.sets ?? []).filter(s => s.exerciseId === exerciseId);
   }
 
-  onSetLogged(
+  async onSetLogged(
     set: Omit<SetLog, 'id'>,
     exercise: Exercise
-  ): void {
+  ): Promise<void> {
     console.log('[TodayWorkout] Recibida serie para:', exercise.name, set);
-    this.workoutStore.logSet(set);
+    try {
+      await this.workoutStore.logSet(set);
+    } catch (err) {
+      if (err instanceof WorkoutBlockedError) {
+        this.isDayBlockedRemotely.set(true);
+        // ✅ Limpieza controlada de UI y persistencia local
+        sessionStorage.removeItem('active_workout');
+        this.workoutStore.clearActiveLog();
+        return;
+      }
+      throw err;
+    }
     this.haptic.trigger('light');
 
     const completed = this.setsForExercise(exercise.id).length + 1;

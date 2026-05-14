@@ -6,6 +6,7 @@ import { v4 as uuid } from 'uuid';
 import { AuthService } from '../core/auth/auth.service';
 import { WorkoutEventsService } from '../core/services/workout-events.service';
 import { RankService } from '../core/services/rank.service';
+import { WorkoutBlockedError } from '../core/models/errors.model';
 
 interface WorkoutState {
   activeLog: WorkoutLog | null;   // el entrenamiento en curso
@@ -88,12 +89,21 @@ export const WorkoutStore = signalStore(
     },
 
     // Registrar una serie
-    logSet(set: Omit<SetLog, 'id'>): void {
+    async logSet(set: Omit<SetLog, 'id'>): Promise<void> {
       const log = store.activeLog();
       if (!log) {
         console.warn('[WorkoutStore] No hay sesión activa para registrar la serie');
         return;
       }
+
+      // CAPA 2: Verificación atómica antes de guardar
+      const isBlocked = await svc.isDayCompleted(log.clientId, log.dayId);
+      if (isBlocked) {
+        console.warn('[WorkoutStore] El día se ha cerrado externamente. Abortando registro.');
+        // ✅ AHORA: Solo lanzamos el error. El componente gestiona la limpieza de UI/Session.
+        throw new WorkoutBlockedError();
+      }
+
       const newSet: SetLog = { ...set, id: uuid() };
       const updated = { ...log, sets: [...log.sets, newSet] };
       console.log('[WorkoutStore] Serie registrada. Total series:', updated.sets.length, updated);
@@ -151,12 +161,18 @@ export const WorkoutStore = signalStore(
         console.error('[WorkoutStore] saveWorkoutLog falló, continuando...', e);
       }
       
-      // 2. Finalizar sesión — si falla, continuamos igualmente
+      // 2. Finalizar sesión (Atómico)
       try {
         console.log('[WorkoutStore] Llamando a finishWorkout...');
         await svc.finishWorkout(log.routineId, log.dayId, dayLabel);
-      } catch (e) {
-        console.error('[WorkoutStore] finishWorkout falló, continuando...', e);
+      } catch (e: any) {
+        if (e.message === 'DAY_ALREADY_COMPLETED') {
+          console.warn('[WorkoutStore] Carrera detectada en completeWorkout. Abortando notificaciones/XP redundantes.');
+          patchState(store, { activeLog: null, loading: false });
+          sessionStorage.removeItem('active_workout');
+          return;
+        }
+        console.error('[WorkoutStore] finishWorkout falló inesperadamente, continuando...', e);
       }
 
       // 3. XP — siempre se ejecuta
@@ -223,6 +239,10 @@ export const WorkoutStore = signalStore(
         if (set) return set;
       }
       return null;
+    },
+
+    clearActiveLog(): void {
+      patchState(store, { activeLog: null });
     }
   }))
 );

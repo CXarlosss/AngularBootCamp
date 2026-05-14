@@ -25,11 +25,17 @@ export class WorkoutService {
       return;
     }
 
-    // 1. Marcar día como completado
+    // 1. Marcar día como completado (Atómico)
     console.log('[WorkoutService] Marcando día como completado...');
-    await this.markDayCompleted(userId, routineId, dayId);
+    const wasInserted = await this.markDayCompleted(userId, routineId, dayId);
+
+    if (!wasInserted) {
+      console.warn('[WorkoutService] Carrera detectada: El día ya ha sido completado por otro dispositivo.');
+      throw new Error('DAY_ALREADY_COMPLETED'); // Lanzamos para abortar notificaciones/XP
+    }
 
     // 2. Obtener nombre del cliente Y coach_id en una sola query
+    // ... resto del método sigue igual ...
     console.log('[WorkoutService] Obteniendo coach_id...');
     const { data: clientProfile } = await this.sb
       .from('profiles')
@@ -152,14 +158,14 @@ export class WorkoutService {
     clientId: string,
     routineId: string,
     dayId: string,
-  ): Promise<void> {
+  ): Promise<boolean> {
     const isUUID = (str: string) =>
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
         str,
       );
-    if (!dayId || !isUUID(dayId)) return;
+    if (!dayId || !isUUID(dayId)) return false;
 
-    const { error } = await this.sb.from('completed_days').upsert(
+    const { data, error } = await this.sb.from('completed_days').upsert(
       {
         client_id: clientId,
         routine_id: routineId,
@@ -170,13 +176,17 @@ export class WorkoutService {
         onConflict: 'client_id,day_id',
         ignoreDuplicates: true,
       },
-    );
+    ).select();
 
-    if (error)
+    if (error) {
       console.error(
         '[WorkoutService] Error en markDayCompleted:',
         error.message,
       );
+      return false;
+    }
+
+    return (data && data.length > 0);
   }
 
   async getClientHistory(clientId: string): Promise<WorkoutLog[]> {
@@ -209,6 +219,15 @@ export class WorkoutService {
   }
 
   async isDayCompleted(clientId: string, dayId: string): Promise<boolean> {
+    // 1. Verificación atómica vía RPC (más rápida y segura)
+    const { data: isBlocked, error: rpcError } = await this.sb.rpc('is_day_blocked', {
+      p_client_id: clientId,
+      p_day_id: dayId
+    });
+
+    if (!rpcError && isBlocked) return true;
+
+    // 2. Fallback a tablas manuales por si el RPC falla o no está propagado
     const { data: completed } = await this.sb
       .from('completed_days')
       .select('id')

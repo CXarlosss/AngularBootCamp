@@ -15,6 +15,7 @@ export interface ClientKPIs {
   currentWeight: number | null;
   weightDelta: number | null;
   currentStreak: number;
+  lastWorkoutDate: Date | null;
 }
 
 export interface WeekDay {

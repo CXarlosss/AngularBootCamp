@@ -35,13 +35,18 @@ import { WeightChartComponent, WeightEntry } from '../../../../../shared/compone
         <div class="sub">Últimos 30 días</div>
       </div>
 
-      <div class="kpi-card">
-        <span class="label">Racha Actual</span>
-        <div class="value-row">
-          <span class="value">{{ kpis?.currentStreak }}</span>
-          <span class="unit">días</span>
-        </div>
         <div class="sub">Entrenamientos seguidos</div>
+      </div>
+
+      <div class="kpi-card" [class.alert]="isInactive()">
+        <span class="label">Última Actividad</span>
+        <div class="value-row">
+          <span class="value">{{ kpis?.lastWorkoutDate ? (kpis?.lastWorkoutDate | date:'d MMM') : '---' }}</span>
+          @if (isInactive()) {
+            <span class="alert-tag">INACTIVO</span>
+          }
+        </div>
+        <div class="sub">{{ inactiveDays() }} días sin log</div>
       </div>
 
       <!-- Weight Evolution Chart -->
@@ -98,6 +103,11 @@ import { WeightChartComponent, WeightEntry } from '../../../../../shared/compone
     .neg { color: #E74C3C; background: rgba(231, 76, 60, 0.1); }
     .sub { color: #666; font-size: 12px; }
 
+    .kpi-card.alert { border-color: rgba(231, 76, 60, 0.3); background: rgba(231, 76, 60, 0.05); }
+    .alert-tag { background: #E74C3C; color: white; padding: 2px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; margin-left: 8px; }
+    .alert .value { color: #E74C3C; }
+    .alert .label { color: rgba(231, 76, 60, 0.6); }
+
     .section-card { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 24px; grid-column: span 2; border: 1px solid rgba(255,255,255,0.05); }
     h3 { margin: 0 0 16px 0; font-size: 16px; font-weight: 700; color: #ccc; }
 
@@ -127,4 +137,14 @@ export class ClientSummaryComponent {
   @Input() weightHistory: WeightEntry[] = [];
   @Input() loading = false;
   @Input() clientId = '';
+
+  inactiveDays(): number {
+    if (!this.kpis?.lastWorkoutDate) return 0;
+    const diff = Date.now() - new Date(this.kpis.lastWorkoutDate).getTime();
+    return Math.floor(diff / 86400000);
+  }
+
+  isInactive(): boolean {
+    return this.inactiveDays() >= 5;
+  }
 }

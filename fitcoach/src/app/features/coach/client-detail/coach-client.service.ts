@@ -48,6 +48,10 @@ export class CoachClientService {
         const prevWeight = weightData.find(w => w.weight_kg !== currentWeight)?.weight_kg ?? currentWeight;
         const weightDelta = currentWeight && prevWeight ? currentWeight - prevWeight : null;
 
+        const lastWorkout = days.data && days.data.length > 0 
+          ? new Date(days.data[0].completed_at) 
+          : null;
+
         return {
           adherencePercent: Math.min(adherence, 100),
           adherenceDelta: 0, 
@@ -56,6 +60,7 @@ export class CoachClientService {
           currentWeight,
           weightDelta,
           currentStreak: this.calculateStreak((days.data || []).map(d => ({ completed_at: d.completed_at }))),
+          lastWorkoutDate: lastWorkout,
         };
       })
     );
