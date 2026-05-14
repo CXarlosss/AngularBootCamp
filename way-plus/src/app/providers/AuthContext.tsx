@@ -55,6 +55,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // MODO DEMO: Bypass para auditorías rápidas en desarrollo
+    if (localStorage.getItem('way-demo-mode') === 'true') {
+      setUser({ id: 'demo-user', email: 'demo@wayplus.dev' });
+      setProfile({
+        id: 'demo-user',
+        role: 'therapist',
+        full_name: 'Maite (Demo Mode)',
+        center_name: 'Clínica WayPlus'
+      });
+      setLoading(false);
+      return;
+    }
+
     if (!supabase) {
       setLoading(false);
       return;

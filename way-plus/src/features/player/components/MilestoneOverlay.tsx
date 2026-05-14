@@ -79,7 +79,7 @@ export const MilestoneOverlay: React.FC<MilestoneOverlayProps> = ({
             exit={{ scale: 0.5, y: 100, opacity: 0 }}
             transition={{ type: 'spring', damping: 20, stiffness: 100 }}
             className="relative z-10 bg-white/95 backdrop-blur-2xl rounded-[4rem] p-10 max-w-sm w-full shadow-[0_40px_100px_-15px_rgba(0,0,0,0.6)] border-[12px] border-white/50"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
+            style={{ fontFamily: 'Verdana, sans-serif' }}
           >
             <div className="relative mb-8">
               <motion.div 

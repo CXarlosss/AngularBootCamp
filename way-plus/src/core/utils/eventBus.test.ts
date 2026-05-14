@@ -22,6 +22,7 @@ describe('EventBus', () => {
   });
 
   it('continúa llamando a otros listeners si uno lanza error', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     const badHandler = vi.fn(() => { throw new Error('crash'); });
     const goodHandler = vi.fn();
     eventBus.on('WAY_COMPLETED', badHandler);

@@ -47,7 +47,7 @@ export const PictoOption: React.FC<Props> = React.memo(({ option, onSelect, disa
         className
       )}
       style={{ 
-        fontFamily: 'Outfit, sans-serif'
+        fontFamily: 'Verdana, sans-serif'
       }}
     >
       {/* Inner Decorative Shine */}
