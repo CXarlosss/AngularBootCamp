@@ -28,7 +28,7 @@ export interface PatientSyncData {
 export interface ActivityLogData {
   patientId: string;
   wayId: string;
-  action: 'way_started' | 'way_completed' | 'way_abandoned' | 'hint_used';
+  action: 'way_started' | 'way_completed' | 'way_abandoned' | 'hint_used' | 'session_start' | 'session_end';
   attempts?: number;
   metadata?: Record<string, any>;
 }
@@ -54,62 +54,78 @@ export interface TherapistRecommendation {
 // MÉTODOS DE SINCRONIZACIÓN
 // ============================================
 
-/**
- * Registra un evento puntual de actividad (Explícito)
- */
-export async function logActivity(data: ActivityLogData): Promise<void> {
-  if (!isSupabaseAvailable || !supabase || !isUUID(data.patientId)) return;
-
-  SyncLogger.start('logActivity', data);
-
-  const { error } = await supabase.from('activity_logs').insert({
-    patient_id: data.patientId,
-    way_id: data.wayId,
-    action: data.action,
-    attempts: data.attempts ?? 1,
-    is_daily: false,
-    metadata: data.metadata ?? {},
-    timestamp: new Date().toISOString(), // Legacy column
-    created_at: new Date().toISOString(),
-  });
-
-  if (error) {
-    SyncLogger.error('logActivity', error);
-    throw error;
-  }
-
-  SyncLogger.ok('logActivity', { wayId: data.wayId, action: data.action });
+async function getLogQueue(): Promise<ActivityLogData[]> {
+  try {
+    const { get, createStore } = await import('idb-keyval');
+    const store = createStore('way-logs', 'queue');
+    return (await get('pending-logs', store)) || [];
+  } catch { return []; }
 }
 
-/**
- * Persiste un logro desbloqueado (Explícito)
- */
+async function setLogQueue(logs: ActivityLogData[]): Promise<void> {
+  try {
+    const { set, createStore } = await import('idb-keyval');
+    const store = createStore('way-logs', 'queue');
+    await set('pending-logs', logs, store);
+  } catch { /* ignore */ }
+}
+
+export async function logActivity(data: ActivityLogData): Promise<void> {
+  // 1. Add to local queue immediately
+  const queue = await getLogQueue();
+  queue.push({ ...data, metadata: { ...data.metadata, queued_at: new Date().toISOString() } });
+  await setLogQueue(queue);
+
+  // 2. Try to flush queue if online
+  if (navigator.onLine && isSupabaseAvailable && supabase) {
+    try {
+      const currentQueue = await getLogQueue();
+      if (currentQueue.length === 0) return;
+
+      const validLogs = currentQueue.filter(l => isUUID(l.patientId)).map(l => ({
+        patient_id: l.patientId,
+        way_id: l.wayId,
+        action: l.action,
+        attempts: l.attempts ?? 1,
+        metadata: l.metadata ?? {},
+      }));
+
+      const { error } = await supabase.from('activity_logs').insert(validLogs);
+      if (!error) {
+        // Success: clear the logs we just sent
+        const remaining = (await getLogQueue()).filter(l => !currentQueue.includes(l));
+        await setLogQueue(remaining);
+        console.log(`[Sync] Flushed ${validLogs.length} activity logs to cloud`);
+      }
+    } catch (e) {
+      console.warn('[Sync] Failed to flush logs, will retry later:', e);
+    }
+  }
+}
+
+export async function logActivityBatch(logs: ActivityLogData[]): Promise<void> {
+  if (!isSupabaseAvailable || !supabase || logs.length === 0) return;
+  const validLogs = logs.filter(l => isUUID(l.patientId)).map(l => ({
+    patient_id: l.patientId,
+    way_id: l.wayId,
+    action: l.action,
+    attempts: l.attempts ?? 1,
+    metadata: l.metadata ?? {},
+  }));
+  const { error } = await supabase.from('activity_logs').insert(validLogs);
+  if (error) throw error;
+}
+
 export async function pushAchievement(patientId: string, achievementId: string): Promise<void> {
   if (!isSupabaseAvailable || !supabase || !isUUID(patientId)) return;
-
-  SyncLogger.start('pushAchievement', { patientId, achievementId });
-
   const { error } = await supabase
     .from('patient_achievements')
     .insert({ patient_id: patientId, achievement_id: achievementId });
-
-  // 23505 = unique_violation (ya lo tiene). Ignoramos.
-  if (error && error.code !== '23505') {
-    SyncLogger.error('pushAchievement', error);
-    throw error;
-  }
-
-  SyncLogger.ok('pushAchievement', { achievementId });
+  if (error && error.code !== '23505') throw error;
 }
 
-/**
- * Sincroniza el estado general del perfil (Reactivo)
- */
 export async function pushProgress(data: PatientSyncData): Promise<void> {
   if (!isSupabaseAvailable || !supabase || !isUUID(data.patientId)) return;
-
-  SyncLogger.start('pushProgress', { id: data.patientId });
-
   const { error } = await supabase
     .from('patient_profiles')
     .upsert({
@@ -123,41 +139,17 @@ export async function pushProgress(data: PatientSyncData): Promise<void> {
       performance_config: data.performanceConfig,
       last_sync: new Date().toISOString(),
     }, { onConflict: 'id' });
-
-  if (error) {
-    SyncLogger.error('pushProgress', error);
-    throw error;
-  }
-
-  SyncLogger.ok('pushProgress', { coins: data.coins });
+  if (error) throw error;
 }
 
-/**
- * Descarga el estado completo incluyendo logros
- */
 export async function pullProgress(patientId: string) {
   if (!isSupabaseAvailable || !supabase || !isUUID(patientId)) return null;
-
-  SyncLogger.start('pullProgress', { patientId });
-
   const [profileRes, achRes] = await Promise.all([
-    supabase
-      .from('patient_profiles')
-      .select('*')
-      .eq('id', patientId)
-      .single(),
-    supabase
-      .from('patient_achievements')
-      .select('achievement_id')
-      .eq('patient_id', patientId)
+    supabase.from('patient_profiles').select('*').eq('id', patientId).single(),
+    supabase.from('patient_achievements').select('achievement_id').eq('patient_id', patientId)
   ]);
-
-  if (profileRes.error) {
-    SyncLogger.error('pullProgress:profile', profileRes.error);
-    return null;
-  }
-
-  const result = {
+  if (profileRes.error) return null;
+  return {
     name: profileRes.data.name,
     avatar: profileRes.data.equipped_avatar_id,
     completedWays: profileRes.data.completed_ways ?? [],
@@ -166,15 +158,14 @@ export async function pullProgress(patientId: string) {
     accessibilityConfig: profileRes.data.accessibility_config,
     performanceConfig: profileRes.data.performance_config,
     achievements: achRes.data?.map(a => a.achievement_id) ?? [],
+    updatedAt: profileRes.data.last_sync,
   };
-
-  SyncLogger.ok('pullProgress', { achievements: result.achievements.length });
-  return result;
 }
 
-/**
- * Gestión de Notas Clínicas
- */
+// ============================================
+// MÉTODOS CLÍNICOS (NOTAS Y RECOMENDACIONES)
+// ============================================
+
 export async function getNotes(patientId: string): Promise<TherapistNote[]> {
   if (!isSupabaseAvailable || !supabase || !isUUID(patientId)) return [];
   const { data, error } = await supabase
@@ -182,11 +173,7 @@ export async function getNotes(patientId: string): Promise<TherapistNote[]> {
     .select('*')
     .eq('patient_id', patientId)
     .order('created_at', { ascending: false });
-  if (error) {
-    SyncLogger.error('getNotes', error);
-    return [];
-  }
-  return data;
+  return error ? [] : (data || []);
 }
 
 export async function addNote(patientId: string, content: string): Promise<TherapistNote | null> {
@@ -196,25 +183,14 @@ export async function addNote(patientId: string, content: string): Promise<Thera
     .insert({ patient_id: patientId, content })
     .select()
     .single();
-  if (error) {
-    SyncLogger.error('addNote', error);
-    return null;
-  }
-  return data;
+  return error ? null : data;
 }
 
 export async function deleteNote(id: string): Promise<void> {
   if (!isSupabaseAvailable || !supabase) return;
-  const { error } = await supabase
-    .from('therapist_notes')
-    .delete()
-    .eq('id', id);
-  if (error) SyncLogger.error('deleteNote', error);
+  await supabase.from('therapist_notes').delete().eq('id', id);
 }
 
-/**
- * Gestión de Recomendaciones (Family Hub)
- */
 export async function getRecommendations(patientId: string): Promise<TherapistRecommendation[]> {
   if (!isSupabaseAvailable || !supabase || !isUUID(patientId)) return [];
   const { data, error } = await supabase
@@ -222,59 +198,40 @@ export async function getRecommendations(patientId: string): Promise<TherapistRe
     .select('*')
     .eq('patient_id', patientId)
     .order('created_at', { ascending: false });
-  if (error) {
-    SyncLogger.error('getRecommendations', error);
-    return [];
-  }
-  return data;
+  return error ? [] : (data || []);
 }
 
-export async function addRecommendation(
-  patientId: string, 
-  rec: Pick<TherapistRecommendation, 'title' | 'advice' | 'category'>
-): Promise<TherapistRecommendation | null> {
+export async function addRecommendation(patientId: string, payload: any): Promise<TherapistRecommendation | null> {
   if (!isSupabaseAvailable || !supabase || !isUUID(patientId)) return null;
   const { data, error } = await supabase
     .from('therapist_recommendations')
-    .insert({ patient_id: patientId, ...rec, status: 'active' })
+    .insert({ 
+      patient_id: patientId, 
+      title: payload.title,
+      advice: payload.advice,
+      category: payload.category || 'general',
+      status: 'active'
+    })
     .select()
     .single();
-  if (error) {
-    SyncLogger.error('addRecommendation', error);
-    return null;
-  }
-  return data;
+  return error ? null : data;
 }
 
-export async function deleteRecommendation(id: string, patientId: string): Promise<void> {
+export async function deleteRecommendation(id: string, _patientId?: string): Promise<void> {
   if (!isSupabaseAvailable || !supabase) return;
-  const { error } = await supabase
-    .from('therapist_recommendations')
-    .delete()
-    .eq('id', id)
-    .eq('patient_id', patientId);
-  if (error) SyncLogger.error('deleteRecommendation', error);
+  await supabase.from('therapist_recommendations').delete().eq('id', id);
 }
 
-export async function updateRecommendationStatus(
-  id: string, 
-  patientId: string, 
-  status: 'completed' | 'dismissed'
-): Promise<void> {
+export async function updateRecommendationStatus(id: string, status: string, _pId?: string): Promise<void> {
   if (!isSupabaseAvailable || !supabase) return;
-  const dbStatus = status === 'completed' ? 'completed' : 'ignored';
-  const { error } = await supabase
-    .from('therapist_recommendations')
-    .update({ status: dbStatus })
-    .eq('id', id)
-    .eq('patient_id', patientId);
-  if (error) SyncLogger.error('updateRecommendationStatus', error);
+  await supabase.from('therapist_recommendations').update({ status }).eq('id', id);
 }
 
 export const syncService = {
   pushProgress,
   pullProgress,
   logActivity,
+  logActivityBatch,
   pushAchievement,
   getNotes,
   addNote,

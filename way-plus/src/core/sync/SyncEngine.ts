@@ -1,4 +1,4 @@
-import { syncService, type PatientSyncData } from '@/core/services/syncService';
+import { syncService, type PatientSyncData, type ActivityLogData } from '@/core/services/syncService';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { useConfigStore } from '@/core/stores/configStore';
@@ -6,59 +6,102 @@ import { HydrationCache } from './HydrationCache';
 import { isSupabaseAvailable } from '@/core/services/supabaseClient';
 
 const SYNC_DEBOUNCE_MS = 2000;
+const CIRCUIT_BREAK_THRESHOLD = 3;
+const CIRCUIT_RESET_MS = 30_000;
+const PATIENT_ID_POLL_INTERVAL_MS = 100;
+const PATIENT_ID_POLL_TIMEOUT_MS = 3000;
 
-/**
- * SyncEngine: El orquestador de datos fuera de React.
- * Gestiona el pull inicial y el push reactivo de los perfiles.
- */
+export type SyncStatus = 'idle' | 'pushing' | 'pulling' | 'circuit_open' | 'error';
+
+export interface SyncState {
+  status: SyncStatus;
+  lastSyncAt: number | null;
+  circuitPausedUntil: number | null;
+  consecutiveErrors: number;
+}
+
+type SyncStatusListener = (state: SyncState) => void;
+
 export class SyncEngine {
   private patientId: string | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private isPulling = false;
   private knownAchievements = new Set<string>();
+  private activityQueue: ActivityLogData[] = [];
   private unsubscribePlayer: (() => void) | null = null;
   private unsubscribeRewards: (() => void) | null = null;
-  private consecutiveErrors = 0;
-  private circuitOpen = false;
   private isPushing = false;
   private cleanupUnloadGuard: (() => void) | null = null;
 
+  private syncState: SyncState = {
+    status: 'idle',
+    lastSyncAt: null,
+    circuitPausedUntil: null,
+    consecutiveErrors: 0,
+  };
+  private statusListeners = new Set<SyncStatusListener>();
+
+  onStatusChange(listener: SyncStatusListener): () => void {
+    this.statusListeners.add(listener);
+    return () => this.statusListeners.delete(listener);
+  }
+
+  /**
+   * FIX: El reset del circuit breaker es ahora completamente LAZY.
+   * Comprueba el tiempo cada vez que se pide el estado.
+   */
+  getStatus(): SyncState {
+    if (this.syncState.circuitPausedUntil && Date.now() > this.syncState.circuitPausedUntil) {
+      this.syncState = {
+        ...this.syncState,
+        status: 'idle',
+        circuitPausedUntil: null,
+        consecutiveErrors: 0,
+      };
+    }
+    return { ...this.syncState };
+  }
+
+  private emitStatus(patch: Partial<SyncState>) {
+    this.syncState = { ...this.syncState, ...patch };
+    this.statusListeners.forEach(l => l(this.getStatus()));
+  }
+
+  private get circuitOpen(): boolean {
+    const status = this.getStatus();
+    return status.status === 'circuit_open';
+  }
+
+  private waitForPatientId(timeoutMs = PATIENT_ID_POLL_TIMEOUT_MS): Promise<string | null> {
+    return new Promise(resolve => {
+      const id = sessionStorage.getItem('way-active-patient');
+      if (id) return resolve(id);
+      const deadline = Date.now() + timeoutMs;
+      const interval = setInterval(() => {
+        const found = sessionStorage.getItem('way-active-patient');
+        if (found) { clearInterval(interval); resolve(found); return; }
+        if (Date.now() >= deadline) { clearInterval(interval); resolve(null); }
+      }, PATIENT_ID_POLL_INTERVAL_MS);
+    });
+  }
+
   async start() {
-    if (!isSupabaseAvailable) {
-      console.warn('[SyncEngine] Supabase no disponible, modo offline puro');
-      return;
-    }
-
-    // Fix Race Condition: Reintento si el login acaba de ocurrir
-    let id = sessionStorage.getItem('way-active-patient');
-    if (!id) {
-      await new Promise(r => setTimeout(r, 500));
-      id = sessionStorage.getItem('way-active-patient');
-    }
-
+    if (!isSupabaseAvailable) return;
+    const id = await this.waitForPatientId();
     if (!id) return;
     this.patientId = id;
-    
-    // 0. Hidratación instantánea (UX Anti-flash)
-    const cached = HydrationCache.load(id);
+
+    const { state: cached } = HydrationCache.loadWithTimestamp(id);
     if (cached) {
       usePlayerStore.getState().syncFromCloud({
-        patientId: id,
-        name: cached.name,
-        avatar: cached.avatar,
-        completedWays: cached.completedWays,
-        currentLevel: cached.currentLevel as any,
+        patientId: id, name: cached.name, avatar: cached.avatar,
+        completedWays: cached.completedWays, currentLevel: cached.currentLevel as any,
       });
       useRewardsStore.setState({ wayCoins: cached.coins });
     }
 
-    // 1. Paracaídas de emergencia
     this.cleanupUnloadGuard = this.setupUnloadGuard();
-
-    // 2. Pull inicial real
-    this.initialPull();
-
-    // 3. Suscripciones reactivas
+    await this.initialPull();
     this.subscribeToStores();
   }
 
@@ -67,84 +110,58 @@ export class SyncEngine {
     this.unsubscribePlayer?.();
     this.unsubscribeRewards?.();
     this.cleanupUnloadGuard?.();
+    this.statusListeners.clear();
     this.patientId = null;
+    this.emitStatus({ status: 'idle' });
+  }
+
+  logActivity(data: Omit<ActivityLogData, 'patientId'>) {
+    if (!this.patientId) return;
+    this.activityQueue.push({ ...data, patientId: this.patientId });
+    this.debouncedPush();
   }
 
   private async initialPull() {
     if (!this.patientId || this.isPulling) return;
     this.isPulling = true;
+    this.emitStatus({ status: 'pulling' });
 
     try {
       const data = await syncService.pullProgress(this.patientId);
       if (!data) return;
 
-      // Hidratar stores
-      usePlayerStore.getState().syncFromCloud({
-        patientId: this.patientId,
-        name: data.name, // Añadido
-        avatar: data.avatar, // Añadido
-        completedWays: data.completedWays,
-        currentLevel: data.currentLevel as any,
-      });
+      // FIX: Uso de loadWithTimestamp robusto
+      const { state: cached, ts: cacheTs } = HydrationCache.loadWithTimestamp(this.patientId);
+      const supabaseTs = data.updatedAt ? new Date(data.updatedAt).getTime() : 0;
 
-      useRewardsStore.setState({
-        wayCoins: data.coins,
-      });
-
-      // Hidratar achievements y stickers sin duplicar eventos
-      if (data.achievements.length > 0) {
-        this.knownAchievements = new Set(data.achievements);
-        
-        useRewardsStore.setState((state) => {
-          // Sincronizar array de IDs (para UI de logros)
-          state.achievements = data.achievements;
-          
-          // Sincronizar ownedStickers (para que AchievementManager no los 're-desbloquee')
-          data.achievements.forEach(id => {
-            if (!state.ownedStickers[id]) {
-              state.ownedStickers[id] = { normal: 1, shiny: 0 };
-            }
-          });
+      if (cacheTs > supabaseTs && cached) {
+        console.info('[SyncEngine] Merge: Caché local más reciente → push');
+        this.isPulling = false; // Liberamos el flag para permitir el push de sincronización
+        await this.push();
+      } else {
+        usePlayerStore.getState().syncFromCloud({
+          patientId: this.patientId, name: data.name, avatar: data.avatar,
+          completedWays: data.completedWays, currentLevel: data.currentLevel as any,
         });
+        useRewardsStore.setState({ wayCoins: data.coins });
+        if (data.achievements) this.knownAchievements = new Set(data.achievements);
       }
 
-      if (data.accessibilityConfig) {
-        useConfigStore.setState({ accessibility: data.accessibilityConfig });
-      }
-
-      // Guardar en cache de hidratación
-      HydrationCache.save(this.patientId, {
-        coins: data.coins,
-        completedWays: data.completedWays,
-        avatar: usePlayerStore.getState().profile?.avatar ?? '',
-        name: usePlayerStore.getState().profile?.name ?? '',
-        currentLevel: data.currentLevel
-      });
-
+      this.clearEmergencyState();
+      this.emitStatus({ status: 'idle', lastSyncAt: Date.now() });
     } catch (e) {
-      console.error('[SyncEngine] Pull inicial fallido:', e);
+      this.emitStatus({ status: 'error' });
     } finally {
       this.isPulling = false;
     }
   }
 
   private subscribeToStores() {
-    this.unsubscribePlayer = usePlayerStore.subscribe((state, prevState) => {
-      if (!this.patientId || this.isPulling) return;
-      if (state.profile?.completedWays !== prevState.profile?.completedWays) {
-        this.debouncedPush();
-      }
+    this.unsubscribePlayer = usePlayerStore.subscribe((s: any, p: any) => {
+      if (s.profile?.completedWays !== p.profile?.completedWays) this.debouncedPush();
     });
-
-    this.unsubscribeRewards = useRewardsStore.subscribe((state, prevState) => {
-      if (!this.patientId || this.isPulling) return;
-      
-      const coinsChanged = state.wayCoins !== prevState.wayCoins;
-      const achievementsChanged = state.achievements !== prevState.achievements;
-      
-      if (coinsChanged || achievementsChanged) {
-        this.debouncedPush();
-      }
+    this.unsubscribeRewards = useRewardsStore.subscribe((s: any, p: any) => {
+      if (s.wayCoins !== p.wayCoins || s.achievements !== p.achievements) this.debouncedPush();
     });
   }
 
@@ -155,19 +172,20 @@ export class SyncEngine {
 
   private async push() {
     if (this.circuitOpen || !this.patientId || this.isPulling || this.isPushing) return;
-
     this.isPushing = true;
+    this.emitStatus({ status: 'pushing' });
+
     const player = usePlayerStore.getState();
     const rewards = useRewardsStore.getState();
-
-    // Detectar achievements nuevos (que no están en nuestro Set local)
-    const currentAchIds = (rewards.achievements ?? []).map(a => typeof a === 'string' ? a : (a as any).id);
-    const newAchievements = currentAchIds.filter(id => !this.knownAchievements.has(id));
+    const currentAchIds = (rewards.achievements ?? []).map((a: any) => typeof a === 'string' ? a : a.id);
+    const newAchievements = currentAchIds.filter((id: string) => !this.knownAchievements.has(id));
+    
+    const logsToSend = [...this.activityQueue];
 
     const syncData: PatientSyncData = {
       patientId: this.patientId,
       coins: rewards.wayCoins,
-      inventory: (rewards.inventory || []).map(i => i.id),
+      inventory: (rewards.inventory || []).map((i: any) => i.id),
       equippedAvatarId: rewards.currentAvatar?.base || null,
       completedWays: player.profile?.completedWays || [],
       currentLevel: player.profile?.currentLevel || 'pregamer',
@@ -176,44 +194,42 @@ export class SyncEngine {
     };
 
     try {
-      // 1. Push de Perfil (Upsert)
-      const pushProfile = syncService.pushProgress(syncData);
+      if (logsToSend.length > 0) {
+        await syncService.logActivityBatch(logsToSend);
+        this.activityQueue = this.activityQueue.filter(l => !logsToSend.includes(l));
+      }
 
-      // 2. Push de Logros Nuevos (Parallel Inserts)
-      const pushAchievements = newAchievements.map(id =>
-        syncService.pushAchievement(this.patientId!, id).then(() => {
+      await Promise.all([
+        syncService.pushProgress(syncData),
+        ...newAchievements.map(id => syncService.pushAchievement(this.patientId!, id).then(() => {
           this.knownAchievements.add(id);
-        })
-      );
+        }))
+      ]);
 
-      await Promise.all([pushProfile, ...pushAchievements]);
-
-      // 3. Actualizar Cache
       HydrationCache.save(this.patientId, {
-        coins: rewards.wayCoins,
-        completedWays: player.profile?.completedWays || [],
-        avatar: player.profile?.avatar ?? '',
-        name: player.profile?.name ?? '',
-        currentLevel: player.profile?.currentLevel ?? 'pregamer'
+        coins: rewards.wayCoins, completedWays: player.profile?.completedWays || [],
+        avatar: player.profile?.avatar ?? '', name: player.profile?.name ?? '',
+        currentLevel: player.profile?.currentLevel ?? 'pregamer',
       });
-      
-      this.consecutiveErrors = 0; // Éxito: Resetear contador
-    } catch (e) {
-      this.consecutiveErrors++;
-      console.error('[SyncEngine] Push fallido:', e);
 
-      if (this.consecutiveErrors >= 3) {
-        this.circuitOpen = true;
-        console.warn('[SyncEngine] Circuit breaker abierto (30s)');
-        setTimeout(() => {
-          this.circuitOpen = false;
-          this.consecutiveErrors = 0;
-          console.log('[SyncEngine] Circuit breaker cerrado');
-        }, 30000);
+      this.emitStatus({ status: 'idle', lastSyncAt: Date.now(), consecutiveErrors: 0 });
+    } catch (e) {
+      const newErrors = this.syncState.consecutiveErrors + 1;
+      if (newErrors >= CIRCUIT_BREAK_THRESHOLD) {
+        this.emitStatus({
+          status: 'circuit_open', consecutiveErrors: newErrors,
+          circuitPausedUntil: Date.now() + CIRCUIT_RESET_MS,
+        });
+      } else {
+        this.emitStatus({ status: 'error', consecutiveErrors: newErrors });
       }
     } finally {
       this.isPushing = false;
     }
+  }
+
+  private clearEmergencyState() {
+    if (this.patientId) sessionStorage.removeItem('way-emergency-state');
   }
 
   private setupUnloadGuard() {
@@ -221,44 +237,14 @@ export class SyncEngine {
       if (!this.patientId) return;
       const player = usePlayerStore.getState();
       const rewards = useRewardsStore.getState();
-      
       sessionStorage.setItem('way-emergency-state', JSON.stringify({
-        patientId: this.patientId,
-        completedWays: player.profile?.completedWays || [],
-        coins: rewards.wayCoins,
-        achievements: rewards.achievements,
+        patientId: this.patientId, completedWays: player.profile?.completedWays || [],
+        coins: rewards.wayCoins, achievements: rewards.achievements,
+        activityQueue: this.activityQueue,
         timestamp: Date.now(),
       }));
     };
-
     window.addEventListener('beforeunload', saveState);
-    
-    // Recuperar si existe y es reciente (< 5 minutos)
-    const emergency = sessionStorage.getItem('way-emergency-state');
-    if (emergency) {
-      try {
-        const parsed = JSON.parse(emergency);
-        const age = Date.now() - parsed.timestamp;
-        if (age < 300000 && parsed.patientId === this.patientId) {
-          console.log('[SyncEngine] Recuperando estado de emergencia (paracaídas)');
-          const current = usePlayerStore.getState();
-          const mergedWays = [...new Set([...(current.profile?.completedWays || []), ...parsed.completedWays])];
-          
-          usePlayerStore.getState().syncFromCloud({
-            patientId: parsed.patientId,
-            completedWays: mergedWays,
-          });
-          
-          useRewardsStore.setState(state => ({
-            wayCoins: Math.max(state.wayCoins, parsed.coins),
-          }));
-        }
-      } catch (e) {
-        console.error('[SyncEngine] Error al parsear estado de emergencia:', e);
-      }
-      sessionStorage.removeItem('way-emergency-state');
-    }
-
     return () => window.removeEventListener('beforeunload', saveState);
   }
 }

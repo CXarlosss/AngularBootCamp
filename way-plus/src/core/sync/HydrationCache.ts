@@ -1,13 +1,3 @@
-/**
- * HydrationCache.ts
- * 
- * Parche anti-flash de UX. Guarda una copia volátil del estado en sessionStorage
- * para hidratar la UI instantáneamente al recargar, mientras el SyncEngine 
- * hace el pull real de Supabase.
- */
-
-const CACHE_KEY = 'way-hydration-cache';
-
 export interface CacheableState {
   coins: number;
   completedWays: string[];
@@ -16,40 +6,43 @@ export interface CacheableState {
   currentLevel: string;
 }
 
+const CACHE_KEY_PREFIX = 'way-hydration-cache-';
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutos
+
 export const HydrationCache = {
-  save: (patientId: string, state: CacheableState) => {
-    try {
-      const data = {
-        ...state,
-        ts: Date.now(),
-        patientId
-      };
-      sessionStorage.setItem(`${CACHE_KEY}-${patientId}`, JSON.stringify(data));
-    } catch (e) {
-      console.warn('[HydrationCache] Error saving to sessionStorage', e);
-    }
+  save(patientId: string, state: CacheableState) {
+    const data = {
+      state,
+      ts: Date.now()
+    };
+    sessionStorage.setItem(`${CACHE_KEY_PREFIX}${patientId}`, JSON.stringify(data));
   },
-  
-  load: (patientId: string): CacheableState | null => {
+
+  load(patientId: string): CacheableState | null {
+    const { state } = this.loadWithTimestamp(patientId);
+    return state;
+  },
+
+  /**
+   * Carga el estado y su timestamp original. 
+   * Útil para lógica de "Last Write Wins" durante el initialPull.
+   */
+  loadWithTimestamp(patientId: string): { state: CacheableState | null, ts: number } {
     try {
-      const raw = sessionStorage.getItem(`${CACHE_KEY}-${patientId}`);
-      if (!raw) return null;
+      const raw = sessionStorage.getItem(`${CACHE_KEY_PREFIX}${patientId}`);
+      if (!raw) return { state: null, ts: 0 };
+
+      const { state, ts } = JSON.parse(raw);
       
-      const parsed = JSON.parse(raw);
-      
-      // Si el cache es de hace más de 30 min, lo ignoramos por seguridad
-      if (Date.now() - parsed.ts > 1000 * 60 * 30) {
-        sessionStorage.removeItem(`${CACHE_KEY}-${patientId}`);
-        return null;
+      // Verificar TTL
+      if (Date.now() - ts > CACHE_TTL_MS) {
+        sessionStorage.removeItem(`${CACHE_KEY_PREFIX}${patientId}`);
+        return { state: null, ts: 0 };
       }
-      
-      return parsed;
+
+      return { state, ts };
     } catch (e) {
-      return null;
+      return { state: null, ts: 0 };
     }
-  },
-  
-  clear: (patientId: string) => {
-    sessionStorage.removeItem(`${CACHE_KEY}-${patientId}`);
   }
 };

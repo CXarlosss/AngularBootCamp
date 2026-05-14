@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import type { PlayerProfile } from '@/core/engine/types';
-import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
+import { eventBus } from '@/core/utils/eventBus';
 
 export interface RelaxationEntry {
   completed: boolean;
-  duration: number; // minutos
+  duration: number;
   posture: boolean;
   breathing: boolean;
   accompanied: boolean;
@@ -16,122 +17,103 @@ interface PlayerState {
   profile: PlayerProfile;
   session: {
     activeWay: string | null;
-    attempts: Record<string, number>; // wayId -> intentos
+    attempts: Record<string, number>;
     startTime: number | null;
   };
-  
-  // Anexos
   relaxationLog: Record<string, RelaxationEntry>;
   weeklyCheck: Record<string, boolean>;
   roleplayLog: Record<string, string[]>;
-
-  // Desafío Diario
   dailyChallenge: {
     wayId: string | null;
     date: string | null;
     completed: boolean;
   };
-  
-  // Acciones
   setName: (name: string) => void;
   setAvatar: (avatarId: string) => void;
   completeWay: (wayId: string, attempts: number) => void;
   resetSession: () => void;
-  
-  // Acciones de Anexos
   logRelaxation: (date: string, data: RelaxationEntry) => void;
   toggleWeeklyCheck: (itemId: string, date: string) => void;
   logRoleplay: (date: string, wayId: string) => void;
-  
-  // Acciones de Desafío
   setDailyChallenge: (wayId: string) => void;
   completeDailyChallenge: () => void;
-  
   completeTutorial: () => void;
   syncFromCloud: (data: Partial<PlayerProfile & { patientId?: string; name?: string; avatar?: string }>) => void;
 }
 
 export const usePlayerStore = create<PlayerState>()(
-  immer((set) => ({
-    profile: {
-      id: '1',
-      name: 'Gamer',
-      avatar: 'unicorn',
-      currentLevel: 'pregamer',
-      completedWays: [],
-      streakDays: 0,
-      tutorialCompleted: false,
-      sessionQueue: [],
-    },
-    session: {
-      activeWay: null,
-      attempts: {},
-      startTime: null,
-    },
-    
-    relaxationLog: {},
-    weeklyCheck: {},
-    roleplayLog: {},
-    dailyChallenge: {
-      wayId: null,
-      date: null,
-      completed: false
-    },
+  persist(
+    immer((set) => ({
+      profile: {
+        id: '1',
+        name: 'Gamer',
+        avatar: 'unicorn',
+        currentLevel: 'pregamer',
+        completedWays: [],
+        streakDays: 0,
+        tutorialCompleted: false,
+        sessionQueue: [],
+      },
+      session: {
+        activeWay: null,
+        attempts: {},
+        startTime: null,
+      },
+      relaxationLog: {},
+      weeklyCheck: {},
+      roleplayLog: {},
+      dailyChallenge: {
+        wayId: null,
+        date: null,
+        completed: false
+      },
 
-    setName: (name) => 
-      set((state) => {
-        state.profile.name = name;
-      }),
-    setAvatar: (avatarId) =>
-      set((state) => {
-        state.profile.avatar = avatarId;
-      }),
-    completeWay: (wayId, attempts) =>
-      set((state) => {
-        if (!state.profile.completedWays) state.profile.completedWays = [];
-        const safeCompleted = Array.isArray(state.profile.completedWays) ? state.profile.completedWays : [];
-        if (!safeCompleted.includes(wayId)) {
-          state.profile.completedWays = [...safeCompleted, wayId];
-        }
-        state.session.attempts[wayId] = attempts;
-        
-        // Trigger mission progress
-        useRewardsStore.getState().updateMissionProgress('complete_ways', 1);
+      setName: (name) => set((state) => { state.profile.name = name; }),
+      setAvatar: (avatarId) => set((state) => { state.profile.avatar = avatarId; }),
 
-        if (attempts === 1) {
-          state.profile.streakDays += 1;
-        }
+      completeWay: (wayId, attempts) =>
+        set((state) => {
+          if (!state.profile.completedWays) state.profile.completedWays = [];
+          const safeCompleted = Array.isArray(state.profile.completedWays) ? state.profile.completedWays : [];
+          const isFirstTime = !safeCompleted.includes(wayId);
+
+          if (isFirstTime) {
+            state.profile.completedWays = [...safeCompleted, wayId];
+          }
+          state.session.attempts[wayId] = attempts;
+
+          if (attempts === 1) {
+            state.profile.streakDays += 1;
+          }
+
+          // FIX: Usar queueMicrotask para emitir tras la mutación de Immer
+          queueMicrotask(() => {
+            eventBus.emit('WAY_COMPLETED', { wayId, attempts, isFirstTime });
+          });
+
+          if (state.dailyChallenge.wayId === wayId && !state.dailyChallenge.completed) {
+            state.dailyChallenge.completed = true;
+            queueMicrotask(() => {
+              eventBus.emit('DAILY_CHALLENGE_COMPLETED', { wayId });
+            });
+          }
+        }),
+
+      resetSession: () => set((state) => {
+        state.session = { activeWay: null, attempts: {}, startTime: Date.now() };
       }),
-    resetSession: () =>
-      set((state) => {
-        state.session = {
-          activeWay: null,
-          attempts: {},
-          startTime: Date.now(),
-        };
-      }),
-      
-    logRelaxation: (date, data) =>
-      set((state) => {
-        state.relaxationLog[date] = data;
-      }),
-      
-    toggleWeeklyCheck: (itemId, date) =>
-      set((state) => {
+
+      logRelaxation: (date, data) => set((state) => { state.relaxationLog[date] = data; }),
+      toggleWeeklyCheck: (itemId, date) => set((state) => {
         const key = `${itemId}-${date}`;
         state.weeklyCheck[key] = !state.weeklyCheck[key];
       }),
-      
-    logRoleplay: (date, wayId) =>
-      set((state) => {
+      logRoleplay: (date, wayId) => set((state) => {
         if (!state.roleplayLog[date]) state.roleplayLog[date] = [];
-        if (!(state.roleplayLog[date] || []).includes(wayId)) {
-          state.roleplayLog[date].push(wayId);
-        }
+        if (!state.roleplayLog[date].includes(wayId)) state.roleplayLog[date].push(wayId);
       }),
 
-    setDailyChallenge: (wayId) =>
-      set((state) => {
+      setDailyChallenge: (wayId) => set((state) => {
         state.dailyChallenge = {
           wayId,
           date: new Date().toISOString().split('T')[0],
@@ -139,19 +121,16 @@ export const usePlayerStore = create<PlayerState>()(
         };
       }),
 
-    completeDailyChallenge: () =>
-      set((state) => {
-        state.dailyChallenge.completed = true;
+      completeDailyChallenge: () => set((state) => { state.dailyChallenge.completed = true; }),
+
+      completeTutorial: () => set((state) => {
+        state.profile.tutorialCompleted = true;
+        queueMicrotask(() => {
+          eventBus.emit('TUTORIAL_COMPLETED', {});
+        });
       }),
 
-    completeTutorial: () =>
-      set((state) => {
-        state.profile.tutorialCompleted = true;
-      }),
-    
-    syncFromCloud: (data: Partial<PlayerProfile & { patientId?: string; name?: string; avatar?: string }>) =>
-      set((state) => {
-        // Actualizar ID del perfil con el patientId real
+      syncFromCloud: (data) => set((state) => {
         if (data.patientId) state.profile.id = data.patientId;
         if (data.name) state.profile.name = data.name;
         if (data.avatar) state.profile.avatar = data.avatar;
@@ -160,5 +139,24 @@ export const usePlayerStore = create<PlayerState>()(
         if (data.currentLevel) state.profile.currentLevel = data.currentLevel;
         if (data.sessionQueue) state.profile.sessionQueue = data.sessionQueue ?? [];
       }),
-  }))
+    })),
+    {
+      name: 'way-player-storage',
+      storage: createJSONStorage(() => ({
+        getItem: (name) => {
+          const patientId = sessionStorage.getItem('way-active-patient') || 'guest';
+          const str = localStorage.getItem(`${name}-${patientId}`);
+          return str ? JSON.parse(str) : null;
+        },
+        setItem: (name, value) => {
+          const patientId = sessionStorage.getItem('way-active-patient') || 'guest';
+          localStorage.setItem(`${name}-${patientId}`, JSON.stringify(value));
+        },
+        removeItem: (name) => {
+          const patientId = sessionStorage.getItem('way-active-patient') || 'guest';
+          localStorage.removeItem(`${name}-${patientId}`);
+        }
+      }))
+    }
+  )
 );
