@@ -6,7 +6,7 @@ import angryPicto from '@/shared/assets/angry.png';
 export const relaxationStep: Step = {
   id: 'step-relaxation-1',
   levelId: 'pregamer',
-  title: 'Relajación',
+  title: 'STEP Relajación',
   theme: 'relaxation',
   ways: [
     {

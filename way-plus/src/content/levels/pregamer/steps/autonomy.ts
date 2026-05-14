@@ -3,7 +3,7 @@ import type { Step } from '@/core/engine/types';
 export const autonomyStep: Step = {
   id: 'step-autonomy-1',
   levelId: 'pregamer',
-  title: 'Autoestima y Autonomía',
+  title: 'STEP Autonomía y Autoestima',
   subtitle: 'Me quiero mucho, soy importante y puedo',
   theme: 'self-esteem',
   ways: [
@@ -63,6 +63,7 @@ export const autonomyStep: Step = {
     },
     {
       id: 'way-9',
+      name: 'Cuidados Recibidos',
       stepId: 'step-autonomy-1',
       order: 3,
       type: 'double-choice',
@@ -198,6 +199,7 @@ export const autonomyStep: Step = {
     },
     {
       id: 'way-14',
+      name: 'Recoger Juguetes',
       stepId: 'step-autonomy-1',
       order: 8,
       type: 'double-choice',

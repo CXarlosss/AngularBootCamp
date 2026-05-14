@@ -3,7 +3,7 @@ import type { Step } from '@/core/engine/types';
 export const assertivenessStep: Step = {
   id: "step-3-assertiveness",
   levelId: "pregamer",
-  title: "Autoestima y Asertividad",
+  title: 'STEP Asertividad y Autoestima',
   subtitle: "Me quiero mucho, me siento seguro y respeto a los demás",
   theme: "assertiveness",
   ways: [
