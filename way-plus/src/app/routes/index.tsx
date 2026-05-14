@@ -46,6 +46,9 @@ const PatientDetailView = lazy(() => import('@/features/therapist/pages/PatientD
 const SessionPlayerPage = lazy(() => import('@/features/player/pages/SessionPlayerPage').then(m => ({ default: m.SessionPlayerPage })));
 const SessionModePage = lazy(() => import('@/features/player/pages/SessionModePage').then(m => ({ default: m.SessionModePage })));
 
+const LandingPage = lazy(() => import('@/features/player/pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const ProfilePickerPage = lazy(() => import('@/features/player/pages/ProfilePickerPage').then(m => ({ default: m.ProfilePickerPage })));
+
 const Load = (Component: React.ComponentType) => (
   <Suspense fallback={<div style={{ padding: 40, textAlign: 'center', fontWeight: 800, color: '#4F46E5' }}>Cargando módulo...</div>}>
     <ScrollToTop />
@@ -61,8 +64,20 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: Load(PlayerStartPage) },
       { 
+        path: 'inicio', 
+        element: Load(LandingPage) 
+      },
+      { 
+        path: 'welcome', 
+        element: Load(LandingPage) 
+      },
+      { 
         path: 'player', 
         element: Load(PlayerStartPage) 
+      },
+      { 
+        path: 'player/select-profile', 
+        element: Load(ProfilePickerPage) 
       },
       { 
         path: 'player/login', 

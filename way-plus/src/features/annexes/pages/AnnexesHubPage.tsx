@@ -156,7 +156,7 @@ export function AnnexesHubPage() {
   const weekPct = Math.round((totalChecks / maxChecks) * 100);
 
   return (
-    <div style={{ background: C.bg, minHeight: '100dvh', paddingBottom: 80 }}>
+    <div style={{ background: C.bg, minHeight: '100dvh', paddingBottom: 80, fontFamily: 'Verdana, sans-serif' }}>
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <div style={{

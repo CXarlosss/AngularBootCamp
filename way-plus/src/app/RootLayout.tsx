@@ -20,6 +20,7 @@ import { AchievementManager } from '@/features/rewards/components/AchievementMan
 import { AmbientPlayer } from '@/core/components/AmbientPlayer';
 import { SoundToggle } from '@/core/components/SoundToggle';
 import { audioService } from '@/core/utils/audioService';
+import { SyncManager } from '@/core/components/SyncManager';
 
 /* ─── Config ─────────────────────────────────────────────────────── */
 
@@ -245,8 +246,11 @@ export function RootLayout() {
     • paddingBottom on layout-inner keeps content above the nav
   */
 
+  const patientId = sessionStorage.getItem('way-active-patient');
+
   return (
     <KioskGate enabled={!therapist}>
+      <SyncManager key={patientId || 'none'} />
       <div style={{
         display: 'flex',
         justifyContent: 'center',

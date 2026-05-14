@@ -152,7 +152,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
           {/* Main Card - Glassmorphism Upgrade */}
           <div 
             className="bg-white/90 backdrop-blur-2xl rounded-[4rem] p-10 shadow-[0_40px_100px_-15px_rgba(0,0,0,0.6)] text-center max-w-xs sm:max-w-sm border-[12px] border-white/50 relative overflow-hidden"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
+            style={{ fontFamily: 'Verdana, sans-serif' }}
           >
             {/* Glossy Overlay */}
             <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/30 pointer-events-none" />
@@ -198,7 +198,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
                     >
                       ¡BRAVO!
                     </motion.h2>
-                    <p className="text-xl font-black text-slate-700 tracking-tight">{labelCampeon.toUpperCase()}</p>
+                    <p className="text-3xl font-black text-indigo-900 tracking-tighter leading-none mt-2">{labelCampeon.toUpperCase()}</p>
                   </div>
                   
                   <div className="bg-indigo-600 rounded-[2.5rem] py-3 px-6 shadow-lg shadow-indigo-200">

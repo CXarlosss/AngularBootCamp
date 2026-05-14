@@ -59,7 +59,7 @@ export function PlayerStartPage() {
             className="text-5xl font-black text-[#1E1B4B] tracking-tight leading-[0.9]"
             style={{ fontFamily: 'Outfit, sans-serif' }}
           >
-            ¡HOLA<br/>DE NUEVO!
+            ¡EMPEZAR!
           </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}
@@ -81,7 +81,7 @@ export function PlayerStartPage() {
           onClick={handleStart}
           className="w-full py-6 bg-gradient-to-br from-indigo-600 to-violet-700 text-white text-2xl font-black rounded-[28px] shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] border-b-[6px] border-indigo-900 active:border-b-0 transition-all flex items-center justify-center gap-3"
         >
-          ¡EMPEZAR! 🚀
+          ¡ADELANTE! 🚀
         </motion.button>
       </motion.div>
 

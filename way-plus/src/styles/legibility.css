@@ -1,0 +1,58 @@
+/* 
+  LEGIBILIDAD_FIX.css 
+  Optimización visual para niños con TEA y dificultades de lectura.
+*/
+
+:root {
+  --text-primary: #0f172a; /* Casi negro para máximo contraste */
+  --text-secondary: #334155;
+  --font-size-base: 14pt;
+  --line-height-readable: 1.6;
+}
+
+body {
+  font-family: 'Verdana', system-ui, sans-serif;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-readable);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Títulos más potentes y claros */
+h1, h2, h3, h4 {
+  color: var(--text-primary) !important;
+  font-weight: 900 !important;
+  letter-spacing: -0.02em;
+}
+
+/* Párrafos y textos descriptivos */
+p, span, li {
+  font-weight: 500; /* Un poco más grueso para facilitar el seguimiento visual */
+  color: var(--text-secondary);
+}
+
+/* Botones con texto ultra-legible */
+button {
+  font-weight: 800 !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Ajustes de contraste para estados deshabilitados (que sigan siendo visibles) */
+button:disabled {
+  opacity: 0.5;
+  color: #64748b !important;
+}
+
+/* Refuerzo en Inputs */
+input, textarea {
+  font-size: 16px !important; /* Evitar zoom en iOS y mejorar lectura */
+  color: var(--text-primary) !important;
+}
+
+/* Utilidades de legibilidad */
+.text-readable {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  max-width: 65ch;
+}

@@ -105,7 +105,14 @@ export function StepDetailsPage() {
               key={way.id}
               whileHover={{ scale: 1.01 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => navigate(`/play/${profile?.currentLevel}/${step.id}/${way.id}`)}
+              onClick={() => {
+                // Punto 7: Sustitución del WAY 6 de Relajación por el Anexo interactivo
+                if (step.theme === 'relaxation' && idx === 5) {
+                  navigate(`/annexes/relaxation?wayId=${way.id}`);
+                } else {
+                  navigate(`/play/${profile?.currentLevel}/${step.id}/${way.id}`);
+                }
+              }}
               className={`
                 relative flex items-center gap-4 p-4 rounded-[24px] cursor-pointer transition-all duration-300
                 ${isCompleted ? 'bg-emerald-50 border-2 border-emerald-100' : 'bg-white shadow-md border-2 border-transparent'}

@@ -36,7 +36,8 @@ export function ZenModePage() {
       color: '#F8FAFC',
       display: 'flex',
       flexDirection: 'column',
-      gap: 32
+      gap: 32,
+      fontFamily: 'Verdana, sans-serif'
     }}>
       <header style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
         <motion.button

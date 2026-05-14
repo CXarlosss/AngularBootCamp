@@ -5,10 +5,13 @@ import { usePlayerStore } from '@/features/player/store/playerStore';
 import { audioService } from '@/core/utils/audioService';
 import { useSecretTracker } from '../hooks/useSecretTracker';
 
-// Mapping table for all icons to keep component clean
+// Mapping table for all icons
 const ICON_MAP: Record<string, string> = {
-  // Bases
-  'base-unicorn': '🦄', 'base-dragon': '🐉', 'base-puppy': '🐶', 'base-kitten': '🐱',
+  // Bases (Premium Illustrations)
+  'base-unicorn': '/assets/avatars/base-unicorn.png', 
+  'base-dragon': '/assets/avatars/base-dragon.png', 
+  'base-puppy': '/assets/avatars/base-puppy.png', 
+  'base-kitten': '/assets/avatars/base-kitten.png',
   'base-fox': '🦊', 'base-panda': '🐼', 'base-robot': '🤖', 'base-alien': '👽',
   'base-bear': '🐻', 'base-monkey': '🐵',
   
@@ -58,14 +61,11 @@ export const AvatarPreview: React.FC = () => {
     setShowGreeting(true);
     audioService.speak(GREETINGS[randomIdx]);
     
-    // Track secret
     petClickCount.current++;
     trackPetClick(petClickCount.current);
     
     setTimeout(() => {
       setShowGreeting(false);
-      // Reset if not clicking fast enough? 
-      // For now just keep it simple, but we could reset after 2s of no clicks
     }, 2000);
   };
 
@@ -75,14 +75,37 @@ export const AvatarPreview: React.FC = () => {
       case 'background-garden': return '#ECFDF5';
       case 'background-castle': return '#FFFBEB';
       case 'background-clouds': return '#F0F9FF';
-      case 'background-beach': return '#E0F2FE'; // sky-100
-      case 'background-mountains': return '#F1F5F9'; // slate-100
-      case 'background-rainbow': return '#FAF5FF'; // purple-50
-      case 'background-night': return '#1E293B'; // slate-800
-      case 'background-underwater': return '#0C4A6E'; // sky-900
-      case 'background-candy': return '#FDF2F8'; // pink-50
+      case 'background-beach': return '#E0F2FE';
+      case 'background-mountains': return '#F1F5F9';
+      case 'background-rainbow': return '#FAF5FF';
+      case 'background-night': return '#1E293B';
+      case 'background-underwater': return '#0C4A6E';
+      case 'background-candy': return '#FDF2F8';
       default: return '#F1F5F9';
     }
+  };
+
+  const renderBase = () => {
+    const source = ICON_MAP[avatar.base];
+    if (source && source.endsWith('.png')) {
+      return (
+        <img 
+          src={source} 
+          alt="Avatar" 
+          style={{ 
+            width: '100%', 
+            height: '100%', 
+            objectFit: 'contain', 
+            filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.2))' 
+          }} 
+        />
+      );
+    }
+    return (
+      <span style={{ fontSize: 160, filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.3))' }}>
+        {source || '🦄'}
+      </span>
+    );
   };
 
   return (
@@ -109,6 +132,7 @@ export const AvatarPreview: React.FC = () => {
           </div>
         )}
 
+        {/* ... Rest of Backgrounds (Underwater, Garden) ... */}
         {avatar.background === 'background-underwater' && (
           <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
             {Array.from({ length: 6 }).map((_, i) => (
@@ -123,108 +147,86 @@ export const AvatarPreview: React.FC = () => {
             ))}
           </div>
         )}
-
-        {avatar.background === 'background-garden' && (
-          <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-             {Array.from({ length: 5 }).map((_, i) => (
-              <span key={i} style={{ position: 'absolute', fontSize: 24, left: `${Math.random() * 80 + 10}%`, bottom: `${Math.random() * 20}%` }}>🌸</span>
-             ))}
-          </div>
-        )}
         
         {/* Composite Avatar */}
         <div style={{ position: 'relative', zIndex: 10, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
           
-          {/* Pet (Floating nearby) */}
-          <AnimatePresence>
-            {avatar.pet !== 'pet-none' && (
-              <motion.div
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 80, y: [0, -15, 0] }}
-                exit={{ opacity: 0, x: 20 }}
-                transition={{ y: { duration: 3, repeat: Infinity, ease: "easeInOut" } }}
-                style={{ position: 'absolute', fontSize: 48, zIndex: 30, top: 40 }}
-              >
-                {ICON_MAP[avatar.pet]}
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Hat */}
-          <div style={{ height: 64, position: 'relative', zIndex: 20 }}>
+          <div style={{ position: 'relative', width: 220, height: 220, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            {/* Pet */}
             <AnimatePresence>
-              {avatar.hat !== 'hat-none' && (
-                <motion.div 
-                   key={avatar.hat}
-                   initial={{ y: -20, opacity: 0 }}
-                   animate={{ y: 0, opacity: 1 }}
-                   exit={{ y: -20, opacity: 0 }}
-                   style={{ fontSize: 72, position: 'absolute', top: -32, left: '50%', transform: 'translateX(-50%)', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' }}
+              {avatar.pet !== 'pet-none' && (
+                <motion.div
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 80, y: [0, -15, 0] }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ y: { duration: 3, repeat: Infinity, ease: "easeInOut" } }}
+                  style={{ position: 'absolute', fontSize: 48, zIndex: 30, top: 20 }}
                 >
-                  {ICON_MAP[avatar.hat]}
+                  {ICON_MAP[avatar.pet]}
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
 
-          <div style={{ position: 'relative' }}>
-             {/* Cape (Behind) */}
-             <div style={{ position: 'absolute', zIndex: -10, top: 16, left: '50%', transform: 'translateX(-50%)', fontSize: 128, opacity: 0.8, filter: 'blur(1px)' }}>
+            {/* Hat */}
+            <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', zIndex: 40, width: '100%', display: 'flex', justifyContent: 'center' }}>
+              <AnimatePresence>
+                {avatar.hat !== 'hat-none' && (
+                  <motion.div 
+                     key={avatar.hat}
+                     initial={{ y: -20, opacity: 0 }}
+                     animate={{ y: 0, opacity: 1 }}
+                     exit={{ y: -20, opacity: 0 }}
+                     style={{ fontSize: 72, filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.2))' }}
+                  >
+                    {ICON_MAP[avatar.hat]}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+
+            {/* Cape (Behind) */}
+            <div style={{ position: 'absolute', zIndex: 5, top: 20, left: '50%', transform: 'translateX(-50%)', fontSize: 128, opacity: 0.8, filter: 'blur(1px)' }}>
               {ICON_MAP[avatar.cape]}
             </div>
 
+            {/* Base Body */}
             <motion.div 
               animate={{ y: [0, -10, 0], rotate: [-1, 1, -1] }} 
               transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
-              whileTap={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
+              whileTap={{ scale: 1.1 }}
               onClick={handleTouch}
-              style={{ fontSize: 160, filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.3))', cursor: 'pointer', position: 'relative' }}
+              style={{ width: '100%', height: '100%', zIndex: 10, cursor: 'pointer', position: 'relative' }}
             >
-              {ICON_MAP[avatar.base] || '🦄'}
-
-              {/* Blink Effect Overlay */}
-              <motion.div 
-                animate={{ scaleY: [0, 0, 1, 0, 0] }}
-                transition={{ repeat: Infinity, duration: 3, times: [0, 0.9, 0.95, 1, 1] }}
-                style={{ 
-                  position: 'absolute', top: '45%', left: '20%', right: '20%', 
-                  height: '10%', background: getBackgroundColor(), zIndex: 10,
-                  transformOrigin: 'center'
-                }}
-              />
+              {renderBase()}
             </motion.div>
 
-            {/* Speech Bubble */}
-            <AnimatePresence>
-              {showGreeting && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.5, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: -60 }}
-                  exit={{ opacity: 0, scale: 0.5, y: 0 }}
-                  style={{
-                    position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                    background: 'white', padding: '10px 20px', borderRadius: 20,
-                    boxShadow: '0 10px 25px rgba(0,0,0,0.1)', fontWeight: 800,
-                    color: '#4F46E5', fontSize: 16, whiteSpace: 'nowrap', zIndex: 100,
-                    border: '2px solid #E8E9FF'
-                  }}
-                >
-                  {greeting}
-                  <div style={{
-                    position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)',
-                    width: 0, height: 0, borderLeft: '10px solid transparent',
-                    borderRight: '10px solid transparent', borderTop: '10px solid white'
-                  }} />
-                </motion.div>
-              )}
-            </AnimatePresence>
-
             {/* Shoes */}
-            <div style={{ position: 'absolute', bottom: -16, left: '50%', transform: 'translateX(-50%)', fontSize: 64, display: 'flex', gap: 4 }}>
-              {ICON_MAP[avatar.shoes]}
+            <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 20, display: 'flex', gap: 10 }}>
+              <span style={{ fontSize: 50 }}>{ICON_MAP[avatar.shoes]}</span>
+              <span style={{ fontSize: 50 }}>{ICON_MAP[avatar.shoes]}</span>
             </div>
           </div>
         </div>
+
+        {/* Speech Bubble */}
+        <AnimatePresence>
+          {showGreeting && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.5, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: -120 }}
+              exit={{ opacity: 0, scale: 0.5, y: 0 }}
+              style={{
+                position: 'absolute', top: '50%', left: '50%', transform: 'translateX(-50%)',
+                background: 'white', padding: '10px 20px', borderRadius: 20,
+                boxShadow: '0 10px 25px rgba(0,0,0,0.1)', fontWeight: 800,
+                color: '#4F46E5', fontSize: 16, whiteSpace: 'nowrap', zIndex: 100,
+                border: '2px solid #E8E9FF'
+              }}
+            >
+              {greeting}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
       
       {isPreviewDifferent && (

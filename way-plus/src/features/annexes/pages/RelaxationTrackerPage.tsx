@@ -3,7 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
+import { audioService } from '@/core/utils/audioService';
 import { format } from 'date-fns';
+import { useSearchParams } from 'react-router-dom';
 
 const C = {
   emerald: '#10B981',
@@ -20,12 +22,16 @@ const WEEK_DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábad
 
 export const RelaxationTrackerPage: React.FC = () => {
   const navigate = useNavigate();
-  const { relaxationLog, logRelaxation } = usePlayerStore();
+  const { relaxationLog, logRelaxation, completeWay } = usePlayerStore();
+  const [searchParams] = useSearchParams();
+  const wayId = searchParams.get('wayId');
+
   const today = format(new Date(), 'yyyy-MM-dd');
   const todayIndex = new Date().getDay() === 0 ? 6 : new Date().getDay() - 1;
   
   const [isPracticing, setIsPracticing] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(300);
+  const [duration, setDuration] = useState(1); // Default 1 min
+  const [timeLeft, setTimeLeft] = useState(60);
   const [checks, setChecks] = useState({
     room: false, chair: false, posture: false, breathing: false, eyes: false, accompanied: false,
   });
@@ -36,6 +42,8 @@ export const RelaxationTrackerPage: React.FC = () => {
   const startPractice = () => {
     if (!allChecks) return;
     setIsPracticing(true);
+    setTimeLeft(duration * 60);
+    audioService.playAmbient('relax');
     timerRef.current = setInterval(() => {
       setTimeLeft(prev => {
         if (prev <= 1) {
@@ -49,13 +57,23 @@ export const RelaxationTrackerPage: React.FC = () => {
   };
 
   const completePractice = () => {
+    const coins = duration * 10;
     logRelaxation(today, {
-      completed: true, duration: 5, posture: checks.posture,
+      completed: true, duration: duration, posture: checks.posture,
       breathing: checks.breathing, accompanied: checks.accompanied,
       location: checks.room ? 'room' : 'other',
     });
+    useRewardsStore.getState().addCoins(coins, 'relaxation');
     useRewardsStore.getState().celebrateCompletion('annex');
+    
+    if (wayId) {
+      completeWay(wayId, 1);
+      // Pequeño delay para que se vea la celebración antes de volver
+      setTimeout(() => navigate(-1), 2000);
+    }
+    
     setIsPracticing(false);
+    audioService.stopAmbient();
   };
 
   useEffect(() => {
@@ -69,7 +87,7 @@ export const RelaxationTrackerPage: React.FC = () => {
   };
 
   return (
-    <div style={{ flex: 1, background: `linear-gradient(135deg, ${C.emeraldLight}, #D1FAE5)`, padding: '24px 16px', minHeight: '100vh', overflowY: 'auto' }}>
+    <div style={{ flex: 1, background: `linear-gradient(135deg, ${C.emeraldLight}, #D1FAE5)`, padding: '24px 16px', minHeight: '100vh', overflowY: 'auto', fontFamily: 'Verdana, sans-serif' }}>
       <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
         
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -144,14 +162,17 @@ export const RelaxationTrackerPage: React.FC = () => {
                       <motion.circle 
                         cx="100" cy="100" r="90" fill="none" stroke={C.emerald} strokeWidth="12" strokeLinecap="round"
                         strokeDasharray={565}
-                        animate={{ strokeDashoffset: 565 - (timeLeft / 300) * 565 }}
+                        animate={{ strokeDashoffset: 565 - (timeLeft / (duration * 60)) * 565 }}
                       />
                     </svg>
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 48, fontWeight: 900, color: C.slateDark }}>
                       {formatTime(timeLeft)}
                     </div>
                   </div>
-                  <p style={{ fontSize: 18, fontWeight: 800, color: C.emerald, textTransform: 'uppercase', letterSpacing: 2 }}>Inspirar... Expirar...</p>
+                  <p style={{ fontSize: 18, fontStyle: 'italic', fontWeight: 800, color: C.emerald, textTransform: 'uppercase', letterSpacing: 2 }}>Inspira... Espira...</p>
+                  <div className="mt-4 p-4 bg-emerald-50 rounded-2xl border-2 border-emerald-100 shadow-inner">
+                    <p style={{ fontSize: 24, fontWeight: 900, color: C.emeraldDark, textAlign: 'center' }}>¡ERES UN CAMPEÓN!</p>
+                  </div>
                 </motion.div>
               ) : (
                 <motion.div
@@ -163,6 +184,24 @@ export const RelaxationTrackerPage: React.FC = () => {
                   <div>
                     <h3 style={{ fontSize: 22, fontWeight: 900, color: C.slateDark, margin: '0 0 8px' }}>Práctica Diaria</h3>
                     <p style={{ fontSize: 14, fontWeight: 600, color: C.slate, margin: 0 }}>Completa la lista de calma para activar el temporizador.</p>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                    {[1, 2, 3, 5].map(m => (
+                      <button
+                        key={m}
+                        onClick={() => { setTimeLeft(m * 60); setDuration(m); }}
+                        style={{
+                          flex: 1, padding: '12px 8px', borderRadius: 16, border: '2px solid',
+                          borderColor: duration === m ? C.emerald : C.slateLight,
+                          background: duration === m ? C.emeraldLight : C.white,
+                          color: duration === m ? C.emeraldDark : C.slate,
+                          fontSize: 14, fontWeight: 900, cursor: 'pointer'
+                        }}
+                      >
+                        {m} MIN
+                      </button>
+                    ))}
                   </div>
                   
                   <motion.button

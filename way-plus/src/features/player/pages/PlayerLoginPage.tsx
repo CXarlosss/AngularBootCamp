@@ -95,8 +95,11 @@ export function PlayerLoginPage() {
     load();
   }, []);
 
+  const [attempts, setAttempts] = useState(0);
+  const [locked, setLocked] = useState(false);
+
   const handleKey = (key: string) => {
-    if (success) return;
+    if (success || locked) return;
 
     if (key === '⌫') {
       setPin(prev => prev.slice(0, -1));
@@ -112,15 +115,29 @@ export function PlayerLoginPage() {
     if (newPin.length === 4) {
       if (patient && newPin === patient.player_pin) {
         setSuccess(true);
+        setAttempts(0);
         setTimeout(() => {
           navigate('/player/home');
         }, 800);
       } else {
+        const nextAttempts = attempts + 1;
+        setAttempts(nextAttempts);
         setError(true);
-        setTimeout(() => {
-          setPin('');
-          setError(false);
-        }, 1000);
+        
+        if (nextAttempts >= 3) {
+          setLocked(true);
+          setTimeout(() => {
+            setLocked(false);
+            setAttempts(0);
+            setPin('');
+            setError(false);
+          }, 30000); // 30 second lockout
+        } else {
+          setTimeout(() => {
+            setPin('');
+            setError(false);
+          }, 1000);
+        }
       }
     }
   };
@@ -212,7 +229,7 @@ export function PlayerLoginPage() {
       </div>
 
       <AnimatePresence>
-        {error && (
+        {error && !locked && (
           <motion.div
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -222,7 +239,20 @@ export function PlayerLoginPage() {
               marginTop: -16,
             }}
           >
-            PIN incorrecto, inténtalo de nuevo
+            PIN incorrecto, inténtalo de nuevo ({3 - attempts} restantes)
+          </motion.div>
+        )}
+        {locked && (
+          <motion.div
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            style={{
+              fontSize: 14, fontWeight: 700, color: C.rose,
+              marginTop: -16, textAlign: 'center'
+            }}
+          >
+            Demasiados intentos.<br/>Espera 30 segundos o avisa a Maite.
           </motion.div>
         )}
       </AnimatePresence>

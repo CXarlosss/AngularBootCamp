@@ -115,7 +115,7 @@ function StepCard({
             lineHeight: 1.2, marginBottom: 6,
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
-            {step.title}
+            {step.title.toUpperCase().startsWith('STEP') ? step.title : `STEP ${step.title}`}
           </div>
 
           {/* Barra de progreso grande */}
@@ -234,7 +234,8 @@ export const LevelSelectPage: React.FC = () => {
       minHeight: '100dvh',
       background: 'linear-gradient(180deg, #FFFBF0 0%, #F0F4FF 100%)',
       paddingBottom: 120,
-      position: 'relative'
+      position: 'relative',
+      fontFamily: 'Verdana, sans-serif'
     }}>
 
       {/* Botón de salida discreto */}

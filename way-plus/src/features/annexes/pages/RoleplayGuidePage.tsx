@@ -19,14 +19,14 @@ const C = {
 const WEEK_DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
 
 const ROLEPLAY_SCENARIOS = [
-  { wayId: 'way-1', title: 'Llamar a la puerta y pedir permiso', icon: '🚪', step: 'Asertividad' },
-  { wayId: 'way-2', title: 'Hacer favores y ayudar a otros', icon: '🤝', step: 'Asertividad' },
-  { wayId: 'way-3', title: 'Pedir jugar con otros niños y niñas', icon: '🧒', step: 'Asertividad' },
-  { wayId: 'way-6', title: 'Defenderse con palabras, no golpes', icon: '🛡️', step: 'Asertividad' },
-  { wayId: 'way-9', title: 'Lavarse las manos antes de comer', icon: '🧼', step: 'Autonomía' },
-  { wayId: 'way-11', title: 'Lavarse los dientes correctamente', icon: '🦷', step: 'Autonomía' },
-  { wayId: 'way-14', title: 'Preparar la mochila para el cole', icon: '🎒', step: 'Autonomía' },
-  { wayId: 'way-23', title: 'Comer educadamente en la mesa', icon: '🍽️', step: 'Autonomía' },
+  { wayId: 'way-1', title: 'Llamar a la puerta y pedir permiso', icon: '🚪', step: 'STEP Asertividad y Autoestima' },
+  { wayId: 'way-2', title: 'Hacer favores y ayudar a otros', icon: '🤝', step: 'STEP Asertividad y Autoestima' },
+  { wayId: 'way-3', title: 'Pedir jugar con otros niños y niñas', icon: '🧒', step: 'STEP Asertividad y Autoestima' },
+  { wayId: 'way-6', title: 'Defenderse con palabras, no golpes', icon: '🛡️', step: 'STEP Asertividad y Autoestima' },
+  { wayId: 'way-9', title: 'Lavarse las manos antes de comer', icon: '🧼', step: 'STEP Autonomía y Autoestima' },
+  { wayId: 'way-11', title: 'Lavarse los dientes correctamente', icon: '🦷', step: 'STEP Autonomía y Autoestima' },
+  { wayId: 'way-14', title: 'Preparar la mochila para el cole', icon: '🎒', step: 'STEP Autonomía y Autoestima' },
+  { wayId: 'way-23', title: 'Comer educadamente en la mesa', icon: '🍽️', step: 'STEP Autonomía y Autoestima' },
 ];
 
 export const RoleplayGuidePage: React.FC = () => {
@@ -45,7 +45,7 @@ export const RoleplayGuidePage: React.FC = () => {
   };
 
   return (
-    <div style={{ flex: 1, background: `linear-gradient(135deg, ${C.orangeLight}, #FFEDD5)`, padding: '24px 16px', minHeight: '100vh', overflowY: 'auto' }}>
+    <div style={{ flex: 1, background: `linear-gradient(135deg, ${C.orangeLight}, #FFEDD5)`, padding: '24px 16px', minHeight: '100vh', overflowY: 'auto', fontFamily: 'Verdana, sans-serif' }}>
       <div style={{ maxWidth: 800, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 24 }}>
         
         <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -85,11 +85,11 @@ export const RoleplayGuidePage: React.FC = () => {
 
               <div style={{ background: C.orangeLight, borderRadius: 24, padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <h3 style={{ fontSize: 18, fontWeight: 900, color: C.orangeDark, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  👨‍👩‍👧‍👦 Guía para el Adulto
+                  👨‍👩‍👧‍👦 Guía para el Profe, Terapeuta o Familia
                 </h3>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 12 }}>
                   <GuideStep icon="💬" text="Explica la situación con calma" />
-                  <GuideStep icon="👥" text="Tú haces el papel del otro primero" />
+                  <GuideStep icon="👥" text="Realiza el papel del niño/ la niña primero" />
                   <GuideStep icon="🔁" text="Luego intercambiad los papeles" />
                   <GuideStep icon="⭐" text="Refuerza cada pequeño acierto" />
                 </div>

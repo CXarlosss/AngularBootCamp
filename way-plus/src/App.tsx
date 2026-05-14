@@ -59,7 +59,6 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <Suspense fallback={<div className="flex items-center justify-center h-screen font-bold text-indigo-600">Cargando WAY+...</div>}>
-          <SyncManager />
           <RouterProvider router={router} />
         </Suspense>
       </AuthProvider>
