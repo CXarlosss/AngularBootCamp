@@ -19,6 +19,7 @@ export interface Way {
   name?: string;
   title?: string;
   stepId: string;
+  theme?: string;         // Referencia al tema del Step para UI/Fallbacks
   stepNumber?: number;    // Para mapeo de imágenes situacionales
   wayNumber?: number;     // Para mapeo de imágenes situacionales
   type: WayType;

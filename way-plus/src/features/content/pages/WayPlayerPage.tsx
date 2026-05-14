@@ -56,20 +56,58 @@ export function WayPlayerPage() {
 
   const [step, setStep] = useState<Step | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showBoostSelector, setShowBoostSelector] = useState(true);
+  const [showBoostSelector, setShowBoostSelector] = useState(false);
   const [selectedBoostId, setSelectedBoostId] = useState<string | null>(null);
   const { ownedBoosts, consumeBoost } = useRewardsStore();
+  
+  // Performance timer state
+  const [loadTime, setLoadTime] = useState(0);
+  const loadingTimerRef = useRef<any>(null);
 
   // Load step from registry
   useEffect(() => {
-    if (!stepId) return;
-    registry.getStepByIdAsync(stepId)
-      .then(setStep)
-      .finally(() => setLoading(false));
-  }, [stepId]);
+    if (!stepId || !levelId) return;
+
+    const loadStep = async () => {
+      const startTime = performance.now();
+      setLoading(true);
+      setLoadTime(0);
+      
+      // Start UI timer
+      loadingTimerRef.current = setInterval(() => {
+        setLoadTime(prev => prev + 100);
+      }, 100);
+
+      try {
+        console.log(`[WayPlayer] 🚀 Cargando contenido: ${stepId}...`);
+        let foundStep = await registry.getStepByIdAsync(stepId);
+        
+        if (!foundStep) {
+          const levelSteps = await registry.getStepsForLevel(levelId);
+          foundStep = levelSteps.find(s => s.id === stepId) || null;
+        }
+        
+        setStep(foundStep);
+        const duration = (performance.now() - startTime).toFixed(2);
+        console.log(`[WayPlayer] ✅ Contenido cargado en ${duration}ms`);
+      } catch (err) {
+        console.error('[WayPlayer] Error crítico de carga:', err);
+      } finally {
+        if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
+        setLoading(false);
+      }
+    };
+
+    loadStep();
+  }, [stepId, levelId]);
 
   const ways: Way[] = step?.ways ?? [];
-  const currentIdx = ways.findIndex(w => w.id === wayId);
+  const currentIdx = useMemo(() => {
+    if (!wayId) return 0;
+    const idx = ways.findIndex(w => w.id === wayId);
+    return idx === -1 ? 0 : idx;
+  }, [wayId, ways]);
+  
   const currentWay = ways[currentIdx] ?? null;
   const isLastWay = currentIdx === ways.length - 1;
 
@@ -83,17 +121,37 @@ export function WayPlayerPage() {
         ...(nextWay.options?.map(o => o.image) || [])
       ].filter((u): u is string => typeof u === 'string');
       
+      // Preload specific pictograms
       import('@/core/utils/preloadService').then(({ preloadImages }) => {
-        preloadImages(urls).catch(() => console.warn('Preload failed for way:', nextWay.id));
+        const startPreload = performance.now();
+        preloadImages(urls)
+          .then(() => {
+            if (import.meta.env.DEV) {
+              const endPreload = performance.now();
+              console.log(`[Timer] 📦 Preload exitoso para ${nextWay.id} (${urls.length} imgs) en ${(endPreload - startPreload).toFixed(2)}ms`);
+            }
+          })
+          .catch((err) => {
+            if (import.meta.env.DEV) {
+              console.warn(`[Timer] ❌ Fallo de precarga en ${nextWay.id}:`, err);
+              console.warn('URLs fallidas:', urls);
+            }
+          });
+      });
+
+      // Preload situational image (background)
+      import('@/core/services/wayImageService').then(({ preloadWayImages }) => {
+        preloadWayImages(nextWay.stepNumber || step?.stepNumber || 1, nextWay.wayNumber || (nextIdx + 1));
       });
     }
-  }, [currentIdx, ways]);
+  }, [currentIdx, ways, step]);
 
   // Lectura automática al entrar
   useEffect(() => {
     if (currentWay && !celebration.show) {
+      const textToSpeak = currentWay.title || currentWay.name || currentWay.stimulus?.text || '';
       const timer = setTimeout(() => {
-        audioService.speak(normalizeWayText(currentWay.title ?? currentWay.name ?? ''));
+        audioService.speak(normalizeWayText(textToSpeak));
       }, 800);
       return () => clearTimeout(timer);
     }
@@ -200,31 +258,54 @@ export function WayPlayerPage() {
     }
   };
 
-  const handleStartWithBoost = () => {
-    if (selectedBoostId) {
-      consumeBoost(selectedBoostId);
-    }
-    setShowBoostSelector(false);
-  };
+
 
 
   if (!step || !currentWay) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-slate-50">
-        <div className="text-8xl mb-6">🔍</div>
-        <h2 className="text-3xl font-black text-slate-800 mb-4">¡Vaya! No encontramos el reto</h2>
-        <button
-          onClick={() => navigate('/')}
-          className="bg-indigo-600 text-white px-8 py-4 rounded-3xl font-black text-lg shadow-xl"
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-[#F8FAFF]">
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="relative mb-12"
         >
-          VOLVER AL INICIO
-        </button>
+          <div className="text-[120px] filter drop-shadow-2xl">🧩</div>
+          <motion.div 
+            animate={{ rotate: 360 }}
+            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+            className="absolute -top-4 -right-4 text-4xl"
+          >
+            ✨
+          </motion.div>
+        </motion.div>
+        
+        <h2 className="text-4xl font-black text-slate-800 mb-6 tracking-tight max-w-md">
+          ¡Ups! Este reto se ha escondido
+        </h2>
+        <p className="text-slate-500 font-medium text-lg mb-12 max-w-sm leading-relaxed">
+          No te preocupes, estamos buscando el camino correcto para ti.
+        </p>
+        
+        <div className="flex flex-col sm:flex-row gap-4">
+          <button
+            onClick={() => navigate(`/play/${levelId}/${stepId}`)}
+            className="bg-white text-indigo-600 border-2 border-indigo-100 px-8 py-4 rounded-[2rem] font-black text-lg shadow-sm hover:shadow-md transition-all active:scale-95"
+          >
+            VOLVER AL MÓDULO
+          </button>
+          <button
+            onClick={() => window.location.reload()}
+            className="bg-indigo-600 text-white px-8 py-4 rounded-[2rem] font-black text-lg shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95"
+          >
+            REINTENTAR CARGA
+          </button>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F8FAFF] relative overflow-y-auto" style={{ fontFamily: 'Outfit, sans-serif' }}>
+    <div className="min-h-screen bg-[#F8FAFF] relative overflow-y-auto" style={{ fontFamily: 'Verdana, sans-serif' }}>
       {/* Immersive Background Decor */}
       <div className="fixed inset-0 pointer-events-none opacity-50 overflow-hidden">
         <motion.div 
@@ -273,13 +354,16 @@ export function WayPlayerPage() {
              
              <div className="flex items-center gap-3">
                 <h1 className="text-2xl sm:text-4xl font-black text-slate-800 leading-tight tracking-tight">
-                  {normalizeWayText(currentWay?.title ?? currentWay?.name ?? 'Reto')}
+                  {normalizeWayText(currentWay?.title ?? currentWay?.name ?? currentWay?.stimulus?.text ?? 'Reto')}
                 </h1>
                 
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => audioService.speak(normalizeWayText(currentWay?.title ?? currentWay?.name ?? ''))}
+                  onClick={() => {
+                    const text = currentWay?.title || currentWay?.name || currentWay?.stimulus?.text || '';
+                    audioService.speak(normalizeWayText(text));
+                  }}
                   className="w-10 h-10 sm:w-14 sm:h-14 bg-white border-2 border-indigo-50 rounded-2xl shadow-md flex items-center justify-center text-xl hover:bg-indigo-50 transition-colors"
                 >
                   🔊
@@ -294,9 +378,21 @@ export function WayPlayerPage() {
 
         <AnimatePresence mode="wait">
           {loading ? (
-            <div key="loader" className="w-full max-w-md aspect-video bg-white/50 backdrop-blur-md animate-pulse rounded-[3rem] mx-auto flex flex-col items-center justify-center gap-4 border-2 border-dashed border-slate-200">
-               <div className="text-4xl">🚀</div>
-               <span className="text-slate-400 font-black uppercase tracking-widest text-xs">Preparando Reto...</span>
+            <div key="loader" className="w-full max-w-md aspect-video bg-white/50 backdrop-blur-md rounded-[3rem] mx-auto flex flex-col items-center justify-center gap-6 border-2 border-dashed border-slate-200 shadow-xl shadow-slate-100/50">
+               <div className="relative">
+                 <div className="text-6xl animate-bounce">🚀</div>
+                 <motion.div 
+                   animate={{ rotate: 360 }}
+                   transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                   className="absolute -inset-4 border-2 border-indigo-200 border-t-indigo-500 rounded-full"
+                 />
+               </div>
+               <div className="flex flex-col items-center gap-2">
+                 <span className="text-slate-600 font-black uppercase tracking-[0.2em] text-sm">Preparando Reto...</span>
+                 <div className="bg-indigo-600 text-white px-3 py-1 rounded-full text-[10px] font-black font-mono">
+                   { (loadTime / 1000).toFixed(1) }s
+                 </div>
+               </div>
             </div>
           ) : (
             <motion.div
@@ -334,16 +430,7 @@ export function WayPlayerPage() {
         }}
       />
 
-      <AnimatePresence>
-        {showBoostSelector && (
-          <BoostSelector
-            ownedBoosts={ownedBoosts}
-            selectedBoostId={selectedBoostId}
-            onSelect={setSelectedBoostId}
-            onStart={handleStartWithBoost}
-          />
-        )}
-      </AnimatePresence>
+
 
       <HomeworkCelebration
         show={showHomeworkCelebration}

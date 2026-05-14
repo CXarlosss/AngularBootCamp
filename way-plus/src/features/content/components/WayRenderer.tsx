@@ -10,10 +10,11 @@ import { audioService } from '@/core/utils/audioService';
 import { SequencingWay } from '../strategies/SequencingWay';
 import { MemoryWay } from '../strategies/MemoryWay';
 import { TracingWay } from '../strategies/TracingWay';
+import { RoleplayWay } from '../strategies/RoleplayWay';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { useConfigStore } from '@/core/stores/configStore';
-import { useWayImage, getWayPlaceholder } from '@/core/services/wayImageService';
+import { useWayImage } from '@/core/services/wayImageService';
 import { cn } from '@/shared/lib/utils';
 
 interface Props {
@@ -23,8 +24,6 @@ interface Props {
 }
 
 export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId }) => {
-  // Debug logs removed for production performance
-
   const [celebration, setCelebration] = useState<{
     show: boolean;
     type: 'happy' | 'sad' | 'step-complete' | 'annex-complete';
@@ -45,7 +44,11 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
   }, [way.id]);
 
   const { reduceMotion } = useConfigStore((s) => s.accessibility);
-  const { src: situationImg, loaded: imgLoaded } = useWayImage(way.stepNumber || 1, way.wayNumber || 1);
+  const { src: situationImg, loaded: imgLoaded, hasError } = useWayImage(
+    way.stepNumber || 1, 
+    way.wayNumber || 1,
+    way.theme || 'default'
+  );
 
   const handleDoubleChoiceSelect = (optionId: string) => {
     const option = way.options.find(o => o.id === optionId);
@@ -63,7 +66,6 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
       });
 
       completeWay(way.id, attempts + 1);
-      
       celebrateCompletion('way');
       setCelebration({ show: true, type: 'happy' });
       
@@ -81,13 +83,11 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
         audioService.playSFX('success');
         return;
       }
-      
       setCelebration({ show: true, type: 'sad' });
       setTimeout(() => setCelebration({ show: false, type: 'happy' }), 2000);
     }
   };
 
-  // Switch between strategies
   const renderStrategy = () => {
     switch (way.type) {
       case 'sequencing':
@@ -96,6 +96,8 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
         return <MemoryWay way={way as any} onComplete={() => onComplete({ duration_seconds: 0, attempts: 1, completed: true })} />;
       case 'tracing':
         return <TracingWay way={way as any} onComplete={() => onComplete({ duration_seconds: 0, attempts: 1, completed: true })} />;
+      case 'roleplay':
+        return <RoleplayWay way={way as any} onComplete={() => onComplete({ duration_seconds: 0, attempts: 1, completed: true })} />;
       case 'double-choice':
       default:
         return (
@@ -107,24 +109,41 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
               className="w-full relative group"
             >
               <div className="relative aspect-[16/10] w-full rounded-3xl sm:rounded-[3rem] overflow-hidden bg-slate-100 border-4 sm:border-[12px] border-white shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] sm:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.3)]">
-                {/* Image Layer */}
-                <motion.img 
-                  src={situationImg} 
-                  alt="Situación" 
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  style={{ opacity: imgLoaded ? 1 : 0 }}
-                />
                 
-                {/* Fallback/Loader */}
-                {!imgLoaded && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-slate-50">
+                {/* Image Layer */}
+                <AnimatePresence mode="wait">
+                  {imgLoaded ? (
+                    <motion.img 
+                      key="real-image"
+                      src={situationImg} 
+                      alt="Situación" 
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
                     <motion.div 
-                      animate={{ rotate: 360 }} 
-                      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                      className="text-5xl"
+                      key="skeleton"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 bg-slate-200"
                     >
-                      🎨
+                      <motion.div 
+                        animate={{ x: ['-100%', '100%'] }}
+                        transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
+                        className="w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
+                      />
                     </motion.div>
+                  )}
+                </AnimatePresence>
+                
+                {/* Error/Fallback Label */}
+                {hasError && (
+                  <div className="absolute inset-x-0 bottom-0 bg-indigo-600/90 backdrop-blur-md py-3 text-center">
+                    <span className="text-white font-black text-xs uppercase tracking-widest">
+                      Situación en preparación... ✨
+                    </span>
                   </div>
                 )}
 
@@ -159,7 +178,6 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
               </motion.div>
             </motion.div>
 
-            {/* Spacer for the floating stimulus */}
             <div className="h-4" />
 
             {/* Options Section */}
@@ -187,7 +205,6 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
                       celebration.show && celebration.type === 'happy' && option.isCorrect && "ring-8 ring-emerald-400 scale-[1.03] z-20 shadow-[0_30px_60px_-15px_rgba(16,185,129,0.4)]"
                     )}
                   />
-                  {/* Option Badge */}
                   <div className="absolute top-4 left-4 bg-slate-100/50 backdrop-blur-md w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-slate-400 border border-white pointer-events-none group-hover:bg-indigo-500 group-hover:text-white transition-colors">
                     {String.fromCharCode(65 + idx)}
                   </div>
@@ -219,10 +236,8 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
             </AnimatePresence>
           </div>
         );
-
     }
   };
-
 
   return (
     <div className="relative w-full flex flex-col items-center justify-center min-h-[85vh] overflow-hidden" style={{

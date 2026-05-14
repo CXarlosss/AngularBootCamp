@@ -103,6 +103,7 @@ export const registry = {
           step.ways.forEach((way, wIdx) => {
             way.stepNumber = step.stepNumber;
             way.wayNumber = wIdx + 1;
+            way.theme = step.theme;
             // Ensure levelId is attached to ways for easier lookups
             (way as any).levelId = levelId;
           });

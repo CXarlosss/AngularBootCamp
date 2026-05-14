@@ -16,25 +16,6 @@ const queryClient = new QueryClient({
   },
 });
 
-// Filtro de errores espurios de extensiones del navegador
-if (typeof window !== 'undefined') {
-  const originalError = console.error;
-  console.error = (...args: any[]) => {
-    const message = args[0]?.toString?.() || '';
-    if (message.includes('tabs:outgoing.message.ready')) return;
-    if (message.includes('No Listener')) return;
-    originalError.apply(console, args);
-  };
-
-  window.addEventListener('unhandledrejection', (event) => {
-    const msg = event.reason?.message || '';
-    if (msg.includes('tabs:outgoing') || msg.includes('No Listener')) {
-      event.stopImmediatePropagation();
-      event.preventDefault();
-    }
-  });
-}
-
 import { audioService } from '@/core/utils/audioService';
 
 export default function App() {

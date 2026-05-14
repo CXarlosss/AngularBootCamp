@@ -4,6 +4,7 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import './styles/way-typography.css'
 import './styles/progress-fix.css'
+import './styles/legibility.css'
 import './app/providers/i18n'
 import App from './App.tsx'
 
@@ -19,4 +20,3 @@ if ('serviceWorker' in navigator) {
     }
   });
 }
-
