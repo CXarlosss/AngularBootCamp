@@ -6,6 +6,7 @@ import { SoundToggle } from '@/core/components/SoundToggle';
 import { SyncStatus } from '../components/SyncStatus';
 import { SecurityGate } from '@/shared/components/SecurityGate';
 import { patientService } from '@/core/services/patientService';
+import { seedClinicalData } from '@/core/utils/seedData';
 
 
 const C = {
@@ -19,7 +20,7 @@ const C = {
 
 export function TherapistDashboard() {
   const navigate = useNavigate();
-  const { selectPatient, addPatient, patients } = useTherapistStore();
+  const { selectPatient, addPatient, patients, loadPatients } = useTherapistStore();
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [newPatient, setNewPatient] = useState({ name: '', age: 6, avatar: '👤' });
@@ -28,22 +29,10 @@ export function TherapistDashboard() {
   const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function syncPatients() {
-      const remotePatients = await patientService.getAll();
-      if (remotePatients.length === 0) return;
-
-      // Sincronizar: añadir al store los que no estén ya (por UUID)
-      const { patients, addPatient } = useTherapistStore.getState();
-      const existingIds = new Set(patients.map(p => p.id));
-
-      remotePatients.forEach(p => {
-        if (!existingIds.has(p.id)) {
-          addPatient(p);
-        }
-      });
+    if (isAuthorized) {
+      loadPatients();
     }
-    syncPatients();
-  }, []);
+  }, [isAuthorized, loadPatients]);
 
   if (!isAuthorized) {
     return (
@@ -107,6 +96,18 @@ export function TherapistDashboard() {
           <div style={{ fontSize: 12, color: C.muted }}>Selecciona un paciente para ver su evolución</div>
         </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          <button
+            onClick={async () => {
+              const res = await seedClinicalData();
+              if (res.success) loadPatients();
+            }}
+            style={{
+              background: '#F1F2FF', color: C.indigo, border: `1px solid ${C.indigo}`,
+              padding: '6px 12px', borderRadius: 10, fontSize: 11, fontWeight: 700, cursor: 'pointer'
+            }}
+          >
+            🌱 Seed Demo
+          </button>
           <SoundToggle />
           <SyncStatus />
         </div>
@@ -204,11 +205,10 @@ export function TherapistDashboard() {
                     onChange={e => setNewPatient({ ...newPatient, avatar: e.target.value })}
                     style={{ width: '100%', padding: '12px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 16 }}
                   >
-                    <option value="👤">👤 Niño</option>
-                    <option value="👧">👧 Niña</option>
-                    <option value="🐱">🐱 Gato</option>
-                    <option value="🐉">🐉 Dragón</option>
-                    <option value="🦁">🦁 León</option>
+                    <option value="base-unicorn">🦄 Unicornio</option>
+                    <option value="base-dragon">🐉 Dragón</option>
+                    <option value="base-puppy">🐶 Perrito</option>
+                    <option value="base-kitten">🐱 Gatito</option>
                   </select>
                 </div>
               </div>

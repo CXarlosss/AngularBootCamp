@@ -201,6 +201,7 @@ export function WayPlayerPage() {
         action: 'way_completed',
         attempts: 1,
         metadata: { 
+          theme: currentWay.theme,
           isHomework: true, 
           bonus,
           timeSpentMs: Date.now() - (wayStartTime.current || 0)
@@ -230,6 +231,7 @@ export function WayPlayerPage() {
         action: 'way_completed',
         attempts: 1,
         metadata: { 
+          theme: currentWay.theme,
           isHomework: false, 
           bonus,
           timeSpentMs: Date.now() - (wayStartTime.current || 0)

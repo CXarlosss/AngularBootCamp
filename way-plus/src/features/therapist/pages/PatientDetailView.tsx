@@ -18,6 +18,7 @@ import { SoundToggle } from '@/core/components/SoundToggle';
 import { useConfigStore } from '@/core/stores/configStore';
 import { PatientAnalyticsView } from '../components/PatientAnalyticsView';
 import { HomeworkPlanner } from '../components/HomeworkPlanner';
+import { patientService } from '@/core/services/patientService';
 
 const C = {
   indigo:      '#4F46E5',
@@ -112,6 +113,7 @@ export function PatientDetailView() {
   const searchParams = useMemo(() => new URLSearchParams(window.location.search), [window.location.search]);
   
   const selectPatient = useTherapistStore(s => s.selectPatient);
+  const updatePatient = useTherapistStore(s => s.updatePatient);
   const selectedPatientIdFromStore = useTherapistStore(s => s.selectedPatientId);
 
   useEffect(() => {
@@ -141,11 +143,6 @@ export function PatientDetailView() {
   } = useConfigStore();
 
 
-  const { totalXp = 0, streakDays = 0 } = useRewardsStore();
-  const completedWays = usePlayerStore(s => s.profile.completedWays) ?? [];
-  const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
-  const roleplayLog = usePlayerStore(s => s.roleplayLog) ?? {};
-
   if (!patient) {
     return (
       <div style={{ padding: 40, textAlign: 'center' }}>
@@ -154,6 +151,13 @@ export function PatientDetailView() {
       </div>
     );
   }
+
+  const completedWays = patient.completedWays ?? [];
+  const totalXp = patient.coins ?? 0;
+  // Estos logs aún requieren una query específica si no están en el objeto patient,
+  // por ahora los mantenemos pero marcamos la deuda técnica
+  const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
+  const roleplayLog = usePlayerStore(s => s.roleplayLog) ?? {};
 
   return (
     <div key={patientId} style={{ background: C.bg, minHeight: '100dvh' }}>
@@ -186,7 +190,7 @@ export function PatientDetailView() {
           <div style={{ flex: 1 }}>
             <div style={{ fontWeight: 800, fontSize: 20 }}>{patient.name}</div>
             <div style={{ opacity: 0.8, fontSize: 13, marginTop: 2 }}>
-              {patient.age} años · {patient.diagnosis ?? 'Sin diagnóstico'} · {patient.currentLevel}
+              {patient.age} años · {patient.gender === 'female' ? 'Niña' : 'Niño'} · {patient.diagnosis ?? 'Sin diagnóstico'} · {patient.currentLevel}
             </div>
           </div>
         </Card>
@@ -256,7 +260,7 @@ export function PatientDetailView() {
                 completedWays={completedWays}
                 relaxationLog={relaxationLog}
                 roleplayLog={roleplayLog}
-                streakDays={streakDays}
+                streakDays={0}
                 totalXp={totalXp}
                 patientName={patient.name}
               />
@@ -281,6 +285,45 @@ export function PatientDetailView() {
         
         {activeTab === 'config' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <Card>
+              <SectionTitle>👤 Datos del Paciente</SectionTitle>
+              <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: 12, color: '#6b7280', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                    GÉNERO
+                  </label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    {[
+                      { value: 'male', label: '👦 Niño' },
+                      { value: 'female', label: '👧 Niña' }
+                    ].map(({ value, label }) => (
+                      <button
+                        key={value}
+                        onClick={async () => {
+                          await patientService.update(patient.id, { gender: value as 'male' | 'female' });
+                          updatePatient(patient.id, { gender: value as 'male' | 'female' });
+                        }}
+                        style={{
+                          flex: 1,
+                          padding: '10px 0',
+                          borderRadius: 10,
+                          border: patient.gender === value ? '2px solid #6366f1' : '2px solid #e5e7eb',
+                          background: patient.gender === value ? '#eef2ff' : '#fff',
+                          color: patient.gender === value ? '#6366f1' : '#374151',
+                          fontWeight: patient.gender === value ? 700 : 400,
+                          cursor: 'pointer',
+                          fontSize: 14,
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </Card>
+
             <Card>
               <SectionTitle>📱 Acceso del Niño</SectionTitle>
               <PinConfig 

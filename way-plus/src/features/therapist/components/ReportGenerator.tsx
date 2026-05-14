@@ -6,6 +6,8 @@ import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { generateWAYReport } from '../utils/pdfGenerator';
 import { analyticsService } from '@/core/services/analyticsService';
+import { supabase } from '@/core/services/supabaseClient';
+import { registry } from '@/content/registry';
 
 export const ReportGenerator: React.FC = () => {
   const [generating, setGenerating] = useState(false);
@@ -22,29 +24,40 @@ export const ReportGenerator: React.FC = () => {
     setGenerating(true);
     
     try {
-      // Calcular métricas reales
-      const completedWays = profile?.completedWays || [];
-      const relaxationCount = Object.values(relaxationLog).filter(r => r.completed).length;
-      const roleplayCount = Object.keys(roleplayLog).length;
+      if (!supabase) throw new Error('Supabase no está disponible');
+
+      // 1. Obtener logs reales de Supabase
+      const { data: logs, error } = await supabase
+        .from('activity_logs')
+        .select('*')
+        .eq('patient_id', selectedPatientId)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // 2. Procesar métricas basadas en la telemetría real
+      const completedWays = patient.completedWays || [];
+      const relaxationCount = logs?.filter(l => l.metadata?.theme === 'relaxation' && l.action === 'way_completed').length || 0;
+      const roleplayCount = logs?.filter(l => l.metadata?.theme === 'roleplay' && l.action === 'way_completed').length || 0;
       
-      // Simulación de gasto para el ratio
-      const totalSpent = purchaseHistory.length * 50; 
-      const savingRatio = wayCoins / (totalSpent + wayCoins || 1);
-      
+      // Simulación de perfil económico
+      const savingRatio = (patient.coins || 0) / ((patient.coins || 0) + 500); 
       const profileName = savingRatio > 0.7 ? 'Planificador Estratégico' 
         : savingRatio > 0.4 ? 'Perfil Equilibrado' 
         : 'Impulsividad de Recompensa';
 
-      // Datos semanales
+      // Datos semanales desde los logs
       const weeklyData = Array.from({ length: 7 }, (_, i) => {
         const d = new Date();
         d.setDate(d.getDate() - (6 - i));
         const dateStr = d.toISOString().split('T')[0];
+        const dayLogs = logs?.filter(l => l.created_at.startsWith(dateStr)) || [];
+        
         return {
           day: d.toLocaleDateString('es', { weekday: 'short' }),
-          relaxation: !!relaxationLog[dateStr]?.completed,
-          roleplay: !!(roleplayLog[dateStr]?.length > 0),
-          selfcheck: Object.entries(weeklyCheck).filter(([k]) => k.endsWith(dateStr)).some(([, v]) => v),
+          relaxation: dayLogs.some(l => l.metadata?.theme === 'relaxation'),
+          roleplay: dayLogs.some(l => l.metadata?.theme === 'roleplay'),
+          selfcheck: dayLogs.some(l => l.metadata?.theme === 'self-check'),
         };
       });
 
@@ -52,35 +65,36 @@ export const ReportGenerator: React.FC = () => {
         patient,
         dateRange: 'Últimos 14 días',
         completedWays: completedWays.length,
-        totalWays: 55, // Total estimado del nivel
+        totalWays: 55,
         relaxationSessions: relaxationCount,
         roleplaySessions: roleplayCount,
-        streakDays,
-        totalXp,
+        streakDays: streakDays || 0,
+        totalXp: patient.coins || 0,
         economicProfile: profileName,
         savingRatio,
         alerts: [
           { 
             title: 'Relajación', 
-            message: relaxationCount < 3 ? 'Se observa baja adherencia a las técnicas de calma fuera de sesión.' : 'Excelente constancia en las técnicas de regulación emocional.', 
+            message: relaxationCount < 3 ? 'Baja adherencia a técnicas de calma. Reforzar práctica diaria.' : 'Excelente constancia en regulación emocional.', 
             type: relaxationCount < 3 ? 'warning' : 'success' 
           },
           { 
-            title: 'Impulsividad', 
-            message: savingRatio < 0.3 ? 'Tendencia a la gratificación inmediata. Trabajar demora de refuerzo.' : 'Buena capacidad de planificación y ahorro motivacional.', 
-            type: savingRatio < 0.3 ? 'warning' : 'success' 
-          },
+            title: 'Progreso', 
+            message: completedWays.length > 5 ? 'Evolución positiva en los objetivos del nivel.' : 'Inicio de fase de entrenamiento. Continuar con la secuencia actual.', 
+            type: 'info' 
+          }
         ],
         weeklyData,
         wayBreakdown: [
-          { category: 'Relajación', count: completedWays.filter(id => typeof id === 'string' && id.includes('relax')).length },
-          { category: 'Autonomía', count: completedWays.filter(id => typeof id === 'string' && id.includes('autonomy')).length },
-          { category: 'Asertividad', count: completedWays.filter(id => typeof id === 'string' && id.includes('assertive')).length },
+          { category: 'Relajación', count: completedWays.filter(id => registry.getWayById(id)?.theme === 'relaxation').length },
+          { category: 'Autonomía', count: completedWays.filter(id => registry.getWayById(id)?.theme === 'autonomy').length },
+          { category: 'Social', count: completedWays.filter(id => registry.getWayById(id)?.theme === 'social').length },
         ],
         audience,
       });
     } catch (error) {
       console.error('Error generating report:', error);
+      alert('Error al recuperar telemetría de Supabase');
     } finally {
       setGenerating(false);
     }

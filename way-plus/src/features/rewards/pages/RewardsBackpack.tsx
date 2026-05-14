@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as m, AnimatePresence } from 'framer-motion';
 import { useRewardsStore, type AvatarPart } from '../store/rewardsStore';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { AvatarPreview } from '../components/AvatarPreview';
+import { AvatarColorable } from '../components/AvatarColorable';
 import { CollectibleCard } from '../components/CollectibleCard';
 import { COLLECTIONS, STICKERS_CATALOG, type Sticker } from '../data/collections';
 import { SECRET_CARDS } from '../data/secrets';
@@ -75,12 +75,13 @@ export const RewardsBackpack: React.FC = () => {
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
       padding: '24px 16px 120px',
-      overflowY: 'auto'
+      overflowY: 'auto',
+      fontFamily: 'Verdana, sans-serif'
     }}>
       <div style={{ maxWidth: 600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
         
         <header style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <motion.button
+          <m.button
             whileTap={{ scale: 0.9 }}
             onClick={() => navigate('/')}
             style={{
@@ -91,7 +92,7 @@ export const RewardsBackpack: React.FC = () => {
             }}
           >
             <ArrowLeft size={24} />
-          </motion.button>
+          </m.button>
           <div style={{ flex: 1 }}>
             <h1 style={{ fontSize: 28, fontWeight: 900, color: '#78350F', margin: 0, letterSpacing: '-0.5px' }}>
               Mis Tesoros
@@ -140,7 +141,7 @@ export const RewardsBackpack: React.FC = () => {
 
         <AnimatePresence mode="wait">
           {activeTab === 'closet' ? (
-            <motion.div
+            <m.div
               key="closet"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -152,8 +153,8 @@ export const RewardsBackpack: React.FC = () => {
                 boxShadow: '0 20px 40px rgba(0,0,0,0.08)',
                 border: '2px solid #FDE68A', display: 'flex', flexDirection: 'column', alignItems: 'center'
               }}>
-                <AvatarPreview />
-                <motion.button
+                <AvatarColorable />
+                <m.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => { playSFX('click'); navigate('/shop'); }}
@@ -166,48 +167,75 @@ export const RewardsBackpack: React.FC = () => {
                   }}
                 >
                   <ShoppingBag size={20} /> Ir a la Tienda
-                </motion.button>
+                </m.button>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
                 {categories.map((cat) => {
                   const items = inventory.filter(item => item.category === cat.id);
-                  if (items.length === 0 && cat.id !== 'base') return null;
+                  const isBase = cat.id === 'base';
+                  
+                  if (items.length === 0 && !isBase) return null;
                   
                   return (
-                    <section key={cat.id} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                      <h3 style={{ fontSize: 18, fontWeight: 900, color: '#78350F', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
-                        <span style={{ fontSize: 22 }}>{cat.icon}</span> {cat.name}
-                      </h3>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 10 }}>
-                        {items.map(item => {
-                          const isEquipped = currentAvatar[cat.id] === item.id;
-                          return (
-                            <motion.button
-                              key={item.id}
-                              whileHover={{ scale: 1.05 }}
-                              whileTap={{ scale: 0.95 }}
-                              onClick={() => { playSFX('click'); equipPart(cat.id, item.id as AvatarPart); }}
-                              style={{
-                                aspectRatio: '1/1', borderRadius: 20, 
-                                border: isEquipped ? '3px solid #10B981' : '2px solid #FDE68A',
-                                background: isEquipped ? '#ECFDF5' : 'white', cursor: 'pointer',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: 24, boxShadow: '0 4px 10px rgba(0,0,0,0.03)'
-                              }}
-                            >
-                              {item.icon}
-                            </motion.button>
-                          );
-                        })}
+                    <section key={cat.id} className="flex flex-col gap-4">
+                      <div className="flex items-center justify-between px-2">
+                        <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
+                          <span className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-lg shadow-sm">
+                            {cat.icon}
+                          </span>
+                          {cat.name}
+                        </h3>
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-full">
+                          {items.length} {items.length === 1 ? 'objeto' : 'objetos'}
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 bg-white/50 p-3 rounded-[2rem] border border-slate-50 shadow-sm">
+                        {items.length > 0 ? (
+                          items.map(item => {
+                            const isEquipped = currentAvatar[cat.id] === item.id;
+                            return (
+                              <m.button
+                                key={item.id}
+                                whileHover={{ y: -2 }}
+                                whileTap={{ scale: 0.92 }}
+                                onClick={() => { 
+                                  playSFX('click'); 
+                                  equipPart(cat.id, item.id as AvatarPart); 
+                                }}
+                                className={`aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all relative group
+                                  ${isEquipped 
+                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100 ring-2 ring-indigo-200' 
+                                    : 'bg-white text-slate-400 border border-slate-100 hover:border-indigo-100 hover:text-indigo-600'}`}
+                              >
+                                {item.icon}
+                                {isEquipped && (
+                                  <m.div 
+                                    layoutId={`active-${cat.id}`}
+                                    className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] text-white shadow-sm"
+                                  >
+                                    ✓
+                                  </m.div>
+                                )}
+                              </m.button>
+                            );
+                          })
+                        ) : (
+                          <div className="col-span-full py-6 text-center">
+                            <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">
+                              No tienes {cat.name.toLowerCase()} aún
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </section>
                   );
                 })}
               </div>
-            </motion.div>
+            </m.div>
           ) : (
-            <motion.div
+            <m.div
               key="album"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -230,13 +258,13 @@ export const RewardsBackpack: React.FC = () => {
               </div>
 
               {totalDuplicates > 0 && (
-                <motion.div
+                <m.div
                   initial={{ scale: 0.9, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   style={{
                     background: 'white', padding: '16px 20px', borderRadius: 24,
                     border: '2px solid #E0E7FF', display: 'flex', alignItems: 'center',
-                    justifyContent: 'space-between'
+                    justifyContent: 'space-between', fontFamily: 'Verdana, sans-serif'
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -256,7 +284,7 @@ export const RewardsBackpack: React.FC = () => {
                   >
                     Canjear
                   </button>
-                </motion.div>
+                </m.div>
               )}
 
               {COLLECTIONS.map(set => {
@@ -349,7 +377,7 @@ export const RewardsBackpack: React.FC = () => {
                   })}
                 </div>
               </section>
-            </motion.div>
+            </m.div>
           )}
         </AnimatePresence>
       </div>
@@ -357,7 +385,7 @@ export const RewardsBackpack: React.FC = () => {
       {/* Exchange Modal */}
       <AnimatePresence>
         {showExchange && (
-          <motion.div
+          <m.div
             className="modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -369,7 +397,7 @@ export const RewardsBackpack: React.FC = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
             }}
           >
-            <motion.div
+            <m.div
               className="modal-content"
               onClick={e => e.stopPropagation()}
               initial={{ scale: 0.9, y: 20 }}
@@ -423,15 +451,15 @@ export const RewardsBackpack: React.FC = () => {
               >
                 Cerrar
               </button>
-            </motion.div>
-          </motion.div>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
 
       {/* Sticker Detail Modal */}
       <AnimatePresence>
         {selectedSticker && (
-          <motion.div
+          <m.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -442,7 +470,7 @@ export const RewardsBackpack: React.FC = () => {
               display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
             }}
           >
-            <motion.div
+            <m.div
               initial={{ scale: 0.8, y: 50 }}
               animate={{ scale: 1, y: 0 }}
               onClick={e => e.stopPropagation()}
@@ -470,7 +498,7 @@ export const RewardsBackpack: React.FC = () => {
               <p style={{ fontSize: 18, color: '#4B5563', lineHeight: 1.5, margin: '0 0 32px', fontWeight: 500 }}>
                 {selectedSticker.description}
               </p>
-              <motion.button
+              <m.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedSticker(null)}
@@ -482,9 +510,9 @@ export const RewardsBackpack: React.FC = () => {
                 }}
               >
                 ¡Genial!
-              </motion.button>
-            </motion.div>
-          </motion.div>
+              </m.button>
+            </m.div>
+          </m.div>
         )}
       </AnimatePresence>
     </div>

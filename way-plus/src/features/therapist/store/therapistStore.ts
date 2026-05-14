@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { persist } from 'zustand/middleware';
+import { patientService } from '@/core/services/patientService';
 
 export interface TherapeuticObjective {
   id: string;
@@ -28,6 +29,9 @@ export interface Patient {
   sessionQueue?: string[];
   homeworkWayIds?: string[];
   gender?: 'male' | 'female';
+  completedWays?: string[];
+  inventory?: string[];
+  coins?: number;
 }
 
 interface TherapistState {
@@ -41,6 +45,8 @@ interface TherapistState {
   addObjective: (patientId: string, objective: Omit<TherapeuticObjective, 'id' | 'createdAt' | 'status'>) => void;
   updateObjective: (patientId: string, objectiveId: string, progress: number) => void;
   deleteObjective: (patientId: string, objectiveId: string) => void;
+  updatePatient: (id: string, changes: Partial<Patient>) => void;
+  loadPatients: () => Promise<void>;
 }
 
 
@@ -92,6 +98,31 @@ export const useTherapistStore = create<TherapistState>()(
         p.objectives = p.objectives.filter(o => o.id !== objId);
       }
     }),
+    updatePatient: (id, changes) => set((state) => {
+      const p = state.patients.find(p => p.id === id);
+      if (p) {
+        Object.assign(p, changes);
+      }
+    }),
+
+    loadPatients: async () => {
+      const profiles = await patientService.getAll();
+      set((state) => {
+        state.patients = profiles.map(p => ({
+          id: p.id,
+          name: p.name,
+          avatar: p.avatar,
+          age: p.age,
+          startDate: new Date().toISOString(),
+          lastSession: '-',
+          currentLevel: p.currentLevel,
+          objectives: [],
+          coins: p.coins,
+          completedWays: p.completedWays,
+          inventory: p.inventory,
+        }));
+      });
+    },
 
 
   })),
