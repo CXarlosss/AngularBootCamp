@@ -88,79 +88,97 @@ export const registry = {
    * Resolution order: memory → cloud → IndexedDB → local static.
    */
   async getStepsForLevel(levelId: string): Promise<Step[]> {
-    // 1. Try cloud first if online (Primary source)
+    const CACHE_TTL = 5 * 60 * 1000; // 5 minutes revalidation window
+    
+    // Helper to process and cache steps
+    const processAndCache = (steps: Step[]) => {
+      const wayBlocklist = ['pregamer-way-01-02'];
+      const filtered = steps.filter(s => s && !wayBlocklist.includes(s.id));
+      const sorted = filtered.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+      
+      sorted.forEach((step, sIdx) => {
+        step.stepNumber = sIdx + 1;
+        if (step.ways) {
+          step.ways = step.ways.filter(w => !wayBlocklist.includes(w.id));
+          step.ways.forEach((way, wIdx) => {
+            way.stepNumber = step.stepNumber;
+            way.wayNumber = wIdx + 1;
+            // Ensure levelId is attached to ways for easier lookups
+            (way as any).levelId = levelId;
+          });
+        }
+        memCache.set(step.id, { ...step });
+        idbSet(step.id, step).catch(err => {
+          if (err.name === 'QuotaExceededError') {
+            console.warn('[Registry] Storage quota exceeded, using memory only');
+          }
+        });
+      });
+      return sorted;
+    };
+
+    // Background sync function
+    const triggerBackgroundSync = async (force = false) => {
+      if (!navigator.onLine) return;
+      
+      // Check if we already synced recently
+      const lastSync = sessionStorage.getItem(`last-sync-${levelId}`);
+      const isStale = !lastSync || (Date.now() - parseInt(lastSync)) > CACHE_TTL;
+      
+      if (!force && !isStale) return;
+
+      try {
+        const startSync = performance.now();
+        console.log(`[Registry] 🔄 Sincronizando nivel ${levelId} en segundo plano...`);
+        const cloudSteps = await fetchFromCloud(levelId);
+        if (cloudSteps && cloudSteps.length > 0) {
+          processAndCache(cloudSteps);
+          sessionStorage.setItem(`last-sync-${levelId}`, Date.now().toString());
+          const syncDuration = (performance.now() - startSync).toFixed(2);
+          console.log(`[Registry] ✨ Sincronización en la nube para ${levelId} completada en ${syncDuration}ms`);
+        }
+      } catch (e) {
+        console.warn('[Registry] Background sync failed:', e);
+      }
+    };
+
+    // 1. Try Memory Cache (Fastest)
+    const cachedMem = Array.from(memCache.values()).filter(s => 
+      s.levelId === levelId || (s as any).level_id === levelId
+    );
+    if (cachedMem.length > 0) {
+      triggerBackgroundSync(); 
+      return cachedMem.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    }
+
+    // 2. Try IndexedDB (Very Fast)
+    const idbSteps = await idbGetAllSteps();
+    const cachedIdb = idbSteps.filter(s => 
+      (s.levelId === levelId || (s as any).level_id === levelId) && 
+      s.ways && s.ways.length > 0
+    );
+    if (cachedIdb.length > 0) {
+      cachedIdb.forEach(s => memCache.set(s.id, s));
+      triggerBackgroundSync();
+      return cachedIdb.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    }
+
+    // 3. Cloud (Only if no cache at all - First run)
     if (navigator.onLine) {
       try {
         const cloudSteps = await fetchFromCloud(levelId);
         if (cloudSteps && cloudSteps.length > 0) {
-          // Clear old versions from memCache for this level to avoid duplicates
-          Array.from(memCache.keys()).forEach(key => {
-            const s = memCache.get(key);
-            if (s && (s.levelId === levelId || (s as any).level_id === levelId)) {
-              memCache.delete(key);
-            }
-          });
-
-          cloudSteps.forEach(s => {
-            if (s && s.id) {
-              memCache.set(s.id, s);
-              idbSet(s.id, s).catch(() => {});
-            }
-          });
-
-          const sorted = cloudSteps.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-          
-          // Inyectar números de paso y reto para el sistema de imágenes
-          sorted.forEach((step, sIdx) => {
-            step.stepNumber = sIdx + 1;
-            step.ways?.forEach((way, wIdx) => {
-              way.stepNumber = step.stepNumber;
-              way.wayNumber = wIdx + 1;
-            });
-          });
-
-          console.log('[WAY+] Raw steps from registry (cloud):', sorted);
-          return sorted;
+          return processAndCache(cloudSteps);
         }
       } catch (e) {
-        console.error('[Registry] Cloud fetch error, falling back:', e);
+        console.error('[Registry] Initial cloud fetch failed:', e);
       }
     }
 
-    // 2. Memory hit (if cloud failed or we already have the "best" version)
-    const cached = Array.from(memCache.values()).filter(s => s.levelId === levelId || (s as any).level_id === levelId);
-    if (cached.length > 0) return cached.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-
-    // 3. IndexedDB
-    // TEMPORARILY DISABLED: Ignoring IndexedDB steps if they have 0 ways (bad sync state)
-    const idbSteps = await idbGetAllSteps();
-    const idbForLevel = idbSteps.filter(s => 
-      (s.levelId === levelId || (s as any).level_id === levelId) && 
-      s.ways && s.ways.length > 0
-    );
-    if (idbForLevel.length > 0) {
-      idbForLevel.forEach(s => memCache.set(s.id, s));
-      return idbForLevel.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    }
-
-    // 4. Local static (always works)
+    // 4. Local Static Fallback (Always works)
     const local = await loadLocalSteps();
     const localForLevel = Object.values(local).filter(s => s.levelId === levelId);
-    localForLevel.forEach(s => memCache.set(s.id, s));
-    
-    const finalSteps = localForLevel.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
-    
-    // Inyectar números de paso y reto para el sistema de imágenes
-    finalSteps.forEach((step, sIdx) => {
-      step.stepNumber = sIdx + 1;
-      step.ways?.forEach((way, wIdx) => {
-        way.stepNumber = step.stepNumber;
-        way.wayNumber = wIdx + 1;
-      });
-    });
-
-    console.log('[WAY+] Raw steps from registry (local fallback):', finalSteps);
-    return finalSteps;
+    return processAndCache(localForLevel);
   },
 
   /**

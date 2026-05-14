@@ -275,7 +275,7 @@ class AudioService {
         stopFn = this.startHomeAmbient(ctx, master);
         break;
       case 'relax':
-        stopFn = this.startRelaxAmbient(ctx, master);
+        stopFn = this.startZenStream(ctx, master);
         break;
       case 'shop':
         stopFn = this.startShopAmbient(ctx, master);

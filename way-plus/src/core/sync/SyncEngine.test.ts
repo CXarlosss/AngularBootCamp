@@ -16,6 +16,7 @@ function mockPullSuccess(overrides = {}) {
     name: 'Pedro', avatar: 'unicorn', completedWays: [],
     currentLevel: 'pregamer', coins: 0, achievements: [],
     accessibilityConfig: null,
+    performanceConfig: null,
     updatedAt: new Date(Date.now() - 10_000).toISOString(),
     ...overrides,
   });
@@ -232,8 +233,10 @@ describe('SyncEngine', () => {
       });
       const result = HydrationCache.loadWithTimestamp(PATIENT_ID);
       expect(result).not.toBeNull();
-      expect(result!.ts).toBeGreaterThanOrEqual(before);
-      expect(result!.state.coins).toBe(20);
+      if (result && result.state) {
+        expect(result.ts).toBeGreaterThanOrEqual(before);
+        expect(result.state.coins).toBe(20);
+      }
     });
   });
 

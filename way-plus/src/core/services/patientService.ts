@@ -1,224 +1,179 @@
-/**
- * patientService.ts
- * Capa de datos para la tabla `patients`.
- * El ID canónico de un paciente es SIEMPRE el UUID de patients.id.
- *
- * Flujo correcto:
- *   1. Maite crea paciente → insert en patients → recibe UUID
- *   2. UUID se guarda en TherapistStore como patient.id
- *   3. Todos los servicios (sessionService, syncService) usan ese UUID
- */
-
 import { supabase, isSupabaseAvailable } from './supabaseClient';
-import type { Patient } from '@/features/therapist/store/therapistStore';
 
-export interface SupabasePatient {
-  id: string;           // UUID
-  therapist_id: string; // UUID — por ahora hardcoded hasta que haya auth
+export interface PatientProfile {
+  id: string;
   name: string;
+  avatar: string;
   age: number;
-  avatar_emoji: string;
-  current_level: string;
-  diagnosis: string | null;
-  player_pin?: string;
-  created_at: string;
+  currentLevel: string;
+  coins: number;
+  completedWays?: string[];
+  inventory?: string[];
+  homeworkWayIds?: string[];
 }
 
-async function getCurrentTherapistId(): Promise<string | null> {
-  if (!supabase) return null;
-  const { data: { user } } = await supabase.auth.getUser();
-  return user?.id ?? null;
-}
-
-// Fallback local cuando Supabase no está disponible
-const LOCAL_KEY = 'way_patients_local';
-
-function getLocalPatients(): Patient[] {
-  try {
-    const raw = localStorage.getItem(LOCAL_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
-}
-
-function saveLocalPatients(patients: Patient[]): void {
-  localStorage.setItem(LOCAL_KEY, JSON.stringify(patients));
-}
-
-function supabaseToStore(p: SupabasePatient): Patient {
-  return {
-    id: p.id,
-    name: p.name,
-    age: p.age,
-    avatar: p.avatar_emoji,
-    diagnosis: p.diagnosis ?? undefined,
-    currentLevel: p.current_level,
-    startDate: p.created_at.split('T')[0],
-    lastSession: p.created_at.split('T')[0],
-    objectives: [],
-    sessionQueue: [],
-    playerPin: p.player_pin ?? '0000',
-    gender: (p as any).gender || 'male',
-  };
-}
-
+/**
+ * Servicio para la gestión de perfiles de pacientes (Niños)
+ * Conectado a Supabase para persistencia clínica multiplataforma.
+ */
 export const patientService = {
-
   /**
-   * Carga todos los pacientes del terapeuta actual.
-   * En producción filtrará por therapist_id cuando haya auth.
+   * Obtiene todos los perfiles registrados. 
    */
-  async getAll(): Promise<Patient[]> {
-    if (!isSupabaseAvailable || !supabase) {
-      return getLocalPatients();
+  async getAll(): Promise<PatientProfile[]> {
+    if (!isSupabaseAvailable || !supabase) return [];
+
+    const { data: { user } } = await supabase.auth.getUser();
+    let therapistId = user?.id;
+
+    if (!therapistId && localStorage.getItem('way-demo-mode') === 'true') {
+      therapistId = '00000000-0000-0000-0000-000000000000';
     }
 
-    const therapistId = await getCurrentTherapistId();
-    
-    let query = supabase
-      .from('patients')
-      .select('*');
+    if (!therapistId) return [];
 
-    // Solo filtramos si hay un ID real (para desarrollo sin auth)
-    if (therapistId) {
-      query = query.eq('therapist_id', therapistId);
-    }
-
-    const { data, error } = await query.order('created_at', { ascending: true });
+    const { data, error } = await supabase
+      .from('patient_profiles')
+      .select('*')
+      .eq('therapist_id', therapistId)
+      .order('name');
 
     if (error) {
-      console.error('[patientService] Error fetching patients:', error);
-      return getLocalPatients();
+      console.error('[patientService] Error al obtener perfiles:', error);
+      return [];
     }
 
-    if (!data || data.length === 0) return [];
-
-    const patients = data.map(supabaseToStore);
-    // Actualizar caché local
-    saveLocalPatients(patients);
-    return patients;
+    return data.map(p => ({
+      id: p.id,
+      name: p.name || 'Invitado',
+      avatar: p.equipped_avatar_id || 'base-unicorn',
+      age: p.age || 6,
+      currentLevel: p.current_level || 'pregamer',
+      coins: p.coins || 0,
+      completedWays: p.completed_ways || [],
+      inventory: p.inventory || [],
+    }));
   },
 
   /**
-   * Crea un nuevo paciente en Supabase y devuelve el Patient con UUID real.
-   * Si Supabase no está disponible, genera un UUID local.
+   * Crea un nuevo perfil de niño
    */
-  async create(input: {
-    name: string;
-    age: number;
-    avatar: string;
-    diagnosis?: string;
-  }): Promise<Patient | null> {
-    const therapistId = await getCurrentTherapistId();
-    if (!therapistId) return null;
+  async create(payload: { name: string; age: number; avatar: string }): Promise<PatientProfile | null> {
+    if (!isSupabaseAvailable || !supabase) return null;
 
-    const newRecord = {
-      therapist_id: therapistId,
-      name: input.name,
-      age: input.age,
-      avatar_emoji: input.avatar,
-      current_level: 'pregamer',
-      diagnosis: input.diagnosis ?? null,
-    };
+    // Obtener el ID del terapeuta actual
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    let therapistId = user?.id;
 
-    if (!isSupabaseAvailable || !supabase) {
-      // Fallback: UUID generado en cliente
-      const local: Patient = {
-        id: crypto.randomUUID(),
-        name: input.name,
-        age: input.age,
-        avatar: input.avatar,
-        diagnosis: input.diagnosis,
-        currentLevel: 'pregamer',
-        startDate: new Date().toISOString().split('T')[0],
-        lastSession: new Date().toISOString().split('T')[0],
-        objectives: [],
-        sessionQueue: [],
-      };
-      const existing = getLocalPatients();
-      saveLocalPatients([...existing, local]);
-      return local;
+    // Si estamos en modo demo, permitimos un ID virtual
+    if (!therapistId && localStorage.getItem('way-demo-mode') === 'true') {
+      therapistId = '00000000-0000-0000-0000-000000000000';
     }
 
+    if (!therapistId) {
+      console.error('[patientService] No hay sesión de terapeuta activa');
+      return null;
+    }
+
+    const newId = crypto.randomUUID();
     const { data, error } = await supabase
-      .from('patients')
-      .insert(newRecord)
+      .from('patient_profiles')
+      .insert({
+        id: newId,
+        therapist_id: therapistId,
+        name: payload.name,
+        age: payload.age,
+        equipped_avatar_id: payload.avatar,
+        current_level: 'pregamer',
+        coins: 0,
+        inventory: [],
+        completed_ways: []
+      })
       .select()
       .single();
 
     if (error) {
-      console.error('[patientService] Error creating patient:', error);
+      console.error('[patientService] Error al crear perfil:', error);
       return null;
     }
 
-    return supabaseToStore(data);
+    return {
+      id: data.id,
+      name: data.name,
+      avatar: data.equipped_avatar_id,
+      age: data.age,
+      currentLevel: data.current_level,
+      coins: data.coins,
+      completedWays: data.completed_ways || [],
+      inventory: data.inventory || [],
+    };
   },
 
   /**
-   * Actualiza datos básicos de un paciente.
+   * Actualiza un perfil existente
    */
-  async update(patientId: string, changes: Partial<{
-    name: string;
-    age: number;
-    avatar_emoji: string;
-    diagnosis: string;
-    current_level: string;
-  }>): Promise<void> {
-    if (!isSupabaseAvailable || !supabase) return;
+  async update(id: string, updates: any): Promise<boolean> {
+    if (!isSupabaseAvailable || !supabase) return false;
+
+    // Mapear campos de camelCase a snake_case para Supabase
+    const dbUpdates: any = {};
+    if (updates.name) dbUpdates.name = updates.name;
+    if (updates.age) dbUpdates.age = updates.age;
+    if (updates.avatar) dbUpdates.equipped_avatar_id = updates.avatar;
+    if (updates.currentLevel) dbUpdates.current_level = updates.currentLevel;
+    if (updates.coins !== undefined) dbUpdates.coins = updates.coins;
+    if (updates.gender) dbUpdates.gender = updates.gender;
 
     const { error } = await supabase
-      .from('patients')
-      .update(changes)
-      .eq('id', patientId);
+      .from('patient_profiles')
+      .update(dbUpdates)
+      .eq('id', id);
 
-    if (error) console.error('[patientService] Error updating patient:', error);
-  },
-
-  /**
-   * Elimina un paciente y todos sus datos relacionados (CASCADE en DB).
-   */
-  async delete(patientId: string): Promise<void> {
-    if (!isSupabaseAvailable || !supabase) {
-      const existing = getLocalPatients();
-      saveLocalPatients(existing.filter(p => p.id !== patientId));
-      return;
+    if (error) {
+      console.error('[patientService] Error al actualizar perfil:', error);
+      return false;
     }
 
-    const { error } = await supabase
-      .from('patients')
-      .delete()
-      .eq('id', patientId);
-
-    if (error) console.error('[patientService] Error deleting patient:', error);
+    return true;
   },
 
+  /**
+   * Obtiene las tareas asignadas para casa
+   */
   async getHomework(patientId: string): Promise<string[]> {
-    if (!supabase) return [];
+    if (!isSupabaseAvailable || !supabase || !patientId) return [];
+    
     const { data, error } = await supabase
-      .from('patients')
+      .from('patient_profiles')
       .select('homework_way_ids')
       .eq('id', patientId)
       .single();
-    
+
     if (error) {
-      console.error('[PatientService] getHomework error:', error);
+      console.error('[patientService] Error al obtener tareas:', error);
       return [];
     }
-    return data?.homework_way_ids ?? [];
+
+    return data.homework_way_ids || [];
   },
 
-  async setHomework(patientId: string, wayIds: string[]): Promise<void> {
-    if (!supabase) throw new Error('Supabase no disponible');
-    
+  /**
+   * Asigna tareas para casa
+   */
+  async setHomework(patientId: string, wayIds: string[]): Promise<boolean> {
+    if (!isSupabaseAvailable || !supabase || !patientId) return false;
+
     const { error } = await supabase
-      .from('patients')
+      .from('patient_profiles')
       .update({ homework_way_ids: wayIds })
       .eq('id', patientId);
-    
+
     if (error) {
-      console.error('[PatientService] setHomework error:', error);
-      throw error;
+      console.error('[patientService] Error al asignar tareas:', error);
+      return false;
     }
+
+    return true;
   }
 };

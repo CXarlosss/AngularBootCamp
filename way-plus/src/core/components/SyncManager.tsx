@@ -13,9 +13,7 @@ export function SyncManager() {
 
     // Limpieza al desmontar (evita fugas en HMR o cambios de layout)
     return () => {
-      // syncEngine.stop(); 
-      // Nota: En una SPA real, a veces quieres que el engine siga vivo.
-      // Pero para seguir el flujo React, lo paramos si el manager muere.
+      syncEngine.stop(); 
     };
   }, []);
 
