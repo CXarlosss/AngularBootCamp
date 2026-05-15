@@ -64,24 +64,43 @@ export function WayPlayerPage() {
   const [loadTime, setLoadTime] = useState(0);
   const loadingTimerRef = useRef<any>(null);
 
-  // Load step from registry
+  // Load step from registry with robust fallback
   useEffect(() => {
     if (!stepId || !levelId) return;
 
-    const loadStep = async () => {
+    const loadStep = async (forceCloud = false) => {
       const startTime = performance.now();
       setLoading(true);
       setLoadTime(0);
       
       // Start UI timer
+      if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
       loadingTimerRef.current = setInterval(() => {
         setLoadTime(prev => prev + 100);
       }, 100);
 
       try {
-        console.log(`[WayPlayer] 🚀 Cargando contenido: ${stepId}...`);
-        let foundStep = await registry.getStepByIdAsync(stepId);
+        console.log(`[WayPlayer] 🚀 Cargando contenido: ${stepId} (ForceCloud: ${forceCloud})...`);
         
+        let foundStep: Step | null = null;
+        
+        if (forceCloud) {
+          // If forced, we go straight to cloud and wait
+          await registry.syncFromCloud(levelId);
+          foundStep = await registry.getStepByIdAsync(stepId);
+        } else {
+          // Normal flow: memory/idb/local
+          foundStep = await registry.getStepByIdAsync(stepId);
+          
+          // If not found and we are online, try a quick level sync
+          if (!foundStep && navigator.onLine) {
+            console.log('[WayPlayer] 🔍 Contenido no encontrado localmente, intentando descarga de emergencia...');
+            await registry.getStepsForLevel(levelId); // This triggers cloud fetch if cache is empty
+            foundStep = await registry.getStepByIdAsync(stepId);
+          }
+        }
+        
+        // Final fallback: check the level steps again
         if (!foundStep) {
           const levelSteps = await registry.getStepsForLevel(levelId);
           foundStep = levelSteps.find(s => s.id === stepId) || null;
@@ -265,43 +284,96 @@ export function WayPlayerPage() {
 
   if (!step || !currentWay) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-[#F8FAFF]">
+      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-[#F8FAFF] relative overflow-hidden">
+        {/* Animated Background Blobs */}
         <motion.div 
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
+          transition={{ duration: 8, repeat: Infinity }}
+          className="absolute top-1/4 -left-20 w-80 h-80 bg-rose-200 rounded-full blur-[100px] pointer-events-none"
+        />
+        <motion.div 
+          animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.15, 0.1] }}
+          transition={{ duration: 10, repeat: Infinity, delay: 1 }}
+          className="absolute bottom-1/4 -right-20 w-96 h-96 bg-indigo-100 rounded-full blur-[120px] pointer-events-none"
+        />
+
+        <motion.div 
+          initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
+          animate={{ scale: 1, opacity: 1, rotate: 0 }}
+          transition={{ type: 'spring', damping: 15 }}
           className="relative mb-12"
         >
-          <div className="text-[120px] filter drop-shadow-2xl">🧩</div>
+          <div className="text-[140px] filter drop-shadow-2xl select-none">🧩</div>
           <motion.div 
-            animate={{ rotate: 360 }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="absolute -top-4 -right-4 text-4xl"
+            animate={{ 
+              y: [0, -15, 0],
+              rotate: [0, 15, 0]
+            }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -top-4 -right-4 text-5xl"
           >
             ✨
           </motion.div>
+          <motion.div 
+            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 3, repeat: Infinity }}
+            className="absolute -bottom-2 -left-2 text-3xl"
+          >
+            🔍
+          </motion.div>
         </motion.div>
         
-        <h2 className="text-4xl font-black text-slate-800 mb-6 tracking-tight max-w-md">
+        <motion.h2 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="text-4xl sm:text-5xl font-black text-slate-800 mb-6 tracking-tight max-w-lg leading-tight"
+        >
           ¡Ups! Este reto se ha escondido
-        </h2>
-        <p className="text-slate-500 font-medium text-lg mb-12 max-w-sm leading-relaxed">
-          No te preocupes, estamos buscando el camino correcto para ti.
-        </p>
+        </motion.h2>
         
-        <div className="flex flex-col sm:flex-row gap-4">
-          <button
+        <motion.p 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="text-slate-500 font-medium text-lg mb-12 max-w-sm leading-relaxed"
+        >
+          No te preocupes, estamos buscando el camino correcto para ti. A veces los retos juegan al escondite.
+        </motion.p>
+        
+        <motion.div 
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="flex flex-col sm:flex-row gap-4 relative z-10"
+        >
+          <motion.button
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => navigate(`/play/${levelId}/${stepId}`)}
-            className="bg-white text-indigo-600 border-2 border-indigo-100 px-8 py-4 rounded-[2rem] font-black text-lg shadow-sm hover:shadow-md transition-all active:scale-95"
+            className="bg-white text-slate-600 border-2 border-slate-100 px-10 py-5 rounded-[2.5rem] font-black text-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-3"
           >
-            VOLVER AL MÓDULO
-          </button>
-          <button
+            <span>🔙</span> VOLVER AL MÓDULO
+          </motion.button>
+          
+          <motion.button
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
             onClick={() => window.location.reload()}
-            className="bg-indigo-600 text-white px-8 py-4 rounded-[2rem] font-black text-lg shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all active:scale-95"
+            className="bg-indigo-600 text-white px-10 py-5 rounded-[2.5rem] font-black text-lg shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-3"
           >
-            REINTENTAR CARGA
-          </button>
-        </div>
+            <span>🚀</span> INTENTAR DE NUEVO
+          </motion.button>
+        </motion.div>
+
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1 }}
+          className="mt-12 text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]"
+        >
+          Error ID: {stepId || 'unknown'}-{wayId || 'index'}
+        </motion.div>
       </div>
     );
   }

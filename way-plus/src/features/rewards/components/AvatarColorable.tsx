@@ -25,9 +25,10 @@ export function AvatarColorable() {
   const completedWays = usePlayerStore(s => s.profile?.completedWays ?? []);
   const patientName = usePlayerStore(s => s.profile?.name ?? 'Gamer');
 
-  const totalWays = 57;
+  const allWays = useMemo(() => registry.getAllWays(), []);
+  const totalWays = allWays.length || 57; // Fallback to 57 if registry empty
   const completed = completedWays.length;
-  const percentage = Math.round((completed / totalWays) * 100);
+  const percentage = Math.min(100, Math.round((completed / totalWays) * 100));
 
   // Obtener icono de la mascota equipada
   const equippedPet = useMemo(() => {
