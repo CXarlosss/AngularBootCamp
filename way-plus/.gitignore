@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 
 .vercel
+
+performance_fix_plan.md
+ui_redesign_plan.md
