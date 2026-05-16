@@ -51,6 +51,35 @@ export const ProgressStore = signalStore(
         ex.dataPoints.length > (max?.length ?? 0) ? ex.dataPoints : max,
         [] as ExerciseDataPoint[]
       );
+    }),
+
+    groupedHistory: computed(() => {
+      const ex = store.selectedExercise();
+      if (!ex) return [];
+
+      // Agrupar por fecha para el histórico de carga
+      const groups = new Map<string, { date: Date; maxWeight: number; totalVol: number; sets: number }>();
+      
+      ex.dataPoints.forEach(dp => {
+        const d = new Date(dp.date);
+        const key = d.toISOString().split('T')[0];
+        const existing = groups.get(key);
+        
+        if (existing) {
+          existing.maxWeight = Math.max(existing.maxWeight, dp.maxWeight);
+          existing.totalVol += dp.totalVol;
+          existing.sets += 1;
+        } else {
+          groups.set(key, { 
+            date: dp.date, 
+            maxWeight: dp.maxWeight, 
+            totalVol: dp.totalVol,
+            sets: 1
+          });
+        }
+      });
+
+      return [...groups.values()].sort((a, b) => b.date.getTime() - a.date.getTime());
     })
   })),
 
@@ -78,9 +107,16 @@ export const ProgressStore = signalStore(
     improvement: computed(() => {
       const sets = store.sets();
       if (sets.length < 2) return 0;
-      const first = sets[0]?.weightKg ?? 0;
-      const last  = sets[sets.length - 1]?.weightKg ?? 0;
-      return Math.max(0, Math.round(last - first));
+      
+      const weights = sets.map(s => s.weightKg ?? 0).filter(w => w > 0);
+      if (weights.length < 2) return 0;
+      
+      const firstThree = weights.slice(0, 3);
+      const lastThree = weights.slice(-3);
+      const avgFirst = firstThree.reduce((a, b) => a + b, 0) / firstThree.length;
+      const avgLast = lastThree.reduce((a, b) => a + b, 0) / lastThree.length;
+      
+      return Math.max(0, Math.round(avgLast - avgFirst));
     }),
 
     totalSessions: computed(() => store.sessions()?.length ?? 0),

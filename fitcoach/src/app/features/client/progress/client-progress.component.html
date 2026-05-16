@@ -40,13 +40,13 @@
       <div class="kpi-card">
         <span class="kpi-label">Mejor progreso</span>
         <span class="kpi-value">
-          @if (stats()?.bestWeightImprovement != null) {
-            +{{ stats()!.bestWeightImprovement | number:'1.0-1' }}kg
+          @if (store.improvement() > 0) {
+            +{{ store.improvement() | number:'1.0-1' }}kg
           } @else {
             —
           }
         </span>
-        <span class="kpi-sub">en un ejercicio</span>
+        <span class="kpi-sub">{{ store.selected() || 'ejercicio' }}</span>
       </div>
 
     </div>
@@ -77,7 +77,7 @@
     <!-- MEJORA EN EJERCICIOS (NUEVA SECCIÓN) -->
     <div class="section-card">
       <div class="weight-header">
-        <p class="section-title">Mejora en ejercicios</p>
+        <p class="section-title">Evolución de {{ store.selected() || 'ejercicio' }}</p>
         
         @if (store.exercises().length) {
           <div class="custom-select-container">
@@ -103,6 +103,35 @@
 
       @if (store.selectedExercise()) {
         <fc-progress-chart [exercise]="store.selectedExercise()" />
+        
+        <!-- Histórico de Carga -->
+        <div class="load-history">
+          <p class="history-title">Histórico de carga</p>
+          <div class="history-list">
+            @for (entry of store.groupedHistory(); track entry.date) {
+              <div class="history-row">
+                <div class="row-date">
+                  <span class="day">{{ entry.date | date:'dd' }}</span>
+                  <span class="month">{{ entry.date | date:'MMM' }}</span>
+                </div>
+                <div class="row-stats">
+                  <div class="stat">
+                    <span class="stat-val">{{ entry.maxWeight }}kg</span>
+                    <span class="stat-label">Carga máx</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-val">{{ entry.sets }}</span>
+                    <span class="stat-label">Series</span>
+                  </div>
+                  <div class="stat">
+                    <span class="stat-val">{{ entry.totalVol | number:'1.0-0' }}</span>
+                    <span class="stat-label">Volumen</span>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
       } @else {
         <div class="empty-chart">
           <p>No hay datos de fuerza registrados aún</p>

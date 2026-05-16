@@ -400,7 +400,9 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
           
           if (isDone) {
             this.isDayDone.set(true);
+            this.isLoading.set(false);
             console.log('[TodayWorkout] El día ya consta como completado. Bloqueando sesión.');
+            return; // Detener inicialización si ya está hecho
           } else {
             console.log('[TodayWorkout] Iniciando nueva sesión de entrenamiento...');
             this.workoutStore.startWorkout(assigned.id, assigned.routineId, clientId, day.id);

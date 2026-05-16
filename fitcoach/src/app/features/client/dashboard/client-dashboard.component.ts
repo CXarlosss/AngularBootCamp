@@ -1,20 +1,36 @@
 // src/app/features/client/dashboard/client-dashboard.component.ts
-import { Component, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MissionEngineService } from '../../../gamification/services/mission-engine.service';
 import { StreakWeeklyService } from '../../../gamification/services/streak-weekly.service';
 import { LeaderboardService } from '../../../gamification/services/leaderboard.service';
 import { MissionCardComponent } from '../../../gamification/components/mission-card/mission-card.component';
 import { FeatureFlagService } from '../../../core/services/feature-flag.service';
+import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
+import { AuthService } from '../../../core/auth/auth.service';
+import { RankService } from '../../../core/services/rank.service';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, MissionCardComponent],
+  imports: [CommonModule, MissionCardComponent, ProfileBannerComponent],
   template: `
     <div class="dashboard">
-      <!-- Banner de identidad (existente) -->
-      <div class="identity-banner">...</div>
+      <!-- Banner de identidad con saludo integrado -->
+      @if (profile(); as p) {
+        <app-profile-banner
+          [name]="'Hola, ' + (p.fullName || 'Atleta')"
+          [initials]="p.fullName?.slice(0,2) || 'AT'"
+          [rankLevel]="rankSvc.fullRank()?.rank?.level || 0"
+          [rankName]="rankSvc.fullRank()?.rank?.name || 'Recruta'"
+          [rankEmoji]="rankSvc.fullRank()?.rank?.emoji || '⚔️'"
+          [divLabel]="rankSvc.fullRank()?.divLabel || 'IV'"
+          [xpTotal]="rankSvc.athleteRank()?.xpTotal || 0"
+          [equippedFrame]="p.equippedFrame"
+          [bannerColor]="p.bannerColor || 'c0'"
+          [bannerPattern]="p.bannerPattern || 'p0'"
+        />
+      }
       
       <!-- Sprint 3: Misiones -->
       @if (gamificationEnabled()) {
@@ -64,24 +80,27 @@ import { FeatureFlagService } from '../../../core/services/feature-flag.service'
     </div>
   `
 })
-export class ClientDashboardComponent {
+export class ClientDashboardComponent implements OnInit {
   private featureFlags = inject(FeatureFlagService);
   private missionEngine = inject(MissionEngineService);
   private streakService = inject(StreakWeeklyService);
   private leaderboard = inject(LeaderboardService);
+  private auth = inject(AuthService);
+  protected rankSvc = inject(RankService);
   
+  protected profile = this.auth.profile;
   protected gamificationEnabled = signal(false);
   protected activeMissions = this.missionEngine.activeMissions;
   protected totalAvailableXp = this.missionEngine.totalXpAvailable;
   protected streak = signal<any>(null);
   protected leaderboardTop3 = signal<any[]>([]);
   
-  constructor() {
-    const userId = 'current-user-id';
-    this.gamificationEnabled.set(this.featureFlags.isEnabled('gamification_v2', userId));
-    
-    if (this.gamificationEnabled()) {
+  ngOnInit() {
+    const userId = this.auth.user()?.id;
+    if (userId) {
+      this.gamificationEnabled.set(this.featureFlags.isEnabled('gamification_v2', userId));
       this.loadDashboardData(userId);
+      this.rankSvc.load(userId);
     }
   }
   
@@ -99,9 +118,11 @@ export class ClientDashboardComponent {
   }
   
   async claimMission(missionId: string): Promise<void> {
-    await this.missionEngine.claimXp('current-user-id', missionId);
+    const userId = this.auth.user()?.id;
+    if (!userId) return;
+    await this.missionEngine.claimXp(userId, missionId);
     // Recargar
-    await this.loadDashboardData('current-user-id');
+    await this.loadDashboardData(userId);
   }
   
   protected streakWeeks = computed(() => {
