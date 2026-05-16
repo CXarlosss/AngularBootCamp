@@ -6,7 +6,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { QuickLogService } from '../../services/quick-log.service';
 import { ExerciseValidationService } from '../../services/exercise-validation.service';
-import { TelemetryService } from '../../../../core/services/telemetry.service';
+import { TelemetryService } from '../../../../../core/services/telemetry.service';
 import { SetInputConfig, ValidationResult, XpPreview } from '../../models/quick-log.model';
 
 @Component({

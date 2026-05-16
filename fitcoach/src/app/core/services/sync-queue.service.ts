@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { OfflineStorageService } from './offline-storage.service';
 import { SupabaseClient } from '@supabase/supabase-js';
 

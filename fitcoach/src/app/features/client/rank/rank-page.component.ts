@@ -1,13 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { RankService, RANKS, DIVISIONS } from '../../../core/services/rank.service';
 import { AuthService } from '../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-rank-page',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   template: `
     <div class="rank-page">
       <header class="rank-header">

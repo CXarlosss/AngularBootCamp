@@ -34,7 +34,11 @@ import { WeightChartComponent, WeightEntry } from '../../../../../shared/compone
         </div>
         <div class="sub">Últimos 30 días</div>
       </div>
-
+      <div class="kpi-card">
+        <span class="label">Racha</span>
+        <div class="value-row">
+          <span class="value">{{ kpis?.currentStreak }}</span>
+        </div>
         <div class="sub">Entrenamientos seguidos</div>
       </div>
 

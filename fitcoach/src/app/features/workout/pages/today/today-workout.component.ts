@@ -4,12 +4,12 @@ import { CommonModule } from '@angular/common';
 import { SetInputComponent } from '../../quick-log/components/set-input/set-input.component';
 import { QuickLogService } from '../../quick-log/services/quick-log.service';
 import { UndoService } from '../../quick-log/services/undo.service';
-import { FeatureFlagService } from '../../../core/services/feature-flag.service';
-import { TelemetryService } from '../../../core/services/telemetry.service';
-import { MissionEngineService, MissionType } from '../../../../gamification/services/mission-engine.service';
-import { StreakWeeklyService } from '../../../../gamification/services/streak-weekly.service';
-import { XpQualityService } from '../../../../gamification/services/xp-quality.service';
-import { MissionCardComponent } from '../../../../gamification/components/mission-card/mission-card.component';
+import { FeatureFlagService } from '../../../../core/services/feature-flag.service';
+import { TelemetryService } from '../../../../core/services/telemetry.service';
+import { MissionEngineService, MissionType } from '../../../gamification/services/mission-engine.service';
+import { StreakWeeklyService } from '../../../gamification/services/streak-weekly.service';
+import { XpQualityService } from '../../../gamification/services/xp-quality.service';
+import { MissionCardComponent } from '../../../gamification/components/mission-card/mission-card.component';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { AuthService } from '../../../../core/auth/auth.service';
 

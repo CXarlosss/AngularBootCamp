@@ -27,7 +27,7 @@ export const workoutDayGuard: CanActivateFn = (route: ActivatedRouteSnapshot) =>
     map(({ data }) => {
       if (data) {
         // Día ya completado → feedback y redirige
-        toast.show('🔒 Este entrenamiento ya fue completado', 'info');
+        toast.info('🔒 Este entrenamiento ya fue completado');
         router.navigate(['/client/progress'], {
           queryParams: { alreadyCompleted: true, dayId }
         });

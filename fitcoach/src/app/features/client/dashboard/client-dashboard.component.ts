@@ -1,10 +1,10 @@
 // src/app/features/client/dashboard/client-dashboard.component.ts
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MissionEngineService } from '../../../gamification/services/mission-engine.service';
-import { StreakWeeklyService } from '../../../gamification/services/streak-weekly.service';
-import { LeaderboardService } from '../../../gamification/services/leaderboard.service';
-import { MissionCardComponent } from '../../../gamification/components/mission-card/mission-card.component';
+import { MissionEngineService } from '../../gamification/services/mission-engine.service';
+import { StreakWeeklyService } from '../../gamification/services/streak-weekly.service';
+import { LeaderboardService } from '../../gamification/services/leaderboard.service';
+import { MissionCardComponent } from '../../gamification/components/mission-card/mission-card.component';
 import { FeatureFlagService } from '../../../core/services/feature-flag.service';
 import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -26,7 +26,7 @@ import { RankService } from '../../../core/services/rank.service';
           [rankEmoji]="rankSvc.fullRank()?.rank?.emoji || '⚔️'"
           [divLabel]="rankSvc.fullRank()?.divLabel || 'IV'"
           [xpTotal]="rankSvc.athleteRank()?.xpTotal || 0"
-          [equippedFrame]="p.equippedFrame"
+          [equippedFrame]="p.equippedFrame || null"
           [bannerColor]="p.bannerColor || 'c0'"
           [bannerPattern]="p.bannerPattern || 'p0'"
         />

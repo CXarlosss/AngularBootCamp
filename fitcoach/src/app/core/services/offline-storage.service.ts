@@ -24,7 +24,7 @@ export class OfflineStorageService {
     });
   }
 
-  async addItem(storeName: string, item: any): Promise<number> {
+  async addItem(storeName: string, item: any): Promise<any> {
     if (storeName === 'sync_queue') {
       const current = await this.getAll('sync_queue');
       if (current.length >= this.MAX_QUEUE_ITEMS) {

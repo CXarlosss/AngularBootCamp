@@ -1,5 +1,5 @@
 import { Component, inject, signal, computed } from '@angular/core';
-import { SyncQueueService } from '../../core/services/sync-queue.service';
+import { SyncQueueService } from '../../../core/services/sync-queue.service';
 
 @Component({
   selector: 'app-offline-indicator',

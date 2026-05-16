@@ -12,7 +12,8 @@ import { RestTimerService } from '../../../core/services/rest-timer.service';
 import { SetLoggerComponent } from '../../../shared/components/set-logger/set-logger.component';
 import { SkeletonComponent } from '../../../shared/components/skeleton/skeleton.component';
 import { HapticService } from '../../../core/services/haptic.service';
-import { AssignedRoutine, Exercise, RoutineDay, ExerciseState, SetLog } from '../../../core/models/routine.model';
+import { AssignedRoutine, Exercise, RoutineDay } from '../../../core/models/routine.model';
+import { SetLog } from '../../../core/models/workout-log.model';
 import { FormsModule } from '@angular/forms';
 import { TelemetryService } from '../../../core/services/telemetry.service';
 
@@ -430,7 +431,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
           filter: `client_id=eq.${clientId}`
         },
         (payload) => {
-          if (payload.new.day_id === dayId) {
+          if (payload.new['day_id'] === dayId) {
             console.log('[TodayWorkout] Realtime: día completado remotamente detectado.');
             this.isDayBlockedRemotely.set(true);
             this.haptic.trigger('heavy');
