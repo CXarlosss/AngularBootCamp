@@ -10,7 +10,7 @@ import { MissionEngineService, MissionType } from '../../../gamification/service
 import { StreakWeeklyService } from '../../../gamification/services/streak-weekly.service';
 import { XpQualityService } from '../../../gamification/services/xp-quality.service';
 import { MissionCardComponent } from '../../../gamification/components/mission-card/mission-card.component';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '../../../../core/supabase.client';
 import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
@@ -143,7 +143,7 @@ import { AuthService } from '../../../../core/auth/auth.service';
   `]
 })
 export class TodayWorkoutComponent {
-  private supabase = inject(SupabaseClient);
+  private supabase = supabase;
   private quickLog = inject(QuickLogService);
   private undoService = inject(UndoService);
   private telemetry = inject(TelemetryService);

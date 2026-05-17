@@ -1,6 +1,6 @@
 // src/app/features/gamification/services/xp-quality.service.ts
 import { Injectable, inject } from '@angular/core';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '../../../core/supabase.client';
 
 export interface XpBreakdown {
   baseXp: number;
@@ -13,7 +13,7 @@ export interface XpBreakdown {
 
 @Injectable({ providedIn: 'root' })
 export class XpQualityService {
-  private supabase = inject(SupabaseClient);
+  private supabase = supabase;
 
   /**
    * Calcular XP con calidad (nuevo sistema)

@@ -1,6 +1,6 @@
 // src/app/features/gamification/services/streak-weekly.service.ts
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '../../../core/supabase.client';
 
 export interface WeeklyStreak {
   currentStreak: number;
@@ -15,7 +15,7 @@ export interface WeeklyStreak {
 
 @Injectable({ providedIn: 'root' })
 export class StreakWeeklyService {
-  private supabase = inject(SupabaseClient);
+  private supabase = supabase;
   private readonly TARGET_DAYS = 3;
   
   private streak = signal<WeeklyStreak | null>(null);

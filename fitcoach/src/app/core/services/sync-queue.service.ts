@@ -1,6 +1,7 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, signal, computed } from '@angular/core';
 import { OfflineStorageService } from './offline-storage.service';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { inject } from '@angular/core';
+import { supabase } from '../supabase.client';
 
 export interface SyncQueueItem {
   id?: number;
@@ -16,11 +17,12 @@ export interface SyncQueueItem {
 @Injectable({ providedIn: 'root' })
 export class SyncQueueService {
   private storage = inject(OfflineStorageService);
-  private supabase = inject(SupabaseClient);
+  private supabase = supabase;
   
   public isSyncing = signal(false);
   public isOnline = signal(navigator.onLine);
   public pendingCount = signal(0);
+
   
   private currentSyncId: string | null = null;
   private handlers = new Map<string, (payload: any) => Promise<boolean>>();

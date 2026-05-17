@@ -1,6 +1,6 @@
 // src/app/features/gamification/services/mission-engine.service.ts
 import { Injectable, inject, signal, computed } from '@angular/core';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '../../../core/supabase.client';
 
 export type MissionType = 'frequency' | 'volume' | 'quality' | 'social';
 
@@ -21,7 +21,7 @@ export interface Mission {
 
 @Injectable({ providedIn: 'root' })
 export class MissionEngineService {
-  private supabase = inject(SupabaseClient);
+  private supabase = supabase;
   
   private missions = signal<Mission[]>([]);
   private isLoading = signal(false);

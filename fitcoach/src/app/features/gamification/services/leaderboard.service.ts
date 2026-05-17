@@ -1,6 +1,6 @@
 // src/app/features/gamification/services/leaderboard.service.ts
 import { Injectable, inject } from '@angular/core';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '../../../core/supabase.client';
 
 export interface LeaderboardEntry {
   rank: number;
@@ -14,7 +14,7 @@ export interface LeaderboardEntry {
 
 @Injectable({ providedIn: 'root' })
 export class LeaderboardService {
-  private supabase = inject(SupabaseClient);
+  private supabase = supabase;
 
   async getLeaderboard(
     coachId: string,
