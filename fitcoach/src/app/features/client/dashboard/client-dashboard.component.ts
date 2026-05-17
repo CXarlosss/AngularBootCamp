@@ -1,26 +1,21 @@
 // src/app/features/client/dashboard/client-dashboard.component.ts
 import { Component, inject, signal, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { MissionEngineService } from '../../gamification/services/mission-engine.service';
-import { StreakWeeklyService } from '../../gamification/services/streak-weekly.service';
-import { LeaderboardService } from '../../gamification/services/leaderboard.service';
-import { MissionCardComponent } from '../../gamification/components/mission-card/mission-card.component';
+import { MissionEngineService } from '../../../gamification/services/mission-engine.service';
+import { StreakWeeklyService } from '../../../gamification/services/streak-weekly.service';
+import { LeaderboardService } from '../../../gamification/services/leaderboard.service';
+import { MissionCardComponent } from '../../../gamification/components/mission-card/mission-card.component';
 import { FeatureFlagService } from '../../../core/services/feature-flag.service';
 import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
 import { AuthService } from '../../../core/auth/auth.service';
 import { RankService } from '../../../core/services/rank.service';
-import { ClientRoutineService } from '../../../core/services/client-routine.service';
-import { WorkoutStore } from '../../../state/workout.store';
-import { ProfileService } from '../profile/profile.service';
-import { AssignedRoutine } from '../../../core/models/routine.model';
 
 @Component({
   selector: 'app-client-dashboard',
   standalone: true,
   imports: [CommonModule, MissionCardComponent, ProfileBannerComponent],
   template: `
-    <div class="client-dash">
+    <div class="dashboard">
       <!-- Banner de identidad con saludo integrado -->
       @if (profile(); as p) {
         <app-profile-banner
@@ -31,7 +26,7 @@ import { AssignedRoutine } from '../../../core/models/routine.model';
           [rankEmoji]="rankSvc.fullRank()?.rank?.emoji || '⚔️'"
           [divLabel]="rankSvc.fullRank()?.divLabel || 'IV'"
           [xpTotal]="rankSvc.athleteRank()?.xpTotal || 0"
-          [equippedFrame]="p.equippedFrame || null"
+          [equippedFrame]="p.equippedFrame"
           [bannerColor]="p.bannerColor || 'c0'"
           [bannerPattern]="p.bannerPattern || 'p0'"
         />
@@ -81,59 +76,7 @@ import { AssignedRoutine } from '../../../core/models/routine.model';
         </div>
       }
       
-      <!-- Resto del dashboard existente: Rutina activa -->
-      @if (routine(); as r) {
-        <div class="routine-card">
-          <div class="rc-header">
-            <div class="rc-badge">Rutina activa</div>
-            <span class="rc-arrow">›</span>
-          </div>
-          <h2 class="rc-name">{{ r.routine?.name }}</h2>
-          <p class="rc-meta">
-            {{ r.routine?.days?.length }} días ·
-            {{ goalLabel(r.routine?.goal) }}
-          </p>
-          <div class="rc-days">
-            @for (day of routineDaysStatus(); track day.id) {
-              <div 
-                class="day-chip interactive" 
-                [class.done]="day.isCompleted"
-                (click)="!day.isCompleted && startWorkout(day.id)"
-              >
-                <span class="day-label">{{ day.label }}</span>
-                @if (day.isCompleted) {
-                  <span class="day-count">✓ Completado</span>
-                } @else {
-                  <span class="day-count">{{ day.exercises.length }} ejercicios</span>
-                }
-              </div>
-            }
-
-            @if (pendingDaysCount() === 0) {
-              <div class="all-done-msg">
-                ¡Semana completada! Tu coach te asignará una nueva rutina pronto.
-              </div>
-            }
-          </div>
-
-          @if (pendingDaysCount() > 0) {
-            <button class="btn-start" (click)="startFirstPendingWorkout()">
-              Continuar entrenamiento
-            </button>
-          }
-        </div>
-      } @else if (!isLoading()) {
-        <div class="empty-card">
-          <div class="empty-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-              stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round">
-              <path d="M18 20V10M12 20V4M6 20v-6"/>
-            </svg>
-          </div>
-          <p class="empty-title">Sin rutina asignada</p>
-          <p class="empty-sub">Tu entrenador te enviará una rutina pronto</p>
-        </div>
-      }
+      <!-- Resto del dashboard existente -->
     </div>
   `
 })
@@ -144,10 +87,6 @@ export class ClientDashboardComponent implements OnInit {
   private leaderboard = inject(LeaderboardService);
   private auth = inject(AuthService);
   protected rankSvc = inject(RankService);
-  private clientRoutineSvc = inject(ClientRoutineService);
-  private workoutStore = inject(WorkoutStore);
-  private profileSvc = inject(ProfileService);
-  private router = inject(Router);
   
   protected profile = this.auth.profile;
   protected gamificationEnabled = signal(false);
@@ -156,42 +95,12 @@ export class ClientDashboardComponent implements OnInit {
   protected streak = signal<any>(null);
   protected leaderboardTop3 = signal<any[]>([]);
   
-  protected routine = signal<AssignedRoutine | null>(null);
-  protected completedDaysList = signal<string[]>([]);
-  protected isLoading = signal(true);
-  
-  protected routineDaysStatus = computed(() => {
-    const r = this.routine();
-    const history = this.workoutStore.history();
-    const dbCompleted = this.completedDaysList();
-    if (!r || !r.routine?.days) return [];
-
-    return r.routine.days.map(day => {
-      const isCompletedInHistory = history.some(log => 
-        log.assignedRoutineId === r.id && 
-        log.dayId === day.id &&
-        log.completed
-      );
-      const isCompletedInDB = dbCompleted.includes(day.id);
-      
-      return {
-        ...day,
-        isCompleted: isCompletedInHistory || isCompletedInDB
-      };
-    });
-  });
-
-  protected pendingDaysCount = computed(() => {
-    return this.routineDaysStatus().filter(d => !d.isCompleted).length;
-  });
-  
   ngOnInit() {
     const userId = this.auth.user()?.id;
     if (userId) {
       this.gamificationEnabled.set(this.featureFlags.isEnabled('gamification_v2', userId));
       this.loadDashboardData(userId);
       this.rankSvc.load(userId);
-      this.loadRoutineData(userId);
     }
   }
   
@@ -208,28 +117,6 @@ export class ClientDashboardComponent implements OnInit {
     this.leaderboardTop3.set(board.slice(0, 3));
   }
   
-  async loadRoutineData(clientId: string): Promise<void> {
-    this.isLoading.set(true);
-    try {
-      const [assigned] = await Promise.all([
-        this.clientRoutineSvc.getActiveRoutine(clientId),
-        this.workoutStore.loadHistory(clientId),
-        this.profileSvc.load()
-      ]);
-      
-      this.routine.set(assigned);
-
-      if (assigned) {
-        const completedDays = await this.clientRoutineSvc.getCompletedDays(clientId, assigned.routineId);
-        this.completedDaysList.set(completedDays);
-      }
-    } catch (err) {
-      console.error('[Dashboard] Error cargando rutina:', err);
-    } finally {
-      this.isLoading.set(false);
-    }
-  }
-  
   async claimMission(missionId: string): Promise<void> {
     const userId = this.auth.user()?.id;
     if (!userId) return;
@@ -237,29 +124,6 @@ export class ClientDashboardComponent implements OnInit {
     // Recargar
     await this.loadDashboardData(userId);
   }
-  
-  startWorkout(dayId: string): void {
-    const day = this.routineDaysStatus().find(d => d.id === dayId);
-    if (day?.isCompleted) return;
-
-    this.router.navigate(['/client/workout'], { 
-      queryParams: { dayId } 
-    });
-  }
-
-  startFirstPendingWorkout(): void {
-    const next = this.routineDaysStatus().find(d => !d.isCompleted);
-    if (next) {
-      this.startWorkout(next.id);
-    }
-  }
-  
-  protected goalLabel = (goal?: string) => ({
-    hypertrophy:  'Hipertrofia',
-    strength:     'Fuerza',
-    weight_loss:  'Pérdida de peso',
-    mobility:     'Movilidad',
-  }[goal ?? ''] ?? goal ?? '');
   
   protected streakWeeks = computed(() => {
     // Array de 8 semanas para visualización
