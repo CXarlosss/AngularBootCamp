@@ -1,5 +1,5 @@
 import { Injectable, signal, computed } from '@angular/core';
-import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase } from '../supabase.client';
 
 interface FeatureConfig {
   enabled: boolean;
@@ -10,8 +10,9 @@ interface FeatureConfig {
 @Injectable({ providedIn: 'root' })
 export class FeatureFlagService {
   private flags = signal<Record<string, FeatureConfig>>({});
+  private supabase = supabase;
   
-  constructor(private supabase: SupabaseClient) {
+  constructor() {
     this.loadFlags();
   }
 
