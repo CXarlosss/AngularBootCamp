@@ -1,270 +1,436 @@
 // src/app/features/client/dashboard/client-dashboard.component.ts
-import { Component, inject, signal, computed, OnInit } from '@angular/core';
+
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { MissionEngineService } from '../../gamification/services/mission-engine.service';
-import { StreakWeeklyService } from '../../gamification/services/streak-weekly.service';
-import { LeaderboardService } from '../../gamification/services/leaderboard.service';
-import { MissionCardComponent } from '../../gamification/components/mission-card/mission-card.component';
-import { FeatureFlagService } from '../../../core/services/feature-flag.service';
-import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
-import { AuthService } from '../../../core/auth/auth.service';
+import { RouterLink } from '@angular/router';
+
+// Servicios existentes
 import { RankService } from '../../../core/services/rank.service';
-import { ClientRoutineService } from '../../../core/services/client-routine.service';
-import { WorkoutStore } from '../../../state/workout.store';
-import { ProfileService } from '../profile/profile.service';
-import { AssignedRoutine } from '../../../core/models/routine.model';
+import { ToastService } from '../../../shared/services/toast/toast.service';
+import { UnlockCelebrationService } from '../../../shared/services/unlock-celebration/unlock-celebration.service';
+
+import { RankChangeDetectorService } from '../../../core/services/rank-change-detector.service';
+
+// Componentes que ya construimos
+import { NextGoalComponent } from './components/next-goal/next-goal.component';
+import { RankProgressComponent } from '../rank/rank-progress/rank-progress.component';
+
+// Componentes nuevos para el dashboard
+import { StreakWidgetComponent } from './components/streak-widget/streak-widget.component';
+import { QuickStatsComponent } from './components/quick-stats/quick-stats.component';
+import { RecentActivityComponent } from './components/recent-activity/recent-activity.component';
 
 @Component({
-  selector: 'fc-client-dashboard',
+  selector: 'app-client-dashboard',
   standalone: true,
-  imports: [CommonModule, MissionCardComponent, ProfileBannerComponent],
-  styleUrl: './client-dashboard.component.css',
+  imports: [
+    CommonModule,
+    RouterLink,
+    NextGoalComponent,
+    RankProgressComponent,
+    StreakWidgetComponent,
+    QuickStatsComponent,
+    RecentActivityComponent,
+  ],
   template: `
-    <div class="client-dash">
-      <!-- Banner de identidad con saludo integrado -->
-      @if (profile(); as p) {
-        <app-profile-banner
-          [name]="'Hola, ' + (p.fullName || 'Atleta')"
-          [initials]="p.fullName?.slice(0,2) || 'AT'"
-          [rankLevel]="rankSvc.fullRank()?.rank?.level || 0"
-          [rankName]="rankSvc.fullRank()?.rank?.name || 'Recruta'"
-          [rankEmoji]="rankSvc.fullRank()?.rank?.emoji || '⚔️'"
-          [divLabel]="rankSvc.fullRank()?.divLabel || 'IV'"
-          [xpTotal]="rankSvc.athleteRank()?.xpTotal || 0"
-          [equippedFrame]="p.equippedFrame || null"
-          [bannerColor]="p.bannerColor || 'c0'"
-          [bannerPattern]="p.bannerPattern || 'p0'"
-        />
-      }
+    <div class="cd-page">
       
-      <!-- Sprint 3: Misiones -->
-      @if (gamificationEnabled()) {
-        <div class="missions-panel">
-          <div class="panel-header">
-            <h3>Misiones Semanales</h3>
-            <span class="xp-available">{{ totalAvailableXp() }} XP disponible</span>
-          </div>
-          @for (mission of activeMissions(); track mission.id) {
-            <app-mission-card 
-              [mission]="mission"
-              (onClaim)="claimMission($event)" />
-          }
-        </div>
-      }
-      
-      <!-- Sprint 3: Racha -->
-      @if (gamificationEnabled() && streak(); as s) {
-        <div class="streak-card" [class.on-fire]="s.currentStreak >= 4">
-          <div class="streak-visual">
-            @for (week of streakWeeks(); track $index) {
-              <div class="week-pip" [class.active]="week"></div>
-            }
-          </div>
-          <div class="streak-text">
-            <span class="count">{{ s.currentStreak }} semanas seguidas</span>
-            <span class="target">{{ s.daysCompleted }}/{{ s.targetDays }} días esta semana</span>
-          </div>
-        </div>
-      }
-      
-      <!-- Sprint 3: Leaderboard (top 3) -->
-      @if (gamificationEnabled() && leaderboardTop3().length > 0) {
-        <div class="leaderboard-preview">
-          <h4>Top de tu grupo</h4>
-          @for (entry of leaderboardTop3(); track entry.clientId) {
-            <div class="leader-row" [class.me]="entry.isCurrentUser">
-              <span class="rank">{{ entry.rank }}</span>
-              <span class="name">{{ entry.clientName }}</span>
-              <span class="value">{{ entry.value }} XP</span>
+      <!-- ===== BANNER PERSONALIZADO (sticky) ===== -->
+      <div class="cd-banner" [style.background]="bannerGradient()">
+        <div class="cd-banner-pattern" [class]="'pattern-' + bannerPattern()"></div>
+        
+        <div class="cd-banner-content">
+          <div class="cd-avatar-wrap">
+            <div class="cd-avatar-ring" [style.border-color]="rankFrameColor()">
+              <div class="cd-avatar">{{ initials() }}</div>
+              @if (specialFrame()) {
+                <div class="cd-special-frame" [class]="'frame-' + specialFrame()"></div>
+              }
             </div>
-          }
+          </div>
+          
+          <div class="cd-banner-info">
+            <h1 class="cd-name">{{ userName() }}</h1>
+            <div class="cd-meta">
+              <span class="cd-rank-badge" [style.background]="rankBadgeBg()">
+                {{ currentRank()?.emoji }} {{ currentRank()?.name }} {{ currentDivision() }}
+              </span>
+              <span class="cd-xp">⭐ {{ totalXp() | number }} XP</span>
+            </div>
+          </div>
+          
+          <a class="cd-edit-btn" routerLink="/client/profile/banner">
+            🎨 Editar
+          </a>
         </div>
-      }
+      </div>
+
+      <!-- ===== GRID PRINCIPAL ===== -->
+      <div class="cd-grid">
+        
+        <!-- COLUMNA IZQUIERDA (60%) -->
+        <div class="cd-col-main">
+          
+          <!-- 🎯 WIDGET: PRÓXIMO OBJETIVO -->
+          <app-next-goal
+            (onAction)="goToWorkout()" />
+          
+          <!-- 📊 STATS RÁPIDOS -->
+          <app-quick-stats
+            [workoutsThisWeek]="workoutsThisWeek()"
+            [currentStreak]="currentStreak()"
+            [personalRecords]="personalRecords()"
+            [rankPosition]="rankPosition()" />
+          
+          <!-- 📅 ACTIVIDAD RECIENTE -->
+          <app-recent-activity [activities]="recentActivities()" />
+          
+        </div>
+
+        <!-- COLUMNA DERECHA (40%) -->
+        <div class="cd-col-side">
+          
+          <!-- 🔥 RACHA -->
+          <app-streak-widget
+            [streakDays]="currentStreak()"
+            [bestStreak]="bestStreak()"
+            [isAtRisk]="streakAtRisk()"
+            (onAction)="goToWorkout()" />
+          
+          <!-- 🏅 PROGRESO DE RANGO (mini) -->
+          <div class="cd-rank-mini">
+            <h3 class="cd-section-title">Tu camino al Olimpo</h3>
+            <app-rank-progress
+              [totalXp]="totalXp()"
+              (onMotivate)="goToWorkout()"
+              (onShare)="shareProgress()" />
+          </div>
+          
+          <!-- 🎨 PREVIEW DE PERSONALIZACIÓN -->
+          <div class="cd-customize-cta">
+            <h3 class="cd-section-title">Tu estilo</h3>
+            <div class="cd-style-preview">
+              <div class="cd-style-swatch" [style.background]="bannerGradient()"></div>
+              <div class="cd-style-info">
+                <p>{{ bannerColorName() }} + {{ bannerPatternName() }}</p>
+                <a routerLink="/client/profile/banner">Personalizar →</a>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        
+      </div>
       
-      <!-- Resto del dashboard existente: Rutina activa -->
-      @if (routine(); as r) {
-        <div class="routine-card">
-          <div class="rc-header">
-            <div class="rc-badge">Rutina activa</div>
-            <span class="rc-arrow">›</span>
-          </div>
-          <h2 class="rc-name">{{ r.routine?.name }}</h2>
-          <p class="rc-meta">
-            {{ r.routine?.days?.length }} días ·
-            {{ goalLabel(r.routine?.goal) }}
-          </p>
-          <div class="rc-days">
-            @for (day of routineDaysStatus(); track day.id) {
-              <div 
-                class="day-chip interactive" 
-                [class.done]="day.isCompleted"
-                (click)="!day.isCompleted && startWorkout(day.id)"
-              >
-                <span class="day-label">{{ day.label }}</span>
-                @if (day.isCompleted) {
-                  <span class="day-count">✓ Completado</span>
-                } @else {
-                  <span class="day-count">{{ day.exercises.length }} ejercicios</span>
-                }
-              </div>
-            }
-
-            @if (pendingDaysCount() === 0) {
-              <div class="all-done-msg">
-                ¡Semana completada! Tu coach te asignará una nueva rutina pronto.
-              </div>
-            }
-          </div>
-
-          @if (pendingDaysCount() > 0) {
-            <button class="btn-start" (click)="startFirstPendingWorkout()">
-              Continuar entrenamiento
-            </button>
-          }
-        </div>
-      } @else if (!isLoading()) {
-        <div class="empty-card">
-          <div class="empty-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-              stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round">
-              <path d="M18 20V10M12 20V4M6 20v-6"/>
-            </svg>
-          </div>
-          <p class="empty-title">Sin rutina asignada</p>
-          <p class="empty-sub">Tu entrenador te enviará una rutina pronto</p>
-        </div>
-      }
     </div>
-  `
-})
-export class ClientDashboardComponent implements OnInit {
-  private featureFlags = inject(FeatureFlagService);
-  private missionEngine = inject(MissionEngineService);
-  private streakService = inject(StreakWeeklyService);
-  private leaderboard = inject(LeaderboardService);
-  private auth = inject(AuthService);
-  protected rankSvc = inject(RankService);
-  private clientRoutineSvc = inject(ClientRoutineService);
-  private workoutStore = inject(WorkoutStore);
-  private profileSvc = inject(ProfileService);
-  private router = inject(Router);
-  
-  protected profile = this.auth.profile;
-  protected gamificationEnabled = signal(false);
-  protected activeMissions = this.missionEngine.activeMissions;
-  protected totalAvailableXp = this.missionEngine.totalXpAvailable;
-  protected streak = signal<any>(null);
-  protected leaderboardTop3 = signal<any[]>([]);
-  
-  protected routine = signal<AssignedRoutine | null>(null);
-  protected completedDaysList = signal<string[]>([]);
-  protected isLoading = signal(true);
-  
-  protected routineDaysStatus = computed(() => {
-    const r = this.routine();
-    const history = this.workoutStore.history();
-    const dbCompleted = this.completedDaysList();
-    if (!r || !r.routine?.days) return [];
+  `,
+  styles: [`
+    :host { display: block; }
 
-    return r.routine.days.map(day => {
-      const isCompletedInHistory = history.some(log => 
-        log.assignedRoutineId === r.id && 
-        log.dayId === day.id &&
-        log.completed
-      );
-      const isCompletedInDB = dbCompleted.includes(day.id);
-      
-      return {
-        ...day,
-        isCompleted: isCompletedInHistory || isCompletedInDB
-      };
-    });
-  });
-
-  protected pendingDaysCount = computed(() => {
-    return this.routineDaysStatus().filter(d => !d.isCompleted).length;
-  });
-  
-  ngOnInit() {
-    const userId = this.auth.user()?.id;
-    if (userId) {
-      this.gamificationEnabled.set(this.featureFlags.isEnabled('gamification_v2', userId));
-      this.loadDashboardData(userId);
-      this.rankSvc.load(userId);
-      this.loadRoutineData(userId);
+    .cd-page {
+      min-height: 100vh;
+      padding-bottom: 40px;
     }
-  }
-  
-  async loadDashboardData(clientId: string): Promise<void> {
-    // Misiones
-    await this.missionEngine.loadMissions(clientId);
-    
-    // Racha
-    const streakData = await this.streakService.calculateStreak(clientId);
-    this.streak.set(streakData);
-    
-    // Leaderboard (top 3)
-    const board = await this.leaderboard.getLeaderboard('coach-id', 'xp');
-    this.leaderboardTop3.set(board.slice(0, 3));
-  }
-  
-  async loadRoutineData(clientId: string): Promise<void> {
-    this.isLoading.set(true);
-    try {
-      const [assigned] = await Promise.all([
-        this.clientRoutineSvc.getActiveRoutine(clientId),
-        this.workoutStore.loadHistory(clientId),
-        this.profileSvc.load()
-      ]);
-      
-      this.routine.set(assigned);
 
-      if (assigned) {
-        const completedDays = await this.clientRoutineSvc.getCompletedDays(clientId, assigned.routineId);
-        this.completedDaysList.set(completedDays);
+    /* ===== BANNER PERSONALIZADO ===== */
+    .cd-banner {
+      position: relative;
+      padding: 32px 24px;
+      margin-bottom: 24px;
+      overflow: hidden;
+      border-bottom: 0.5px solid var(--c-border);
+    }
+
+    .cd-banner-pattern {
+      position: absolute;
+      inset: 0;
+      opacity: 0.15;
+      pointer-events: none;
+    }
+
+    .pattern-dots {
+      background-image: radial-gradient(rgba(255,255,255,0.04) 1.5px, transparent 1.5px);
+      background-size: 12px 12px;
+    }
+
+    .cd-banner-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .cd-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .cd-avatar-ring {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: 3px solid;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+
+    .cd-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: white;
+    }
+
+    .cd-special-frame {
+      position: absolute;
+      inset: -8px;
+      border-radius: 50%;
+      border: 2px dashed rgba(251,191,36,0.5);
+      animation: rotateFrame 10s linear infinite;
+    }
+
+    @keyframes rotateFrame {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .cd-banner-info {
+      flex: 1;
+    }
+
+    .cd-name {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: white;
+      margin: 0 0 6px;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+
+    .cd-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .cd-rank-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+      backdrop-filter: blur(8px);
+    }
+
+    .cd-xp {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .cd-edit-btn {
+      padding: 10px 20px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(8px);
+      color: white;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: 0.5px solid rgba(255,255,255,0.15);
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .cd-edit-btn:hover {
+      background: rgba(255,255,255,0.2);
+      transform: translateY(-1px);
+    }
+
+    /* ===== GRID PRINCIPAL ===== */
+    .cd-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    @media (max-width: 900px) {
+      .cd-grid {
+        grid-template-columns: 1fr;
       }
-    } catch (err) {
-      console.error('[Dashboard] Error cargando rutina:', err);
-    } finally {
-      this.isLoading.set(false);
     }
-  }
-  
-  async claimMission(missionId: string): Promise<void> {
-    const userId = this.auth.user()?.id;
-    if (!userId) return;
-    await this.missionEngine.claimXp(userId, missionId);
-    // Recargar
-    await this.loadDashboardData(userId);
-  }
-  
-  startWorkout(dayId: string): void {
-    const day = this.routineDaysStatus().find(d => d.id === dayId);
-    if (day?.isCompleted) return;
 
-    this.router.navigate(['/client/workout'], { 
-      queryParams: { dayId } 
-    });
-  }
-
-  startFirstPendingWorkout(): void {
-    const next = this.routineDaysStatus().find(d => !d.isCompleted);
-    if (next) {
-      this.startWorkout(next.id);
+    .cd-col-main {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
     }
+
+    .cd-col-side {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* ===== SECCIONES LATERALES ===== */
+    .cd-section-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--c-text-1);
+      margin: 0 0 16px;
+    }
+
+    .cd-rank-mini {
+      background: var(--c-surface);
+      border: 0.5px solid var(--c-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--c-shadow);
+    }
+
+    .cd-customize-cta {
+      background: var(--c-surface);
+      border: 0.5px solid var(--c-border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: var(--c-shadow);
+    }
+
+    .cd-style-preview {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .cd-style-swatch {
+      width: 56px;
+      height: 56px;
+      border-radius: 16px;
+      border: 0.5px solid var(--c-border);
+      flex-shrink: 0;
+    }
+
+    .cd-style-info p {
+      font-size: 0.85rem;
+      color: var(--c-text-3);
+      margin: 0 0 6px;
+    }
+
+    .cd-style-info a {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--c-green);
+      text-decoration: none;
+    }
+
+    .cd-style-info a:hover {
+      text-decoration: underline;
+    }
+  `]
+})
+export class ClientDashboardComponent {
+  private rankSvc = inject(RankService);
+  private toast = inject(ToastService);
+  private celebration = inject(UnlockCelebrationService);
+  private rankDetector = inject(RankChangeDetectorService);
+
+  userName = signal('Maite G.');
+  initials = signal('MG');
+  
+  bannerColor = signal('oceano');
+  bannerPattern = signal('dots');
+  specialFrame = signal<string | null>('llama_eterna');
+
+  async ngOnInit() {
+    await this.rankSvc.load();
+    this.rankDetector.initialize();
   }
+
+  totalXp = computed(() => this.rankSvc.athleteRank()?.xpTotal ?? 0);
+  currentRank = computed(() => this.rankSvc.fullRank()?.rank ?? null);
+  currentDivision = computed(() => this.rankSvc.fullRank()?.divLabel ?? 'IV');
   
-  protected goalLabel = (goal?: string) => ({
-    hypertrophy:  'Hipertrofia',
-    strength:     'Fuerza',
-    weight_loss:  'Pérdida de peso',
-    mobility:     'Movilidad',
-  }[goal ?? ''] ?? goal ?? '');
-  
-  protected streakWeeks = computed(() => {
-    // Array de 8 semanas para visualización
-    const streak = this.streak()?.currentStreak || 0;
-    return Array(8).fill(false).map((_, i) => i < streak);
+  bannerGradient = computed(() => {
+    const colors: Record<string, string> = {
+      obsidiana: 'linear-gradient(135deg, #0f172a, #1e293b)',
+      bronce: 'linear-gradient(135deg, #78350f, #92400e)',
+      esmeralda: 'linear-gradient(135deg, #064e3b, #065f46)',
+      oceano: 'linear-gradient(135deg, #1e3a5f, #1e40af)',
+      zafiro: 'linear-gradient(135deg, #1d4ed8, #3b82f6)',
+      dorado: 'linear-gradient(135deg, #ca8a04, #fbbf24)',
+    };
+    return colors[this.bannerColor()] ?? colors['oceano'];
   });
+
+  bannerColorName = computed(() => 
+    this.bannerColor().charAt(0).toUpperCase() + this.bannerColor().slice(1)
+  );
+  
+  bannerPatternName = computed(() => 
+    this.bannerPattern().charAt(0).toUpperCase() + this.bannerPattern().slice(1)
+  );
+
+  rankFrameColor = computed(() => {
+    const s = this.rankSvc.fullRank();
+    return s?.rank.color ?? 'transparent';
+  });
+
+  rankBadgeBg = computed(() => {
+    const s = this.rankSvc.fullRank();
+    if (!s) return 'rgba(255,255,255,0.1)';
+    return `${s.rank.color}33`; // 33 es 20% alpha en hex
+  });
+
+  workoutsThisWeek = signal(4);
+  currentStreak = signal(12);
+  bestStreak = signal(30);
+  personalRecords = signal(3);
+  rankPosition = signal(42);
+  streakAtRisk = signal(false);
+
+  recentActivities = signal([
+    { type: 'workout', title: 'Entrenamiento de pierna', xp: 120, date: 'Hoy, 14:30' },
+    { type: 'unlock', title: 'Color Dorado desbloqueado', date: 'Ayer' },
+    { type: 'rank', title: 'Subiste a Legionario II', date: 'Hace 3 días' },
+    { type: 'pr', title: 'Nuevo récord: 80kg press banca', date: 'Hace 5 días' },
+  ]);
+
+  goToWorkout() {
+    this.toast.info('¡Vamos!', 'Cargando tu rutina de hoy...');
+  }
+
+  shareProgress() {
+    this.toast.success('¡Progreso copiado!', 'Listo para compartir en redes');
+  }
+
+  /**
+   * TEST: Simular subida de rango (Solo para pruebas en local)
+   */
+  simulateRankUp() {
+    const cur = this.rankSvc.athleteRank();
+    if (!cur) return;
+    
+    // Añadimos XP suficiente para saltar a Legionario si estamos en Recruta
+    this.rankSvc.addXP({ daysXp: 600, setsXp: 0, progressXp: 0 });
+    this.toast.info('Simulando...', 'Añadiendo XP para forzar subida de rango');
+  }
 }
