@@ -54,13 +54,13 @@ export const ProgressStore = signalStore(
     }),
 
     groupedHistory: computed(() => {
-      const ex = store.selectedExercise();
+      const ex = store.exercises().find(e => e.name === store.selected()) ?? store.exercises()[0] ?? null;
       if (!ex) return [];
 
       // Agrupar por fecha para el histórico de carga
       const groups = new Map<string, { date: Date; maxWeight: number; totalVol: number; sets: number }>();
       
-      ex.dataPoints.forEach(dp => {
+      ex.dataPoints.forEach((dp: ExerciseDataPoint) => {
         const d = new Date(dp.date);
         const key = d.toISOString().split('T')[0];
         const existing = groups.get(key);
