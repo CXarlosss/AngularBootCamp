@@ -16,6 +16,7 @@ import { supabase } from '../../../core/supabase.client';
   selector: 'app-client-dashboard',
   standalone: true,
   imports: [CommonModule, MissionCardComponent, ProfileBannerComponent],
+  styleUrl: './client-dashboard.component.css',
   template: `
     <div class="client-dash">
       
