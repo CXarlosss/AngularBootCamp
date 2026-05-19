@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
+import { registry } from '@/content/registry';
 
 const AVATAR_IMAGES: Record<string, string> = {
   'base-unicorn': '/assets/avatars/base-unicorn.png',

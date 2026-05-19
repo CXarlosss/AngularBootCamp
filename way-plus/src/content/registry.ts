@@ -284,5 +284,20 @@ export const registry = {
     return allWays;
   },
 
+  /** Lookup a way by its ID in either loaded steps or static fallbacks. */
+  getWayById(id: string): import('@/core/engine/types').Way | null {
+    const all = this.getAllWays();
+    const found = all.find(w => w.id === id);
+    if (found) return found;
+
+    for (const step of Object.values(ALL_STEPS)) {
+      if (step.ways) {
+        const w = step.ways.find(w => w.id === id);
+        if (w) return w;
+      }
+    }
+    return null;
+  },
+
   get cacheSize() { return memCache.size; },
 };
