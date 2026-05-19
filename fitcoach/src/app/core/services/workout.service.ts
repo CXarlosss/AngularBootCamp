@@ -111,6 +111,7 @@ export class WorkoutService {
           s.completedAt instanceof Date
             ? s.completedAt.toISOString()
             : ((s.completedAt as any) ?? new Date().toISOString()),
+        notes: s.notes || null,
       }));
 
       const { error: sError } = await this.sb
@@ -211,9 +212,10 @@ export class WorkoutService {
         exerciseId: s.exercise_id,
         exerciseName: s.exercise_name,
         setNumber: s.set_number,
-        weightKg: s.weight_kg,
-        repsDone: s.reps_done,
+        weightKg: Number(s.weight_kg ?? 0),
+        repsDone: Number(s.reps_done ?? 0),
         completedAt: new Date(s.completed_at),
+        notes: s.notes,
       })),
     }));
   }

@@ -25,6 +25,8 @@ interface ProgressState {
   adherence:   number[];            // 0–100 por semana (últimas 8 semanas)
   photos:      ProgressPhoto[];     // Objetos de foto con metadata
   loading:     boolean;
+  weightImprovedKg: number | null;  // null = sin cargar, 0 puede ser dato real
+  error:       string | null;
 }
 
 export const ProgressStore = signalStore(
@@ -35,6 +37,8 @@ export const ProgressStore = signalStore(
     adherence: [],
     photos:    [],
     loading:   false,
+    weightImprovedKg: null,
+    error:     null,
   }),
 
   withComputed((store) => ({
@@ -122,24 +126,48 @@ export const ProgressStore = signalStore(
     totalSessions: computed(() => store.sessions()?.length ?? 0),
 
     chartData: computed(() => store.sets() ?? []),
+
+    weightImprovedDisplay: computed(() => {
+      const value = store.weightImprovedKg();
+      if (value === null) return null;       // skeleton/spinner
+      return value;                          // 0 solo si es dato real
+    }),
+
+    hasImprovement: computed(() => (store.weightImprovedKg() ?? 0) > 0),
   })),
 
   withMethods((store, svc = inject(ProgressService)) => ({
 
     async load(clientId: string): Promise<void> {
-      patchState(store, { loading: true });
-      const [exercises, adherence, photos] = await Promise.all([
-        svc.getExerciseProgress(clientId),
-        svc.getWeeklyAdherence(clientId),
-        svc.getProgressPhotos(clientId),
-      ]);
-      patchState(store, {
-        exercises,
-        adherence,
-        photos,
-        selected: exercises[0]?.name ?? null,
-        loading: false,
-      });
+      patchState(store, { loading: true, error: null });
+      try {
+        const [exercises, adherence, photos, weightImproved] = await Promise.all([
+          svc.getExerciseProgress(clientId),
+          svc.getWeeklyAdherence(clientId),
+          svc.getProgressPhotos(clientId),
+          svc.getWeightImprovedKg(clientId),
+        ]);
+        patchState(store, {
+          exercises,
+          adherence,
+          photos,
+          weightImprovedKg: weightImproved,
+          selected: exercises[0]?.name ?? null,
+          loading: false,
+        });
+      } catch (e) {
+        patchState(store, { error: 'Error cargando progreso', loading: false });
+      }
+    },
+
+    async loadWeightImproved(clientId: string): Promise<void> {
+      patchState(store, { loading: true, error: null });
+      try {
+        const kg = await svc.getWeightImprovedKg(clientId);
+        patchState(store, { weightImprovedKg: kg, loading: false });
+      } catch (e) {
+        patchState(store, { error: 'Error cargando progreso', loading: false });
+      }
     },
 
     selectExercise(name: string): void {

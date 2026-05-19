@@ -1,5 +1,6 @@
 /* styles.css */
 @import './styles/client-theme.css';
+@import './app/features/client/profile/frames.css';
 
 * {
   box-sizing: border-box;

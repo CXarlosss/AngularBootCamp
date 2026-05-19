@@ -79,9 +79,9 @@ import { RankService, DIVISIONS } from '../../../core/services/rank.service';
         }
 
         <div class="xp-breakdown">
-          <span>⚔️ {{ svc.athleteRank()?.daysXp }} d</span>
+          <span>⚔️ {{ (svc.athleteRank()?.daysXp ?? 0) / 10 }} d</span>
           <span>💪 {{ svc.athleteRank()?.setsXp }} s</span>
-          <span>📈 {{ svc.athleteRank()?.progressXp }} kg</span>
+          <span>📈 {{ (svc.athleteRank()?.progressXp ?? 0) / 50 }} kg</span>
         </div>
 
       </div>

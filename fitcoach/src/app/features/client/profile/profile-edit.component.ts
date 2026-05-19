@@ -13,7 +13,7 @@ import { ProfileBannerComponent } from './profile-banner/profile-banner.componen
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [CommonModule, AvatarFrameComponent, InitialsPipe, RouterModule, ProfileBannerComponent],
+  imports: [CommonModule, InitialsPipe, RouterModule, ProfileBannerComponent],
   providers: [ProfileService],
   template: `
     <div class="client-dash">

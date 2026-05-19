@@ -15,64 +15,35 @@ import { RankCardComponent }    from '../../../shared/components/rank-card/rank-
 import { AvatarFrameComponent } from '../../../shared/components/avatar-frame/avatar-frame.component';
 import { InitialsPipe }         from '../../../shared/pipes/initials.pipe';
 import { RankService }          from '../../../core/services/rank.service';
-import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
 import { RouterModule }         from '@angular/router';
+import { BANNER_COLORS, BANNER_PATTERNS } from '../profile/profile-banner/banner.types';
+import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
 
 @Component({
   selector: 'fc-client-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RankCardComponent, AvatarFrameComponent, InitialsPipe, ProfileBannerComponent, RouterModule],
+  imports: [CommonModule, RankCardComponent, AvatarFrameComponent, InitialsPipe, RouterModule, ProfileBannerComponent],
   template: `
     <div class="client-dash">
 
       <header class="client-header">
         <div class="header-logo">Fit<span>Coach</span></div>
-        <app-avatar-frame
-          [initials]="auth.profile()?.fullName | initials"
-          [rankLevel]="rankSvc.fullRank()?.rank?.level ?? 0"
-          [equippedSpecial]="auth.profile()?.equippedFrame ?? null"
-          [size]="32"
-          [showBadge]="false" />
       </header>
 
-      @if (profileSvc.profile(); as p) {
-        <div style="margin: 0 16px 12px;">
-          <app-profile-banner
-            [name]="p.full_name"
-            [initials]="p.full_name | initials"
-            [rankLevel]="rankSvc.fullRank()?.rank?.level ?? 0"
-            [rankName]="rankSvc.fullRank()?.rank?.name ?? 'Recruta'"
-            [rankEmoji]="rankSvc.fullRank()?.rank?.emoji ?? '⚔️'"
-            [divLabel]="rankSvc.fullRank()?.divLabel ?? 'IV'"
-            [xpTotal]="rankSvc.athleteRank()?.xpTotal ?? 0"
-            [goal]="profileSvc.goalLabel(p.goal)"
-            [goalEmoji]="profileSvc.goalEmoji(p.goal)"
-            [bannerColor]="p.banner_color ?? 'c0'"
-            [bannerPattern]="p.banner_pattern ?? 'p0'"
-            [equippedFrame]="p.equipped_frame" />
-          
-          <button class="customize-btn" routerLink="/client/profile/banner">
-            🎨 Personalizar banner
-          </button>
-        </div>
-      }
+      <div class="dashboard-banner-wrapper">
+        <app-profile-banner [useCurrentUser]="true" size="lg" />
+        <a class="cd-edit-btn banner-edit-btn" routerLink="/client/profile/banner">
+          🎨 Personalizar
+        </a>
+      </div>
 
       <!-- SISTEMA DE RANGOS -->
       <div class="dash-rank-section" style="margin: 0 16px 20px;">
         <app-rank-card />
       </div>
 
-      <div class="greeting">
-        <h1 class="greeting-name">{{ greeting() }}, {{ firstName() }}</h1>
-        <p class="greeting-sub">
-          @if (routine()) { 
-            @if (pendingDaysCount() > 0) { Tienes trabajo pendiente esta semana }
-            @else { ¡Has completado todos los entrenamientos de esta rutina! 🚀 }
-          }
-          @else { Tu entrenador aún no te ha asignado una rutina }
-        </p>
-      </div>
+
 
       @if (routine(); as r) {
         <div class="routine-card">
@@ -137,6 +108,28 @@ export class ClientDashboardComponent implements OnInit {
   profileSvc = inject(ProfileService);
   rankSvc = inject(RankService);
   private clientRoutineSvc = inject(ClientRoutineService);
+
+  profile = computed(() => this.profileSvc.profile());
+  userName = computed(() => this.profile()?.full_name || 'Atleta');
+  bannerColor = computed(() => this.profile()?.banner_color || 'c0');
+  bannerPattern = computed(() => this.profile()?.banner_pattern || 'p0');
+  specialFrame = computed(() => this.profile()?.equipped_frame || null);
+  totalXp = computed(() => this.rankSvc.athleteRank()?.xpTotal ?? 0);
+  currentRank = computed(() => this.rankSvc.fullRank()?.rank ?? null);
+  currentDivision = computed(() => this.rankSvc.fullRank()?.divLabel ?? 'IV');
+
+  bannerGradient = computed(() => {
+    const color = BANNER_COLORS.find(c => c.id === this.bannerColor()) || BANNER_COLORS[0];
+    return color.gradient;
+  });
+
+  patternClass = computed(() => {
+    const pattern = BANNER_PATTERNS.find(p => p.id === this.bannerPattern()) || BANNER_PATTERNS[0];
+    return `cd-banner-pattern ${pattern.cssClass}`;
+  });
+
+  rankFrameColor = computed(() => this.rankSvc.fullRank()?.rank?.color ?? 'transparent');
+  rankBadgeBg = computed(() => this.rankSvc.fullRank() ? `${this.rankSvc.fullRank()!.rank.color}33` : 'rgba(255,255,255,0.1)');
 
   routine = signal<AssignedRoutine | null>(null);
   completedDaysList = signal<string[]>([]);

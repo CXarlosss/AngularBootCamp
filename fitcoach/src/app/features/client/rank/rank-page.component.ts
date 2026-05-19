@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { RankService, RANKS, DIVISIONS } from '../../../core/services/rank.service';
 import { AuthService } from '../../../core/auth/auth.service';
+import { ProgressStore } from '../../../state/progress.store';
 
 @Component({
   selector: 'app-rank-page',
@@ -50,7 +51,7 @@ import { AuthService } from '../../../core/auth/auth.service';
 
               <div class="stats-grid">
                 <div class="stat-card">
-                  <span class="stat-val">{{ rank.daysXp }}</span>
+                  <span class="stat-val">{{ rank.daysXp / 10 }}</span>
                   <span class="stat-lbl">Entrenamientos</span>
                 </div>
                 <div class="stat-card">
@@ -58,7 +59,15 @@ import { AuthService } from '../../../core/auth/auth.service';
                   <span class="stat-lbl">Series Totales</span>
                 </div>
                 <div class="stat-card">
-                  <span class="stat-val">{{ rank.progressXp }}</span>
+                  <span class="stat-val">
+                    @if (store.loading()) {
+                      —
+                    } @else if (store.weightImprovedDisplay() === null) {
+                      ...
+                    } @else {
+                      {{ store.weightImprovedDisplay() }}
+                    }
+                  </span>
                   <span class="stat-lbl">Kg Mejorados</span>
                 </div>
               </div>
@@ -152,11 +161,16 @@ export class RankPageComponent implements OnInit {
   readonly svc = inject(RankService);
   readonly router = inject(Router);
   readonly auth = inject(AuthService);
+  readonly store = inject(ProgressStore);
   
   readonly allRanks = RANKS;
   readonly divisions = DIVISIONS;
 
   async ngOnInit() {
     await this.svc.load();
+    const myId = this.auth.user()?.id;
+    if (myId) {
+      await this.store.loadWeightImproved(myId);
+    }
   }
 }

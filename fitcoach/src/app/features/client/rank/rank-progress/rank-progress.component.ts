@@ -1,8 +1,10 @@
 // src/app/features/client/rank/rank-progress/rank-progress.component.ts
 
-import { Component, Input, Output, EventEmitter, computed, signal, OnChanges } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, signal, OnChanges, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { getCurrentRankState, RankTier, Division } from '../rank-data';
+import { ProgressStore } from '../../../../state/progress.store';
+import { AuthService } from '../../../../core/auth/auth.service';
 
 @Component({
   selector: 'app-rank-progress',
@@ -76,6 +78,25 @@ import { getCurrentRankState, RankTier, Division } from '../rank-data';
             [style.background]="fillGradient()">
             <div class="rp-shimmer"></div>
             <div class="rp-glow-tip"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NUEVA SECCIÓN: Métrica premium de Peso Mejorado (KPI) -->
+      <div class="rp-stats-kpi">
+        <div class="rp-kpi-item">
+          <span class="rp-kpi-icon">📈</span>
+          <div class="rp-kpi-details">
+            <span class="rp-kpi-label">Fuerza Mejorada</span>
+            @if (store.loading()) {
+              <span class="rp-kpi-val skeleton-text">— kg</span>
+            } @else if (store.weightImprovedDisplay() === null) {
+              <span class="rp-kpi-val loading-pulse">Cargando...</span>
+            } @else {
+              <span class="rp-kpi-val">
+                +{{ store.weightImprovedDisplay() }} kg mejorados
+              </span>
+            }
           </div>
         </div>
       </div>
@@ -432,19 +453,102 @@ import { getCurrentRankState, RankTier, Division } from '../rank-data';
         flex-direction: column;
       }
     }
+
+    /* ===== KPI METRIC SPECIAL ACCENT ===== */
+    .rp-stats-kpi {
+      background: rgba(255, 255, 255, 0.02);
+      border: 0.5px dashed var(--c-border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .rp-stats-kpi:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: var(--c-green);
+    }
+
+    .rp-kpi-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .rp-kpi-icon {
+      font-size: 24px;
+      background: rgba(29, 158, 117, 0.1);
+      border-radius: 12px;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(29, 158, 117, 0.15);
+    }
+
+    .rp-kpi-details {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .rp-kpi-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--c-text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .rp-kpi-val {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--c-green);
+    }
+
+    .skeleton-text {
+      color: var(--c-text-3);
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    .loading-pulse {
+      font-size: 14px;
+      color: var(--c-text-3);
+      animation: pulse 1.5s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50% { opacity: 0.3; }
+    }
   `]
 })
-export class RankProgressComponent implements OnChanges {
+export class RankProgressComponent implements OnChanges, OnInit {
   @Input({ required: true }) totalXp!: number;
   
   @Output() onMotivate = new EventEmitter<void>();
   @Output() onShare = new EventEmitter<void>();
+
+  readonly store = inject(ProgressStore);
+  private auth = inject(AuthService);
 
   // Animación progresiva de la barra
   private targetProgress = signal(0);
   animatedProgress = signal(0);
 
   state = computed(() => getCurrentRankState(this.totalXp));
+
+  ngOnInit() {
+    const clientId = this.auth.user()?.id;
+    if (clientId) {
+      this.store.loadWeightImproved(clientId);
+    }
+  }
   
   divisions = computed(() => [
     { label: 'IV', xpRequired: 0 },

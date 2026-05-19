@@ -47,60 +47,281 @@
 }
 
 /* ── Profile Banner ── */
-.profile-banner {
-  margin: 16px 20px 0;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 0.5px solid var(--c-border);
-  border-radius: 20px;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.dashboard-banner-wrapper {
+  padding: 16px 20px;
+  margin-bottom: 8px;
+  position: relative;
 }
 
-.profile-banner:active {
-  transform: scale(0.98);
-  background: rgba(255, 255, 255, 0.05);
+.banner-edit-btn {
+  position: absolute;
+  bottom: 32px;
+  right: 36px;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.15);
+  font-size: 11px;
 }
 
-.profile-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
-  background: #1D9E75;
-  color: #fff;
+.banner-edit-btn:hover {
+  background: rgba(0,0,0,0.6);
+  border-color: rgba(255,255,255,0.25);
+}
+
+/* ── Premium Identity Banner (Legacy) ── */
+.cd-banner {
+  position: relative;
+  padding: 32px 20px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-bottom: 0.5px solid var(--c-border);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.cd-banner-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  pointer-events: none;
+  transition: all .3s;
+}
+
+/* Patrones del Banner */
+.cd-banner-pattern.pat-solid { /* Liso */ }
+
+.cd-banner-pattern.pat-marble {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
+    transparent 1px, transparent 8px
+  );
+}
+
+.cd-banner-pattern.pat-stone {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 6px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 1px, transparent 1px, transparent 6px);
+}
+
+.cd-banner-pattern.pat-stars {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.cd-banner-pattern.pat-fire {
+  background-image:
+    radial-gradient(ellipse at 20% 90%, rgba(255,100,0,0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(220,38,38,0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 60%, rgba(251,146,60,0.2) 0%, transparent 40%);
+}
+
+.cd-banner-pattern.pat-olympus {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255,215,0,0.06) 0px, rgba(255,215,0,0.06) 1px,
+    transparent 1px, transparent 12px
+  );
+}
+
+.cd-banner-pattern.pat-waves {
+  background-image: repeating-linear-gradient(
+    -45deg, transparent, transparent 5px,
+    rgba(255,255,255,.08) 5px, rgba(255,255,255,.08) 6px
+  );
+}
+
+.cd-banner-pattern.pat-dots {
+  background-image: radial-gradient(circle, rgba(255,255,255,.18) 1.5px, transparent 1.5px);
+  background-size: 10px 10px;
+}
+
+.cd-banner-pattern.pat-diamond {
+  background-image:
+    repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 14px),
+    repeating-linear-gradient(-45deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 14px);
+}
+
+.cd-banner-pattern.pat-circuit {
+  background-image:
+    repeating-linear-gradient(0deg, rgba(29,158,117,.1) 0px, rgba(29,158,117,.1) 1px, transparent 1px, transparent 20px),
+    repeating-linear-gradient(90deg, rgba(29,158,117,.1) 0px, rgba(29,158,117,.1) 1px, transparent 1px, transparent 20px);
+}
+
+.cd-banner-pattern.pat-hex {
+  background-image: 
+    linear-gradient(120deg, rgba(255,255,255,0.05) 25%, transparent 25%),
+    linear-gradient(60deg, rgba(255,255,255,0.05) 25%, transparent 25%);
+  background-size: 15px 25px;
+}
+
+.cd-banner-pattern.pat-cross {
+  background: 
+    radial-gradient(circle, transparent 20%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.2) 80%, transparent 80%, transparent),
+    radial-gradient(circle, transparent 20%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.2) 80%, transparent 80%, transparent) 25px 25px,
+    linear-gradient(rgba(255,255,255,0.03) 2px, transparent 2px) 0 -1px,
+    linear-gradient(90deg, rgba(255,255,255,0.03) 2px, transparent 2px) -1px 0;
+  background-size: 50px 50px, 50px 50px, 25px 25px, 25px 25px;
+}
+
+.cd-banner-pattern.pat-diag {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 2px,
+    transparent 2px, transparent 12px
+  );
+}
+
+.cd-banner-pattern.pat-bigdots {
+  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 3px, transparent 3px);
+  background-size: 24px 24px;
+}
+
+.cd-banner-pattern.pat-sinewave {
+  background-image: 
+    radial-gradient(circle at 50% 0%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 60%, transparent 60%),
+    radial-gradient(circle at 50% 100%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 60%, transparent 60%);
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
+}
+
+.cd-banner-content {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 18px;
-  font-weight: 600;
+  gap: 16px;
+}
+
+.cd-avatar-wrap {
+  position: relative;
   flex-shrink: 0;
 }
 
-.profile-info {
+.cd-avatar-ring {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 2.5px solid;
+  position: relative;
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  overflow: hidden;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  background: rgba(0, 0, 0, 0.2);
 }
 
-.profile-name {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
+.cd-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--c-green), var(--c-green-d));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  color: white;
+}
+
+.cd-special-frame {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px dashed rgba(251,191,36,0.5);
+  animation: rotateFrame 10s linear infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Efectos de marcos especiales */
+.frame-llama_eterna {
+  border-color: #f97316;
+  box-shadow: 0 0 10px rgba(249,115,22,0.4);
+}
+.frame-aurum {
+  border-color: #fbbf24;
+  box-shadow: 0 0 12px rgba(251,191,36,0.5);
+}
+.frame-glacial {
+  border-color: #38bdf8;
+  box-shadow: 0 0 10px rgba(56,189,248,0.4);
+}
+
+@keyframes rotateFrame {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.cd-banner-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.cd-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: white;
+  margin: 0 0 4px;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.4);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.profile-meta {
-  font-size: 12px;
-  color: var(--c-text-3);
+.cd-meta {
   display: flex;
   align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.cd-rank-badge {
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.cd-xp {
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.75);
+  font-variant-numeric: tabular-nums;
+}
+
+.cd-edit-btn {
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  border: 0.5px solid rgba(255,255,255,0.12);
+  transition: all 0.2s;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.cd-edit-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.2);
+  transform: translateY(-1px);
+}
+
+.cd-edit-btn:active {
+  transform: scale(0.96);
 }
 
 

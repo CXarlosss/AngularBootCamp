@@ -7,6 +7,7 @@ import { AuthService } from '../core/auth/auth.service';
 import { WorkoutEventsService } from '../core/services/workout-events.service';
 import { RankService } from '../core/services/rank.service';
 import { WorkoutBlockedError } from '../core/models/errors.model';
+import { SyncQueueService } from '../core/services/sync-queue.service';
 
 interface WorkoutState {
   activeLog: WorkoutLog | null;   // el entrenamiento en curso
@@ -35,7 +36,8 @@ export const WorkoutStore = signalStore(
     svc = inject(WorkoutService),
     auth = inject(AuthService),
     events = inject(WorkoutEventsService),
-    rankSvc = inject(RankService)
+    rankSvc = inject(RankService),
+    syncQueue = inject(SyncQueueService)
   ) => ({
 
     async startWorkout(assignedRoutineId: string, routineId: string, clientId: string, dayId: string): Promise<void> {
@@ -83,6 +85,7 @@ export const WorkoutStore = signalStore(
         loggedDate: new Date(),
         completed: false,
         sets: [],
+        exerciseNotes: {},
       };
       patchState(store, { activeLog: log });
       sessionStorage.setItem('active_workout', JSON.stringify(log));
@@ -104,8 +107,19 @@ export const WorkoutStore = signalStore(
         throw new WorkoutBlockedError();
       }
 
-      const newSet: SetLog = { ...set, id: uuid() };
-      const updated = { ...log, sets: [...log.sets, newSet] };
+      // Copiar cualquier comentario pre-existente en la nueva serie
+      const exerciseNote = log.exerciseNotes?.[set.exerciseId];
+      const newSet: SetLog = { ...set, id: uuid(), notes: exerciseNote || undefined };
+
+      // Limpiar notas en series anteriores del mismo ejercicio
+      const updatedSets = log.sets.map(s => {
+        if (s.exerciseId === set.exerciseId) {
+          return { ...s, notes: undefined };
+        }
+        return s;
+      });
+
+      const updated = { ...log, sets: [...updatedSets, newSet] };
       console.log('[WorkoutStore] Serie registrada. Total series:', updated.sets.length, updated);
       patchState(store, { activeLog: updated });
       sessionStorage.setItem('active_workout', JSON.stringify(updated));
@@ -140,9 +154,37 @@ export const WorkoutStore = signalStore(
       sessionStorage.setItem('active_workout', JSON.stringify(updated));
     },
 
-    // Guardar en Supabase y limpiar el estado activo
+    updateExerciseNote(exerciseId: string, notes: string): void {
+      const log = store.activeLog();
+      if (!log) return;
+
+      const exerciseNotes = { ...log.exerciseNotes, [exerciseId]: notes };
+
+      const exerciseSets = log.sets.filter(s => s.exerciseId === exerciseId);
+      let updatedSets = [...log.sets];
+
+      if (exerciseSets.length > 0) {
+        const lastSetId = exerciseSets[exerciseSets.length - 1].id;
+        updatedSets = log.sets.map(s => {
+          if (s.id === lastSetId) {
+            return { ...s, notes: notes || undefined };
+          }
+          // Limpiar nota en series previas de este ejercicio para evitar duplicidades
+          if (s.exerciseId === exerciseId && s.id !== lastSetId) {
+            return { ...s, notes: undefined };
+          }
+          return s;
+        });
+      }
+
+      const updated = { ...log, sets: updatedSets, exerciseNotes };
+      patchState(store, { activeLog: updated });
+      sessionStorage.setItem('active_workout', JSON.stringify(updated));
+    },
+
+    // Guardar en Supabase y limpiar el estado activo de forma offline-friendly
     async completeWorkout(dayLabel: string): Promise<void> {
-      console.log('[WorkoutStore] completeWorkout INICIO');
+      console.log('[WorkoutStore] completeWorkout INICIO (Offline-friendly)');
       const log = store.activeLog();
       const profile = auth.profile();
       if (!log || !profile) {
@@ -151,63 +193,115 @@ export const WorkoutStore = signalStore(
       }
 
       patchState(store, { loading: true });
-      const completed = { ...log, completed: true };
-      
-      // 1. Guardar log — si falla, continuamos igualmente
-      try {
-        console.log('[WorkoutStore] Guardando log detallado...');
-        await svc.saveWorkoutLog(completed);
-      } catch (e) {
-        console.error('[WorkoutStore] saveWorkoutLog falló, continuando...', e);
-      }
-      
-      // 2. Finalizar sesión (Atómico)
-      try {
-        console.log('[WorkoutStore] Llamando a finishWorkout...');
-        await svc.finishWorkout(log.routineId, log.dayId, dayLabel);
-      } catch (e: any) {
-        if (e.message === 'DAY_ALREADY_COMPLETED') {
-          console.warn('[WorkoutStore] Carrera detectada en completeWorkout. Abortando notificaciones/XP redundantes.');
-          patchState(store, { activeLog: null, loading: false });
-          sessionStorage.removeItem('active_workout');
-          return;
-        }
-        console.error('[WorkoutStore] finishWorkout falló inesperadamente, continuando...', e);
-      }
+      const completed: WorkoutLog = { ...log, completed: true };
 
-      // 3. XP — siempre se ejecuta
-      try {
-        const daysXp = 10;
-        const setsXp = log.sets.length;
-        let progressXp = 0;
+      // 1. Calcular el XP de forma local e inmediata
+      const daysXp = 10;
+      const setsXp = log.sets.length;
+      let progressXp = 0;
 
-        const exerciseWeights = new Map<string, number>();
-        log.sets.forEach(s => {
-          const cur = exerciseWeights.get(s.exerciseId) ?? 0;
-          if ((s.weightKg ?? 0) > cur) exerciseWeights.set(s.exerciseId, s.weightKg ?? 0);
-        });
+      const exerciseWeights = new Map<string, number>();
+      log.sets.forEach(s => {
+        const cur = exerciseWeights.get(s.exerciseId) ?? 0;
+        if ((s.weightKg ?? 0) > cur) exerciseWeights.set(s.exerciseId, s.weightKg ?? 0);
+      });
 
-        exerciseWeights.forEach((weight, exId) => {
-          // Obtenemos el historial previo antes de este entrenamiento
-          const lastPerf = store.history()
-            .find(h => h.id !== log.id)
-            ?.sets.find(s => s.exerciseId === exId);
-            
-          if (lastPerf && weight > (lastPerf.weightKg ?? 0)) {
-            const improvement = weight - (lastPerf.weightKg ?? 0);
-            progressXp += Math.floor(improvement * 50);
-            console.log(`[RANK] Mejora en ${exId}: +${improvement}kg = +${improvement * 50}XP`);
+      exerciseWeights.forEach((weight, exId) => {
+        const exerciseName = log.sets.find(s => s.exerciseId === exId)?.exerciseName;
+        const name = exerciseName?.trim().toLowerCase();
+        
+        let lastSets: SetLog[] = [];
+        for (const h of store.history()) {
+          if (h.id === log.id) continue;
+          const found = h.sets.filter(s => 
+            s.exerciseId === exId || 
+            (name && s.exerciseName.trim().toLowerCase() === name)
+          );
+          if (found.length > 0) {
+            lastSets = found;
+            break;
           }
+        }
+        
+        if (lastSets.length > 0) {
+          const lastMaxWeight = Math.max(...lastSets.map(s => s.weightKg ?? 0));
+          if (weight > lastMaxWeight) {
+            const improvement = weight - lastMaxWeight;
+            progressXp += Math.floor(improvement * 50);
+            console.log(`[RANK] Mejora local en ${exId} (${exerciseName}): +${improvement}kg = +${improvement * 50}XP`);
+          }
+        }
+      });
+
+      // 2. Actualizar el rango localmente en memoria de inmediato para dar feedback al atleta
+      const curRank = rankSvc.athleteRank();
+      if (curRank) {
+        const totalXpToAdd = daysXp + setsXp + progressXp;
+        const newTotal = curRank.xpTotal + totalXpToAdd;
+        const prevFull = rankSvc.calcFullRank(curRank.xpTotal);
+        const newFull = rankSvc.calcFullRank(newTotal);
+        const newLevel = newFull.rank.level;
+        
+        const didLevelUp = newFull.rank.level > prevFull.rank.level;
+        const didDivUp = !didLevelUp && newFull.division > prevFull.division;
+
+        rankSvc.athleteRank.set({
+          xpTotal: newTotal,
+          rankLevel: newLevel,
+          daysXp: curRank.daysXp + daysXp,
+          setsXp: curRank.setsXp + setsXp,
+          progressXp: curRank.progressXp + progressXp
         });
 
-        console.log(`[RANK] addXP — días:${daysXp} series:${setsXp} progreso:${progressXp}`);
-        await rankSvc.addXP({ daysXp, setsXp, progressXp });
-        console.log('[RANK] XP guardado. Total:', rankSvc.athleteRank()?.xpTotal);
-      } catch (e) {
-        console.error('[WorkoutStore] addXP falló:', e);
+        if (didLevelUp || didDivUp) {
+          const label = `${newFull.rank.name} ${newFull.divLabel}`;
+          rankSvc.rankedUp.set(label);
+          setTimeout(() => rankSvc.rankedUp.set(null), 4000);
+        }
       }
 
-      console.log('[WorkoutStore] completeWorkout FIN');
+      // 3. Crear el payload robusto para la cola de sincronización offline-first
+      const payload = {
+        workout: {
+          id: log.id,
+          client_id: log.clientId,
+          assigned_routine_id: log.assignedRoutineId,
+          routine_id: log.routineId,
+          day_id: log.dayId,
+          logged_date: log.loggedDate instanceof Date 
+            ? log.loggedDate.toISOString() 
+            : (log.loggedDate as any),
+          completed: true
+        },
+        label: dayLabel,
+        sets: log.sets.map(s => ({
+          id: s.id,
+          exercise_id: s.exerciseId,
+          exercise_name: s.exerciseName,
+          set_number: s.setNumber,
+          weight_kg: s.weightKg,
+          reps_done: s.repsDone,
+          notes: s.notes || null,
+          completed_at: s.completedAt instanceof Date 
+            ? s.completedAt.toISOString() 
+            : (s.completedAt as any) || new Date().toISOString()
+        })),
+        xp: {
+          daysXp,
+          setsXp,
+          progressXp
+        }
+      };
+
+      // 4. Encolar la sesión de entrenamiento completa
+      try {
+        console.log('[WorkoutStore] Encolando sesión de entrenamiento en la sync queue...');
+        await syncQueue.enqueue('workout_session', payload);
+      } catch (e) {
+        console.error('[WorkoutStore] Error encolando la sesión de entrenamiento:', e);
+      }
+
+      console.log('[WorkoutStore] completeWorkout FIN (Encolado y guardado en local)');
       patchState(store, {
         activeLog: null,
         history: [completed, ...store.history()],
@@ -227,15 +321,22 @@ export const WorkoutStore = signalStore(
     },
 
     // Obtener el último peso registrado para este ejercicio en el historial
-    getLastPerformance(exerciseId: string): SetLog | null {
+    getLastPerformance(exerciseId: string, exerciseName?: string): SetLog | null {
+      const name = exerciseName?.trim().toLowerCase();
       // 1. Mirar en la sesión activa primero (por si ya hizo una serie antes)
       const activeSets = store.activeLog()?.sets ?? [];
-      const lastActive = activeSets.filter(s => s.exerciseId === exerciseId).slice(-1)[0];
+      const lastActive = activeSets.filter(s => 
+        s.exerciseId === exerciseId || 
+        (name && s.exerciseName.trim().toLowerCase() === name)
+      ).slice(-1)[0];
       if (lastActive) return lastActive;
 
       // 2. Si no, mirar en el historial
       for (const log of store.history()) {
-        const set = log.sets.find(s => s.exerciseId === exerciseId);
+        const set = log.sets.find(s => 
+          s.exerciseId === exerciseId || 
+          (name && s.exerciseName.trim().toLowerCase() === name)
+        );
         if (set) return set;
       }
       return null;

@@ -4,6 +4,7 @@ import { Router }             from '@angular/router';
 import { CommonModule }       from '@angular/common';
 import { ChatWindowComponent } from '../../shared/chat/chat-window.component';
 import { UnreadMessagesService } from '../../messages/unread-messages.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'fc-client-chat',
@@ -27,9 +28,16 @@ import { UnreadMessagesService } from '../../messages/unread-messages.service';
     </div>
   `,
   styles: [`
+    :host {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+      height: 100%;
+    }
     .chat-screen {
       display: flex;
       flex-direction: column;
+      flex: 1;
       height: 100%;
       background: var(--c-bg);
     }
@@ -48,6 +56,9 @@ import { UnreadMessagesService } from '../../messages/unread-messages.service';
       font-size: 13px;
     }
     fc-chat-window {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
       height: 100%;
       width: 100%;
     }
@@ -64,9 +75,20 @@ export class ClientChatComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const profile = this.auth.profile();
     if (profile?.coachId) {
-      this.coachId.set(profile.coachId);
-      // Marcar mensajes del coach como leídos
-      await this.unreadSvc.markAsRead(profile.id, profile.coachId);
+      this.loadChat(profile);
+    } else {
+      const sub = toObservable(this.auth.profile).subscribe(p => {
+        if (p?.coachId) {
+          this.loadChat(p);
+          sub.unsubscribe();
+        }
+      });
     }
+  }
+
+  private async loadChat(profile: any): Promise<void> {
+    this.coachId.set(profile.coachId);
+    // Marcar mensajes del coach como leídos
+    await this.unreadSvc.markAsRead(profile.id, profile.coachId);
   }
 }

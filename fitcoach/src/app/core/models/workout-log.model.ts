@@ -6,6 +6,7 @@ export interface SetLog {
   weightKg: number;
   repsDone: number;
   completedAt: Date;
+  notes?: string;
 }
 
 export interface WorkoutLog {
@@ -17,4 +18,5 @@ export interface WorkoutLog {
   loggedDate: Date;
   completed: boolean;
   sets: SetLog[];
+  exerciseNotes?: Record<string, string>;
 }

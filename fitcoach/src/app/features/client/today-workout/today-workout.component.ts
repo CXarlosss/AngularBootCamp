@@ -16,6 +16,7 @@ import { AssignedRoutine, Exercise, RoutineDay } from '../../../core/models/rout
 import { SetLog } from '../../../core/models/workout-log.model';
 import { FormsModule } from '@angular/forms';
 import { TelemetryService } from '../../../core/services/telemetry.service';
+import { SyncQueueService } from '../../../core/services/sync-queue.service';
 
 
 interface ExerciseState {
@@ -36,7 +37,36 @@ interface ExerciseState {
       <header class="workout-header">
         <button class="btn-back" (click)="confirmExit()">←</button>
         <div class="workout-meta">
-          <h1 class="workout-title">{{ todayDay()?.label ?? 'Entrenamiento' }}</h1>
+          <div class="title-row">
+            <h1 class="workout-title">{{ todayDay()?.label ?? 'Entrenamiento' }}</h1>
+            
+            <div class="sync-status-indicator">
+              @if (!syncQueue.isOnline()) {
+                <div class="status-badge offline" title="Sin conexión. Guardando localmente.">
+                  <span class="pulse-dot amber"></span>
+                  <span>Offline</span>
+                  @if (syncQueue.pendingCount() > 0) {
+                    <span class="badge-count">{{ syncQueue.pendingCount() }}</span>
+                  }
+                </div>
+              } @else if (syncQueue.isSyncing()) {
+                <div class="status-badge syncing" title="Sincronizando...">
+                  <span class="spinner-icon"></span>
+                  <span>Sincronizando</span>
+                </div>
+              } @else if (syncQueue.pendingCount() > 0) {
+                <div class="status-badge pending" title="Sincronización pendiente...">
+                  <span class="pulse-dot orange"></span>
+                  <span>Pendiente ({{ syncQueue.pendingCount() }})</span>
+                </div>
+              } @else {
+                <div class="status-badge online" title="Conectado a la red">
+                  <span class="pulse-dot green"></span>
+                  <span>Conectado</span>
+                </div>
+              }
+            </div>
+          </div>
           <p class="workout-progress">
             {{ completedExercises() }} / {{ exerciseStates().length }} ejercicios
           </p>
@@ -152,6 +182,51 @@ interface ExerciseState {
                 </div>
               }
 
+              @if (state.isActive || exerciseNotes()[state.exercise.id] || state.completedSets.length > 0) {
+                <div class="exercise-note-container">
+                  <!-- Selector de sensaciones 👍/👎 -->
+                  <div class="feeling-selector">
+                    <button 
+                      type="button" 
+                      class="btn-feeling like" 
+                      [class.active]="exerciseNotes()[state.exercise.id]?.startsWith('👍')"
+                      (click)="toggleFeeling(state.exercise.id, 'like')"
+                      title="Me ha gustado"
+                    >
+                      👍 Me ha gustado
+                    </button>
+                    <button 
+                      type="button" 
+                      class="btn-feeling dislike" 
+                      [class.active]="exerciseNotes()[state.exercise.id]?.startsWith('👎')"
+                      (click)="toggleFeeling(state.exercise.id, 'dislike')"
+                      title="No me ha gustado"
+                    >
+                      👎 No me ha gustado
+                    </button>
+                  </div>
+
+                  <div class="exercise-note" [class.has-note]="exerciseNotes()[state.exercise.id]">
+                    <textarea
+                      #noteArea
+                      [value]="exerciseNotes()[state.exercise.id] ?? ''"
+                      (input)="onNoteInput($event, state.exercise.id)"
+                      (blur)="onNoteBlur(state.exercise.id, $event)"
+                      (focus)="adjustTextareaHeight(noteArea)"
+                      placeholder="Sensaciones, notas de este ejercicio..."
+                      rows="1"
+                      class="note-textarea"
+                      [attr.aria-label]="'Nota del ejercicio ' + state.exercise.name"
+                    ></textarea>
+                    @if (exerciseNotes()[state.exercise.id]) {
+                      <button class="clear-note" (click)="clearNote(state.exercise.id)" aria-label="Borrar nota">
+                        ×
+                      </button>
+                    }
+                  </div>
+                </div>
+              }
+
               @if (state.isActive && !state.isDone && !workoutStore.activeLog()?.completed) {
                 <div class="set-logger-wrap">
                   <fc-set-logger
@@ -161,6 +236,34 @@ interface ExerciseState {
                     [previousSet]="lastSet(state)"
                     (setLogged)="onSetLogged($event, state.exercise)"
                   />
+                </div>
+
+                <div class="load-history-section">
+                  <h4 class="load-history-title">📈 Histórico de Carga</h4>
+                  <div class="load-history-cards">
+                    @for (item of getLoadHistory(state.exercise.id); track item.date.getTime()) {
+                      <div class="load-history-card">
+                        <div class="lh-date">
+                          <span class="lh-day">{{ item.date | date:'dd' }}</span>
+                          <span class="lh-month">{{ item.date | date:'MMM' }}</span>
+                        </div>
+                        <div class="lh-metric">
+                          <span class="lh-val">{{ item.maxWeight }}kg</span>
+                          <span class="lh-lbl">Carga máx</span>
+                        </div>
+                        <div class="lh-metric">
+                          <span class="lh-val">{{ item.setsCount }}</span>
+                          <span class="lh-lbl">Series</span>
+                        </div>
+                        <div class="lh-metric">
+                          <span class="lh-val">{{ item.volume }}</span>
+                          <span class="lh-lbl">Volumen</span>
+                        </div>
+                      </div>
+                    } @empty {
+                      <p class="lh-empty">Sin entrenamientos anteriores de este ejercicio</p>
+                    }
+                  </div>
                 </div>
               }
 
@@ -173,7 +276,7 @@ interface ExerciseState {
       </div>
 
       <!-- ── Banner completar ── -->
-      @if (allDone() && !workoutStore.activeLog()?.completed) {
+      @if ((allDone() || totalSets() > 0 || hasActiveNotes()) && !workoutStore.activeLog()?.completed) {
         <div class="complete-banner">
           <div class="complete-stats">
             <span><span class="cs-value">{{ totalSets() }}</span> series</span>
@@ -271,6 +374,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   timer        = inject(RestTimerService);
   haptic       = inject(HapticService);
   router       = inject(Router);
+  syncQueue    = inject(SyncQueueService);
   private telemetry    = inject(TelemetryService);
   private route = inject(ActivatedRoute);
 
@@ -288,6 +392,9 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   editWeight    = signal(0);
   editReps      = signal(10);
 
+  // Map de notas por exerciseId (en memoria durante el workout)
+  exerciseNotes = signal<Record<string, string | undefined>>({});
+
   protected Math = Math;
 
   constructor() {
@@ -302,6 +409,38 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
         }
       }, 100);
     });
+
+    // Sincronizar notas locales desde la sesión recuperada
+    effect(() => {
+      const log = this.workoutStore.activeLog();
+      if (log) {
+        const currentNotes = this.exerciseNotes();
+        const newNotes: Record<string, string | undefined> = { ...currentNotes };
+        let changed = false;
+
+        // Cargar desde exerciseNotes si existe en la sesión persistida
+        if (log.exerciseNotes) {
+          Object.entries(log.exerciseNotes).forEach(([exId, val]) => {
+            if (val !== newNotes[exId]) {
+              newNotes[exId] = val;
+              changed = true;
+            }
+          });
+        }
+
+        // Fallback a series para retrocompatibilidad
+        log.sets.forEach(s => {
+          if (s.notes !== undefined && s.notes !== null && s.notes !== newNotes[s.exerciseId]) {
+            newNotes[s.exerciseId] = s.notes;
+            changed = true;
+          }
+        });
+
+        if (changed) {
+          this.exerciseNotes.set(newNotes);
+        }
+      }
+    }, { allowSignalWrites: true });
   }
 
   todayDay = computed((): RoutineDay | null => {
@@ -352,6 +491,10 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   allDone = computed(() =>
     this.exerciseStates().length > 0 &&
     this.exerciseStates().every(s => s.isDone)
+  );
+
+  hasActiveNotes = computed(() =>
+    Object.values(this.exerciseNotes()).some(note => note && note.trim() !== '')
   );
 
   totalSets = computed(() =>
@@ -456,7 +599,36 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     const sessionLast = state.completedSets[state.completedSets.length - 1];
     if (sessionLast) return sessionLast;
     // Si es la primera serie de la sesión, buscamos en el historial
-    return this.workoutStore.getLastPerformance(state.exercise.id);
+    return this.workoutStore.getLastPerformance(state.exercise.id, state.exercise.name);
+  }
+
+  getLoadHistory(exerciseId: string) {
+    const state = this.exerciseStates().find(s => s.exercise.id === exerciseId);
+    const exerciseName = state?.exercise.name;
+    if (!exerciseName) return [];
+
+    const name = exerciseName.trim().toLowerCase();
+    const history = this.workoutStore.history();
+    const result: { date: Date; maxWeight: number; setsCount: number; volume: number }[] = [];
+
+    for (const log of history) {
+      const exerciseSets = log.sets.filter(s => 
+        s.exerciseId === exerciseId || 
+        s.exerciseName.trim().toLowerCase() === name
+      );
+      if (exerciseSets.length > 0) {
+        const maxWeight = Math.max(...exerciseSets.map(s => s.weightKg ?? 0));
+        const volume = exerciseSets.reduce((sum, s) => sum + (s.weightKg ?? 0) * (s.repsDone ?? 0), 0);
+        const dateObj = log.loggedDate instanceof Date ? log.loggedDate : new Date(log.loggedDate);
+        result.push({
+          date: dateObj,
+          maxWeight,
+          setsCount: exerciseSets.length,
+          volume
+        });
+      }
+    }
+    return result.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 6);
   }
 
   setActiveExercise(index: number): void {
@@ -555,6 +727,33 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     const label = this.todayDay()?.label || 'Entrenamiento';
     this.haptic.trigger('complete');
     
+    // Antes de finalizar, para cada ejercicio que tenga una nota pero 0 series completadas,
+    // registramos una serie ficticia (peso 0, reps 0) con el comentario en el store.
+    // De este modo se enviará a Supabase y el coach verá la nota del ejercicio que "no le gustó" o "quiso comentar".
+    const notes = this.exerciseNotes();
+    const log = this.workoutStore.activeLog();
+    if (log) {
+      const dummySetPromises = Object.entries(notes)
+        .filter(([_, note]) => note && note.trim() !== '')
+        .map(async ([exId, note]) => {
+          const completed = this.setsForExercise(exId);
+          if (completed.length === 0) {
+            const exState = this.exerciseStates().find(s => s.exercise.id === exId);
+            const name = exState?.exercise.name || 'Ejercicio';
+            await this.workoutStore.logSet({
+              exerciseId: exId,
+              exerciseName: name,
+              setNumber: 1,
+              weightKg: 0,
+              repsDone: 0,
+              completedAt: new Date(),
+              notes: note
+            });
+          }
+        });
+      await Promise.all(dummySetPromises);
+    }
+
     // Telemetry antes del redirect
     this.telemetry.track('workout_completed', {
       label: label,
@@ -566,6 +765,63 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     this.router.navigate(['/client/progress']);
   }
 
+  toggleFeeling(exerciseId: string, type: 'like' | 'dislike'): void {
+    this.haptic.trigger('light');
+    const currentNote = this.exerciseNotes()[exerciseId] ?? '';
+    
+    // Quitar cualquier prefijo de sentimiento anterior para no duplicar ni mezclar
+    let cleanNote = currentNote
+      .replace(/^👍 Me ha gustado:\s*/i, '')
+      .replace(/^👎 No me ha gustado:\s*/i, '')
+      .replace(/^👍 Me gusta:\s*/i, '')
+      .replace(/^👎 No me gusta:\s*/i, '')
+      .replace(/^👍\s*/, '')
+      .replace(/^👎\s*/, '')
+      .trim();
+
+    let newNote = '';
+    const isCurrentlyType = type === 'like' ? currentNote.startsWith('👍') : currentNote.startsWith('👎');
+
+    if (!isCurrentlyType) {
+      if (type === 'like') {
+        newNote = cleanNote ? `👍 Me ha gustado: ${cleanNote}` : `👍 Me ha gustado`;
+      } else {
+        newNote = cleanNote ? `👎 No me ha gustado: ${cleanNote}` : `👎 No me ha gustado`;
+      }
+    } else {
+      newNote = cleanNote; // Se deselecciona el sentimiento
+    }
+
+    this.exerciseNotes.update(notes => ({ ...notes, [exerciseId]: newNote }));
+    this.workoutStore.updateExerciseNote(exerciseId, newNote);
+  }
+
+  onNoteInput(event: Event, exerciseId: string): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    const value = textarea.value;
+
+    this.exerciseNotes.update(notes => ({ ...notes, [exerciseId]: value }));
+    this.adjustTextareaHeight(textarea);
+  }
+
+  onNoteBlur(exerciseId: string, event: Event): void {
+    const value = (event.target as HTMLTextAreaElement).value.trim();
+    this.workoutStore.updateExerciseNote(exerciseId, value);
+  }
+
+  adjustTextareaHeight(el: HTMLTextAreaElement): void {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+
+  clearNote(exerciseId: string): void {
+    this.exerciseNotes.update(notes => {
+      const updated = { ...notes };
+      delete updated[exerciseId];
+      return updated;
+    });
+    this.workoutStore.updateExerciseNote(exerciseId, '');
+  }
 
   confirmExit(): void {
     if (this.totalSets() > 0 && !this.allDone()) {

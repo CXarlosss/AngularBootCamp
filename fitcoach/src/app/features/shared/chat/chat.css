@@ -252,7 +252,7 @@
     border-right: none;
   }
   
-  .chat-main {
+  .inbox-layout .chat-main {
     display: none;
   }
 

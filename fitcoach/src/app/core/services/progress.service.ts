@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { supabase } from '../supabase.client';
 import { AuthService } from '../auth/auth.service';
+import { calcWeightImproved } from './progress.utils';
 
 export interface ProgressStats {
   adherencePercent: number;
@@ -157,6 +158,7 @@ export class ProgressService {
       .from('set_logs')
       .select(`
         exercise_id, 
+        exercise_name,
         weight_kg, 
         completed_at
       `)
@@ -168,9 +170,9 @@ export class ProgressService {
 
     const byExercise = new Map<string, number[]>();
     for (const s of sets) {
-      const key = s.exercise_id;
+      const key = s.exercise_name?.trim().toLowerCase() || s.exercise_id;
       if (!byExercise.has(key)) byExercise.set(key, []);
-      byExercise.get(key)!.push(s.weight_kg);
+      byExercise.get(key)!.push(Number(s.weight_kg ?? 0));
     }
 
     let bestDelta = 0;
@@ -181,6 +183,18 @@ export class ProgressService {
     }
 
     return bestDelta > 0 ? +bestDelta.toFixed(1) : null;
+  }
+
+  async getWeightImprovedKg(clientId: string): Promise<number> {
+    const { data, error } = await this.sb
+      .rpc('get_weight_improved_kg', { p_client_id: clientId });
+
+    if (error) {
+      console.error('[ProgressService] RPC error:', error.message);
+      return 0;
+    }
+
+    return (data as number) ?? 0;
   }
 
   // ─── Legacy methods ────────────────────────────────────────────────────────
@@ -202,8 +216,8 @@ export class ProgressService {
 
       map.get(name)!.push({
         date: new Date(dateStr),
-        maxWeight: row.weight_kg,
-        totalVol: row.weight_kg * row.reps_done
+        maxWeight: Number(row.weight_kg ?? 0),
+        totalVol: Number(row.weight_kg ?? 0) * Number(row.reps_done ?? 0)
       });
     }
 

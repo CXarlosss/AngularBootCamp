@@ -165,8 +165,8 @@ export class CoachClientService {
             byExercise.set(name, { name, sets: [] });
           }
           byExercise.get(name)!.sets.push({
-            weight: row.weight_kg,
-            reps: row.reps_done,
+            weight: Number(row.weight_kg ?? 0),
+            reps: Number(row.reps_done ?? 0),
             created_at: row.created_at,
           });
         }

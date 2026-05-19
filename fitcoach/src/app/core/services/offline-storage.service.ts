@@ -48,6 +48,11 @@ export class OfflineStorageService {
     await db.delete(storeName, id);
   }
 
+  async updateItem(storeName: string, item: any): Promise<any> {
+    const db = await this.getDB();
+    return db.put(storeName, item);
+  }
+
   async cleanupCache(): Promise<void> {
     const items = await this.getAll('workout_cache');
     const now = Date.now();
