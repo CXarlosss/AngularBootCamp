@@ -47,7 +47,7 @@ export class ProgressChartComponent implements AfterViewInit, OnDestroy {
   // ── Inputs (sin cambios) ────────────────────────────────────────────────
 
   exercise = input.required<ExerciseProgress | null>();
-  metric   = input<'maxWeight' | 'totalVol'>('maxWeight');
+  metric   = input<'maxWeight' | 'estimated1RM' | 'totalVol'>('estimated1RM');
 
   @ViewChild('chartCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
@@ -261,9 +261,11 @@ export class ProgressChartComponent implements AfterViewInit, OnDestroy {
       const labels = pts.map(p =>
         p.date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
       );
-      const values = pts.map(p =>
-        this.metric() === 'maxWeight' ? p.maxWeight : Math.round(p.totalVol)
-      );
+      const values = pts.map(p => {
+        if (this.metric() === 'maxWeight') return p.maxWeight;
+        if (this.metric() === 'estimated1RM') return p.estimated1RM;
+        return Math.round(p.totalVol);
+      });
       const ctx = this.canvasRef.nativeElement.getContext('2d')!;
       const defaultStops = isDark
         ? [{ offset: 0, color: 'rgba(99,179,237,0.35)' }, { offset: 1, color: 'rgba(99,179,237,0)' }]

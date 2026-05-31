@@ -175,3 +175,50 @@
 .logout-btn:active {
   background: rgba(220, 38, 38, 0.2);
 }
+
+/* ── Theme Toggle ── */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.theme-icon {
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+.theme-info {
+  flex: 1;
+}
+
+.theme-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--c-text-1);
+}
+
+.theme-select {
+  background: var(--c-bg);
+  color: var(--c-text-2);
+  border: 1px solid var(--c-border);
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  min-width: 100px;
+  text-align: center;
+}
+
+.theme-select:focus {
+  border-color: var(--c-green);
+}

@@ -260,10 +260,14 @@ export class ProgressService {
       const dateStr = (row.workout_logs as any)?.logged_date || row.completed_at;
       if (!dateStr) continue;
 
+      const weight = Number(row.weight_kg ?? 0);
+      const reps = Number(row.reps_done ?? 0);
+
       map.get(name)!.push({
         date: new Date(dateStr),
-        maxWeight: Number(row.weight_kg ?? 0),
-        totalVol: Number(row.weight_kg ?? 0) * Number(row.reps_done ?? 0)
+        maxWeight: weight,
+        estimated1RM: Math.round(weight * (1 + reps / 30)),
+        totalVol: weight * reps
       });
     }
 

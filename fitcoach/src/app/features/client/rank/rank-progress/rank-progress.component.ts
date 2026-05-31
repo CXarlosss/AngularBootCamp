@@ -87,14 +87,14 @@ import { AuthService } from '../../../../core/auth/auth.service';
         <div class="rp-kpi-item">
           <span class="rp-kpi-icon">📈</span>
           <div class="rp-kpi-details">
-            <span class="rp-kpi-label">Fuerza Mejorada</span>
+            <span class="rp-kpi-label">1RM Estimado</span>
             @if (store.loading()) {
               <span class="rp-kpi-val skeleton-text">— kg</span>
-            } @else if (store.weightImprovedDisplay() === null) {
+            } @else if (store.selectedExercise() === null) {
               <span class="rp-kpi-val loading-pulse">Cargando...</span>
             } @else {
               <span class="rp-kpi-val">
-                +{{ store.weightImprovedDisplay() }} kg mejorados
+                {{ store.max1RM() }} kg ({{ store.selectedExercise()!.name }})
               </span>
             }
           </div>

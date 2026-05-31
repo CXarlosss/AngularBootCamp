@@ -5,6 +5,7 @@ import { WorkoutEventsService } from './core/services/workout-events.service';
 import { ChatService } from './core/services/chat.service';
 import { TelemetryService } from './core/services/telemetry.service';
 import { SyncQueueService } from './core/services/sync-queue.service';
+import { ThemeService } from './core/services/theme.service';
 
 @Component({
   selector: 'app-root',
@@ -18,12 +19,15 @@ export class App implements OnInit, OnDestroy {
   private chatService  = inject(ChatService);
   private telemetry    = inject(TelemetryService);
   private syncQueue    = inject(SyncQueueService);
+  private themeService = inject(ThemeService);
 
   private sessionId = crypto.randomUUID();
   private sessionStartTime = Date.now();
   private visibilityHandler = () => this.handleVisibilityChange();
 
   async ngOnInit() {
+    this.themeService.loadPreference();
+
     // 1. RECUPERACIÓN DE SESIÓN ANTERIOR
     if (navigator.onLine) {
       await this.syncQueue.flushPending();

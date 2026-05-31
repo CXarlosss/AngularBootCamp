@@ -21,16 +21,17 @@
 // ─── Tipos de mensajes ────────────────────────────────────────────────────────
 
 export interface DataPoint {
-  date:       string; // ISO string — Date no es transferible entre workers
-  maxWeight:  number;
-  totalVol:   number;
+  date:         string; // ISO string — Date no es transferible entre workers
+  maxWeight:    number;
+  estimated1RM: number;
+  totalVol:     number;
 }
 
 export interface ChartDataRequest {
   type:     'PROCESS_CHART_DATA';
   payload: {
     dataPoints: DataPoint[];
-    metric:     'maxWeight' | 'totalVol';
+    metric:     'maxWeight' | 'estimated1RM' | 'totalVol';
     locale:     string;   // ej. 'es-ES'
     isDark:     boolean;
   };
@@ -73,9 +74,11 @@ function processChartData(req: ChartDataRequest): ChartDataResponse['payload'] {
   );
 
   // 2. Extraer valores según métrica
-  const values = dataPoints.map(p =>
-    metric === 'maxWeight' ? p.maxWeight : Math.round(p.totalVol)
-  );
+  const values = dataPoints.map(p => {
+    if (metric === 'maxWeight') return p.maxWeight;
+    if (metric === 'estimated1RM') return p.estimated1RM;
+    return Math.round(p.totalVol);
+  });
 
   // 3. Calcular min/max para el gradiente y los ejes
   const min = Math.min(...values);

@@ -9,6 +9,7 @@ import { InitialsPipe }         from '../../../shared/pipes/initials.pipe';
 import { RankService }          from '../../../core/services/rank.service';
 import { AuthService }          from '../../../core/auth/auth.service';
 import { ProfileBannerComponent } from './profile-banner/profile-banner.component';
+import { ThemeService, ThemePreference } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-profile-edit',
@@ -56,6 +57,21 @@ import { ProfileBannerComponent } from './profile-banner/profile-banner.componen
           </div>
         </div>
 
+        <p class="section-lbl" style="margin-left: 24px;">Ajustes de App</p>
+        <div class="dash-card" style="margin: 0 20px 24px;">
+          <div class="theme-toggle">
+            <span class="theme-icon">🌓</span>
+            <div class="theme-info">
+              <span class="theme-title">Apariencia</span>
+            </div>
+            <select [value]="themeService.preference()" (change)="onThemeChange($event)" class="theme-select">
+              <option value="system">Sistema</option>
+              <option value="dark">Oscuro</option>
+              <option value="light">Claro</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Opciones de Personalización -->
         <p class="section-lbl" style="margin-left: 24px;">Personalización</p>
         
@@ -93,6 +109,7 @@ export class ProfileEditComponent implements OnInit {
   auth    = inject(AuthService);
   profileSvc = inject(ProfileService);
   rankSvc = inject(RankService);
+  themeService = inject(ThemeService);
   profile = this.profileSvc.profile; 
   isCoach = signal(false);
 
@@ -103,5 +120,11 @@ export class ProfileEditComponent implements OnInit {
     // Detectar si es coach para el botón de volver
     const role = (this.auth as any).userRole?.() ?? 'client';
     this.isCoach.set(role === 'coach');
+  }
+
+  onThemeChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const pref = select.value as ThemePreference;
+    this.themeService.setPreference(pref);
   }
 }

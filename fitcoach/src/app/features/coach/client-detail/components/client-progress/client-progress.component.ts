@@ -18,7 +18,8 @@ import { ProgressChartComponent } from '../../../../../shared/components/progres
             }
           </select>
           <div class="metric-tabs">
-            <button [class.active]="metric() === 'maxWeight'" (click)="metric.set('maxWeight')">Peso</button>
+            <button [class.active]="metric() === 'estimated1RM'" (click)="metric.set('estimated1RM')">1RM Est.</button>
+            <button [class.active]="metric() === 'maxWeight'" (click)="metric.set('maxWeight')">Peso Máx.</button>
             <button [class.active]="metric() === 'totalVol'" (click)="metric.set('totalVol')">Volumen</button>
           </div>
         </div>
@@ -43,7 +44,8 @@ import { ProgressChartComponent } from '../../../../../shared/components/progres
           @for (dp of ex.dataPoints; track dp.date.getTime()) {
             <div class="record-row">
               <span class="date">{{ dp.date | date:'dd MMM yyyy' }}</span>
-              <span class="val">{{ dp.maxWeight }}kg</span>
+              <span class="val" title="Peso Máximo">Máx: {{ dp.maxWeight }}kg</span>
+              <span class="val" title="1RM Estimado">1RM: {{ dp.estimated1RM }}kg</span>
             </div>
           }
         }
@@ -65,8 +67,8 @@ import { ProgressChartComponent } from '../../../../../shared/components/progres
     .chart-height { height: 300px; width: 100%; position: relative; }
     
     .records-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
-    .record-row { display: flex; justify-content: space-between; padding: 10px; background: rgba(255,255,255,0.01); border-radius: 8px; font-size: 14px; }
-    .date { color: #888; }
+    .record-row { display: flex; justify-content: space-between; gap: 12px; padding: 10px; background: rgba(255,255,255,0.01); border-radius: 8px; font-size: 14px; }
+    .date { color: #888; flex: 1; }
     .val { font-weight: 700; color: #1D9E75; }
 
     .empty-msg { color: #666; font-style: italic; margin-top: 40px; }
@@ -76,7 +78,7 @@ import { ProgressChartComponent } from '../../../../../shared/components/progres
 export class ClientProgressComponent implements OnInit {
   @Input() clientId!: string;
   progressStore = inject(ProgressStore);
-  metric = signal<'maxWeight' | 'totalVol'>('maxWeight');
+  metric = signal<'maxWeight' | 'estimated1RM' | 'totalVol'>('estimated1RM');
 
   ngOnInit() {
     // Si no está cargado ya (o es otro cliente), lo cargamos

@@ -3,9 +3,10 @@ import { inject, computed } from '@angular/core';
 import { ProgressService } from '../core/services/progress.service';
 
 export interface ExerciseDataPoint {
-  date:      Date;
-  maxWeight: number;   // el peso máximo levantado ese día
-  totalVol:  number;   // series × reps × peso
+  date:         Date;
+  maxWeight:    number;   // el peso máximo levantado ese día
+  estimated1RM: number;   // 1RM estimado (fórmula Epley)
+  totalVol:     number;   // series × reps × peso
 }
 
 export interface ExerciseProgress {
@@ -47,7 +48,7 @@ export const ProgressStore = signalStore(
     ),
     sets: computed(() => {
       const ex = store.exercises().find(e => e.name === store.selected()) ?? store.exercises()[0];
-      return ex?.dataPoints.map(d => ({ ...d, weightKg: d.maxWeight })) ?? [];
+      return ex?.dataPoints.map(d => ({ ...d, weightKg: d.maxWeight, estimated1RM: d.estimated1RM })) ?? [];
     }),
     sessions: computed(() => {
       // Proxy de sesiones: el ejercicio con más registros
@@ -62,7 +63,7 @@ export const ProgressStore = signalStore(
       if (!ex) return [];
 
       // Agrupar por fecha para el histórico de carga
-      const groups = new Map<string, { date: Date; maxWeight: number; totalVol: number; sets: number }>();
+      const groups = new Map<string, { date: Date; maxWeight: number; estimated1RM: number; totalVol: number; sets: number }>();
       
       ex.dataPoints.forEach((dp: ExerciseDataPoint) => {
         const d = new Date(dp.date);
@@ -71,12 +72,14 @@ export const ProgressStore = signalStore(
         
         if (existing) {
           existing.maxWeight = Math.max(existing.maxWeight, dp.maxWeight);
+          existing.estimated1RM = Math.max(existing.estimated1RM, dp.estimated1RM);
           existing.totalVol += dp.totalVol;
           existing.sets += 1;
         } else {
           groups.set(key, { 
             date: dp.date, 
             maxWeight: dp.maxWeight, 
+            estimated1RM: dp.estimated1RM,
             totalVol: dp.totalVol,
             sets: 1
           });
@@ -106,6 +109,12 @@ export const ProgressStore = signalStore(
       const sets = store.sets();
       if (!sets.length) return 0;
       return Math.max(...sets.map((s: any) => s.weightKg ?? 0));
+    }),
+
+    max1RM: computed(() => {
+      const sets = store.sets();
+      if (!sets.length) return 0;
+      return Math.max(...sets.map((s: any) => s.estimated1RM ?? 0));
     }),
 
     improvement: computed(() => {
