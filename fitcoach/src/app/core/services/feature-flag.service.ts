@@ -13,7 +13,19 @@ export class FeatureFlagService {
   private supabase = supabase;
   
   constructor() {
+    this.loadCachedFlags();
     this.loadFlags();
+  }
+
+  private loadCachedFlags(): void {
+    const cached = localStorage.getItem('fitcoach_feature_flags');
+    if (cached) {
+      try {
+        this.flags.set(JSON.parse(cached));
+      } catch (e) {
+        console.error('Error parsing cached flags', e);
+      }
+    }
   }
 
   async loadFlags(): Promise<void> {
@@ -32,6 +44,7 @@ export class FeatureFlagService {
     }
     
     this.flags.set(config);
+    localStorage.setItem('fitcoach_feature_flags', JSON.stringify(config));
   }
 
   /**

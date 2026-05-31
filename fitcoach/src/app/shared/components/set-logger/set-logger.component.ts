@@ -46,6 +46,17 @@ import { HapticService } from '../../../core/services/haptic.service';
         </div>
       </div>
 
+      <div class="input-group notes-group">
+        <label>Notas (opcional)</label>
+        <textarea
+          class="notes-input"
+          rows="2"
+          placeholder="¿Cómo te sentiste, algún dolor?"
+          [ngModel]="notes()"
+          (ngModelChange)="notes.set($event)"
+        ></textarea>
+      </div>
+
       <button
         class="log-btn"
         type="button"
@@ -70,6 +81,7 @@ export class SetLoggerComponent {
 
   weight = signal(0);
   reps   = signal(10);
+  notes  = signal('');
 
   constructor() {
     // Al recibir un set anterior, actualizamos los valores por defecto
@@ -100,6 +112,8 @@ export class SetLoggerComponent {
       weightKg:     this.weight(),
       repsDone:     this.reps(),
       completedAt:  new Date(),
+      notes:        this.notes() ? this.notes().trim() : undefined,
     });
+    this.notes.set('');
   }
 }

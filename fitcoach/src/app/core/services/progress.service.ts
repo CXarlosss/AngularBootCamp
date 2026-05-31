@@ -186,15 +186,61 @@ export class ProgressService {
   }
 
   async getWeightImprovedKg(clientId: string): Promise<number> {
-    const { data, error } = await this.sb
-      .rpc('get_weight_improved_kg', { p_client_id: clientId });
+    const { data: logs } = await this.sb
+      .from('workout_logs')
+      .select('id')
+      .eq('client_id', clientId);
 
-    if (error) {
-      console.error('[ProgressService] RPC error:', error.message);
-      return 0;
+    if (!logs?.length) return 0;
+
+    const { data: sets, error } = await this.sb
+      .from('set_logs')
+      .select(`
+        exercise_id, 
+        exercise_name,
+        weight_kg, 
+        completed_at
+      `)
+      .in('workout_log_id', logs.map(l => l.id))
+      .not('weight_kg', 'is', null)
+      .order('completed_at', { ascending: true });
+
+    if (error || !sets?.length) return 0;
+
+    const setsByExercise = new Map<string, any[]>();
+    for (const s of sets) {
+      const key = s.exercise_name?.trim().toLowerCase() || s.exercise_id;
+      if (!setsByExercise.has(key)) setsByExercise.set(key, []);
+      setsByExercise.get(key)!.push(s);
     }
 
-    return (data as number) ?? 0;
+    let totalImproved = 0;
+
+    for (const exSets of setsByExercise.values()) {
+      if (exSets.length < 2) continue;
+
+      const dateGroups = new Map<string, number[]>();
+      for (const s of exSets) {
+        const d = s.completed_at ? s.completed_at.split('T')[0] : '';
+        if (!dateGroups.has(d)) dateGroups.set(d, []);
+        dateGroups.get(d)!.push(Number(s.weight_kg ?? 0));
+      }
+
+      const dates = Array.from(dateGroups.keys()).filter(Boolean).sort();
+      if (dates.length < 2) continue;
+
+      const firstDateSets = dateGroups.get(dates[0])!;
+      const lastDateSets = dateGroups.get(dates[dates.length - 1])!;
+
+      const maxFirst = Math.max(...firstDateSets);
+      const maxLast = Math.max(...lastDateSets);
+
+      if (maxLast > maxFirst) {
+        totalImproved += (maxLast - maxFirst);
+      }
+    }
+
+    return +totalImproved.toFixed(1);
   }
 
   // ─── Legacy methods ────────────────────────────────────────────────────────

@@ -133,11 +133,17 @@ export class NotificationService {
     body: string,
     data: Record<string, any> = {}
   ): Promise<void> {
-    const { error } = await this.sb
-      .from('notifications')
-      .insert({ user_id: targetUserId, type, title, body, data });
+    const { error } = await this.sb.functions.invoke('notify-user', {
+      body: {
+        targetUserId,
+        type,
+        title,
+        body,
+        data
+      }
+    });
 
-    if (error) console.error('[NotificationService] create:', error.message);
+    if (error) console.error('[NotificationService] create (Edge Function):', error.message);
   }
 
   // ─── FCM — placeholder para después ─────────────────────────────────────────

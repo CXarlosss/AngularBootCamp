@@ -18,12 +18,14 @@ import { RankService }          from '../../../core/services/rank.service';
 import { RouterModule }         from '@angular/router';
 import { BANNER_COLORS, BANNER_PATTERNS } from '../profile/profile-banner/banner.types';
 import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
+import { PushPermissionBannerComponent } from '../../../shared/components/push-permission-banner/push-permission-banner.component';
+import { FcmService } from '../../../core/services/fcm.service';
 
 @Component({
   selector: 'fc-client-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RankCardComponent, AvatarFrameComponent, InitialsPipe, RouterModule, ProfileBannerComponent],
+  imports: [CommonModule, RankCardComponent, AvatarFrameComponent, InitialsPipe, RouterModule, ProfileBannerComponent, PushPermissionBannerComponent],
   template: `
     <div class="client-dash">
 
@@ -97,6 +99,8 @@ import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner
           <p class="empty-sub">Tu entrenador te enviará una rutina pronto</p>
         </div>
       }
+      
+      <app-push-permission-banner />
     </div>
   `,
   styleUrl: './client-dashboard.component.css',
@@ -108,6 +112,7 @@ export class ClientDashboardComponent implements OnInit {
   profileSvc = inject(ProfileService);
   rankSvc = inject(RankService);
   private clientRoutineSvc = inject(ClientRoutineService);
+  private fcm = inject(FcmService);
 
   profile = computed(() => this.profileSvc.profile());
   userName = computed(() => this.profile()?.full_name || 'Atleta');
@@ -180,6 +185,8 @@ export class ClientDashboardComponent implements OnInit {
   }[goal ?? ''] ?? goal ?? '');
 
   async ngOnInit(): Promise<void> {
+    this.fcm.initialize();
+    
     const profile = this.auth.profile();
     if (profile?.id) {
       this.loadData(profile.id);

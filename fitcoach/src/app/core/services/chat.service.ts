@@ -1,60 +1,59 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable, inject, OnDestroy } from '@angular/core';
 import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '../supabase.client';
 import { ChatMessage, Conversation, MessageType } from '../../state/chat.store';
 import { environment } from '../../../environments/environment';
 import { NotificationService } from './notification.service';
+import { RealtimeResilienceService, ChannelHandle } from './realtime-resilience.service';
 
 @Injectable({ providedIn: 'root' })
-export class ChatService {
+export class ChatService implements OnDestroy {
   private sb      = supabase;
   private notifSvc = inject(NotificationService);
-  private channel: RealtimeChannel | null = null;
+  private resilience = inject(RealtimeResilienceService);
+  private channelHandle: ChannelHandle | null = null;
 
   // ── Realtime ──────────────────────────────────────────────────────
 
   subscribeToConversation(
     myId:      string,
     partnerId: string,
-    onMessage: (msg: ChatMessage) => void
+    onMessage: (msg: ChatMessage) => void,
+    onStatus?: (status: 'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED') => void
   ): void {
     this.unsubscribe();
 
-    this.channel = this.sb
-      .channel(`conv:${[myId, partnerId].sort().join('_')}`)
-      .on(
-        'postgres_changes',
+    const channelName = `conv:${[myId, partnerId].sort().join('_')}`;
+
+    this.channelHandle = this.resilience.subscribe({
+      channelName,
+      filters: [
         {
           event:  'INSERT',
           schema: 'public',
           table:  'messages',
-          // Filtramos en servidor para no recibir mensajes de otras convs.
           filter: `receiver_id=eq.${myId}`,
         },
-        (payload) => {
-          console.log('[Realtime] mensaje recibido:', payload);
-          onMessage(this.mapRow(payload.new));
-        }
-      )
-      .on(
-        'postgres_changes',
         {
           event:  'UPDATE',
           schema: 'public',
           table:  'messages',
           filter: `sender_id=eq.${myId}`,
         },
-        // Actualizar status (delivered/read) de mensajes propios
-        (_payload) => { /* se puede emitir a un segundo callback */ }
-      )
-      .subscribe((status) => {
-        console.log('[Realtime] estado del canal:', status);
-      });
+      ],
+      onMessage: (payload) => {
+        console.log('[ChatService] Realtime payload:', payload);
+        if (payload.eventType === 'INSERT') {
+          onMessage(this.mapRow(payload.new));
+        }
+      },
+      onStatusChange: onStatus,
+    });
   }
 
   unsubscribe(): void {
-    this.channel?.unsubscribe();
-    this.channel = null;
+    this.channelHandle?.destroy();
+    this.channelHandle = null;
   }
 
   // ── CRUD ──────────────────────────────────────────────────────────
@@ -165,6 +164,10 @@ export class ChatService {
     return conversations.sort(
       (a, b) => b.lastTime.getTime() - a.lastTime.getTime()
     );
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribe();
   }
 
   private mapRow = (row: any): ChatMessage => {

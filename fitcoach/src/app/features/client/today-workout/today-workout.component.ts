@@ -2,7 +2,7 @@ import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit, O
 import { CommonModule } from '@angular/common';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
-import { RealtimeChannel } from '@supabase/supabase-js';
+import { RealtimeResilienceService, ChannelHandle } from '../../../core/services/realtime-resilience.service';
 import { supabase } from '../../../core/supabase.client';
 import { WorkoutBlockedError } from '../../../core/models/errors.model';
 import { WorkoutStore } from '../../../state/workout.store';
@@ -41,7 +41,17 @@ interface ExerciseState {
             <h1 class="workout-title">{{ todayDay()?.label ?? 'Entrenamiento' }}</h1>
             
             <div class="sync-status-indicator">
-              @if (!syncQueue.isOnline()) {
+              @if (realtimeStatus() === 'RECONNECTING') {
+                <div class="status-badge pending" title="Reconectando tiempo real...">
+                  <span class="pulse-dot orange"></span>
+                  <span>Reconectando...</span>
+                </div>
+              } @else if (realtimeStatus() === 'DISCONNECTED') {
+                <div class="status-badge offline" title="Desconectado del tiempo real">
+                  <span class="pulse-dot amber"></span>
+                  <span>Sin tiempo real</span>
+                </div>
+              } @else if (!syncQueue.isOnline()) {
                 <div class="status-badge offline" title="Sin conexión. Guardando localmente.">
                   <span class="pulse-dot amber"></span>
                   <span>Offline</span>
@@ -386,8 +396,11 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   isDayDone     = signal(false);
   isDayBlockedRemotely = signal(false);
   editingSet    = signal<SetLog | null>(null);
-  private completedDaysSub?: RealtimeChannel;
   
+  private readonly realtimeResilience = inject(RealtimeResilienceService);
+  readonly realtimeStatus = signal<'CONNECTED' | 'RECONNECTING' | 'DISCONNECTED'>('CONNECTED');
+  private completedDaysHandle?: ChannelHandle;
+
   // Señales auxiliares para el formulario de edición
   editWeight    = signal(0);
   editReps      = signal(10);
@@ -545,7 +558,8 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
           if (isDone) {
             this.isDayDone.set(true);
             this.isLoading.set(false);
-            console.log('[TodayWorkout] El día ya consta como completado. Bloqueando sesión.');
+            console.log('[TodayWorkout] El día ya consta como completado. Redirigiendo al dashboard.');
+            this.router.navigate(['/client/dashboard'], { replaceUrl: true });
             return; // Detener inicialización si ya está hecho
           } else {
             console.log('[TodayWorkout] Iniciando nueva sesión de entrenamiento...');
@@ -563,30 +577,33 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   }
 
   private subscribeToDayCompletion(clientId: string, dayId: string) {
-    this.completedDaysSub = this.sb
-      .channel('day-completion')
-      .on(
-        'postgres_changes',
+    this.completedDaysHandle = this.realtimeResilience.subscribe({
+      channelName: `day-completion:${clientId}`,
+      filters: [
         {
-          event: 'INSERT',
+          event:  'INSERT',
           schema: 'public',
-          table: 'completed_days',
-          filter: `client_id=eq.${clientId}`
+          table:  'completed_days',
+          filter: `client_id=eq.${clientId}`,
         },
-        (payload) => {
-          if (payload.new['day_id'] === dayId) {
-            console.log('[TodayWorkout] Realtime: día completado remotamente detectado.');
-            this.isDayBlockedRemotely.set(true);
-            this.haptic.trigger('heavy');
-          }
+      ],
+      onMessage: (payload) => {
+        if (payload.new && (payload.new as Record<string, unknown>)['day_id'] === dayId) {
+          console.log('[TodayWorkout] Realtime: día completado remotamente detectado.');
+          this.isDayBlockedRemotely.set(true);
+          this.haptic.trigger('heavy');
         }
-      )
-      .subscribe();
+      },
+      onStatusChange: (status) => {
+        this.realtimeStatus.set(status);
+        console.log(`[TodayWorkout] Realtime status: ${status}`);
+      },
+    });
   }
 
   ngOnDestroy(): void {
     this.timer.stop();
-    this.completedDaysSub?.unsubscribe();
+    this.completedDaysHandle?.destroy();
   }
 
   isExerciseDone(state: ExerciseState): boolean {

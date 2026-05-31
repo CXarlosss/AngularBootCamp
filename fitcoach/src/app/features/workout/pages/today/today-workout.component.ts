@@ -172,22 +172,25 @@ export class TodayWorkoutComponent {
   });
   
   // Sprint 3 estado
-  protected gamificationEnabled = signal(false);
+  protected userId = computed(() => this.auth.user()?.id);
+  protected gamificationEnabled = computed(() => {
+    const uid = this.userId();
+    if (!uid) return false;
+    return this.featureFlags.isEnabled('gamification_v2', uid);
+  });
   protected activeMissions = this.missionEngine.activeMissions;
   protected streak = signal<any>(null);
   protected xpBreakdown = signal<any>(null);
   
   // Feature flag check
   constructor() {
-    const userId = this.auth.user()?.id;
-    if (userId) {
-      this.gamificationEnabled.set(this.featureFlags.isEnabled('gamification_v2', userId));
-      
-      // Cargar datos Sprint 3 si está activo
-      if (this.gamificationEnabled()) {
-        this.loadGamificationData(userId);
+    effect(() => {
+      const enabled = this.gamificationEnabled();
+      const uid = this.userId();
+      if (enabled && uid) {
+        this.loadGamificationData(uid);
       }
-    }
+    });
   }
 
   async loadGamificationData(clientId: string): Promise<void> {

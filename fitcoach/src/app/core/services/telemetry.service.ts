@@ -1,11 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { supabase } from '../supabase.client';
 import { AuthService } from '../auth/auth.service';
+import { SyncQueueService } from './sync-queue.service';
 
 @Injectable({ providedIn: 'root' })
 export class TelemetryService {
   private sb = supabase;
   private auth = inject(AuthService);
+  private syncQueue = inject(SyncQueueService);
   
   // Identificador único de la sesión actual
   private readonly SESSION_ID = crypto.randomUUID();
@@ -63,15 +65,9 @@ export class TelemetryService {
     const batch = [...this.buffer];
     this.buffer = [];
     
-    try {
-      const { error } = await this.sb.from('analytics_events').insert(batch);
-      if (error) throw error;
-      console.log('[Telemetry] Flush successful');
-    } catch (err) {
-      console.error('[Telemetry] Flush failed:', err);
-      // Re-insertar en el buffer si falló (retry logic)
-      this.buffer = [...batch, ...this.buffer];
-    }
+    // Usamos la cola de sincronización offline para preservar el orden FIFO
+    // y evitar conditions de carrera con otros eventos offline críticos.
+    await this.syncQueue.enqueue('telemetry_batch' as any, batch);
   }
 }
 

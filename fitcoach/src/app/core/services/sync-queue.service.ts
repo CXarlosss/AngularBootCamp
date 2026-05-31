@@ -5,13 +5,11 @@ import { supabase } from '../supabase.client';
 
 export interface SyncQueueItem {
   id?: number;
-  type: 'workout_session';
-  payload: {
-    workout: any;
-    sets: any[];
-  };
+  type: 'workout_session' | 'telemetry_batch' | 'data';
+  payload: any;
   timestamp: number;
   attempts: number;
+  nextAttemptAt?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -39,6 +37,16 @@ export class SyncQueueService {
   }
 
   private registerDefaultHandlers() {
+    this.handlers.set('telemetry_batch', async (payload: any[]) => {
+      console.log('[SyncQueue] Processing telemetry_batch handler:', payload.length, 'events');
+      const { error } = await this.supabase.from('analytics_events').insert(payload);
+      if (error) {
+        console.error('[SyncQueue] Error inserting telemetry_batch:', error);
+        return false;
+      }
+      return true;
+    });
+
     this.handlers.set('workout_session', async (payload) => {
       console.log('[SyncQueue] Processing workout_session handler:', payload);
       
@@ -259,6 +267,23 @@ export class SyncQueueService {
     if (online) {
       this.processQueue();
     }
+  }
+
+  async flushPending(): Promise<void> {
+    const pending = await this.storage.getAll('sync_queue');
+    if (pending.length === 0) return;
+    
+    console.log(`[SyncQueue] Recuperando ${pending.length} items de sesión anterior`);
+    await this.processQueue();
+  }
+  
+  async attemptUrgentFlush(): Promise<void> {
+    const pending = await this.storage.getAll('sync_queue');
+    if (pending.length > 20) {
+      console.log('[SyncQueue] Cola grande, skip flush urgente');
+      return;
+    }
+    await this.processQueue();
   }
 
   async processQueue(): Promise<void> {

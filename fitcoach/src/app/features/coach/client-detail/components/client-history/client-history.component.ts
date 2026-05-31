@@ -7,6 +7,7 @@ interface SetLog {
   weight: number | null;
   reps: number;
   set_number: number;
+  notes?: string | null;
 }
 
 interface SessionLog {
@@ -72,6 +73,18 @@ interface SessionLog {
                       × {{ group.best.reps }}
                     </span>
                   </div>
+                  @if (hasNotes(group)) {
+                    <div class="exercise-notes-coach">
+                      @for (set of group.sets; track set.set_number) {
+                        @if (set.notes) {
+                          <div class="coach-note-item">
+                            <span class="note-icon">💬</span>
+                            <span class="note-text">{{ set.notes }}</span>
+                          </div>
+                        }
+                      }
+                    </div>
+                  }
                 }
               </div>
             }
@@ -214,6 +227,32 @@ interface SessionLog {
       animation: pulse 1.5s infinite;
     }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+    .exercise-notes-coach {
+      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      margin: 4px 0 12px 0;
+      font-size: 12px;
+      color: #aaa;
+    }
+
+    .coach-note-item {
+      display: flex;
+      gap: 6px;
+      align-items: flex-start;
+      margin-bottom: 4px;
+    }
+    .coach-note-item:last-child {
+      margin-bottom: 0;
+    }
+    .note-icon {
+      font-size: 14px;
+    }
+    .note-text {
+      line-height: 1.4;
+      font-style: italic;
+    }
   `]
 })
 export class ClientHistoryComponent implements OnInit {
@@ -242,7 +281,8 @@ export class ClientHistoryComponent implements OnInit {
           set_number,
           weight_kg,
           reps_done,
-          exercise_name
+          exercise_name,
+          notes
         )
       `)
       .eq('client_id', this.clientId)
@@ -269,6 +309,7 @@ export class ClientHistoryComponent implements OnInit {
         weight: s.weight_kg,
         reps: s.reps_done,
         set_number: s.set_number,
+        notes: s.notes,
       })),
       expanded: false,
     }));
@@ -298,5 +339,9 @@ export class ClientHistoryComponent implements OnInit {
       }
     }
     return Array.from(map.values());
+  }
+
+  hasNotes(group: { sets: SetLog[] }): boolean {
+    return group.sets.some(s => !!s.notes && s.notes.trim() !== '');
   }
 }

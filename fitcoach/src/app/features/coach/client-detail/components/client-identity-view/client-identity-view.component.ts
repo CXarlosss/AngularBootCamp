@@ -5,6 +5,7 @@ import { CommonModule } from '@angular/common';
 import { RankService, FullRank, AthleteRank } from '../../../../../core/services/rank.service';
 import { ToastService } from '../../../../../shared/services/toast/toast.service';
 import { supabase } from '../../../../../core/supabase.client';
+import { getFrameById } from '../../../../client/profile/frame-catalog';
 
 @Component({
   selector: 'app-client-identity-view',
@@ -19,11 +20,8 @@ import { supabase } from '../../../../../core/supabase.client';
         
         <div class="civ-banner-content">
           <div class="civ-avatar-wrap">
-            <div class="civ-avatar-ring" [style.border-color]="rankFrameColor()">
+            <div class="avatar-frame-wrapper frame-lg" [class]="frameCssClass()">
               <div class="civ-avatar">{{ initials() }}</div>
-              @if (equippedFrame()) {
-                <div class="civ-special-frame" [class]="'frame-' + equippedFrame()"></div>
-              }
             </div>
           </div>
           
@@ -153,24 +151,17 @@ import { supabase } from '../../../../../core/supabase.client';
       margin: 0 auto;
     }
 
-    .civ-avatar-ring {
+    .civ-avatar-wrap {
       width: 80px; height: 80px;
-      border-radius: 50%; border: 3.5px solid;
-      position: relative; display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      display: flex; align-items: center; justify-content: center;
     }
     .civ-avatar {
-      width: 70px; height: 70px; border-radius: 50%;
+      width: 100%; height: 100%; border-radius: 50%;
       background: linear-gradient(135deg, #6366f1, #8b5cf6);
       display: flex; align-items: center; justify-content: center;
       font-size: 1.6rem; font-weight: 800; color: white;
     }
-    .civ-special-frame {
-      position: absolute; inset: -8px; border-radius: 50%;
-      border: 2px dashed rgba(251,191,36,0.6);
-      animation: rotate 10s linear infinite;
-    }
-    @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    /* avatar-frame-wrapper gets its styles from frames.css globally */
 
     .civ-name { font-size: 1.8rem; font-weight: 800; color: white; margin: 0 0 8px; }
     .civ-meta { display: flex; align-items: center; gap: 12px; }
@@ -303,6 +294,13 @@ export class ClientIdentityViewComponent implements OnInit {
 
   rankFrameColor = computed(() => this.fullRank()?.rank?.color ?? 'transparent');
   rankBadgeBg = computed(() => this.fullRank()?.rank ? `${this.fullRank()?.rank.color}33` : 'rgba(255,255,255,0.1)');
+
+  frameCssClass = computed(() => {
+    const frameId = this.equippedFrame();
+    if (!frameId || frameId === 'none') return 'frame-none';
+    const frame = getFrameById(frameId);
+    return frame.cssClass;
+  });
 
   xpToNextGoal = computed(() => {
     const xp = this.athleteRank()?.xpTotal || 0;

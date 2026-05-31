@@ -222,4 +222,5 @@ export class CoachClientService {
     monday.setHours(0, 0, 0, 0);
     return monday;
   }
+
 }

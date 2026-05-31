@@ -163,6 +163,26 @@ export const BANNER_COLORS: BannerColor[] = [
     gradient: 'linear-gradient(135deg, #00ff87 0%, #00c3ff 25%, #9c27b0 50%, #001a0d 100%)',
     locked: true, req: '50.000 XP', reqType: 'xp', reqValue: 50000
   },
+  {
+    id: 'c16', label: 'Plasma',
+    gradient: 'linear-gradient(135deg, #e11d48 0%, #7c3aed 100%)',
+    locked: true, req: '15.000 XP', reqType: 'xp', reqValue: 15000
+  },
+  {
+    id: 'c17', label: 'Fuego Fatuo',
+    gradient: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+    locked: true, req: '35.000 XP', reqType: 'xp', reqValue: 35000
+  },
+  {
+    id: 'c18', label: 'Oro Líquido',
+    gradient: 'linear-gradient(135deg, #f59e0b 0%, #f43f5e 100%)',
+    locked: true, req: '45.000 XP', reqType: 'xp', reqValue: 45000
+  },
+  {
+    id: 'c19', label: 'Orbital',
+    gradient: 'linear-gradient(135deg, #3b82f6 0%, #d946ef 100%)',
+    locked: true, req: 'Zeus', reqType: 'rank', reqValue: 5
+  },
 ];
 
 export const BANNER_PATTERNS: BannerPattern[] = [

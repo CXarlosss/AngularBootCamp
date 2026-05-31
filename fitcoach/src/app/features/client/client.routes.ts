@@ -15,6 +15,7 @@ export const CLIENT_ROUTES: Routes = [
       },
       {
         path: 'workout',
+        canActivate: [workoutDayGuard],
         loadComponent: () =>
           import('./today-workout/today-workout.component')
             .then(m => m.TodayWorkoutComponent),
