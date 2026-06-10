@@ -27,7 +27,7 @@ export const StimulusBuilder: React.FC<Props> = ({ text, image, onTextChange, on
       
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 32 }}>
         <div>
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Pictograma Principal</label>
+          <label htmlFor="stimulus-image" style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Pictograma Principal</label>
           <motion.div
             whileHover={{ scale: 1.02 }}
             onClick={() => fileRef.current?.click()}
@@ -47,13 +47,14 @@ export const StimulusBuilder: React.FC<Props> = ({ text, image, onTextChange, on
               </div>
             )}
           </motion.div>
-          <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+          <input id="stimulus-image" ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Pregunta o Consigna</label>
+            <label htmlFor="stimulus-text" style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Pregunta o Consigna</label>
             <textarea
+              id="stimulus-text"
               value={text}
               onChange={(e) => onTextChange(e.target.value)}
               placeholder="Ej: ¿Qué haces antes de comer?"

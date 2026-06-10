@@ -9,7 +9,7 @@ interface AnalyticsData {
   avgAttempts: number;
   abandonRate: number;
   categoryDistribution: Record<string, number>;
-  recentActivity: any[];
+  sessions: any[];
 }
 
 const COLORS = {
@@ -55,12 +55,16 @@ export function PatientAnalyticsView({ patientId }: { patientId: string }) {
           categories[cat] = (categories[cat] || 0) + 1;
         });
 
+        // 3. Obtener historial de sesiones agrupadas
+        const { analyticsService } = await import('@/core/services/analyticsService');
+        const sessions = await analyticsService.getSessionHistory(patientId);
+
         setData({
           totalCompletions: completed.length,
           avgAttempts: completed.length > 0 ? Number((totalAttempts / completed.length).toFixed(1)) : 0,
           abandonRate: started.length > 0 ? Number(((abandoned.length / started.length) * 100).toFixed(0)) : 0,
           categoryDistribution: categories,
-          recentActivity: logs.slice(0, 5)
+          sessions: sessions
         });
       } catch (e) {
         console.error('[Analytics] Error fetching data:', e);
@@ -102,16 +106,43 @@ export function PatientAnalyticsView({ patientId }: { patientId: string }) {
         <div style={{ fontSize: 12, color: '#6B7280' }}>Retos finalizados con éxito</div>
       </Card>
 
-      {/* Lista de Actividad Reciente */}
+      {/* Historial de Sesiones */}
       <div style={{ gridColumn: '1 / -1', background: 'white', borderRadius: 20, padding: 24, boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
-        <h3 style={{ fontSize: 16, fontWeight: 800, color: COLORS.text, marginBottom: 16 }}>Diario de Actividad</h3>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {data.recentActivity.map((log, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: COLORS.bg, borderRadius: 12, fontSize: 13 }}>
-              <div style={{ fontWeight: 700 }}>{log.way_id} <span style={{ fontWeight: 400, color: '#6B7280', marginLeft: 8 }}>({log.action})</span></div>
-              <div style={{ color: '#6B7280' }}>{new Date(log.created_at).toLocaleDateString()}</div>
+        <h3 style={{ fontSize: 16, fontWeight: 800, color: COLORS.text, marginBottom: 16 }}>Historial de Sesiones Clínicas</h3>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {data.sessions.slice(0, 5).map((session, i) => (
+            <div key={session.id || i} style={{ border: `1px solid ${COLORS.bg}`, borderRadius: 16, padding: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                <div style={{ fontWeight: 800, color: COLORS.text, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span>📅</span> {session.title}
+                </div>
+                <div style={{ fontSize: 13, color: '#6B7280', background: COLORS.bg, padding: '4px 12px', borderRadius: 12 }}>
+                  {session.timeRange} ({session.durationMin} min)
+                </div>
+              </div>
+              
+              <div style={{ marginLeft: 28, borderLeft: `2px solid ${COLORS.bg}`, paddingLeft: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {session.logs.map((log: any, idx: number) => (
+                  <div key={idx} style={{ fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ color: COLORS.emerald }}>●</span> 
+                    {log.way_id} <span style={{ color: '#6B7280' }}>(completado, {Math.round(((log.metadata?.durationSeconds || 0) / 60)) || 1} min)</span>
+                  </div>
+                ))}
+                {session.logs.length === 0 && (
+                  <div style={{ fontSize: 13, color: '#9CA3AF', fontStyle: 'italic' }}>Sesión sin retos completados.</div>
+                )}
+              </div>
+
+              <div style={{ marginTop: 12, marginLeft: 28, padding: '8px 12px', background: COLORS.bg, borderRadius: 8, fontSize: 12, color: COLORS.text, display: 'flex', gap: 16 }}>
+                <span><strong>{session.logs.length}</strong> Ways</span>
+                <span style={{ color: COLORS.amber }}><strong>{session.wayCoins}</strong> WayCoins</span>
+                <span style={{ color: session.abandoned > 0 ? COLORS.rose : '#6B7280' }}><strong>{session.abandoned}</strong> abandonos</span>
+              </div>
             </div>
           ))}
+          {data.sessions.length === 0 && (
+            <div style={{ textAlign: 'center', color: '#6B7280', padding: 20 }}>No hay sesiones registradas.</div>
+          )}
         </div>
       </div>
 

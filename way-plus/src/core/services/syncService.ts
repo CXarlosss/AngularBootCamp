@@ -12,6 +12,32 @@ const SyncLogger = {
 };
 
 // ============================================
+// ESTADO DE SINCRONIZACIÓN Y EVENTOS
+// ============================================
+export type SyncStatusState = 'synced' | 'syncing' | 'offline';
+
+type SyncListener = (status: SyncStatusState) => void;
+const listeners = new Set<SyncListener>();
+let currentSyncStatus: SyncStatusState = navigator.onLine ? 'synced' : 'offline';
+
+export function subscribeToSyncStatus(listener: SyncListener) {
+  listeners.add(listener);
+  listener(currentSyncStatus);
+  return () => listeners.delete(listener);
+}
+
+function updateSyncStatus(status: SyncStatusState) {
+  if (currentSyncStatus !== status) {
+    currentSyncStatus = status;
+    listeners.forEach(l => l(status));
+  }
+}
+
+// Escuchar cambios de red nativos
+window.addEventListener('online', () => updateSyncStatus('synced'));
+window.addEventListener('offline', () => updateSyncStatus('offline'));
+
+// ============================================
 // TIPOS
 // ============================================
 export interface PatientSyncData {
@@ -73,14 +99,23 @@ async function setLogQueue(logs: ActivityLogData[]): Promise<void> {
 export async function logActivity(data: ActivityLogData): Promise<void> {
   // 1. Add to local queue immediately
   const queue = await getLogQueue();
-  queue.push({ ...data, metadata: { ...data.metadata, queued_at: new Date().toISOString() } });
+  const queuedAt = new Date().toISOString();
+  queue.push({ ...data, metadata: { ...data.metadata, queued_at: queuedAt } });
   await setLogQueue(queue);
 
   // 2. Try to flush queue if online
   if (navigator.onLine && isSupabaseAvailable && supabase) {
     try {
       const currentQueue = await getLogQueue();
-      if (currentQueue.length === 0) return;
+      if (currentQueue.length === 0) {
+        updateSyncStatus('synced');
+        return;
+      }
+
+      updateSyncStatus('syncing');
+
+      const activePatientId = sessionStorage.getItem('way-active-patient');
+      const activePin = sessionStorage.getItem('way-active-pin');
 
       const validLogs = currentQueue.filter(l => isUUID(l.patientId)).map(l => ({
         patient_id: l.patientId,
@@ -90,29 +125,72 @@ export async function logActivity(data: ActivityLogData): Promise<void> {
         metadata: l.metadata ?? {},
       }));
 
-      const { error } = await supabase.from('activity_logs').insert(validLogs);
-      if (!error) {
-        // Success: clear the logs we just sent
-        const remaining = (await getLogQueue()).filter(l => !currentQueue.includes(l));
-        await setLogQueue(remaining);
-        console.log(`[Sync] Flushed ${validLogs.length} activity logs to cloud`);
+      // Si tenemos PIN para el paciente activo, procesamos todo por la Edge Function
+      if (activePatientId && activePin) {
+        // Enviar solo los logs del paciente activo (o delegamos todo al paciente activo)
+        const patientLogs = validLogs.filter(l => l.patient_id === activePatientId);
+        if (patientLogs.length === 0) return;
+
+        const { error } = await supabase.functions.invoke('log-activity', {
+          body: {
+            patient_id: activePatientId,
+            pin: activePin,
+            logs: patientLogs
+          }
+        });
+
+        if (!error) {
+          // Success: clear the logs we just sent
+          const flushedTimestamps = patientLogs.map(l => l.metadata?.queued_at);
+          const remaining = (await getLogQueue()).filter(l => !flushedTimestamps.includes(l.metadata?.queued_at));
+          await setLogQueue(remaining);
+          console.log(`[Sync] Flushed ${patientLogs.length} activity logs via Edge Function`);
+          updateSyncStatus('synced');
+        } else {
+          console.warn('[Sync] Edge Function rejected logs:', error);
+          updateSyncStatus('offline');
+        }
+      } else {
+        console.warn('[Sync] Cannot flush: No active PIN found in session storage.');
+        updateSyncStatus('offline');
       }
     } catch (e) {
       console.warn('[Sync] Failed to flush logs, will retry later:', e);
+      updateSyncStatus('offline');
     }
+  } else {
+    updateSyncStatus('offline');
   }
 }
 
 export async function logActivityBatch(logs: ActivityLogData[]): Promise<void> {
   if (!isSupabaseAvailable || !supabase || logs.length === 0) return;
-  const validLogs = logs.filter(l => isUUID(l.patientId)).map(l => ({
+  
+  const activePatientId = sessionStorage.getItem('way-active-patient');
+  const activePin = sessionStorage.getItem('way-active-pin');
+  
+  if (!activePatientId || !activePin) {
+    throw new Error('No active patient or PIN found for logging');
+  }
+
+  const validLogs = logs.filter(l => isUUID(l.patientId) && l.patientId === activePatientId).map(l => ({
     patient_id: l.patientId,
     way_id: l.wayId,
     action: l.action,
     attempts: l.attempts ?? 1,
     metadata: l.metadata ?? {},
   }));
-  const { error } = await supabase.from('activity_logs').insert(validLogs);
+
+  if (validLogs.length === 0) return;
+
+  const { error } = await supabase.functions.invoke('log-activity', {
+    body: {
+      patient_id: activePatientId,
+      pin: activePin,
+      logs: validLogs
+    }
+  });
+
   if (error) throw error;
 }
 
@@ -240,5 +318,6 @@ export const syncService = {
   addRecommendation,
   deleteRecommendation,
   updateRecommendationStatus,
+  subscribeToSyncStatus,
   isSupabaseAvailable: () => isSupabaseAvailable
 };

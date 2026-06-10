@@ -23,8 +23,8 @@ const C = {
 interface PatientInfo {
   id: string;
   name: string;
-  avatar_emoji: string;
-  player_pin: string;
+  equipped_avatar_id: string;
+  pin: string;
 }
 
 const KEYS = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
@@ -38,6 +38,7 @@ function Keypad({ onKey }: { onKey: (k: string) => void }) {
       {KEYS.map((key, i) => (
         <motion.button
           key={i}
+          aria-label={key === '⌫' ? 'Borrar último número' : key ? `Número ${key}` : undefined}
           whileTap={key ? { scale: 0.9 } : {}}
           onClick={() => key && onKey(key)}
           style={{
@@ -72,6 +73,7 @@ export function PlayerLoginPage() {
       if (!patientId) {
         // AUTO-CONFIG for Testing: Pedro
         sessionStorage.setItem('way-active-patient', '048cc2eb-a861-4ad4-ac1a-2fdf916e430b');
+        sessionStorage.setItem('way-active-pin', '1234');
         window.location.reload();
         return;
       }
@@ -82,8 +84,8 @@ export function PlayerLoginPage() {
       }
 
       const { data, error } = await supabase
-        .from('patients')
-        .select('id, name, avatar_emoji, player_pin')
+        .from('patient_profiles')
+        .select('id, name, equipped_avatar_id, pin')
         .eq('id', patientId)
         .single();
 
@@ -113,9 +115,10 @@ export function PlayerLoginPage() {
     setPin(newPin);
 
     if (newPin.length === 4) {
-      if (patient && newPin === patient.player_pin) {
+      if (patient && newPin === patient.pin) {
         setSuccess(true);
         setAttempts(0);
+        sessionStorage.setItem('way-active-pin', newPin);
         setTimeout(() => {
           navigate('/player/home');
         }, 800);
@@ -196,7 +199,7 @@ export function PlayerLoginPage() {
           animate={success ? { scale: [1, 1.2, 1] } : {}}
           style={{ fontSize: 80, marginBottom: 12, lineHeight: 1 }}
         >
-          {patient.avatar_emoji}
+          {patient.equipped_avatar_id}
         </motion.div>
         <h1 style={{ fontSize: 28, fontWeight: 900, color: C.text, margin: 0 }}>
           ¡Hola, {patient.name}!

@@ -99,16 +99,16 @@ export const AuthPage: React.FC = () => {
 
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: C.muted, display: 'block', marginBottom: 6 }}>
+                  <label htmlFor="email" style={{ fontSize: 12, fontWeight: 700, color: C.muted, display: 'block', marginBottom: 6 }}>
                     Email profesional
                   </label>
                   <input
+                    id="email"
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="maite@clinica.es"
                     required
-                    autoFocus
                     style={{
                       width: '100%', padding: '12px 16px', borderRadius: 14,
                       border: `1.5px solid ${C.border}`, fontSize: 14,

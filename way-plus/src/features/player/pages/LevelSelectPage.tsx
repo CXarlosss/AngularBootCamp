@@ -395,8 +395,8 @@ export const LevelSelectPage: React.FC = () => {
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            {steps.flatMap(s => s.ways || []).filter(w => initialHomeworkIds.has(w.id)).map(way => {
-              const isDone = completedWays.includes(way.id);
+            {steps.flatMap(s => s.ways || []).filter(w => w && w.id && initialHomeworkIds.has(w.id)).map(way => {
+              const isDone = (completedWays || []).includes(way.id);
               return (
                 <motion.div
                   key={way.id}
@@ -429,7 +429,7 @@ export const LevelSelectPage: React.FC = () => {
                   )}
 
                   <div style={{ fontSize: 64, filter: isDone ? 'grayscale(1) opacity(0.5)' : 'none' }}>
-                    {way.id.includes('relaxation') ? '🧘' : way.id.includes('assertiveness') ? '🗣️' : '✨'}
+                    {way.id?.includes('relaxation') ? '🧘' : way.id?.includes('assertiveness') ? '🗣️' : '✨'}
                   </div>
                   
                   <div style={{ flex: 1, minWidth: 0 }}>
@@ -475,7 +475,7 @@ export const LevelSelectPage: React.FC = () => {
         ) : steps.map((step, idx) => {
           if (!step) return null;
           const ways = Array.isArray(step.ways) ? step.ways : [];
-          const doneCount = ways.filter(w => w?.id && completedWays.includes(w.id)).length;
+          const doneCount = ways.filter(w => w?.id && (completedWays || []).includes(w.id)).length;
 
           return (
             <StepCard

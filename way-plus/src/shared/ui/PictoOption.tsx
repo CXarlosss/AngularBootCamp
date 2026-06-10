@@ -74,7 +74,7 @@ export const PictoOption: React.FC<Props> = React.memo(({ option, onSelect, disa
             loading="lazy"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = 'none';
-              (e.target as any).parentElement.innerHTML = '<span class="text-5xl">🎯</span>';
+              ((e.target as HTMLImageElement).parentElement as HTMLElement).innerHTML = '<span class="text-5xl">🎯</span>';
             }}
           />
         ) : (

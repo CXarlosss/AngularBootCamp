@@ -11,6 +11,7 @@ import { TherapistNotes } from '../components/TherapistNotes';
 import { ObjectivesTab } from '../components/ObjectivesTab';
 import { ReportGenerator } from '../components/ReportGenerator';
 import { SessionPreparation } from '../components/SessionPreparation';
+import { FamilyAccessManager } from '@/components/therapist/FamilyAccessManager';
 import { SessionSummaryTab } from '../components/SessionSummaryTab';
 import { PinConfig } from '../components/PinConfig';
 import { SyncStatus } from '../components/SyncStatus';
@@ -106,7 +107,7 @@ export function PatientDetailView() {
   const navigate = useNavigate();
   const patients = useTherapistStore(s => s.patients);
   const patient = patients.find(p => p.id === patientId);
-  const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'analytics' | 'objectives' | 'notes' | 'recommendations' | 'config' | 'summary' | 'homework'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'evolution' | 'analytics' | 'objectives' | 'notes' | 'recommendations' | 'config' | 'summary' | 'homework' | 'family'>('overview');
   const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
 
   // Sync with URL params if any
@@ -143,6 +144,18 @@ export function PatientDetailView() {
   } = useConfigStore();
 
 
+  const { 
+    accessibility, 
+    performance, 
+    setReduceMotion, 
+    setHighAccessibility, 
+    setPerformanceMode, 
+    setShowTextLabels 
+  } = useConfigStore();
+
+  const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
+  const roleplayLog = usePlayerStore(s => s.roleplayLog) ?? {};
+
   if (!patient) {
     return (
       <div style={{ padding: 40, textAlign: 'center' }}>
@@ -154,10 +167,6 @@ export function PatientDetailView() {
 
   const completedWays = patient.completedWays ?? [];
   const totalXp = patient.coins ?? 0;
-  // Estos logs aún requieren una query específica si no están en el objeto patient,
-  // por ahora los mantenemos pero marcamos la deuda técnica
-  const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
-  const roleplayLog = usePlayerStore(s => s.roleplayLog) ?? {};
 
   return (
     <div key={patientId} style={{ background: C.bg, minHeight: '100dvh' }}>
@@ -216,6 +225,7 @@ export function PatientDetailView() {
               { id: 'evolution', label: 'Evolución', icon: '📊' },
               { id: 'objectives', label: 'Objetivos', icon: '🎯' },
               { id: 'recommendations', label: 'Para Padres', icon: '💡' },
+              { id: 'family', label: 'Familia', icon: '👨‍👩‍👦' },
               { id: 'config', label: 'Sesión', icon: '⚙️' },
               { id: 'notes', label: 'Notas', icon: '📝' }
             ].map(tab => (
@@ -270,6 +280,18 @@ export function PatientDetailView() {
               <SectionTitle>⚡ Acciones</SectionTitle>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <ReportGenerator />
+                <button 
+                  onClick={() => navigate(`/therapist/patient/${patientId}/annexes`)}
+                  style={{ 
+                    fontFamily: 'Verdana', padding: '16px 24px', 
+                    fontSize: '14px', borderRadius: '12px', 
+                    cursor: 'pointer', background: '#EEF2FF',
+                    border: '1.5px solid #4F46E5', color: '#4F46E5',
+                    fontWeight: 'bold', display: 'flex', gap: '8px', alignItems: 'center'
+                  }}
+                >
+                  📋 Anexos Clínicos Semanales
+                </button>
               </div>
             </Card>
           </div>
@@ -282,6 +304,11 @@ export function PatientDetailView() {
         {activeTab === 'objectives' && <ObjectivesTab patient={patient} />}
         {activeTab === 'notes' && <TherapistNotes patientId={patient.id} />}
         {activeTab === 'recommendations' && <RecommendationManager patientId={patient.id} />}
+        {activeTab === 'family' && (
+          <Card>
+            <FamilyAccessManager patientId={patient.id} patientName={patient.name} />
+          </Card>
+        )}
         
         {activeTab === 'config' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

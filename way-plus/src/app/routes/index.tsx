@@ -42,7 +42,9 @@ const TherapistDashboard = lazy(() => import('@/features/therapist/pages/Therapi
 const WayEditorPage = lazy(() => import('@/features/editor/pages/WayEditorPage').then(m => ({ default: m.WayEditorPage })));
 const ZenModePage = lazy(() => import('@/features/annexes/pages/ZenModePage').then(m => ({ default: m.ZenModePage })));
 const ParentsDashboard = lazy(() => import('@/features/parents/pages/ParentsDashboard').then(m => ({ default: m.ParentsDashboard })));
+const FamilyDashboardPage = lazy(() => import('@/components/family/FamilyDashboardPage').then(m => ({ default: m.FamilyDashboardPage })));
 const PatientDetailView = lazy(() => import('@/features/therapist/pages/PatientDetailView').then(m => ({ default: m.PatientDetailView })));
+const PatientAnnexesView = lazy(() => import('@/features/therapist/pages/PatientAnnexesView').then(m => ({ default: m.PatientAnnexesView })));
 const SessionPlayerPage = lazy(() => import('@/features/player/pages/SessionPlayerPage').then(m => ({ default: m.SessionPlayerPage })));
 const SessionModePage = lazy(() => import('@/features/player/pages/SessionModePage').then(m => ({ default: m.SessionModePage })));
 
@@ -122,6 +124,10 @@ export const router = createBrowserRouter([
         element: <ProtectedRoute>{Load(PatientDetailView)}</ProtectedRoute>
       },
       { 
+        path: 'therapist/patient/:patientId/annexes', 
+        element: <ProtectedRoute>{Load(PatientAnnexesView)}</ProtectedRoute>
+      },
+      { 
         path: 'terapeuta', 
         element: <ProtectedRoute>{Load(TherapistDashboard)}</ProtectedRoute>
       },
@@ -168,6 +174,10 @@ export const router = createBrowserRouter([
       {
         path: 'padres',
         element: Load(ParentsDashboard)
+      },
+      {
+        path: 'family/:token',
+        element: Load(FamilyDashboardPage)
       },
     ],
   },

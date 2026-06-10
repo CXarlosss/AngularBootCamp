@@ -7,6 +7,7 @@ import { SyncStatus } from '../components/SyncStatus';
 import { SecurityGate } from '@/shared/components/SecurityGate';
 import { patientService } from '@/core/services/patientService';
 import { seedClinicalData } from '@/core/utils/seedData';
+import { flushOfflineAnnexes } from '@/services/clinicalAnnexService';
 
 
 const C = {
@@ -31,6 +32,7 @@ export function TherapistDashboard() {
   useEffect(() => {
     if (isAuthorized) {
       loadPatients();
+      flushOfflineAnnexes().catch(console.error);
     }
   }, [isAuthorized, loadPatients]);
 
@@ -180,8 +182,9 @@ export function TherapistDashboard() {
             <h3 style={{ margin: '0 0 20px', fontWeight: 900 }}>Añadir Paciente</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 4 }}>NOMBRE</label>
+                <label htmlFor="patient-name" style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 4 }}>NOMBRE</label>
                 <input 
+                  id="patient-name"
                   value={newPatient.name}
                   onChange={e => setNewPatient({ ...newPatient, name: e.target.value })}
                   placeholder="Ej: Daniel"
@@ -190,8 +193,9 @@ export function TherapistDashboard() {
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 4 }}>EDAD</label>
+                  <label htmlFor="patient-age" style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 4 }}>EDAD</label>
                   <input 
+                    id="patient-age"
                     type="number"
                     value={newPatient.age}
                     onChange={e => setNewPatient({ ...newPatient, age: parseInt(e.target.value) })}
@@ -199,8 +203,9 @@ export function TherapistDashboard() {
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 4 }}>AVATAR</label>
+                  <label htmlFor="patient-avatar" style={{ display: 'block', fontSize: 12, fontWeight: 700, color: C.muted, marginBottom: 4 }}>AVATAR</label>
                   <select 
+                    id="patient-avatar"
                     value={newPatient.avatar}
                     onChange={e => setNewPatient({ ...newPatient, avatar: e.target.value })}
                     style={{ width: '100%', padding: '12px', borderRadius: 12, border: `1.5px solid ${C.border}`, fontSize: 16 }}

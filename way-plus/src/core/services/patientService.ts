@@ -10,6 +10,7 @@ export interface PatientProfile {
   completedWays?: string[];
   inventory?: string[];
   homeworkWayIds?: string[];
+  pin?: string;
 }
 
 /**
@@ -52,6 +53,7 @@ export const patientService = {
       coins: p.coins || 0,
       completedWays: p.completed_ways || [],
       inventory: p.inventory || [],
+      pin: p.pin || '0000',
     }));
   },
 
@@ -88,7 +90,8 @@ export const patientService = {
         current_level: 'pregamer',
         coins: 0,
         inventory: [],
-        completed_ways: []
+        completed_ways: [],
+        pin: Math.floor(1000 + Math.random() * 9000).toString()
       })
       .select()
       .single();
@@ -107,6 +110,7 @@ export const patientService = {
       coins: data.coins,
       completedWays: data.completed_ways || [],
       inventory: data.inventory || [],
+      pin: data.pin,
     };
   },
 
@@ -124,6 +128,7 @@ export const patientService = {
     if (updates.currentLevel) dbUpdates.current_level = updates.currentLevel;
     if (updates.coins !== undefined) dbUpdates.coins = updates.coins;
     if (updates.gender) dbUpdates.gender = updates.gender;
+    if (updates.pin) dbUpdates.pin = updates.pin;
 
     const { error } = await supabase
       .from('patient_profiles')

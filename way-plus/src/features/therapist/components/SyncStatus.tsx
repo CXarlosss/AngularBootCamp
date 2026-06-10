@@ -1,77 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { offlineStorage } from '@/core/services/offlineStorage';
-import { registry } from '@/content/registry';
+import { motion } from 'framer-motion';
+import { syncService, SyncStatusState } from '@/core/services/syncService';
+
+const STATUS_CONFIG = {
+  synced: { text: '☁️ Guardado', color: '#10B981', bg: '#D1FAE5' },
+  syncing: { text: '💾 Guardando...', color: '#4F46E5', bg: '#E0E7FF' },
+  offline: { text: '⚠️ Sin conexión', color: '#EF4444', bg: '#FEE2E2' }
+};
 
 export const SyncStatus: React.FC = () => {
-  const [pendingCount, setPendingCount] = useState(0);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [syncing, setSyncing] = useState(false);
+  const [status, setStatus] = useState<SyncStatusState>('synced');
 
   useEffect(() => {
-    const checkQueue = async () => {
-      const queue = await offlineStorage.getSyncQueue();
-      setPendingCount(queue.length);
-    };
-    
-    checkQueue();
-    const interval = setInterval(checkQueue, 5000);
-    
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
+    return syncService.subscribeToSyncStatus((newStatus) => {
+      setStatus(newStatus);
+    });
   }, []);
 
-  const handleSync = async () => {
-    if (!isOnline || syncing) return;
-    setSyncing(true);
-    await registry.processSyncQueue();
-    const queue = await offlineStorage.getSyncQueue();
-    setPendingCount(queue.length);
-    setSyncing(false);
-  };
+  const config = STATUS_CONFIG[status];
 
   return (
-    <div className="flex items-center gap-3 bg-white rounded-xl px-4 py-2 shadow-sm border border-slate-200">
-      <div className={`w-3 h-3 rounded-full transition-colors ${isOnline ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-      <span className="text-xs font-black text-slate-600 uppercase tracking-wider">
-        {isOnline ? 'Conectado' : 'Sin Conexión'}
-      </span>
-      
-      <AnimatePresence>
-        {pendingCount > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex items-center gap-2 ml-2"
-          >
-            <span className="bg-amber-100 text-amber-700 text-[10px] font-black px-2 py-1 rounded-full uppercase">
-              {pendingCount} pendiente{pendingCount > 1 ? 's' : ''}
-            </span>
-            <motion.button
-              whileTap={{ scale: 0.95 }}
-              onClick={handleSync}
-              disabled={syncing || !isOnline}
-              className={`text-[10px] font-black px-3 py-1 rounded-lg transition-all
-                ${isOnline 
-                  ? 'bg-indigo-500 text-white hover:bg-indigo-600 shadow-sm' 
-                  : 'bg-slate-100 text-slate-400 cursor-not-allowed'}
-              `}
-            >
-              {syncing ? 'SINCRO...' : 'SINCRO AHORA'}
-            </motion.button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+    <motion.div 
+      initial={false}
+      animate={{ backgroundColor: config.bg }}
+      style={{ 
+        display: 'flex', alignItems: 'center', gap: 6, 
+        padding: '6px 12px', borderRadius: 20,
+        fontSize: 12, fontWeight: 700, color: config.color,
+        border: `1px solid ${config.color}30`
+      }}
+    >
+      {config.text}
+    </motion.div>
   );
 };

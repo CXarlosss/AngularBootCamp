@@ -70,7 +70,7 @@ export const analyticsService = {
     }
 
     const { data: patient, error: patientError } = await supabase
-      .from('patients')
+      .from('patient_profiles')
       .select('id')
       .eq('id', patientId)
       .eq('therapist_id', user.id)
@@ -103,5 +103,84 @@ export const analyticsService = {
       intentos: row.attempts,
       tiempo_ms: (row.metadata as any)?.timeSpentMs || (row.metadata as any)?.durationSeconds * 1000 || 0
     }));
+  },
+
+  /**
+   * Agrupa los logs de actividad en "sesiones" basadas en proximidad temporal.
+   * Si la diferencia de tiempo entre dos logs consecutivos es menor al umbral (30 min),
+   * se consideran de la misma sesión.
+   */
+  async getSessionHistory(patientId: string) {
+    if (!supabase) return [];
+    const SESSION_GAP_THRESHOLD = 30 * 60 * 1000; // 30 minutos
+
+    const { data, error } = await supabase
+      .from('activity_logs')
+      .select('*')
+      .eq('patient_id', patientId)
+      .order('created_at', { ascending: true }); // Orden cronológico para agrupar
+
+    if (error) throw error;
+    if (!data || data.length === 0) return [];
+
+    const sessions: any[] = [];
+    let currentSession: any = null;
+
+    data.forEach(log => {
+      const logTime = new Date(log.created_at).getTime();
+
+      if (!currentSession) {
+        currentSession = {
+          startTime: logTime,
+          endTime: logTime,
+          logs: [log],
+          wayCoins: log.action === 'way_completed' ? (log.metadata?.coinsEarned || 10) : 0,
+          abandoned: log.action === 'way_abandoned' ? 1 : 0
+        };
+      } else {
+        const gap = logTime - currentSession.endTime;
+        if (gap <= SESSION_GAP_THRESHOLD) {
+          // Misma sesión
+          currentSession.logs.push(log);
+          currentSession.endTime = logTime;
+          if (log.action === 'way_completed') currentSession.wayCoins += (log.metadata?.coinsEarned || 10);
+          if (log.action === 'way_abandoned') currentSession.abandoned += 1;
+        } else {
+          // Nueva sesión
+          sessions.push(currentSession);
+          currentSession = {
+            startTime: logTime,
+            endTime: logTime,
+            logs: [log],
+            wayCoins: log.action === 'way_completed' ? (log.metadata?.coinsEarned || 10) : 0,
+            abandoned: log.action === 'way_abandoned' ? 1 : 0
+          };
+        }
+      }
+    });
+
+    if (currentSession) {
+      sessions.push(currentSession);
+    }
+
+    // Ordenar de más reciente a más antiguo
+    return sessions.reverse().map(s => {
+      const start = new Date(s.startTime);
+      const end = new Date(s.endTime);
+      const durationMin = Math.max(1, Math.round((s.endTime - s.startTime) / 60000));
+      const isMorning = start.getHours() < 14;
+      const periodName = isMorning ? 'Mañana' : 'Tarde';
+      const dayName = start.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
+
+      return {
+        id: `session-${s.startTime}`,
+        title: `${periodName} del ${dayName}`,
+        timeRange: `${start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
+        durationMin,
+        wayCoins: s.wayCoins,
+        abandoned: s.abandoned,
+        logs: s.logs.filter((l: any) => l.action === 'way_completed') // Solo mostrar completados para simplificar
+      };
+    });
   }
 };

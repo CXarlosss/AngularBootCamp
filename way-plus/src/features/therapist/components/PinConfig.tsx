@@ -41,8 +41,8 @@ export function PinConfig({ patientId, patientName, currentPin = '0000' }: Props
 
     if (isSupabaseAvailable && supabase) {
       const { error } = await supabase
-        .from('patients')
-        .update({ player_pin: newPin })
+        .from('patient_profiles')
+        .update({ pin: newPin })
         .eq('id', patientId);
 
       if (error) {
@@ -128,10 +128,11 @@ export function PinConfig({ patientId, patientName, currentPin = '0000' }: Props
 
         <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
           <div style={{ flex: 1 }}>
-            <label style={{ fontSize: 11, fontWeight: 700, color: C.muted, display: 'block', marginBottom: 6 }}>
+            <label htmlFor="new-pin" style={{ fontSize: 11, fontWeight: 700, color: C.muted, display: 'block', marginBottom: 6 }}>
               Nuevo PIN (4 dígitos)
             </label>
             <input
+              id="new-pin"
               type="text"
               value={newPin}
               onChange={e => {

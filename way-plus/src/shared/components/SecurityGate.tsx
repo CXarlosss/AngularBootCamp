@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useKioskStore } from '@/features/kiosk/store/kioskStore';
 
 interface SecurityGateProps {
@@ -79,6 +79,7 @@ export const SecurityGate: React.FC<SecurityGateProps> = ({
           {['1', '2', '3', '4', '5', '6', '7', '8', '9', 'C', '0', '⌫'].map((k) => (
             <motion.button
               key={k}
+              aria-label={k === '⌫' ? 'Borrar último número' : k === 'C' ? 'Borrar todo' : `Número ${k}`}
               whileTap={{ scale: 0.9 }}
               onClick={() => {
                 if (k === 'C') setPin('');

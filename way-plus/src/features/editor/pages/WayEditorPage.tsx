@@ -145,17 +145,17 @@ export const WayEditorPage: React.FC = () => {
           </div>
           
           <section>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, marginLeft: 16 }}>1. Estrategia de Juego</label>
+            <span style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, marginLeft: 16 }}>1. Estrategia de Juego</span>
             <WayTypeSelector selected={draft.type} onSelect={(type) => updateField('type', type as any)} />
           </section>
 
           <section>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, marginLeft: 16 }}>2. Núcleo del Reto</label>
+            <span style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, marginLeft: 16 }}>2. Núcleo del Reto</span>
             <StimulusBuilder text={draft.stimulus.text} image={draft.stimulus.image} onTextChange={(text) => updateStimulus({ text })} onImageChange={(image) => updateStimulus({ image })} />
           </section>
 
           <section>
-            <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, marginLeft: 16 }}>3. Lógica de Respuesta</label>
+            <span style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, marginLeft: 16 }}>3. Lógica de Respuesta</span>
             <OptionBuilder options={draft.options} onChange={(opts) => updateField('options', opts)} type={draft.type} />
           </section>
 
@@ -166,8 +166,9 @@ export const WayEditorPage: React.FC = () => {
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 24 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Skill Tag (Categoría)</label>
+                <label htmlFor="skill-tag" style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Skill Tag (Categoría)</label>
                 <input
+                  id="skill-tag"
                   type="text"
                   value={draft.metadata.skillTag}
                   onChange={(e) => updateMetadata({ skillTag: e.target.value })}
@@ -176,8 +177,9 @@ export const WayEditorPage: React.FC = () => {
                 />
               </div>
               <div>
-                <label style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Dificultad Sugerida</label>
+                <label htmlFor="difficulty" style={{ display: 'block', fontSize: 12, fontWeight: 900, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>Dificultad Sugerida</label>
                 <select
+                  id="difficulty"
                   value={draft.metadata.difficulty}
                   onChange={(e) => updateMetadata({ difficulty: Number(e.target.value) as any })}
                   style={{ width: '100%', padding: 16, borderRadius: 16, border: '4px solid #F1F5F9', outline: 'none', fontWeight: 700, color: '#334155', background: 'white', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)', boxSizing: 'border-box' }}
