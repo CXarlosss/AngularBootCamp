@@ -1,0 +1,151 @@
+/* =========================================
+   RETRO PROJECT VAULT – FULL SCREEN LAYER
+========================================= */
+
+.retro-vault {
+  position: fixed;
+  inset: 0;
+
+  /* 🔥 Debe estar por encima del terminal */
+  z-index: 3;
+
+  overflow: hidden;
+
+  /* 🔒 bloqueado por defecto */
+  pointer-events: none;
+
+  background:
+    radial-gradient(circle at 50% 50%, rgba(0, 255, 65, 0.04), transparent 70%);
+}
+
+/* =========================================
+   CARDS – FLOATING ARCHIVES
+========================================= */
+
+.retro-vault-card {
+  position: absolute;
+  width: 260px;
+  padding: 14px 18px;
+
+  border: 1px solid rgba(0, 255, 65, 0.18);
+  background: rgba(0, 255, 65, 0.04);
+
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+
+  opacity: 0.15;
+  filter: blur(1px);
+
+  /* 🔒 No clicables hasta unlock */
+  pointer-events: none;
+
+  transition: 
+    opacity 0.6s ease,
+    filter 0.6s ease,
+    box-shadow 0.4s ease,
+    border-color 0.4s ease;
+
+  animation: floatVault 18s ease-in-out infinite alternate;
+}
+
+/* =========================================
+   UNLOCKED STATE
+========================================= */
+
+/* 🔓 Cuando el vault está desbloqueado */
+
+.retro-vault.unlocked {
+  pointer-events: auto;
+}
+
+.retro-vault.unlocked .retro-vault-card {
+  opacity: 0.45;
+  filter: blur(0.3px);
+
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.retro-vault.unlocked .retro-vault-card:hover {
+  opacity: 0.8;
+  border-color: #00ff41;
+
+  box-shadow: 
+    0 0 20px rgba(0, 255, 65, 0.6),
+    0 0 60px rgba(0, 255, 65, 0.2);
+}
+
+/* =========================================
+   TEXT
+========================================= */
+
+.vault-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+  text-shadow: 0 0 8px rgba(0, 255, 65, 0.9);
+}
+
+.vault-stack {
+  opacity: 0.6;
+}
+
+/* =========================================
+   FLOATING MOVEMENT
+========================================= */
+
+@keyframes floatVault {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(8px) rotate(0.4deg);
+  }
+  100% {
+    transform: translateY(14px) rotate(-0.4deg);
+  }
+}
+
+/* =========================================
+   GLITCH EFFECT
+========================================= */
+
+.retro-vault.glitch .retro-vault-card {
+  animation:
+    floatVault 18s ease-in-out infinite alternate,
+    glitchFlash 0.15s infinite alternate;
+}
+
+@keyframes glitchFlash {
+  0% { transform: translateX(0px); }
+  50% { transform: translateX(2px); }
+  100% { transform: translateX(-2px); }
+}
+/* =========================================
+   EXECUTING GLITCH BURST
+========================================= */
+
+.retro-vault-card.executing {
+  animation:
+    glitchBurst 0.15s infinite alternate,
+    flashOut 0.6s forwards;
+}
+
+@keyframes glitchBurst {
+  0% { transform: translateX(0px); }
+  50% { transform: translateX(4px); }
+  100% { transform: translateX(-4px); }
+}
+
+@keyframes flashOut {
+  0% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 80px #00ff41;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+}

@@ -1,0 +1,10 @@
+.universe-connections {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.universe-connection-line {
+  stroke: rgba(255,255,255,0.08);
+  stroke-width: 1;
+}

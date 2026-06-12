@@ -1,0 +1,80 @@
+.footer {
+    padding: 80px 0 40px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.content {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 60px;
+    flex-wrap: wrap;
+    gap: 40px;
+}
+
+.logo {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.brand p {
+    font-family: 'monospace';
+    font-size: 0.8rem;
+    color: var(--textMuted);
+    margin: 0;
+}
+
+.links {
+    display: flex;
+    gap: 60px;
+}
+
+.linkGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.linkGroup a {
+    color: var(--textMuted);
+    text-decoration: none;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transitionBase);
+}
+
+.linkGroup a:hover {
+    color: var(--accentPrimary);
+}
+
+.bottom {
+    padding-top: 30px;
+    border-top: 1px solid rgba(255, 255, 255, 0.03);
+    text-align: center;
+}
+
+.bottom p {
+    font-size: 0.75rem;
+    color: var(--textMuted);
+    margin: 0;
+}
+
+@media (max-width: 768px) {
+    .content {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+
+    .links {
+        gap: 40px;
+    }
+
+    .linkGroup {
+        align-items: center;
+    }
+}

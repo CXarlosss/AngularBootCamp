@@ -1,0 +1,118 @@
+.contactWrapper {
+    padding: 120px 0;
+    min-height: 100vh;
+}
+
+.title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+}
+
+.highlight {
+    color: var(--accentPrimary);
+}
+
+.subtitle {
+    color: var(--textMuted);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 60px;
+}
+
+.infoList {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.infoItem {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.icon {
+    font-size: 1.5rem;
+    color: var(--accentPrimary);
+}
+
+.infoItem span {
+    display: block;
+    font-family: 'monospace';
+    font-size: 0.7rem;
+    color: var(--accentSecondary);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.infoItem p {
+    font-size: 1.1rem;
+    margin: 0;
+    color: #fff;
+}
+
+/* Form */
+.formContainer {
+    background: var(--cardBg);
+    border: 1px solid var(--cardBorder);
+    padding: 40px;
+    border-radius: 4px;
+}
+
+.formHeader {
+    margin-bottom: 30px;
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    color: var(--accentSecondary);
+}
+
+.form label {
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    color: var(--textMuted);
+    margin-bottom: 10px;
+}
+
+.input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    color: #fff;
+    padding: 12px 15px;
+    transition: var(--transitionBase);
+}
+
+.input:focus {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accentPrimary);
+    box-shadow: none;
+    color: #fff;
+}
+
+.submitBtn {
+    width: 100%;
+    padding: 15px;
+    background: transparent;
+    border: 1px solid var(--accentPrimary);
+    color: var(--accentPrimary);
+    font-family: 'monospace';
+    font-weight: 700;
+    transition: var(--transitionBase);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+.submitBtn:hover:not(:disabled) {
+    background: var(--accentPrimary);
+    color: #000;
+}
+
+.submitBtn:disabled {
+    opacity: 0.5;
+    border-color: var(--textMuted);
+    color: var(--textMuted);
+}

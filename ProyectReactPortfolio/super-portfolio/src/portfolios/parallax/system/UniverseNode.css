@@ -1,0 +1,37 @@
+.universe-node {
+  position: absolute;
+
+  background: var(--px-bg-1);
+  border: 1px solid var(--px-border);
+
+  padding: var(--px-space-sm) var(--px-space-md);
+  border-radius: var(--px-radius-sm);
+
+  font-size: 12px;
+  color: var(--px-text-secondary);
+
+  transition: 0.15s ease;
+  cursor: pointer;
+}
+
+.universe-node:hover {
+  border-color: var(--px-accent);
+  color: var(--px-text-primary);
+}
+
+.universe-node.active {
+  border-color: var(--px-accent);
+  background: var(--px-accent-soft);
+  color: var(--px-text-primary);
+}
+
+.universe-node-label {
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.universe-node-meta {
+  font-size: 10px;
+  color: var(--px-text-muted);
+  margin-top: 4px;
+}

@@ -1,0 +1,334 @@
+.studioWrapper {
+    background-color: var(--bgDark);
+    color: var(--textMain);
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Base Grid Overlay */
+.studioWrapper::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.contentContainer {
+    position: relative;
+    z-index: 1;
+}
+
+/* ===== HERO ===== */
+.heroSection {
+    padding: 160px 0 100px;
+    text-align: center;
+}
+
+.heroTag {
+    font-family: 'monospace';
+    color: var(--accentSecondary);
+    font-size: 0.8rem;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.heroTitle {
+    font-size: 5.5rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 20px;
+    letter-spacing: -4px;
+}
+
+.heroSubtitle {
+    font-size: 1.2rem;
+    color: var(--textMuted);
+    font-family: 'monospace';
+    max-width: 600px;
+    margin: 0 auto 60px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.blueprintContainer {
+    width: 100%;
+    height: 400px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.01);
+    position: relative;
+    margin-top: 60px;
+    border-radius: var(--borderRadiusMd);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.blueprintLine {
+    position: absolute;
+    background: var(--accentSecondary);
+    opacity: 0.2;
+}
+
+.blueprintCircle {
+    position: absolute;
+    border: 1px solid var(--accentSecondary);
+    opacity: 0.2;
+    border-radius: 50%;
+}
+
+/* Animación sutil de blueprint */
+.blueprintOverlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at center, transparent 0%, var(--bgDark) 100%);
+    z-index: 2;
+}
+
+/* ===== FILOSOFÍA ===== */
+.section {
+    padding: 120px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sectionHeader {
+    margin-bottom: 80px;
+}
+
+.sectionNumber {
+    font-family: 'monospace';
+    color: var(--accentSecondary);
+    margin-bottom: 15px;
+    display: block;
+}
+
+.sectionTitle {
+    font-size: 3rem;
+    font-weight: 700;
+    letter-spacing: -1px;
+}
+
+.philosophyGrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40px;
+}
+
+.philosophyCard {
+    padding: 40px;
+    border-left: 2px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s ease;
+}
+
+.philosophyCard:hover {
+    border-left-color: var(--accentSecondary);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.philosophyCard h3 {
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.philosophyCard p {
+    color: var(--textMuted);
+    line-height: 1.7;
+}
+
+/* ===== METHODOLOGY PIPELINE ===== */
+.pipelineContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 60px 0;
+    position: relative;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.pipelineStep {
+    text-align: center;
+    position: relative;
+    flex: 1;
+    min-width: 120px;
+}
+
+.stepIcon {
+    width: 60px;
+    height: 60px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    background: var(--bgDark);
+    position: relative;
+    z-index: 2;
+    transition: all 0.3s ease;
+}
+
+.pipelineStep:hover .stepIcon {
+    border-color: var(--accentSecondary);
+    color: var(--accentSecondary);
+    transform: translateY(-5px);
+}
+
+.stepLabel {
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--textMuted);
+}
+
+.connector {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 1;
+}
+
+/* ===== STACK MENTAL MODEL ===== */
+.stackGrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
+}
+
+.stackItem {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.stackItem:hover {
+    border-color: var(--accentSecondary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.stackItem i {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.stackTitle {
+    font-weight: 700;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.stackDesc {
+    font-size: 0.8rem;
+    color: var(--textMuted);
+}
+
+/* ===== DESIGN SYSTEMS ===== */
+.dsContent {
+    display: flex;
+    gap: 60px;
+    align-items: center;
+}
+
+.dsVisual {
+    flex: 1;
+    height: 300px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    background: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(255, 255, 255, 0.02) 10px,
+            rgba(255, 255, 255, 0.02) 20px);
+}
+
+.dsText {
+    flex: 1;
+}
+
+/* ===== FINAL CTA ===== */
+.finalCTA {
+    padding: 160px 0;
+    text-align: center;
+}
+
+.ctaTitle {
+    font-size: 4rem;
+    font-weight: 900;
+    margin-bottom: 40px;
+    letter-spacing: -2px;
+}
+
+.btnCTA {
+    background: transparent;
+    color: #fff;
+    border: 1px solid #fff;
+    padding: 20px 60px;
+    font-size: 1.2rem;
+    font-family: 'monospace';
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btnCTA:hover {
+    background: #fff;
+    color: #000;
+}
+
+/* Responsive */
+@media (max-width: 991px) {
+    .heroTitle {
+        font-size: 3.5rem;
+    }
+
+    .philosophyGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .stackGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dsContent {
+        flex-direction: column;
+    }
+
+    .connector {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .heroTitle {
+        font-size: 2.5rem;
+    }
+
+    .stackGrid {
+        grid-template-columns: 1fr;
+    }
+
+    .ctaTitle {
+        font-size: 2.5rem;
+    }
+}

@@ -1,0 +1,355 @@
+.pageWrapper {
+    padding: 180px 0 150px;
+    background-color: var(--bgDark);
+}
+
+/* HEADER SECTION */
+.pageHeader {
+    max-width: 850px;
+    margin: 0 auto 150px;
+    /* Increased bottom margin for header */
+}
+
+.headerMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.serial {
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    color: var(--accentSecondary);
+    letter-spacing: 3px;
+}
+
+.pageTitle {
+    font-size: 4rem;
+    /* Increased size */
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 30px;
+    letter-spacing: -3px;
+    color: #ffffff;
+    /* High contrast */
+}
+
+.pageSubtitle {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    color: #9ca3af;
+    /* Legible gray */
+    max-width: 650px;
+}
+
+/* CASE STUDY INDIVIDUAL UNIT */
+.featuredList {
+    display: flex;
+    flex-direction: column;
+    gap: 220px;
+    /* Deep vertical rhythm for seniority */
+    margin-bottom: 250px;
+}
+
+.caseStudy {
+    max-width: 850px;
+    margin: 0 auto;
+}
+
+.caseMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.projectId {
+    font-family: 'monospace';
+    font-size: 0.8rem;
+    color: var(--accentPrimary);
+    letter-spacing: 2px;
+}
+
+.caseLinks {
+    display: flex;
+    gap: 20px;
+}
+
+.caseLinks a {
+    color: #9ca3af;
+    font-size: 1.2rem;
+    transition: var(--transitionBase);
+}
+
+.caseLinks a:hover {
+    color: #ffffff;
+}
+
+.caseTitle {
+    font-size: 2.8rem;
+    /* High impact */
+    font-weight: 800;
+    margin-bottom: 15px;
+    letter-spacing: -1.5px;
+    color: #ffffff;
+    /* High contrast */
+}
+
+.caseTags {
+    display: block;
+    font-family: 'monospace';
+    font-size: 0.9rem;
+    color: var(--accentSecondary);
+    margin-bottom: 80px;
+    /* More air */
+    padding-bottom: 25px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    letter-spacing: 1px;
+}
+
+.caseContent {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    /* Breathable sections */
+}
+
+/* SECTION TYPOGRAPHY */
+.label {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    /* Editorial spacing */
+    color: #cbd5e1;
+    /* Mid-high contrast */
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.smallLabel {
+    display: block;
+    font-family: 'monospace';
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #cbd5e1;
+    margin-bottom: 15px;
+    letter-spacing: 2px;
+    font-weight: 700;
+}
+
+.section p,
+.bulletList li {
+    font-size: 1.15rem;
+    /* Better readability */
+    line-height: 1.8;
+    /* Editorial rhythm */
+    color: #9ca3af;
+    /* Base legible gray */
+    margin: 0;
+}
+
+/* TECHNICAL KEYWORD HIGHLIGHTING */
+.section p strong,
+.bulletList li strong,
+.learnedBox p strong {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.bulletList {
+    padding-left: 20px;
+    margin: 0;
+    list-style-type: none;
+}
+
+.bulletList li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 15px;
+}
+
+.bulletList li::before {
+    content: "—";
+    position: absolute;
+    left: 0;
+    color: var(--accentPrimary);
+    opacity: 0.5;
+}
+
+/* RESULTS GRID (Impact & Learning) */
+.resultsGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 50px;
+    margin-top: 20px;
+}
+
+.impactBox {
+    background: linear-gradient(90deg, rgba(37, 244, 106, 0.04) 0%, transparent 100%);
+    padding: 40px;
+    border-left: 3px solid var(--accentPrimary);
+    /* Stronger accent */
+}
+
+.learnedBox {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 40px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.impactBox p,
+.learnedBox p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: #9ca3af;
+}
+
+/* ADDITIONAL PROJECTS SECTION */
+.additionalSection {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-top: 150px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.additionalHeader {
+    margin-bottom: 80px;
+}
+
+.additionalTitle {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    color: #ffffff;
+}
+
+.additionalHeader p {
+    color: #9ca3af;
+    font-size: 1.1rem;
+}
+
+.additionalGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.additionalCard {
+    background: rgba(255, 255, 255, 0.012);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 40px;
+    border-radius: 4px;
+    text-decoration: none;
+    transition: var(--transitionBase);
+    display: flex;
+    flex-direction: column;
+}
+
+.additionalCard:hover {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-4px);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.cardIcon {
+    font-size: 1.8rem;
+    color: var(--accentPrimary);
+    opacity: 0.4;
+}
+
+.arrowIcon {
+    font-size: 1.4rem;
+    color: var(--accentPrimary);
+    opacity: 0;
+    transition: 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+}
+
+.additionalCard:hover .arrowIcon {
+    opacity: 1;
+    transform: translateX(8px);
+}
+
+.additionalCard h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #ffffff;
+}
+
+.cardStack {
+    display: block;
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    color: var(--accentSecondary);
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+.additionalCard p {
+    font-size: 0.95rem;
+    color: #9ca3af;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.engineFooter {
+    margin-top: 200px;
+    padding-top: 120px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 991px) {
+    .pageWrapper {
+        padding: 120px 0 80px;
+    }
+
+    .pageHeader {
+        margin-bottom: 80px;
+        text-align: center;
+    }
+
+    .pageTitle {
+        font-size: 3rem;
+        letter-spacing: -2px;
+    }
+
+    .pageSubtitle {
+        margin: 0 auto;
+    }
+
+    .featuredList {
+        gap: 120px;
+        margin-bottom: 150px;
+    }
+
+    .caseTitle {
+        font-size: 2.2rem;
+        text-align: center;
+    }
+
+    .resultsGrid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .caseTags {
+        text-align: center;
+        margin-bottom: 50px;
+    }
+
+    .additionalSection {
+        padding-top: 100px;
+    }
+
+    .additionalGrid {
+        grid-template-columns: 1fr;
+    }
+}

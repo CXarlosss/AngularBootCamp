@@ -1,0 +1,58 @@
+/* ==========================================================
+   GLOBAL VARIABLES - ANTI-GRAVITY STUDIO DESIGN SYSTEM
+   ========================================================== */
+
+:root {
+  /* 
+   * CORE INMUTABLES - Nunca cambian 
+   */
+  --bgDark: #070908;
+  --textMain: #ffffff;
+  --textMuted: rgba(255, 255, 255, 0.6);
+  --cardBg: rgba(15, 18, 17, 0.6);
+  --cardBorder: rgba(255, 255, 255, 0.08);
+  
+  /* Acentos base */
+  --accentPrimary: #25f46a;
+  --accentSecondary: #4a8dfa;
+  
+  /* 
+   * DIMENSION-SPECIFIC ACCENTS 
+   */
+  --glassAccent: #f88400;
+  --glassText: #bdefff;
+  
+  --retroAccent: #00ff41;
+  --retroText: #3f8f3f;
+  
+  --modernAccent: #0059ff;
+  
+  --creativeAccent: #ff00cc;
+  --creativeText: #ff88dd;
+  
+  /* 
+   * SIDEBAR VARIABLES INMUTABLES 
+   * Estructura base que NUNCA cambia
+   */
+  --sidebar-bg-start: rgba(18, 18, 18, 0.96);
+  --sidebar-bg-end: rgba(0, 0, 0, 0.92);
+  --sidebar-border: rgba(255, 255, 255, 0.05);
+  --sidebar-width: 200px;
+  --sidebar-hidden: -150px;
+  
+  /* 
+   * SIDEBAR ACENTOS DINÁMICOS 
+   * Estos sí cambian según tema, pero solo afectan detalles
+   */
+  --sidebar-accent: #ffffff;      /* Color de acento activo */
+  --sidebar-text: #888;           /* Texto inactivo */
+  --sidebar-hover: #ffffff;       /* Texto hover */
+  
+  /* Utilidades */
+  --transitionBase: all 0.3s ease;
+  --transitionSidebar: left 0.45s cubic-bezier(0.77, 0, 0.175, 1);
+  --borderRadiusSm: 12px;
+  --borderRadiusMd: 30px;
+  --borderRadiusLg: 40px;
+  --borderRadiusFull: 100px;
+}

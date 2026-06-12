@@ -1,0 +1,126 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.education {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 6rem 4rem;
+}
+
+/* ======================================================
+   TITULO PRINCIPAL
+   ====================================================== */
+
+.mainTitle {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--glass-text);
+  margin-bottom: 5rem;
+  letter-spacing: -0.5px;
+  position: relative;
+}
+
+.mainTitle::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 1.5rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   CONTENEDOR ITEMS
+   ====================================================== */
+
+.educationItemsContainer {
+  display: grid;
+  gap: 3rem;
+}
+
+/* ======================================================
+   ITEM
+   ====================================================== */
+
+.educationItem {
+  padding: 2.8rem 3rem;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-sm);
+
+  box-shadow:
+    0 1.2rem 3rem rgba(var(--glass-shadow-rgb), 0.2);
+
+  transition: all 0.35s ease;
+}
+
+.educationItem:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 2rem 4rem rgba(var(--glass-shadow-rgb), 0.35);
+}
+
+/* ======================================================
+   TITULO
+   ====================================================== */
+
+.educationTitle {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--glass-text);
+  margin-bottom: 0.5rem;
+}
+
+/* ======================================================
+   INSTITUCIÓN
+   ====================================================== */
+
+.educationInstitution {
+  font-size: 1.4rem;
+  color: var(--glass-text-light);
+  margin-bottom: 0.8rem;
+}
+
+/* ======================================================
+   FECHA
+   ====================================================== */
+
+.educationDate {
+  font-size: 1.3rem;
+  font-weight: 500;
+  color: var(--glass-accent);
+  margin-bottom: 1.2rem;
+}
+
+/* ======================================================
+   DESCRIPCIÓN
+   ====================================================== */
+
+.educationDescription {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: var(--glass-text-light);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .education {
+    padding: 4rem 2rem;
+  }
+
+  .mainTitle {
+    font-size: 2.4rem;
+  }
+
+}

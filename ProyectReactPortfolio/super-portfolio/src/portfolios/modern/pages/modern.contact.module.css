@@ -1,0 +1,168 @@
+/* ===============================
+   HERO
+================================ */
+
+.modern-contact-title {
+  font-size: clamp(3.5rem, 6vw, 5.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  margin-bottom: 2rem;
+  max-width: 900px;
+}
+
+.modern-contact-title::after {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 6px;
+  background: var(--modern-accent);
+  margin-top: 2rem;
+}
+
+.modern-contact-subtitle {
+  font-size: 1.2rem;
+  color: var(--modern-muted);
+  line-height: 1.8;
+  max-width: 600px;
+}
+
+/* ===============================
+   GRID
+================================ */
+
+.modern-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 8rem;
+  align-items: start;
+  padding-top: 6rem;
+  border-top: 1px solid var(--modern-border);
+}
+
+@media (max-width: 1024px) {
+  .modern-contact-grid {
+    grid-template-columns: 1fr;
+    gap: 5rem;
+  }
+}
+
+/* ===============================
+   LEFT INFO
+================================ */
+
+.modern-contact-info {
+  padding-right: 2rem;
+}
+
+.modern-contact-info h3 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  letter-spacing: -0.03em;
+}
+
+.modern-contact-info p {
+  color: var(--modern-muted);
+  margin-bottom: 3rem;
+  line-height: 1.8;
+  font-size: 1.05rem;
+}
+
+.modern-contact-meta {
+  margin-bottom: 2.5rem;
+}
+
+.modern-contact-meta span {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--modern-muted);
+  margin-bottom: 0.6rem;
+}
+
+.modern-contact-meta strong {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ===============================
+   FORM CARD
+================================ */
+
+.modern-contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+/* INPUTS – BRUTAL STYLE */
+
+.modern-contact-form input,
+.modern-contact-form textarea {
+  width: 100%;
+  padding: 1.2rem 0;
+
+  border: none;
+  border-bottom: 2px solid var(--modern-border);
+
+  background: transparent;
+
+  font-size: 1.1rem;
+  font-weight: 500;
+  font-family: inherit;
+
+  transition: border-color 0.25s ease;
+}
+
+.modern-contact-form input::placeholder,
+.modern-contact-form textarea::placeholder {
+  color: var(--modern-muted);
+  opacity: 0.6;
+}
+
+.modern-contact-form input:focus,
+.modern-contact-form textarea:focus {
+  outline: none;
+  border-bottom: 2px solid var(--modern-accent);
+}
+
+/* Button separation */
+
+.modern-contact-form button {
+  margin-top: 2rem;
+}
+/* LINKS BLOCK */
+
+.modern-contact-links {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.modern-contact-link {
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+
+.modern-contact-link span {
+  font-size: 0.8rem;
+  opacity: 0.6;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.modern-contact-link strong {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.modern-contact-link:hover {
+  transform: translateX(6px);
+}

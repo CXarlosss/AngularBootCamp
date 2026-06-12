@@ -1,0 +1,83 @@
+/* ======================================================
+   PAGE WRAPPER
+   ====================================================== */
+
+.homePage {
+  position: relative;
+  min-height: 100vh;
+  padding: 6rem 4rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10rem;
+}
+
+/* ======================================================
+   DECORATIVE BACKGROUND GLOW
+   ====================================================== */
+
+.homePage::before {
+  content: "";
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  top: -200px;
+  right: -200px;
+
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.12),
+    transparent 70%
+  );
+
+  pointer-events: none;
+  z-index: 0;
+}
+
+.homePage::after {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  bottom: -150px;
+  left: -150px;
+
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.08),
+    transparent 70%
+  );
+
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ======================================================
+   ENSURE CONTENT ABOVE GLOW
+   ====================================================== */
+
+.homePage > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ======================================================
+   SECTION SPACING IMPROVEMENT
+   ====================================================== */
+
+.homePage section {
+  scroll-margin-top: 120px;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .homePage {
+    padding: 4rem 2rem;
+    gap: 7rem;
+  }
+
+}

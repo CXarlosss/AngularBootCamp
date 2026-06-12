@@ -1,0 +1,170 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.skillsSection {
+  position: relative;
+  padding: 7rem 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Fondo atmosférico */
+
+.skillsSection::before {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  bottom: -150px;
+  left: -150px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.08),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ======================================================
+   HEADER
+   ====================================================== */
+
+.sectionHeader {
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.sectionTitle {
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: var(--glass-text);
+  margin-bottom: 1rem;
+  letter-spacing: -0.5px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.5rem 1.4rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+  border-radius: 50px;
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.8);
+  border: 1px solid var(--glass-border);
+
+  color: var(--glass-accent);
+  backdrop-filter: blur(6px);
+}
+
+/* ======================================================
+   GRID
+   ====================================================== */
+
+.skillsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 3rem;
+}
+
+/* ======================================================
+   CATEGORY CARD
+   ====================================================== */
+
+.skillCategory {
+  padding: 2.5rem 2rem;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 1.5rem 3.5rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  transition: all 0.35s ease;
+}
+
+.skillCategory:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 2.5rem 5rem rgba(var(--glass-shadow-rgb), 0.4);
+}
+
+/* ======================================================
+   CATEGORY TITLE
+   ====================================================== */
+
+.skillCategory h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--glass-text);
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+/* Línea decorativa bajo h3 */
+
+.skillCategory h3::after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 2px;
+  margin-top: 0.8rem;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   TAGS
+   ====================================================== */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.tags span {
+  padding: 0.6rem 1.3rem;
+  font-size: 1.2rem;
+  border-radius: 50px;
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.7);
+  border: 1px solid var(--glass-border);
+
+  color: var(--glass-text);
+
+  backdrop-filter: blur(6px);
+
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+/* Hover elegante */
+
+.tags span:hover {
+  background: var(--glass-accent);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow:
+    0 0.8rem 2rem rgba(var(--glass-shadow-rgb), 0.3);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .skillsSection {
+    padding: 5rem 2rem;
+  }
+
+  .sectionTitle {
+    font-size: 2.6rem;
+  }
+
+}

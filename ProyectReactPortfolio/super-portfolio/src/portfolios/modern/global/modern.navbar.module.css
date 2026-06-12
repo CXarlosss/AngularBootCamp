@@ -1,0 +1,66 @@
+.modern-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+
+  background: var(--modern-bg);
+  border-bottom: 1px solid var(--modern-border);
+
+  backdrop-filter: blur(8px);
+}
+
+.modern-navbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  height: 88px;
+}
+
+/* LOGO */
+
+.modern-logo {
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+/* LINKS */
+
+.modern-nav-links {
+  display: flex;
+  gap: 2.5rem;
+}
+
+.modern-nav-links a {
+  text-decoration: none;
+  color: var(--modern-muted);
+
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
+  position: relative;
+  transition: color var(--modern-transition);
+}
+
+.modern-nav-links a:hover {
+  color: var(--modern-text);
+}
+
+/* ACTIVE */
+
+.active-link {
+  color: var(--modern-text);
+}
+
+.active-link::after {
+  content: "";
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: var(--modern-text);
+}

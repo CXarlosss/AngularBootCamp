@@ -1,0 +1,187 @@
+/* ======================================================
+   HEADER CONTENEDOR
+   ====================================================== */
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  padding: 1.5rem 4rem;
+}
+
+/* ======================================================
+   NAVBAR GLASS
+   ====================================================== */
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  padding: 1.2rem 2rem;
+
+  box-shadow: 0 1rem 3rem rgba(var(--glass-shadow-rgb), 0.2);
+  transition: var(--transition);
+}
+
+/* ======================================================
+   LOGO
+   ====================================================== */
+
+.logo {
+  font-size: 1.8rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--glass-text);
+  cursor: pointer;
+  position: relative;
+  transition: var(--transition);
+}
+
+.logo:hover {
+  opacity: 0.8;
+}
+
+/* ======================================================
+   LINKS
+   ====================================================== */
+
+.navLinks {
+  display: flex;
+  gap: 3rem;
+  list-style: none;
+}
+
+.navLinks li {
+  position: relative;
+}
+
+.navLinks a {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--glass-text-light);
+  text-decoration: none;
+  position: relative;
+  transition: var(--transition);
+  padding-bottom: 4px;
+}
+
+/* Underline animado */
+
+.navLinks a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 2px;
+  width: 0%;
+  background: var(--glass-accent);
+  transition: width 0.3s ease;
+}
+
+.navLinks a:hover {
+  color: var(--glass-text);
+}
+
+.navLinks a:hover::after {
+  width: 100%;
+}
+
+/* LINK ACTIVO */
+
+.active {
+  color: var(--glass-text);
+}
+
+.active::after {
+  width: 100% !important;
+}
+
+/* ======================================================
+   HAMBURGUESA
+   ====================================================== */
+
+.menuToggle {
+  display: none;
+  background: var(--glass-bg-soft);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  width: 4.2rem;
+  height: 4.2rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  color: var(--glass-text);
+  transition: var(--transition);
+}
+
+.menuToggle:hover {
+  transform: rotate(90deg);
+  box-shadow: 0 0.6rem 1.2rem rgba(var(--glass-shadow-rgb), 0.25);
+}
+
+/* ======================================================
+   MODO MÓVIL
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .menuToggle {
+    display: flex;
+  }
+
+  .navLinks {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    height: 100vh;
+    width: 280px;
+
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 4rem;
+
+    background: var(--glass-bg-base);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+
+    border-left: 1px solid var(--glass-border);
+    box-shadow: -1rem 0 3rem rgba(var(--glass-shadow-rgb), 0.25);
+
+    transition: right 0.4s ease;
+  }
+
+  .navLinksOpen {
+    right: 0;
+  }
+
+  .navLinks a {
+    font-size: 1.6rem;
+  }
+}
+
+/* ======================================================
+   BACKDROP
+   ====================================================== */
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(var(--glass-shadow-rgb), 0.35);
+  backdrop-filter: blur(4px);
+  border: none;
+  z-index: 999;
+}
+
+/* Bloqueo scroll cuando menú abierto */
+:global(body.nav-open) {
+  overflow: hidden;
+}

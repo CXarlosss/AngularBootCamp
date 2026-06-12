@@ -1,0 +1,143 @@
+/* ===============================
+   BASE
+================================ */
+
+.creative-about {
+  padding: 8rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+}
+
+.creative-about > div:not(:first-child) {
+  border-top: var(--creative-border);
+  padding-top: 5rem;
+}
+
+/* ===============================
+   HEADER
+================================ */
+
+.creative-about-header {
+  position: relative;
+  max-width: 900px;
+}
+
+.creative-about-header h1 {
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: 0.9;
+}
+
+.creative-about-header p {
+  margin-top: 2rem;
+  font-weight: 600;
+  max-width: 600px;
+  font-size: 1.1rem;
+}
+
+.creative-about-header::after {
+  content: "";
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 150px;
+  height: 8px;
+  background: var(--creative-primary);
+}
+
+/* ===============================
+   INTRO
+================================ */
+
+.creative-about-intro {
+  max-width: 750px;
+  transform: translateX(20px);
+}
+
+/* ===============================
+   STACK
+================================ */
+
+.creative-about-stack h2 {
+  font-size: 2.5rem;
+  font-weight: 900;
+}
+
+.creative-stack-grid {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+}
+
+.creative-stack-item {
+  background: var(--creative-secondary);
+  border: var(--creative-border);
+  padding: 1.2rem;
+  font-weight: 800;
+  transition: transform 0.15s ease;
+  box-shadow: 8px 8px 0 var(--creative-dark);
+}
+
+.creative-stack-item:hover {
+  transform: translate(-6px, -6px);
+}
+
+/* ===============================
+   EXPERIENCIA
+================================ */
+
+.creative-about-experience {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 3rem;
+}
+
+.creative-about-experience h2 {
+  grid-column: 1 / -1;
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+}
+
+/* ===============================
+   PASSIONS
+================================ */
+
+.creative-about-passions h2 {
+  font-size: 2.5rem;
+  font-weight: 900;
+}
+
+.creative-passions-grid {
+  margin-top: 3rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 2rem;
+}
+
+.creative-passion-item {
+  background: var(--creative-accent);
+  border: var(--creative-border);
+  padding: 1.2rem;
+  font-weight: 800;
+  text-align: center;
+  transition: transform 0.2s ease;
+  box-shadow: 6px 6px 0 var(--creative-dark);
+}
+
+.creative-passion-item:hover {
+  transform: translate(-6px, -6px);
+}
+
+/* Collage controlado */
+
+.creative-passion-item:nth-child(odd) {
+  rotate: -1.5deg;
+}
+
+.creative-passion-item:nth-child(even) {
+  rotate: 1.5deg;
+}

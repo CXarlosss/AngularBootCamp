@@ -1,0 +1,126 @@
+/* ================================
+   COMMAND BAR ROOT
+================================ */
+
+.command-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+
+  height: 72px;
+  width: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 5px 220px;
+;
+
+  background: rgba(15, 17, 23, 0.85);
+  backdrop-filter: blur(12px);
+
+  border-bottom: 1px solid rgba(77,166,255,0.15);
+}
+
+
+/* ================================
+   SECTIONS
+================================ */
+
+.command-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.command-section.center {
+  justify-content: center;
+  flex: 1;
+}
+
+.command-section.left {
+  min-width: 280px;
+}
+
+.command-section.right {
+  min-width: 280px;
+  justify-content: flex-end;
+}
+
+
+/* ================================
+   SYSTEM NAME
+================================ */
+
+.system-name {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #4DA6FF;
+}
+
+.system-id {
+  font-size: 13px;
+  opacity: 0.6;
+  letter-spacing: 0.5px;
+}
+
+
+/* ================================
+   STATUS INDICATOR
+================================ */
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.status-indicator.online {
+  background: #2ECC71;
+  box-shadow: 0 0 8px rgba(46, 204, 113, 0.8);
+}
+
+
+/* ================================
+   MODE LABEL
+================================ */
+
+.mode-label {
+  font-size: 13px;
+  letter-spacing: 1px;
+  font-weight: 500;
+  color: #E6EDF3;
+}
+
+
+/* ================================
+   BUTTONS
+================================ */
+
+.command-section.right button {
+  background: transparent;
+  border: 1px solid rgba(77,166,255,0.25);
+  color: #E6EDF3;
+
+  padding: 8px 18px;
+  border-radius: 8px;
+
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition: all 0.25s ease;
+}
+
+.command-section.right button:hover {
+  border-color: #4DA6FF;
+  background: rgba(77,166,255,0.08);
+}
+
+.command-section.right button:active {
+  transform: scale(0.96);
+}

@@ -1,0 +1,194 @@
+/* =========================================
+   BASE MATRIX LAYOUT
+========================================= */
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #000;
+  overflow-x: hidden;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+/* ROOT CONTAINER */
+
+.retro-root {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #b6ffb6;
+}
+
+/* =========================================
+   HEADER
+========================================= */
+
+.retro-header {
+  position: relative;
+  z-index: 2; /* 🔥 BAJAMOS NIVEL */
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 1rem 2rem;
+  border-bottom: 1px solid rgba(0,255,136,0.3);
+}
+
+.retro-logo {
+  font-size: 0.85rem;
+  opacity: 0.6;
+}
+
+.retro-nav a {
+  margin-left: 1rem;
+  font-size: 0.8rem;
+  text-decoration: none;
+  color: #00ff88;
+  transition: 0.2s ease;
+}
+
+.retro-nav a:hover {
+  text-shadow: 0 0 10px #00ff88;
+}
+
+/* =========================================
+   MAIN CENTERING
+========================================= */
+
+.retro-main {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+
+  position: relative;
+  z-index: 2; /* 🔥 BAJAMOS NIVEL */
+}
+
+/* =========================================
+   TERMINAL
+========================================= */
+
+.retro-terminal {
+  width: 100%;
+  max-width: 900px;
+
+  border-radius: 8px;
+  overflow: hidden;
+
+  border: 1px solid rgba(0,255,136,0.4);
+
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+
+  box-shadow:
+    0 0 40px rgba(0,255,136,0.25),
+    inset 0 0 40px rgba(0,255,136,0.05);
+
+  transition: all 0.4s ease;
+
+  position: relative;
+  z-index: 2; /* 🔥 BAJAMOS NIVEL */
+}
+
+/* TERMINAL BAR */
+
+.retro-terminal-bar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: #081c14;
+  border-bottom: 1px solid rgba(0,255,136,0.3);
+  font-size: 0.75rem;
+}
+
+.retro-terminal-bar .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 6px;
+}
+
+.red { background: #ff5f57; }
+.yellow { background: #ffbd2e; }
+.green { background: #28c840; }
+
+.terminal-title {
+  margin-left: 8px;
+  opacity: 0.6;
+}
+
+/* TERMINAL BODY */
+
+.retro-terminal-body {
+  position: relative;
+  padding: 40px;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  min-height: 400px;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.retro-footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.75rem;
+  opacity: 0.5;
+  border-top: 1px solid rgba(0,255,136,0.2);
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================================
+   UNLOCK SECTION
+========================================= */
+
+.retro-unlock-wrapper {
+  text-align: center;
+}
+
+.retro-lock-message {
+  font-size: 1.2rem;
+  margin-bottom: 25px;
+  letter-spacing: 3px;
+  color: #00ff88;
+  text-shadow: 0 0 8px #00ff88;
+  animation: pulseText 2s infinite;
+}
+
+@keyframes pulseText {
+  0%,100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.retro-unlock-btn {
+  padding: 14px 28px;
+  background: transparent;
+  border: 1px solid #00ff88;
+  color: #00ff88;
+  font-size: 0.85rem;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.retro-unlock-btn:hover {
+  background: rgba(0,255,136,0.1);
+  box-shadow: 0 0 20px #00ff88;
+}
+
+.retro-access-granted {
+  text-align: center;
+  font-size: 1.8rem;
+  letter-spacing: 4px;
+  margin-bottom: 30px;
+  color: #00ff88;
+  text-shadow: 0 0 20px #00ff88;
+}

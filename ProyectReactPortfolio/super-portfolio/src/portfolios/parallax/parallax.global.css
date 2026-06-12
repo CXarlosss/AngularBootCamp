@@ -1,0 +1,17 @@
+.parallax-root {
+  height: 100vh;
+  width: 100%;
+  background: var(--px-bg-0);
+  color: var(--px-text-primary);
+  font-family: var(--px-font-family);
+
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.parallax-main {
+  flex: 1;
+  position: relative;
+  background: var(--px-bg-1);
+}

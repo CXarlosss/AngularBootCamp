@@ -1,0 +1,84 @@
+/* skillBadge.module.css – Glass Apple Style Premium */
+
+/* ======================================================
+   🧊 VARIABLES LOCALES – Consistencia con el sistema
+   ====================================================== */
+.skillBadge {
+  --badge-bg: rgba(98, 146, 190, 0.06);
+  --badge-border: rgba(98, 146, 190, 0.15);
+  --badge-text: #2a4e6b;
+  --badge-bg-hover: rgba(98, 146, 190, 0.12);
+  --badge-border-hover: rgba(98, 146, 190, 0.3);
+  --badge-text-hover: #1e3b4f;
+  --transition: all 0.2s ease;
+}
+
+/* ======================================================
+   🏷️ ESTILO BASE – Badge / Pill ultra sutil
+   ====================================================== */
+.skillBadge {
+  display: inline-block;
+  background: var(--badge-bg);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid var(--badge-border);
+  border-radius: 30px;
+  padding: 0.3rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--badge-text);
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+/* Hover suave – acento azul acero */
+.skillBadge:hover {
+  background: var(--badge-bg-hover);
+  border-color: var(--badge-border-hover);
+  color: var(--badge-text-hover);
+  transform: translateY(-1px);
+}
+
+/* Focus visible – accesibilidad */
+.skillBadge:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(98, 146, 190, 0.25);
+}
+
+/* ======================================================
+   📱 RESPONSIVE – Ajuste fino en móvil
+   ====================================================== */
+@media (max-width: 768px) {
+  .skillBadge {
+    padding: 0.25rem 0.9rem;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .skillBadge {
+    padding: 0.2rem 0.8rem;
+    font-size: 0.8rem;
+    white-space: normal; /* permite que el texto fluya si es muy largo */
+  }
+}
+
+/* ======================================================
+   🌙 DARK MODE – Adaptación elegante
+   ====================================================== */
+@media (prefers-color-scheme: dark) {
+  .skillBadge {
+    --badge-bg: rgba(98, 146, 190, 0.12);
+    --badge-border: rgba(98, 146, 190, 0.25);
+    --badge-text: #c0e0ff;
+    --badge-bg-hover: rgba(98, 146, 190, 0.2);
+    --badge-border-hover: rgba(98, 146, 190, 0.4);
+    --badge-text-hover: white;
+  }
+
+  .skillBadge:focus {
+    box-shadow: 0 0 0 3px rgba(98, 146, 190, 0.4);
+  }
+}

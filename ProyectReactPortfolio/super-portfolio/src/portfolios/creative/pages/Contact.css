@@ -1,0 +1,166 @@
+/* =================================
+   BASE
+================================= */
+
+.creative-contact {
+  padding: 8rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.creative-contact > div:not(:first-child) {
+  border-top: var(--creative-border);
+  padding-top: 4rem;
+}
+
+/* =================================
+   HEADER
+================================= */
+
+.creative-contact-header {
+  position: relative;
+  max-width: 800px;
+}
+
+.creative-contact-header h1 {
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: 0.9;
+}
+
+.creative-contact-header p {
+  margin-top: 2rem;
+  font-weight: 600;
+  font-size: 1.1rem;
+  max-width: 600px;
+}
+
+.creative-contact-header::after {
+  content: "";
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 140px;
+  height: 8px;
+  background: var(--creative-primary);
+}
+
+/* =================================
+   GRID LAYOUT
+================================= */
+
+.creative-contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+}
+
+/* =================================
+   FORM BLOCK
+================================= */
+
+.creative-contact-form {
+  background: white;
+  border: var(--creative-border);
+  padding: 2.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  box-shadow: 12px 12px 0 var(--creative-dark);
+}
+
+/* FORM GROUPS */
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.form-group label {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
+}
+
+.form-group input,
+.form-group textarea {
+  border: var(--creative-border);
+  padding: 0.9rem;
+  font-weight: 600;
+  font-size: 1rem;
+  outline: none;
+  background: white;
+  transition: transform 0.15s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  transform: translate(-4px, -4px);
+}
+
+/* =================================
+   SUBMIT BUTTON
+================================= */
+
+.creative-submit {
+  align-self: flex-start;
+  background: var(--creative-primary);
+  border: var(--creative-border);
+  padding: 1rem 2rem;
+  font-weight: 900;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.15s ease;
+  box-shadow: 10px 10px 0 var(--creative-dark);
+}
+
+.creative-submit:hover {
+  transform: translate(-6px, -6px);
+}
+
+/* =================================
+   INFO BLOCK
+================================= */
+
+.creative-contact-info {
+  background: var(--creative-secondary);
+  border: var(--creative-border);
+  padding: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  box-shadow: 12px 12px 0 var(--creative-dark);
+}
+
+.creative-contact-info h2 {
+  font-size: 2.5rem;
+  font-weight: 900;
+}
+
+.creative-contact-info p {
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+/* META LINKS */
+
+.creative-contact-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.creative-contact-meta div {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.creative-contact-meta div:hover {
+  transform: translate(-4px, -4px);
+}

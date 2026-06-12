@@ -1,0 +1,198 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.portfolioPage {
+  position: relative;
+  min-height: 100vh;
+  padding: 8rem 4rem;
+  overflow: hidden;
+
+  /* Fondo coherente con glass-theme */
+  background:
+    radial-gradient(circle at 15% 20%, rgba(var(--glass-accent-rgb), 0.08), transparent 45%),
+    radial-gradient(circle at 85% 80%, rgba(var(--glass-accent-rgb), 0.06), transparent 50%);
+}
+
+/* ======================================================
+   FLOATING DECORATIVE ELEMENTS
+   ====================================================== */
+
+.floatingElement {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.12),
+    transparent 70%
+  );
+
+  animation: float 16s ease-in-out infinite;
+  pointer-events: none;
+  filter: blur(20px);
+}
+
+.floatingElement:nth-child(1) {
+  top: -120px;
+  left: -120px;
+}
+
+.floatingElement:nth-child(2) {
+  bottom: -140px;
+  right: -140px;
+  animation-delay: 5s;
+}
+
+.floatingElement:nth-child(3) {
+  top: 45%;
+  right: -180px;
+  animation-delay: 10s;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(40px); }
+  100% { transform: translateY(0px); }
+}
+
+/* ======================================================
+   CONTENT WRAPPER
+   ====================================================== */
+
+.portfolioContentWrapper {
+  max-width: 1500px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+/* ======================================================
+   TITLE
+   ====================================================== */
+
+.portfolioContentWrapper h1 {
+  text-align: center;
+  font-size: 3.6rem;
+  font-weight: 600;
+  color: var(--glass-text);
+  margin-bottom: 3rem;
+  position: relative;
+}
+
+.portfolioContentWrapper h1::after {
+  content: "";
+  display: block;
+  width: 90px;
+  height: 2px;
+  margin: 1.8rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+  opacity: 0.8;
+}
+
+/* ======================================================
+   INTRO
+   ====================================================== */
+
+.portfolioIntro {
+  text-align: center;
+  max-width: 820px;
+  margin: 0 auto 5rem auto;
+  font-size: 1.6rem;
+  line-height: 1.7;
+  color: var(--glass-text-light);
+}
+
+/* ======================================================
+   STATS
+   ====================================================== */
+
+.portfolioStats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2.5rem;
+  margin-bottom: 6rem;
+}
+
+.statCard {
+  padding: 2.5rem;
+  text-align: center;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow: 0 1rem 2.5rem rgba(var(--glass-shadow-rgb), 0.15);
+
+  transition: var(--transition);
+}
+
+.statCard:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 2rem 3.5rem rgba(var(--glass-shadow-rgb), 0.25);
+}
+
+.statNumber {
+  font-size: 2.6rem;
+  font-weight: 700;
+  color: var(--glass-accent);
+  display: block;
+  margin-bottom: 0.6rem;
+}
+
+.statLabel {
+  font-size: 1.3rem;
+  color: var(--glass-text-light);
+}
+
+/* ======================================================
+   FILTERS
+   ====================================================== */
+
+.portfolioFilters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+  margin-bottom: 5rem;
+}
+
+.filterButton {
+  padding: 0.9rem 1.8rem;
+  border-radius: 999px;
+
+  background: var(--glass-bg-soft);
+  border: 1px solid var(--glass-border);
+
+  font-size: 1.3rem;
+  color: var(--glass-text);
+
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.filterButton:hover {
+  background: var(--glass-accent);
+  color: white;
+  transform: translateY(-3px);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .portfolioPage {
+    padding: 6rem 2rem;
+  }
+
+  .portfolioContentWrapper h1 {
+    font-size: 2.8rem;
+  }
+
+}

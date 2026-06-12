@@ -1,0 +1,61 @@
+/* UNIVERSAL SYSTEM STYLES */
+
+:root {
+    --bgDark: #0a0c0b;
+    /* Stable Background - Never changes */
+    --transitionBase: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    background-color: var(--bgDark) !important;
+    color: #fff;
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+/* 1. RETRO SKIN - Focus on UI overlays and accents only */
+.dimension-retro {
+    --textMuted: #2b2;
+    --accentPrimary: #2f2;
+    --accentSecondary: #1a1;
+    --cardBg: rgba(0, 20, 0, 0.4);
+    --cardBorder: #0d0;
+}
+
+.dimension-retro::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    z-index: 9999;
+    background-size: 100% 3px, 3px 100%;
+    pointer-events: none;
+    opacity: 0.4;
+}
+
+/* 2. GLASS SKIN - Focus on translucency */
+.dimension-glass {
+    --accentPrimary: #4a8dfa;
+    --accentSecondary: #6fa6ff;
+    --cardBg: rgba(255, 255, 255, 0.03);
+    --cardBorder: rgba(255, 255, 255, 0.1);
+}
+
+.dimension-glass .glass-effect {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* 3. MODERN SKIN - Focus on high contrast / minimal */
+.dimension-modern {
+    --accentPrimary: #fff;
+    --accentSecondary: #888;
+    --cardBg: #111;
+    --cardBorder: #222;
+}
+
+/* Ensure these transitions are global */
+* {
+    transition: background-color 0.5s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+}

@@ -1,0 +1,31 @@
+@keyframes pulseGlow {
+  0% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+}
+
+.playground-root::after {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(
+    circle,
+    rgba(0, 224, 255, 0.3),
+    transparent 70%
+  );
+  top: -200px;
+  left: -200px;
+  z-index: 0;
+  animation: pulseGlow 6s infinite ease-in-out;
+  pointer-events: none;
+}

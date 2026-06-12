@@ -1,0 +1,188 @@
+/* =================================
+   BASE
+================================= */
+
+.creative-portfolio {
+  padding: 8rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.creative-portfolio > div:not(:first-child) {
+  border-top: var(--creative-border);
+  padding-top: 4rem;
+}
+
+/* =================================
+   HEADER
+================================= */
+
+.creative-portfolio-header {
+  position: relative;
+  max-width: 800px;
+}
+
+.creative-portfolio-header h1 {
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: 0.9;
+}
+
+.creative-portfolio-header p {
+  margin-top: 2rem;
+  max-width: 600px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.creative-portfolio-header::after {
+  content: "";
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 150px;
+  height: 8px;
+  background: var(--creative-primary);
+}
+
+/* =================================
+   STATS
+================================= */
+
+.creative-portfolio-stats {
+  display: flex;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.creative-stat span {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--creative-primary);
+}
+
+.creative-stat p {
+  font-weight: 700;
+  margin-top: 0.3rem;
+}
+
+/* =================================
+   FILTERS
+================================= */
+
+.creative-portfolio-filters {
+  display: flex;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.creative-filter {
+  background: white;
+  border: var(--creative-border);
+  padding: 0.8rem 1.4rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  box-shadow: 8px 8px 0 var(--creative-dark);
+}
+
+.creative-filter:hover {
+  transform: translate(-5px, -5px);
+}
+
+.creative-filter.active {
+  background: var(--creative-primary);
+  color: white;
+}
+
+/* =================================
+   GRID
+================================= */
+
+.creative-portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 4rem;
+}
+
+/* =================================
+   CARD
+================================= */
+
+.creative-portfolio-card {
+  background: white;
+  border: var(--creative-border);
+  padding: 2.5rem;
+  transition: transform 0.2s ease;
+  box-shadow: 14px 14px 0 var(--creative-dark);
+}
+
+/* Alternancia visual leve sin romper hover */
+
+.creative-portfolio-card:nth-child(odd) {
+  rotate: -1deg;
+}
+
+.creative-portfolio-card:nth-child(even) {
+  rotate: 1deg;
+}
+
+.creative-portfolio-card:hover {
+  transform: translate(-8px, -8px);
+}
+
+/* =================================
+   INNER CONTENT
+================================= */
+
+.creative-portfolio-card-inner h3 {
+  font-weight: 900;
+  font-size: 1.4rem;
+  margin-bottom: 1rem;
+}
+
+.creative-portfolio-card-inner p {
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+/* =================================
+   TECH TAGS
+================================= */
+
+.creative-tech-tags {
+  margin-top: 1.5rem;
+  display: flex;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.creative-tech-tags span {
+  background: var(--creative-accent);
+  border: var(--creative-border);
+  padding: 0.4rem 0.8rem;
+  font-weight: 800;
+  font-size: 0.8rem;
+  box-shadow: 4px 4px 0 var(--creative-dark);
+}
+
+/* =================================
+   RESPONSIVE
+================================= */
+
+@media (max-width: 900px) {
+
+  .creative-portfolio {
+    padding: 7rem 2rem;
+  }
+
+  .creative-portfolio-grid {
+    gap: 3rem;
+  }
+
+  .creative-portfolio-stats {
+    gap: 2rem;
+  }
+}

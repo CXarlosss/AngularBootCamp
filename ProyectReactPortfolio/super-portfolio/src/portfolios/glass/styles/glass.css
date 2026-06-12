@@ -1,0 +1,139 @@
+/* =====================================================================
+   GLASS THEME – NATURAL / TIERRA / SERENO
+   Totalmente aislado bajo .glass-theme
+   ===================================================================== */
+
+.glass-theme {
+
+  /* VARIABLES SOLO PARA GLASS */
+  --glass-bg-base: rgba(250, 242, 232, 0.5);
+  --glass-bg-soft: rgba(244, 234, 216, 0.55);
+  --glass-accent: rgba(99, 112, 84, 0.9);
+  --glass-text: rgba(46, 41, 33, 0.98);
+  --glass-text-light: rgba(92, 79, 62, 0.85);
+  --glass-border: rgba(200, 180, 150, 0.6);
+  --glass-shadow: rgba(82, 62, 42, 0.15);
+
+  --glass-bg-base-rgb: 250, 242, 232;
+  --glass-bg-soft-rgb: 244, 234, 216;
+  --glass-accent-rgb: 99, 112, 84;
+  --glass-text-rgb: 46, 41, 33;
+  --glass-shadow-rgb: 82, 62, 42;
+
+  --glass-blur: 12px;
+  --glass-blur-light: 6px;
+  --glass-radius: 1.6rem;
+  --glass-radius-sm: 1.2rem;
+
+  --transition: all 0.3s ease-in-out;
+
+  font-size: 62.5%;
+  color: var(--glass-text);
+  min-height: 100vh;
+
+  background: linear-gradient(145deg, #e9d1dc 0%, #d6cbb9 100%);
+}
+
+/* =========================================================
+   MODO OSCURO SOLO PARA GLASS
+   ========================================================= */
+
+@media (prefers-color-scheme: dark) {
+  .glass-theme {
+    --glass-bg-base: rgba(39, 35, 29, 0.75);
+    --glass-bg-soft: rgba(56, 50, 42, 0.7);
+    --glass-accent: rgba(139, 126, 102, 0.9);
+    --glass-text: rgba(241, 235, 222, 0.98);
+    --glass-text-light: rgba(200, 180, 150, 0.85);
+    --glass-border: rgba(92, 79, 62, 0.75);
+    --glass-shadow: rgba(0, 0, 0, 0.6);
+
+    --glass-bg-base-rgb: 39, 35, 29;
+    --glass-bg-soft-rgb: 56, 50, 42;
+    --glass-accent-rgb: 139, 126, 102;
+    --glass-text-rgb: 241, 235, 222;
+    --glass-shadow-rgb: 0, 0, 0;
+
+    background: linear-gradient(145deg, #2c2a24 0%, #3e3a30 100%);
+  }
+}
+
+/* =========================================================
+   SUPERFICIES GLASS
+   ========================================================= */
+
+.glass-theme .glass-surface {
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+  box-shadow: 0 0.8rem 2rem rgba(var(--glass-shadow-rgb), 0.15);
+  transition: var(--transition);
+}
+
+.glass-theme .glass-surface:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1.2rem 2.8rem rgba(var(--glass-shadow-rgb), 0.25);
+}
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
+.glass-theme button,
+.glass-theme .btn {
+  background-color: var(--glass-accent);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: var(--glass-radius-sm);
+  transition: var(--transition);
+  cursor: pointer;
+}
+
+.glass-theme button:hover,
+.glass-theme .btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.8rem 1.6rem rgba(var(--glass-shadow-rgb), 0.3);
+}
+
+/* =========================================================
+   ENLACES
+   ========================================================= */
+
+.glass-theme a {
+  color: var(--glass-accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: var(--transition);
+}
+
+.glass-theme a:hover {
+  border-bottom-color: var(--glass-accent);
+}
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.glass-theme input,
+.glass-theme textarea,
+.glass-theme select {
+  border: 1px solid var(--glass-border);
+  background-color: rgba(var(--glass-bg-base-rgb), 0.6);
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
+  border-radius: var(--glass-radius-sm);
+  padding: 0.8rem 1.2rem;
+  color: var(--glass-text);
+  transition: var(--transition);
+}
+
+.glass-theme input:focus,
+.glass-theme textarea:focus,
+.glass-theme select:focus {
+  outline: none;
+  border-color: var(--glass-accent);
+  box-shadow: 0 0 0 2px rgba(var(--glass-accent-rgb), 0.2);
+}

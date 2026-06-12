@@ -1,0 +1,54 @@
+.modern-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+/* ALIGNMENT */
+
+.modern-stat--left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.modern-stat--center {
+  align-items: center;
+  text-align: center;
+}
+
+.modern-stat--right {
+  align-items: flex-end;
+  text-align: right;
+}
+
+/* VALUE */
+
+.modern-stat-value {
+  font-size: clamp(2.2rem, 4vw, 3.2rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--modern-text);
+}
+
+/* LABEL */
+
+.modern-stat-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--modern-muted);
+}
+
+/* DESCRIPTION */
+
+.modern-stat-description {
+  font-size: 0.8rem;
+  color: var(--modern-muted);
+}
+
+/* ACCENT */
+
+.modern-stat--accent .modern-stat-value {
+  color: var(--modern-accent);
+}

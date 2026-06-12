@@ -1,0 +1,30 @@
+body.theme-creative {
+  --creative-bg: #f4f4f4;
+
+  --creative-primary: #ff0055;
+  --creative-secondary: #00e0ff;
+  --creative-accent: #ffe600;
+
+  --creative-dark: #111111;
+  --creative-black: #000000;
+  --creative-white: #ffffff;
+
+  --creative-border-width: 4px;
+  --creative-border-color: #000000;
+  --creative-border: var(--creative-border-width) solid var(--creative-border-color);
+
+  --creative-radius: 0px;
+
+  --creative-offset-sm: 8px;
+  --creative-offset-md: 14px;
+  --creative-offset-lg: 20px;
+
+  --creative-space-xs: 0.5rem;
+  --creative-space-sm: 1rem;
+  --creative-space-md: 2rem;
+  --creative-space-lg: 4rem;
+  --creative-space-xl: 8rem;
+
+  --creative-transition-fast: 0.15s ease;
+  --creative-transition-normal: 0.25s ease;
+}

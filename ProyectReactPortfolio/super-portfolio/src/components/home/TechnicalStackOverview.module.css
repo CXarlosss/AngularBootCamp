@@ -1,0 +1,67 @@
+.stackSection {
+    padding: 100px 0;
+    /* background: rgba(0, 0, 0, 0.2); */
+}
+
+.header {
+    margin-bottom: 50px;
+}
+
+.title {
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.highlight {
+    color: var(--accentPrimary);
+}
+
+.clusterCard {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    border-radius: 4px;
+    height: 100%;
+    transition: var(--transitionBase);
+}
+
+.clusterCard:hover {
+    border-color: var(--accentPrimary);
+    transform: translateY(-5px);
+}
+
+.icon {
+    font-size: 1.5rem;
+    color: var(--accentPrimary);
+    margin-bottom: 20px;
+}
+
+.clusterCard h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: var(--accentSecondary);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.skillList {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.skillList li {
+    font-size: 0.9rem;
+    color: var(--textMuted);
+    margin-bottom: 8px;
+    padding-left: 15px;
+    position: relative;
+}
+
+.skillList li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--accentPrimary);
+}

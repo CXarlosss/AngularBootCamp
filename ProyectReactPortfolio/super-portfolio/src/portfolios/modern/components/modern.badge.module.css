@@ -1,0 +1,24 @@
+.modern-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.8rem;
+
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  border-radius: 4px;
+  border: 1px solid var(--modern-border);
+
+  background: var(--modern-bg-alt);
+  color: var(--modern-text);
+}
+
+/* ACCENT */
+
+.modern-badge--accent {
+  background: var(--modern-text);
+  color: white;
+  border-color: var(--modern-text);
+}

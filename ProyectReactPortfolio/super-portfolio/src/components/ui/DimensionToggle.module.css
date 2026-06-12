@@ -1,0 +1,54 @@
+.toggleWrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 0;
+    width: fit-content;
+}
+
+.label {
+    font-family: 'monospace';
+    font-size: 0.65rem;
+    color: var(--accentSecondary);
+    letter-spacing: 1px;
+}
+
+.btnGroup {
+    display: flex;
+    gap: 5px;
+}
+
+.themeBtn {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--textMuted);
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: var(--transitionBase);
+    text-transform: uppercase;
+}
+
+.themeBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.themeBtn.active {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accentPrimary);
+    color: var(--accentPrimary);
+}
+
+@media (max-width: 576px) {
+    .label {
+        display: none;
+    }
+
+    .themeBtn {
+        font-size: 0.65rem;
+        padding: 4px 8px;
+    }
+}

@@ -1,0 +1,294 @@
+/* ======================================================
+   OVERLAY
+   ====================================================== */
+
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 4rem 2rem;
+
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(10px);
+
+  animation: fadeIn 0.35s ease forwards;
+}
+
+.fadeOut {
+  animation: fadeOut 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.modalWrapper {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  max-height: 90vh;
+  overflow-y: auto;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 3rem 6rem rgba(var(--glass-shadow-rgb), 0.4);
+
+  animation: slideUp 0.4s ease forwards;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ======================================================
+   CLOSE BUTTON
+   ====================================================== */
+
+.modalCloseButton {
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+
+  font-size: 2.4rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+
+  color: var(--glass-text);
+
+  transition: all 0.3s ease;
+}
+
+.modalCloseButton:hover {
+  color: var(--glass-accent);
+  transform: rotate(90deg);
+}
+
+/* ======================================================
+   CONTENT
+   ====================================================== */
+
+.modalContent {
+  padding: 4rem;
+}
+
+/* ======================================================
+   HEADER
+   ====================================================== */
+
+.headerSection {
+  margin-bottom: 3rem;
+}
+
+.projectTitle {
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: var(--glass-text);
+  margin-bottom: 1.5rem;
+}
+
+.projectDescription {
+  font-size: 1.5rem;
+  line-height: 1.7;
+  color: var(--glass-text-light);
+}
+
+/* ======================================================
+   CAROUSEL
+   ====================================================== */
+
+.carousel {
+  margin-bottom: 4rem;
+}
+
+.carouselImageContainer {
+  width: 100%;
+  border-radius: var(--glass-radius-sm);
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.carouselImage {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: var(--glass-radius-sm);
+}
+
+/* Navigation */
+
+.carouselNavContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navButton {
+  width: 45px;
+  height: 45px;
+
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.8);
+  color: var(--glass-text);
+
+  font-size: 1.6rem;
+  cursor: pointer;
+
+  transition: all 0.3s ease;
+}
+
+.navButton:hover {
+  background: var(--glass-accent);
+  color: white;
+}
+
+/* Indicator */
+
+.carouselIndicator {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.indicatorDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--glass-border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.indicatorDot.active {
+  background: var(--glass-accent);
+  transform: scale(1.2);
+}
+
+/* ======================================================
+   TECHNOLOGIES
+   ====================================================== */
+
+.technologiesSection {
+  margin-bottom: 3rem;
+}
+
+.subheading {
+  font-size: 1.6rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+  color: var(--glass-text);
+}
+
+.modalTechnologies {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.techPill {
+  padding: 0.6rem 1.4rem;
+  border-radius: 50px;
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.7);
+  border: 1px solid var(--glass-border);
+
+  font-size: 1.2rem;
+  color: var(--glass-text);
+
+  transition: all 0.3s ease;
+}
+
+.techPill:hover {
+  background: var(--glass-accent);
+  color: white;
+}
+
+/* ======================================================
+   LINKS
+   ====================================================== */
+
+.modalLinks {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.linkButton,
+.linkButtonPrimary {
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  text-decoration: none;
+  font-size: 1.3rem;
+  transition: all 0.3s ease;
+  border: 1px solid var(--glass-border);
+}
+
+.linkButton {
+  background: rgba(var(--glass-bg-soft-rgb), 0.7);
+  color: var(--glass-text);
+}
+
+.linkButtonPrimary {
+  background: var(--glass-accent);
+  color: white;
+  border: none;
+}
+
+.linkButton:hover {
+  background: var(--glass-accent);
+  color: white;
+}
+
+.linkButtonPrimary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1rem 3rem rgba(var(--glass-shadow-rgb), 0.4);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .modalContent {
+    padding: 2.5rem;
+  }
+
+  .projectTitle {
+    font-size: 2.2rem;
+  }
+
+}

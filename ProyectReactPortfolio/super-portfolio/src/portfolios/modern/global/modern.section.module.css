@@ -1,0 +1,38 @@
+.modern-section {
+  width: 100%;
+}
+
+/* SIZES */
+
+.modern-section--compact {
+  padding: 4rem 0;
+}
+
+.modern-section--default {
+  padding: 7rem 0;
+}
+
+.modern-section--large {
+  padding: 12rem 0;
+}
+
+/* BACKGROUNDS */
+
+.modern-section--none {
+  background: transparent;
+}
+
+.modern-section--alt {
+  background: var(--modern-bg-alt);
+}
+
+.modern-section--dark {
+  background: #0a0f1c;
+  color: white;
+}
+
+.modern-section--dark h1,
+.modern-section--dark h2,
+.modern-section--dark h3 {
+  color: white;
+}

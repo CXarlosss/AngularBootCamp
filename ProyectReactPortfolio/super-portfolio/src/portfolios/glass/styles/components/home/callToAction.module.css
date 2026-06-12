@@ -1,0 +1,163 @@
+/* ======================================================
+   CTA WRAPPER
+   ====================================================== */
+
+.callToAction {
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 6rem 5rem;
+  text-align: center;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 1.5rem 4rem rgba(var(--glass-shadow-rgb), 0.25),
+    inset 0 0 0.5px rgba(255,255,255,0.2);
+
+  transition: var(--transition);
+  overflow: hidden;
+}
+
+/* Iluminación decorativa suave */
+
+.callToAction::before {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  top: -80px;
+  left: -80px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.15),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.callToAction::after {
+  content: "";
+  position: absolute;
+  width: 250px;
+  height: 250px;
+  bottom: -80px;
+  right: -80px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-shadow-rgb), 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ======================================================
+   KICKER
+   ====================================================== */
+
+.kicker {
+  display: inline-block;
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--glass-accent);
+  margin-bottom: 1.5rem;
+}
+
+/* ======================================================
+   TITULO
+   ====================================================== */
+
+.callToAction h2 {
+  font-size: 3rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  color: var(--glass-text);
+  line-height: 1.2;
+}
+
+/* ======================================================
+   TEXTOS
+   ====================================================== */
+
+.intro {
+  font-size: 1.6rem;
+  margin-bottom: 2rem;
+  color: var(--glass-text);
+  opacity: 0.9;
+}
+
+.callToAction p {
+  font-size: 1.4rem;
+  color: var(--glass-text-light);
+  line-height: 1.7;
+  max-width: 750px;
+  margin: 0 auto 1.5rem auto;
+}
+
+/* ======================================================
+   BOTONES
+   ====================================================== */
+
+.ctaButtons {
+  margin-top: 3.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+/* Botón principal */
+
+.ctaButton {
+  padding: 1.2rem 2.8rem;
+  font-size: 1.4rem;
+  border-radius: var(--glass-radius-sm);
+  transition: var(--transition);
+  backdrop-filter: blur(6px);
+}
+
+/* Botón secundario (outline glass) */
+
+.ctaButtonSecondary {
+  background: transparent;
+  color: var(--glass-text);
+  border: 1px solid var(--glass-border);
+}
+
+.ctaButtonSecondary:hover {
+  background: rgba(var(--glass-bg-soft-rgb), 0.6);
+}
+
+/* Hover general */
+
+.ctaButton:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 1rem 2.5rem rgba(var(--glass-shadow-rgb), 0.35);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .callToAction {
+    padding: 4rem 2.5rem;
+  }
+
+  .callToAction h2 {
+    font-size: 2.4rem;
+  }
+
+  .intro {
+    font-size: 1.5rem;
+  }
+
+}

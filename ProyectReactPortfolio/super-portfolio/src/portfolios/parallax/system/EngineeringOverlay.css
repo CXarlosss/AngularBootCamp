@@ -1,0 +1,133 @@
+/* ================================
+   ENGINEERING OVERLAY ROOT
+================================ */
+
+.engineering-overlay {
+  position: fixed;
+  top: 100px;
+  right: 40px;
+
+  width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+
+  background: #161B22;
+  border: 1px solid rgba(77,166,255,0.25);
+  border-radius: 16px;
+
+  padding: 32px;
+
+  box-shadow:
+    0 20px 60px rgba(0,0,0,0.6),
+    0 0 0 1px rgba(77,166,255,0.08) inset;
+
+  backdrop-filter: blur(12px);
+
+  z-index: 100;
+
+  animation: overlayFade 0.25s ease;
+}
+
+
+/* ================================
+   HEADER
+================================ */
+
+.overlay-header {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1.5px;
+  color: #4DA6FF;
+
+  margin-bottom: 28px;
+}
+
+
+/* ================================
+   SECTIONS
+================================ */
+
+.overlay-section {
+  margin-bottom: 32px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+
+  margin-bottom: 16px;
+
+  color: rgba(230,237,243,0.7);
+}
+
+
+/* ================================
+   METRIC ITEMS
+================================ */
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.metric-key {
+  font-size: 12px;
+  font-weight: 600;
+  color: #4DA6FF;
+  margin-bottom: 4px;
+}
+
+.metric-value {
+  font-size: 12px;
+  line-height: 1.5;
+  opacity: 0.75;
+}
+
+
+/* ================================
+   PHILOSOPHY
+================================ */
+
+.philosophy-list {
+  padding-left: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+
+/* ================================
+   SCROLLBAR
+================================ */
+
+.engineering-overlay::-webkit-scrollbar {
+  width: 6px;
+}
+
+.engineering-overlay::-webkit-scrollbar-thumb {
+  background: rgba(77,166,255,0.4);
+  border-radius: 3px;
+}
+
+
+/* ================================
+   ANIMATION
+================================ */
+
+@keyframes overlayFade {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

@@ -1,0 +1,228 @@
+/* ==========================================================
+   MICROSITES GALLERY - STITCH DESIGN
+   ========================================================== */
+
+.microsites-page-wrapper {
+    background-color: #070908;
+    color: #fff;
+    min-height: 100vh;
+    padding-top: 140px;
+}
+
+/* ===== HEADER ===== */
+.microsites-header {
+    margin-bottom: 60px;
+}
+
+.museum-title {
+    font-size: 5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 30px;
+    letter-spacing: -2px;
+}
+
+.highlight-green {
+    color: #25f46a;
+}
+
+.museum-subtitle {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 1.25rem;
+    max-width: 600px;
+    line-height: 1.6;
+}
+
+/* ===== FILTERS ===== */
+.filter-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 60px;
+    flex-wrap: wrap;
+}
+
+.filter-btn {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 10px 24px;
+    border-radius: 100px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.filter-btn.active {
+    background: #25f46a;
+    color: #000;
+    border-color: #25f46a;
+}
+
+/* ===== GALLERY GRID ===== */
+.gallery-grid {
+    margin-bottom: 100px;
+}
+
+.gallery-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 40px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.gallery-card:hover {
+    transform: translateY(-10px);
+    border-color: rgba(37, 244, 106, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.card-visual {
+    position: relative;
+    height: 380px;
+    overflow: hidden;
+}
+
+.card-visual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.gallery-card:hover .card-visual img {
+    transform: scale(1.05);
+}
+
+.card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to bottom, transparent 60%, rgba(7, 9, 8, 1));
+}
+
+.card-content {
+    padding: 30px;
+    margin-top: -80px;
+    position: relative;
+    z-index: 2;
+}
+
+.card-meta {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #25f46a;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+}
+
+.card-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    letter-spacing: -1px;
+}
+
+.card-desc {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Specific Card Treatments (Experimental) */
+.card-retro .card-meta {
+    color: #00ff41;
+}
+
+.card-retro:hover {
+    box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
+}
+
+.card-modern {
+    background: #fff;
+    border: none;
+}
+
+.card-modern .card-content {
+    padding-top: 100px;
+    margin-top: 0;
+}
+
+.card-modern .card-title,
+.card-modern .card-desc {
+    color: #000;
+}
+
+.card-modern .card-meta {
+    color: rgba(0, 0, 0, 0.4);
+}
+
+.card-modern .card-overlay {
+    background: linear-gradient(to bottom, transparent 60%, #fff);
+}
+
+/* ===== FOOTER ===== */
+.gallery-footer {
+    padding: 60px 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+.logo-dot {
+    width: 10px;
+    height: 10px;
+    background: #25f46a;
+    border-radius: 50%;
+}
+
+.footer-info {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.4);
+}
+
+.footer-icons {
+    display: flex;
+    gap: 20px;
+    font-size: 1.2rem;
+    opacity: 0.6;
+}
+
+@media (max-width: 991px) {
+    .museum-title {
+        font-size: 3rem;
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+    }
+
+    .footer-flex {
+        flex-direction: column;
+        gap: 30px;
+        text-align: center;
+    }
+}

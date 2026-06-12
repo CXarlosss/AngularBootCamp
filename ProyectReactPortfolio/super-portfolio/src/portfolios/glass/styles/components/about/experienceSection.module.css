@@ -1,0 +1,198 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.experienceSection {
+  position: relative;
+  padding: 7rem 4rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ======================================================
+   TITULO
+   ====================================================== */
+
+.sectionTitle {
+  text-align: center;
+  font-size: 3.2rem;
+  font-weight: 700;
+  margin-bottom: 6rem;
+  color: var(--glass-text);
+  position: relative;
+  letter-spacing: -0.5px;
+}
+
+.sectionTitle::after {
+  content: "";
+  display: block;
+  width: 90px;
+  height: 3px;
+  margin: 1.8rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   TIMELINE
+   ====================================================== */
+
+.timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 5rem;
+  padding-left: 3.5rem;
+}
+
+/* Línea vertical */
+
+.timeline::before {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    rgba(var(--glass-accent-rgb), 0.4),
+    transparent
+  );
+}
+
+/* ======================================================
+   ITEM
+   ====================================================== */
+
+.experienceItem {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+
+/* DOT */
+
+.timelineDot {
+  position: absolute;
+  left: -2px;
+  top: 1.3rem;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+
+  background: var(--glass-accent);
+
+  box-shadow:
+    0 0 0 5px rgba(var(--glass-accent-rgb), 0.15),
+    0 0 25px rgba(var(--glass-accent-rgb), 0.4);
+}
+
+/* ======================================================
+   CARD
+   ====================================================== */
+
+.experienceCard {
+  width: 100%;
+  padding: 3rem 3.5rem;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 1.5rem 4rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  transition: all 0.4s ease;
+}
+
+.experienceCard:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 2.5rem 5rem rgba(var(--glass-shadow-rgb), 0.4);
+}
+
+/* ======================================================
+   HEADER
+   ====================================================== */
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.experienceTitle {
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--glass-text);
+  margin-bottom: 0.6rem;
+}
+
+.experienceCompany {
+  font-size: 1.4rem;
+  color: var(--glass-text-light);
+}
+
+.experienceDates {
+  font-size: 1.3rem;
+  color: var(--glass-accent);
+  white-space: nowrap;
+}
+
+/* ======================================================
+   LISTA
+   ====================================================== */
+
+.experienceList {
+  padding-left: 1.8rem;
+  font-size: 1.5rem;
+  line-height: 1.7;
+  color: var(--glass-text-light);
+}
+
+.experienceList li {
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+/* Bullet personalizado más elegante */
+
+.experienceList li::marker {
+  color: var(--glass-accent);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .experienceSection {
+    padding: 5rem 2rem;
+  }
+
+  .sectionTitle {
+    font-size: 2.6rem;
+  }
+
+  .timeline {
+    padding-left: 2.5rem;
+  }
+
+  .timelineDot {
+    left: -4px;
+  }
+
+  .experienceCard {
+    padding: 2.5rem 2rem;
+  }
+
+}

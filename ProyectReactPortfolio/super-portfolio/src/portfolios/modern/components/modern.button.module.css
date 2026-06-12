@@ -1,0 +1,82 @@
+.modern-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+
+  border-radius: 6px;
+  border: 1px solid transparent;
+
+  cursor: pointer;
+
+  transition:
+    background var(--modern-transition),
+    border-color var(--modern-transition),
+    transform 0.15s ease,
+    box-shadow var(--modern-transition);
+}
+
+/* SIZES */
+
+.modern-button--sm {
+  font-size: 0.8rem;
+  padding: 0.5rem 1.1rem;
+}
+
+.modern-button--md {
+  font-size: 0.9rem;
+  padding: 0.75rem 1.6rem;
+}
+
+.modern-button--lg {
+  font-size: 1rem;
+  padding: 1rem 2rem;
+}
+
+/* VARIANTS */
+
+.modern-button--primary {
+  background: var(--modern-text);
+  color: white;
+}
+
+.modern-button--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.12);
+}
+
+.modern-button--secondary {
+  background: transparent;
+  border: 1px solid var(--modern-border);
+  color: var(--modern-text);
+}
+
+.modern-button--secondary:hover {
+  background: var(--modern-bg-alt);
+}
+
+.modern-button--ghost {
+  background: transparent;
+  color: var(--modern-muted);
+}
+
+.modern-button--ghost:hover {
+  color: var(--modern-text);
+}
+
+/* FULL WIDTH */
+
+.modern-button--full {
+  width: 100%;
+}
+
+/* FOCUS */
+
+.modern-button:focus-visible {
+  outline: 2px solid var(--modern-accent);
+  outline-offset: 2px;
+}

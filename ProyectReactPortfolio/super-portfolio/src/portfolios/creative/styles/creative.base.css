@@ -1,0 +1,242 @@
+/* ==========================================================
+   CREATIVE BACKGROUND
+========================================================== */
+
+.creative-background {
+  position: fixed;
+  inset: 0;
+  background: var(--creative-bg);
+  overflow: hidden;
+  z-index: -10;
+}
+
+.creative-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, #000 1px, transparent 1px),
+    linear-gradient(to bottom, #000 1px, transparent 1px);
+  background-size: 90px 90px;
+  opacity: 0.07;
+}
+
+.creative-shape {
+  position: absolute;
+  border: var(--creative-border);
+}
+
+.creative-shape-primary {
+  width: 400px;
+  height: 400px;
+  background: var(--creative-primary);
+  top: 10%;
+  left: 5%;
+}
+
+.creative-shape-secondary {
+  width: 300px;
+  height: 300px;
+  background: var(--creative-secondary);
+  bottom: 15%;
+  right: 10%;
+}
+
+.creative-shape-accent {
+  width: 200px;
+  height: 200px;
+  background: var(--creative-accent);
+  top: 40%;
+  right: 30%;
+}
+
+/* ==========================================================
+   CREATIVE CARD – ESTABLE
+========================================================== */
+
+.creative-card {
+  background: white;
+  border: var(--creative-border);
+  padding: 2rem;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  box-shadow: 12px 12px 0 var(--creative-dark);
+}
+
+.creative-card:hover {
+  transform: translate(-8px, -8px);
+}
+
+.creative-card h3 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.creative-card p {
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.creative-card-tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.creative-card-tech span {
+  background: var(--creative-accent);
+  border: var(--creative-border);
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.creative-card-button {
+  margin-top: 1rem;
+  font-weight: 900;
+  color: var(--creative-primary);
+}
+
+/* ==========================================================
+   HERO
+========================================================== */
+
+.creative-hero {
+  position: relative;
+  padding: 8rem 4rem;
+  overflow: hidden;
+}
+
+.creative-hero-outline {
+  font-size: clamp(5rem, 15vw, 12rem);
+  font-weight: 900;
+  -webkit-text-stroke: 4px var(--creative-dark);
+  color: transparent;
+}
+
+.creative-hero-fill {
+  font-size: clamp(5rem, 15vw, 12rem);
+  font-weight: 900;
+  color: var(--creative-primary);
+  transform: translate(12px, 12px);
+}
+
+.creative-hero-block {
+  margin-top: 4rem;
+  background: var(--creative-accent);
+  border: var(--creative-border);
+  padding: 2rem;
+  max-width: 600px;
+  font-weight: 800;
+  font-size: 1.2rem;
+  box-shadow: 12px 12px 0 var(--creative-dark);
+}
+
+/* ==========================================================
+   NAVBAR
+========================================================== */
+
+.creative-navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 4rem;
+  border-bottom: var(--creative-border);
+  background: white;
+}
+
+.creative-logo {
+  font-size: 2rem;
+  font-weight: 900;
+  background: var(--creative-secondary);
+  border: var(--creative-border);
+  padding: 0.8rem 1.5rem;
+  cursor: pointer;
+  box-shadow: 6px 6px 0 var(--creative-dark);
+}
+
+.creative-nav-links {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.creative-nav-item {
+  text-decoration: none;
+}
+
+.creative-nav-block {
+  background: var(--creative-bg);
+  border: var(--creative-border);
+  padding: 0.6rem 1.2rem;
+  font-weight: 800;
+  color: var(--creative-dark);
+  transition: transform 0.15s ease;
+  box-shadow: 6px 6px 0 var(--creative-dark);
+}
+
+.creative-nav-block:hover {
+  transform: translate(-6px, -6px);
+  color: white;
+  background: var(--creative-primary);
+}
+
+.creative-nav-block.active {
+  background: var(--creative-primary);
+  color: white;
+}
+
+/* ==========================================================
+   FOOTER
+========================================================== */
+
+.creative-footer {
+  margin-top: 8rem;
+  border-top: var(--creative-border);
+  background: var(--creative-dark);
+  color: white;
+}
+
+.creative-footer-top {
+  padding: 4rem;
+  background: var(--creative-primary);
+  border-bottom: var(--creative-border);
+}
+
+.creative-footer-top h2 {
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.creative-footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 2rem 4rem;
+}
+
+.creative-footer-left p {
+  font-weight: 700;
+}
+
+.creative-footer-right {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.creative-footer-right a {
+  background: white;
+  color: var(--creative-dark);
+  border: var(--creative-border);
+  padding: 0.8rem;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+  box-shadow: 6px 6px 0 var(--creative-black);
+}
+
+.creative-footer-right a:hover {
+  transform: translate(-6px, -6px);
+}

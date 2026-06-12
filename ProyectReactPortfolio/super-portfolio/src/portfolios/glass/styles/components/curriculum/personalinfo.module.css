@@ -1,0 +1,121 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.personalInfo {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 6rem 4rem;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 2rem 5rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fondo decorativo sutil */
+
+.personalInfo::before {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  top: -120px;
+  right: -120px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.1),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ======================================================
+   NAME
+   ====================================================== */
+
+.personalInfo h1 {
+  font-size: 3.6rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: var(--glass-text);
+  margin-bottom: 1rem;
+}
+
+/* ======================================================
+   TITLE
+   ====================================================== */
+
+.title {
+  font-size: 1.6rem;
+  font-weight: 500;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--glass-accent);
+  margin-bottom: 3rem;
+}
+
+/* ======================================================
+   CONTACT
+   ====================================================== */
+
+.contact {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  font-size: 1.4rem;
+  color: var(--glass-text-light);
+}
+
+/* Contact links row (icons) */
+
+.contact p:last-child {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-top: 1.5rem;
+}
+
+/* ======================================================
+   ICON LINKS
+   ====================================================== */
+
+.contact a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 50px;
+  height: 50px;
+
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.8);
+
+  backdrop-filter: blur(6px);
+
+  color: var(--glass-text);
+
+  transition: all 0.3s ease;
+}
+
+/* Hover premium */
+
+.contact a:hover {
+  background: var(--glass-accent);
+  color: white;
+  transform: translateY(-5px);
+  box-shadow:
+    0 1rem 2.5rem rgba(var(--glass-shadow-rgb), 0.35);
+}

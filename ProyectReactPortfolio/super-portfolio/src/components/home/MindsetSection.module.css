@@ -1,0 +1,57 @@
+.mindsetSection {
+    padding: 120px 0;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.tag {
+    font-family: 'monospace';
+    color: var(--accentSecondary);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+}
+
+.description {
+    font-size: 1.2rem;
+    color: var(--textMuted);
+    line-height: 1.8;
+    margin-bottom: 30px;
+}
+
+.description strong {
+    color: #fff;
+}
+
+.attributes {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.attr {
+    font-size: 0.9rem;
+    color: var(--textMuted);
+}
+
+.attr strong {
+    color: var(--accentPrimary);
+    display: block;
+    font-family: 'monospace';
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    margin-bottom: 5px;
+}
+
+@media (max-width: 991px) {
+    .title {
+        margin-bottom: 30px;
+        font-size: 2rem;
+    }
+}

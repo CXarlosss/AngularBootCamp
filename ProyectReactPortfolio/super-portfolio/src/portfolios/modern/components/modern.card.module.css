@@ -1,0 +1,94 @@
+/* ===============================
+   BASE CARD
+================================ */
+
+.modern-card {
+  position: relative;
+
+  background: white;
+  border: 2px solid var(--modern-text);
+  border-radius: 0;
+
+  transition:
+    transform 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+
+  overflow: hidden;
+}
+
+/* Subtle editorial grid texture */
+.modern-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 26px,
+    rgba(0,0,0,0.015) 27px
+  );
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* ===============================
+   PADDING SYSTEM
+================================ */
+
+.modern-card--padding-sm {
+  padding: 1.5rem;
+}
+
+.modern-card--padding-md {
+  padding: 2.2rem;
+}
+
+.modern-card--padding-lg {
+  padding: 3.2rem;
+}
+
+/* ===============================
+   VARIANTS
+================================ */
+
+.modern-card--default {
+  background: white;
+}
+
+.modern-card--subtle {
+  background: var(--modern-bg-alt);
+  border-color: rgba(0,0,0,0.15);
+}
+
+.modern-card--highlight {
+  background: white;
+  border-color: var(--modern-text);
+}
+
+/* ===============================
+   HOVER STATE (Premium Lift)
+================================ */
+
+.modern-card--hover:hover {
+  transform: translateY(-14px);
+  box-shadow:
+    0 60px 120px rgba(0,0,0,0.08),
+    0 20px 40px rgba(0,0,0,0.05);
+}
+
+/* ===============================
+   TYPOGRAPHY INSIDE CARD
+================================ */
+
+.modern-card h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.2rem;
+}
+
+.modern-card p {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: var(--modern-muted);
+}

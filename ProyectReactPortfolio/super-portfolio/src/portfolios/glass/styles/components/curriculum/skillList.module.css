@@ -1,0 +1,151 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.skills {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 7rem 4rem;
+}
+
+/* ======================================================
+   TITULO PRINCIPAL
+   ====================================================== */
+
+.mainTitle {
+  text-align: center;
+  font-size: 3.2rem;
+  font-weight: 700;
+  color: var(--glass-text);
+  margin-bottom: 6rem;
+  letter-spacing: -0.5px;
+  position: relative;
+}
+
+.mainTitle::after {
+  content: "";
+  display: block;
+  width: 90px;
+  height: 3px;
+  margin: 1.8rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   GRID CATEGORÍAS
+   ====================================================== */
+
+.skillsCategoriesContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 3.5rem;
+}
+
+/* ======================================================
+   CARD CATEGORÍA
+   ====================================================== */
+
+.skillsCategory {
+  padding: 2.8rem 2.5rem;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 1.5rem 4rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  transition: all 0.35s ease;
+}
+
+.skillsCategory:hover {
+  transform: translateY(-8px);
+  box-shadow:
+    0 2.5rem 5rem rgba(var(--glass-shadow-rgb), 0.4);
+}
+
+/* ======================================================
+   TÍTULO CATEGORÍA
+   ====================================================== */
+
+.skillsCategory h3 {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: var(--glass-text);
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.skillsCategory h3::after {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 2px;
+  margin-top: 0.8rem;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   LISTA
+   ====================================================== */
+
+.skillsList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* ======================================================
+   ITEM (TAG TÉCNICO)
+   ====================================================== */
+
+.skillItem {
+  padding: 0.6rem 1.2rem;
+  font-size: 1.2rem;
+  border-radius: 50px;
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.7);
+  border: 1px solid var(--glass-border);
+
+  color: var(--glass-text);
+
+  backdrop-filter: blur(6px);
+
+  transition: all 0.3s ease;
+  cursor: default;
+}
+
+/* Hover elegante */
+
+.skillItem:hover {
+  background: var(--glass-accent);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow:
+    0 0.8rem 2rem rgba(var(--glass-shadow-rgb), 0.3);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .skills {
+    padding: 5rem 2rem;
+  }
+
+  .mainTitle {
+    font-size: 2.6rem;
+  }
+
+}

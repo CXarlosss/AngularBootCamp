@@ -1,0 +1,165 @@
+/* ============================
+   GLOBAL TERMINAL BASE
+============================ */
+
+body {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  background: radial-gradient(circle at center, #001a0a 0%, #000000 70%);
+  color: #00ff88;
+  overflow-x: hidden;
+}
+
+/* ============================
+   CONTAINER
+============================ */
+
+.retro-portfolio-container {
+  padding: 60px;
+  position: relative;
+  min-height: 100vh;
+  animation: fadeIn 0.8s ease;
+}
+
+/* Subtle screen glow overlay */
+.retro-overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    rgba(0, 255, 136, 0.02),
+    rgba(0, 0, 0, 0.6)
+  );
+  mix-blend-mode: screen;
+}
+
+/* ============================
+   HEADER
+============================ */
+
+.retro-portfolio-header {
+  font-size: 1.2rem;
+  letter-spacing: 3px;
+  margin-bottom: 40px;
+  text-shadow: 0 0 12px #00ff88;
+}
+
+/* ============================
+   GRID
+============================ */
+
+.retro-portfolio-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 25px;
+}
+
+/* ============================
+   CARD
+============================ */
+
+.retro-portfolio-card {
+  border: 1px solid rgba(0, 255, 136, 0.3);
+  background: rgba(0, 255, 136, 0.04);
+  padding: 20px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(6px);
+}
+
+.retro-portfolio-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent 30%,
+    rgba(0, 255, 136, 0.2),
+    transparent 70%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.retro-portfolio-card:hover::before {
+  transform: translateX(100%);
+}
+
+.retro-portfolio-card:hover {
+  transform: translateY(-4px);
+  border-color: #00ff88;
+  box-shadow: 0 0 15px rgba(0, 255, 136, 0.4);
+}
+
+.retro-portfolio-card.executing {
+  animation: executePulse 0.4s infinite alternate;
+}
+
+/* ============================
+   CARD CONTENT
+============================ */
+
+.retro-card-title {
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 8px #00ff88;
+}
+
+.retro-card-sub {
+  opacity: 0.7;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.retro-card-action {
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  opacity: 0.6;
+}
+
+/* ============================
+   FOOTER
+============================ */
+
+.retro-portfolio-footer {
+  margin-top: 60px;
+  font-size: 1rem;
+  letter-spacing: 3px;
+  opacity: 0.8;
+  text-shadow: 0 0 8px #00ff88;
+}
+
+/* ============================
+   CURSOR BLINK
+============================ */
+
+.cursor {
+  margin-left: 8px;
+  animation: blink 1s infinite;
+}
+
+/* ============================
+   ANIMATIONS
+============================ */
+
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
+}
+
+@keyframes executePulse {
+  from {
+    box-shadow: 0 0 10px #00ff88;
+  }
+  to {
+    box-shadow: 0 0 30px #00ff88;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

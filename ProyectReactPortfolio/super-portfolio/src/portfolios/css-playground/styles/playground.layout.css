@@ -1,0 +1,127 @@
+.playground-root {
+  min-height: 100vh;
+  background-color: var(--play-bg);
+  color: var(--play-text-primary);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fondo grid técnico */
+.playground-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0, 224, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(138, 44, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+}
+
+.playground-content {
+  flex: 1;
+  position: relative;
+  z-index: 2;
+  padding: 4rem 6%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+.play-hero {
+  text-align: center;
+  margin-bottom: 5rem;
+  position: relative;
+}
+
+.play-title {
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 800;
+  letter-spacing: 2px;
+  margin-bottom: 1rem;
+  position: relative;
+}
+
+.play-title span {
+  background: linear-gradient(
+    90deg,
+    var(--play-accent-blue),
+    var(--play-accent-purple)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.play-subtitle {
+  font-size: 1.2rem;
+  color: var(--play-text-secondary);
+}
+
+
+.play-card {
+  background: linear-gradient(
+    145deg,
+    rgba(18, 24, 38, 0.9),
+    rgba(22, 29, 46, 0.9)
+  );
+  border: 1px solid var(--play-border);
+  border-radius: var(--play-radius);
+  padding: 2rem;
+  transition: 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.play-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--play-glow-blue);
+  border-color: var(--play-accent-blue);
+}
+
+.play-card h3 {
+  margin-bottom: 1rem;
+  color: var(--play-accent-blue);
+}
+
+.play-card p {
+  margin-bottom: 1.5rem;
+  color: var(--play-text-secondary);
+}
+
+.play-navbar {
+    height: 60px;
+    background: #000;
+    border-bottom: 1px solid #222;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    z-index: 1000;
+}
+
+.play-logo {
+    font-family: 'monospace';
+    font-weight: 800;
+    letter-spacing: 2px;
+    font-size: 0.9rem;
+    color: var(--accentPrimary);
+}
+
+.play-nav-links {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.play-nav-links a {
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    color: #888;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.play-nav-links a:hover, .play-nav-links a.active {
+    color: #fff;
+}

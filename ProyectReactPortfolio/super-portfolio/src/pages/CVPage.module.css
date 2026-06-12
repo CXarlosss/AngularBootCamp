@@ -1,0 +1,361 @@
+.pageWrapper {
+    padding: 180px 0 150px;
+    background-color: var(--bgDark);
+}
+
+.pageHeader {
+    max-width: 850px;
+    margin: 0 auto 100px;
+}
+
+.headerMeta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.serial {
+    font-family: 'monospace';
+    font-size: 0.7rem;
+    color: var(--accentSecondary);
+    letter-spacing: 2px;
+}
+
+.name {
+    font-size: 3.2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 15px;
+    letter-spacing: -2px;
+    color: #ffffff;
+}
+
+.role {
+    font-family: 'monospace';
+    font-size: 1rem;
+    color: var(--accentPrimary);
+    margin-bottom: 20px;
+}
+
+.locationInfo {
+    display: flex;
+    gap: 15px;
+    font-size: 0.85rem;
+    color: var(--textMuted);
+    margin-bottom: 50px;
+}
+
+.divider {
+    opacity: 0.3;
+}
+
+.summaryContainer {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 40px;
+}
+
+.summaryText {
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: #ffffff;
+    opacity: 0.95;
+    margin-bottom: 25px;
+    max-width: 800px;
+    letter-spacing: -0.2px;
+}
+
+.downloadBtn {
+    background: transparent;
+    border: 1px solid rgba(255, 244, 106, 0.1);
+    color: var(--accentSecondary);
+    padding: 10px 20px;
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: var(--transitionBase);
+    margin-top: 20px;
+}
+
+.downloadBtn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accentPrimary);
+    color: #fff;
+}
+
+/* EDITORIAL SECTIONS */
+.editorialSection {
+    max-width: 850px;
+    margin: 0 auto 120px;
+}
+
+.sectionLabel {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #ffffff;
+    opacity: 0.9;
+    margin-bottom: 50px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 15px;
+}
+
+/* CLUSTERS */
+.clusterGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+}
+
+.clusterHead {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 15px;
+    color: var(--accentPrimary);
+}
+
+.clusterHead h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0;
+    color: #ffffff;
+}
+
+.cluster p {
+    font-size: 0.9rem;
+    color: #fff;
+    margin: 0;
+}
+
+.subCluster {
+    font-size: 0.8rem !important;
+    color: var(--textMuted) !important;
+    margin-top: 5px !important;
+}
+
+/* EXPERIENCE ITEMS */
+.experienceItem {
+    margin-bottom: 80px;
+}
+
+.expHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.expTitle {
+    font-size: 1.4rem;
+    font-weight: 800;
+    margin: 0;
+    color: #ffffff;
+}
+
+.expCompany {
+    font-family: 'monospace';
+    font-size: 0.85rem;
+    color: var(--accentPrimary);
+}
+
+.expDate {
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    color: var(--textMuted);
+}
+
+.expDescription {
+    font-size: 1.05rem;
+    color: #eee;
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.impactList {
+    padding-left: 20px;
+    margin: 0;
+}
+
+.impactList li {
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #eee;
+    margin-bottom: 10px;
+}
+
+.expDetailBox {
+    background: rgba(255, 255, 255, 0.03);
+    border-left: 2px solid var(--accentSecondary);
+    padding: 24px;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: #ddd;
+    border-radius: 0 8px 8px 0;
+}
+
+/* EDUCATION */
+.eduCard h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.eduOwner {
+    display: block;
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    color: var(--accentSecondary);
+    margin-bottom: 10px;
+}
+
+.eduCard p {
+    font-size: 0.9rem;
+    color: var(--textMuted);
+}
+
+/* PHILOSOPHY */
+.philosophyGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+}
+
+.principle strong {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    color: #fff;
+}
+
+.principle p {
+    font-size: 0.9rem;
+    color: var(--textMuted);
+    line-height: 1.5;
+}
+
+@media (max-width: 768px) {
+    .pageWrapper {
+        padding: 120px 0 80px;
+    }
+
+    .pageHeader {
+        margin-bottom: 60px;
+        text-align: center;
+    }
+
+    .name {
+        font-size: 2.2rem;
+    }
+
+    .locationInfo {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 40px;
+    }
+
+    .divider {
+        display: none;
+    }
+
+    .clusterGrid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .expHeader {
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .expDate {
+        margin-top: 5px;
+    }
+
+    .editorialSection {
+        margin-bottom: 80px;
+    }
+}
+
+/* PRINT OPTIMIZATION FOR PDF */
+@media print {
+    .pageWrapper {
+        padding: 0;
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .headerMeta,
+    .downloadBtn {
+        display: none !important;
+    }
+
+    .pageHeader,
+    .editorialSection {
+        max-width: 100% !important;
+        margin-bottom: 40px !important;
+    }
+
+    .name,
+    .expTitle,
+    .eduCard h3 {
+        color: #000 !important;
+    }
+
+    .role,
+    .serial,
+    .sectionLabel,
+    .expCompany,
+    .expDate,
+    .eduOwner {
+        color: #444 !important;
+    }
+
+    .summaryText,
+    .cluster p,
+    .expDescription,
+    .impactList li,
+    .eduCard p,
+    .principle p {
+        color: #222 !important;
+    }
+
+    .clusterHead {
+        color: #000 !important;
+    }
+
+    .expDetailBox {
+        background: #f5f5f5 !important;
+        border-left: 2px solid #000 !important;
+        color: #333 !important;
+    }
+
+    .tag {
+        border: 1px solid #ccc !important;
+        background: transparent !important;
+        color: #000 !important;
+    }
+
+    .clusterGrid {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+
+.locationInfo a {
+    color: var(--textMuted);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.locationInfo a:hover {
+    color: var(--accentPrimary);
+}

@@ -1,0 +1,80 @@
+/* ======================================================
+   SECTION WRAPPER
+   ====================================================== */
+
+.projectGrid {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 8rem 4rem;
+}
+
+/* ======================================================
+   TITLE
+   ====================================================== */
+
+.projectGrid h2 {
+  text-align: center;
+  font-size: 3.4rem;
+  font-weight: 700;
+  color: var(--glass-text);
+  margin-bottom: 6rem;
+  letter-spacing: -0.5px;
+  position: relative;
+}
+
+.projectGrid h2::after {
+  content: "";
+  display: block;
+  width: 100px;
+  height: 3px;
+  margin: 2rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   GRID CONTAINER
+   ====================================================== */
+
+.projectsContainer {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 3.5rem;
+}
+
+/* ======================================================
+   OPTIONAL STAGGER ANIMATION SUPPORT
+   ====================================================== */
+
+.projectsContainer > * {
+  animation: fadeUp 0.5s ease forwards;
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .projectGrid {
+    padding: 6rem 2rem;
+  }
+
+  .projectGrid h2 {
+    font-size: 2.6rem;
+  }
+
+  .projectsContainer {
+    gap: 2.5rem;
+  }
+
+}

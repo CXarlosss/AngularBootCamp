@@ -1,0 +1,59 @@
+:root {
+  /* COLORS */
+  --modern-bg: #f5f7fa;              /* hielo nórdico */
+  --modern-bg-alt: #ffffff;          /* blanco puro para contraste */
+  --modern-text: #0a0f1c;            /* negro profundo */
+  --modern-muted: #6b7280;           /* gris frío */
+  --modern-accent: #1d4ed8;          /* azul nórdico fuerte */
+  --modern-border: #e5e7eb;
+
+  /* RADIUS */
+  --modern-radius: 8px;              /* menos redondeado = más brutal */
+
+  /* LAYOUT */
+  --modern-max-width: 1280px;
+
+  /* SPACING */
+  --modern-space-sm: 1rem;
+  --modern-space-md: 2.5rem;
+  --modern-space-lg: 6rem;
+
+  /* TRANSITIONS */
+  --modern-transition: 0.25s cubic-bezier(.4,0,.2,1);
+}
+
+body {
+  background: var(--modern-bg);
+}
+
+.modern-layout {
+  background: var(--modern-bg);
+  color: var(--modern-text);
+  min-height: 100vh;
+
+  font-family: "Inter", sans-serif;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.modern-container {
+  width: 100%;
+  max-width: var(--modern-max-width);
+  margin-left: auto;
+  margin-right: auto;
+
+  padding-left: 3rem;
+  padding-right: 3rem;
+}
+
+@media (max-width: 768px) {
+  .modern-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.modern-section {
+  padding: 8rem 0;
+}

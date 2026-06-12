@@ -1,0 +1,74 @@
+.engSection {
+    padding: 120px 0;
+    background: rgba(255, 255, 255, 0.01);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.tag {
+    font-family: 'monospace';
+    color: var(--accentSecondary);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.education {
+    font-family: 'monospace';
+    font-size: 0.9rem;
+    color: var(--textMuted);
+}
+
+.education strong {
+    color: var(--accentPrimary);
+}
+
+.engCard {
+    padding: 35px;
+    background: var(--cardBg);
+    border: 1px solid var(--cardBorder);
+    border-radius: 4px;
+    height: 100%;
+    transition: var(--transitionBase);
+}
+
+.engCard:hover {
+    border-color: var(--accentPrimary);
+    background: rgba(255, 255, 255, 0.03);
+    transform: translateY(-5px);
+}
+
+.icon {
+    font-size: 2rem;
+    color: var(--accentPrimary);
+    margin-bottom: 25px;
+}
+
+.engCard h3 {
+    font-size: 1.25rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.engCard p {
+    color: var(--textMuted);
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+@media (max-width: 991px) {
+    .title {
+        font-size: 2.2rem;
+    }
+
+    .text-lg-end {
+        text-align: left !important;
+        margin-top: 20px;
+    }
+}

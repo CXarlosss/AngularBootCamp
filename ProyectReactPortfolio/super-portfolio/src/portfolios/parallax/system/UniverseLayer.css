@@ -1,0 +1,43 @@
+/* ================================
+   UNIVERSE LAYER
+================================ */
+
+.universe-layer {
+  position: relative;
+  background: #161B22;
+  border: 1px solid rgba(77,166,255,0.15);
+  border-radius: 18px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Header */
+
+.layer-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.layer-accent {
+  width: 6px;
+  height: 24px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #4DA6FF, #2F81F7);
+}
+
+.layer-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #4DA6FF;
+}
+
+/* Nodes layout */
+
+.layer-nodes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+}

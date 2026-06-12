@@ -1,0 +1,189 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.contactInfo {
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 5rem 4rem;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 2rem 5rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  overflow: hidden;
+}
+
+/* Fondo decorativo sutil */
+
+.contactInfo::before {
+  content: "";
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  bottom: -120px;
+  left: -120px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ======================================================
+   TITLE
+   ====================================================== */
+
+.title {
+  text-align: center;
+  font-size: 2.8rem;
+  font-weight: 700;
+  color: var(--glass-text);
+  margin-bottom: 4rem;
+}
+
+.title::after {
+  content: "";
+  display: block;
+  width: 70px;
+  height: 3px;
+  margin: 1.5rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   LIST
+   ====================================================== */
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+/* ======================================================
+   ITEM
+   ====================================================== */
+
+.item {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 1.5rem;
+  row-gap: 0.3rem;
+  align-items: center;
+
+  padding: 1.8rem 2rem;
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-sm);
+
+  backdrop-filter: blur(var(--glass-blur-light));
+
+  transition: all 0.35s ease;
+}
+
+.item:hover {
+  transform: translateY(-5px);
+  box-shadow:
+    0 1.5rem 3rem rgba(var(--glass-shadow-rgb), 0.3);
+}
+
+/* ======================================================
+   ICON
+   ====================================================== */
+
+.icon {
+  font-size: 2rem;
+  color: var(--glass-accent);
+
+  grid-row: span 2;
+
+  padding: 1rem;
+  border-radius: 50%;
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.8);
+
+  box-shadow:
+    inset 0 0 10px rgba(var(--glass-accent-rgb), 0.2),
+    0 0 15px rgba(var(--glass-accent-rgb), 0.15);
+
+  transition: all 0.3s ease;
+}
+
+.item:hover .icon {
+  transform: scale(1.1);
+  box-shadow:
+    inset 0 0 12px rgba(var(--glass-accent-rgb), 0.3),
+    0 0 25px rgba(var(--glass-accent-rgb), 0.35);
+}
+
+/* ======================================================
+   TEXT
+   ====================================================== */
+
+.term {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--glass-text-light);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.desc {
+  font-size: 1.4rem;
+  color: var(--glass-text);
+}
+
+/* Links */
+
+.desc a {
+  color: var(--glass-text);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.desc a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0%;
+  height: 2px;
+  background: var(--glass-accent);
+  transition: width 0.3s ease;
+}
+
+.desc a:hover {
+  color: var(--glass-accent);
+}
+
+.desc a:hover::after {
+  width: 100%;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 800px) {
+
+  .contactInfo {
+    padding: 4rem 2rem;
+  }
+
+  .title {
+    font-size: 2.2rem;
+  }
+
+}

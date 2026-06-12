@@ -1,0 +1,12 @@
+.modern-layout {
+  background: var(--modern-bg);
+  color: var(--modern-text);
+  min-height: 100vh;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.modern-layout main {
+  flex: 1;
+}

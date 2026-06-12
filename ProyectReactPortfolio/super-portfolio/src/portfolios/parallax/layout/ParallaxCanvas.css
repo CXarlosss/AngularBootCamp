@@ -1,0 +1,170 @@
+/* ================================
+   PARALLAX CANVAS ROOT
+================================ */
+
+.parallax-canvas {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  min-height: 100vh;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  background: radial-gradient(
+      circle at 20% 20%,
+      rgba(77, 166, 255, 0.08),
+      transparent 40%
+    ),
+    #0F1117;
+
+  display: flex;
+  justify-content: center;
+}
+
+
+/* ================================
+   CANVAS GRID BACKGROUND
+================================ */
+
+.parallax-canvas-grid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background-image:
+    linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+
+  background-size: 60px 60px;
+}
+
+
+/* ================================
+   MAIN ARCHITECTURE WRAPPER
+================================ */
+
+.universe-layout {
+position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 63px 55px 132px;
+    display: flex;
+    gap: 40px;
+    flex-direction: column;
+}
+
+
+/* ================================
+   DOMAIN BLOCK
+================================ */
+
+.universe-layer {
+  position: relative !important; /* 🔥 override absolute */
+  top: auto !important;
+  left: auto !important;
+  width: 100% !important;
+  height: auto !important;
+
+  background: #161B22;
+  border: 1px solid rgba(77,166,255,0.12);
+  border-radius: 18px;
+
+  padding: 48px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+
+  transition: border 0.3s ease;
+}
+
+.universe-layer:hover {
+  border-color: rgba(77,166,255,0.4);
+}
+
+
+/* ================================
+   DOMAIN TITLE
+================================ */
+
+.universe-layer::before {
+  content: attr(data-label);
+  font-size: 20px;
+  font-weight: 600;
+  color: #4DA6FF;
+  letter-spacing: 0.5px;
+}
+
+
+/* ================================
+   NODE GRID
+================================ */
+
+.universe-layer > .nodes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+
+/* ================================
+   CONNECTION SVG
+================================ */
+
+.universe-connections {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}/* ================================
+   CONNECTIONS LAYER
+================================ */
+
+.universe-connections {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Base connection style */
+.connection-path {
+  stroke: rgba(77,166,255,0.35);
+  stroke-width: 1.2;
+  fill: none;
+
+  transition:
+    stroke 0.3s ease,
+    opacity 0.3s ease;
+
+  opacity: 0.6;
+}
+
+/* Subtle glow */
+.connection-path {
+  filter: drop-shadow(0 0 4px rgba(77,166,255,0.4));
+}
+
+/* Hover highlight effect (future-ready) */
+.dashboard-node:hover ~ .universe-connections .connection-path {
+  opacity: 0.2;
+}.connection-path {
+  stroke-dasharray: 6 4;
+  animation: flow 8s linear infinite;
+}
+
+@keyframes flow {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -100;
+  }
+}

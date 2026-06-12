@@ -1,0 +1,80 @@
+.sidebar {
+    width: 260px;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.01);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 40px 25px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.header {
+    font-family: 'monospace';
+    font-size: 0.65rem;
+    color: var(--accentSecondary);
+    letter-spacing: 2px;
+    margin-bottom: 20px;
+}
+
+.description {
+    font-size: 0.8rem;
+    color: var(--textMuted);
+    line-height: 1.5;
+    margin-bottom: 30px;
+}
+
+.btnList {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.themeBtn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: var(--textMuted);
+    font-family: 'monospace';
+    font-size: 0.7rem;
+    padding: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transitionBase);
+}
+
+.themeBtn:hover {
+    background: rgba(255, 255, 255, 0.02);
+    color: #fff;
+}
+
+.themeBtn.active {
+    border-color: var(--accentPrimary);
+    color: var(--accentPrimary);
+    background: rgba(37, 244, 106, 0.03);
+}
+
+.statusBox {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 30px;
+}
+
+.statusItem {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 20px;
+}
+
+.statusItem span:first-child {
+    font-family: 'monospace';
+    font-size: 0.6rem;
+    color: var(--accentSecondary);
+    letter-spacing: 1px;
+}
+
+.statusItem .value {
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    color: #fff;
+    font-weight: 700;
+}

@@ -1,0 +1,95 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.projectThumbnail {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+
+  border-radius: var(--glass-radius-sm);
+  overflow: hidden;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
+
+  border: 1px solid var(--glass-border);
+
+  box-shadow: 0 1.2rem 3rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  transition: all 0.35s ease;
+}
+
+.projectThumbnail:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 2rem 4rem rgba(var(--glass-shadow-rgb), 0.4);
+}
+
+/* ======================================================
+   IMAGE CONTAINER
+   ====================================================== */
+
+.imageContainer {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+/* Solo mostramos la primera imagen visualmente */
+
+.thumbnailImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+/* Si hay varias imágenes, solo mostramos la primera */
+
+.imageContainer img:not(:first-child) {
+  display: none;
+}
+
+.projectThumbnail:hover .thumbnailImage {
+  transform: scale(1.06);
+}
+
+/* Placeholder */
+
+.imagePlaceholder {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1.4rem;
+  color: var(--glass-text-light);
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.6);
+}
+
+/* ======================================================
+   INFO SECTION
+   ====================================================== */
+
+.projectInfo {
+  padding: 2rem;
+}
+
+/* Title */
+
+.projectTitle {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--glass-text);
+  margin-bottom: 0.8rem;
+}
+
+/* Description */
+
+.projectDescription {
+  font-size: 1.3rem;
+  line-height: 1.6;
+  color: var(--glass-text-light);
+}

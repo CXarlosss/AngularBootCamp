@@ -1,0 +1,97 @@
+/* ===============================
+   HERO
+================================ */
+
+.modern-about-title {
+  font-size: clamp(3.5rem, 6vw, 5.5rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  max-width: 950px;
+  margin-bottom: 2.5rem;
+}
+
+.modern-about-title::after {
+  content: "";
+  display: block;
+  width: 120px;
+  height: 6px;
+  background: var(--modern-accent);
+  margin-top: 2rem;
+}
+
+/* ===============================
+   GRID BLOQUES
+================================ */
+
+.modern-about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  .modern-about-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===============================
+   CARDS INTERNAS
+================================ */
+
+.modern-about-grid h3 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  letter-spacing: -0.03em;
+  position: relative;
+}
+
+.modern-about-grid h3::before {
+  content: "";
+  position: absolute;
+  left: -20px;
+  top: 8px;
+  width: 8px;
+  height: 8px;
+  background: var(--modern-accent);
+}
+
+.modern-about-grid p {
+  line-height: 1.8;
+  color: var(--modern-muted);
+  font-size: 1.05rem;
+}
+
+/* ===============================
+   STATS
+================================ */
+
+.modern-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 5rem;
+  padding-top: 3rem;
+  border-top: 1px solid var(--modern-border);
+}
+
+/* ===============================
+   STACK
+================================ */
+
+.modern-about-subtitle {
+  font-size: 2.2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin-bottom: 3rem;
+}
+
+.modern-badges-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.4rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--modern-border);
+}

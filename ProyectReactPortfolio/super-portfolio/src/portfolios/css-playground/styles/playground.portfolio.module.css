@@ -1,0 +1,130 @@
+/* === IMAGE === */
+
+.image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--play-radius);
+  margin-bottom: 1.5rem;
+  transition: transform 0.6s cubic-bezier(.16,.8,.24,1),
+              filter 0.6s ease;
+  filter: brightness(0.85);
+}
+
+.card:hover .image {
+  transform: scale(1.08);
+  filter: brightness(1);
+}
+
+
+/* === CARD === */
+
+.card {
+  background: linear-gradient(
+    160deg,
+    rgba(18, 24, 38, 0.95),
+    rgba(22, 29, 46, 0.95)
+  );
+  border: 1px solid var(--play-border);
+  border-radius: var(--play-radius);
+  padding: 2rem;
+  transition: transform 0.4s ease,
+              box-shadow 0.4s ease,
+              border-color 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    transparent,
+    rgba(0, 224, 255, 0.05),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.card:hover {
+  transform: translateY(-10px);
+  border-color: var(--play-accent-blue);
+  box-shadow: 0 0 40px rgba(0, 224, 255, 0.25);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+
+/* === TECH BADGES === */
+
+.tech {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 1.2rem 0;
+}
+
+.tech span {
+  background: rgba(255, 255, 255, 0.04);
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+  color: var(--play-accent-blue);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: all 0.3s ease;
+}
+
+.tech span:hover {
+  color: #fff;
+  border-color: var(--play-accent-purple);
+  box-shadow: 0 0 10px rgba(138, 44, 255, 0.4);
+}
+
+
+/* === LINKS === */
+
+.links {
+  display: flex;
+  gap: 1.2rem;
+  margin-top: 1.5rem;
+}
+
+.links a {
+  text-decoration: none;
+  font-size: 0.85rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  font-weight: 500;
+  color: var(--play-text-secondary);
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    var(--play-accent-blue),
+    var(--play-accent-purple)
+  );
+  transition: width 0.3s ease;
+}
+
+.links a:hover {
+  color: var(--play-text-primary);
+}
+
+.links a:hover::after {
+  width: 100%;
+}

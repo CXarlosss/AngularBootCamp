@@ -1,0 +1,178 @@
+/* ===============================
+   BASE
+================================ */
+
+.creative-cv {
+  padding: 8rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6rem;
+}
+
+.creative-cv > div:not(:first-child) {
+  border-top: var(--creative-border);
+  padding-top: 5rem;
+}
+
+/* ===============================
+   HEADER
+================================ */
+
+.creative-cv-header {
+  position: relative;
+  max-width: 800px;
+}
+
+.creative-cv-header h1 {
+  font-size: clamp(4rem, 10vw, 8rem);
+  font-weight: 900;
+  letter-spacing: -2px;
+  line-height: 0.9;
+}
+
+.creative-cv-header p {
+  margin-top: 2rem;
+  max-width: 600px;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.creative-cv-header::after {
+  content: "";
+  position: absolute;
+  bottom: -20px;
+  left: 0;
+  width: 150px;
+  height: 8px;
+  background: var(--creative-primary);
+}
+
+/* ===============================
+   TIMELINE STRUCTURE
+================================ */
+
+.creative-cv-timeline {
+  position: relative;
+  margin-top: 6rem;
+  padding: 2rem 0;
+}
+
+/* Línea central */
+.creative-cv-timeline::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 8px;
+  height: 100%;
+  background: var(--creative-dark);
+  transform: translateX(-50%);
+}
+
+/* ===============================
+   ITEMS
+================================ */
+
+.creative-cv-item {
+  width: 50%;
+  padding: 3rem;
+  position: relative;
+}
+
+.creative-cv-item.left {
+  left: 0;
+  text-align: right;
+}
+
+.creative-cv-item.right {
+  left: 50%;
+}
+
+/* Punto conector */
+
+.creative-cv-item::before {
+  content: "";
+  position: absolute;
+  top: 40px;
+  width: 20px;
+  height: 20px;
+  background: var(--creative-primary);
+  border: var(--creative-border);
+  z-index: 2;
+}
+
+.creative-cv-item.left::before {
+  right: -10px;
+}
+
+.creative-cv-item.right::before {
+  left: -10px;
+}
+
+/* ===============================
+   CONTENT CARD
+================================ */
+
+.creative-cv-content {
+  background: white;
+  border: var(--creative-border);
+  padding: 2.5rem;
+  transition: transform 0.2s ease;
+  box-shadow: 14px 14px 0 var(--creative-dark);
+}
+
+.creative-cv-content:hover {
+  transform: translate(-6px, -6px);
+}
+
+/* ===============================
+   TYPOGRAPHY
+================================ */
+
+.creative-cv-date {
+  font-weight: 900;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--creative-primary);
+}
+
+.creative-cv-content h3 {
+  margin-top: 0.8rem;
+  font-weight: 900;
+  font-size: 1.3rem;
+}
+
+.creative-cv-content h4 {
+  font-weight: 700;
+  margin: 0.5rem 0 1rem;
+  opacity: 0.8;
+}
+
+.creative-cv-content p {
+  font-weight: 600;
+  line-height: 1.6;
+}
+
+/* ===============================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 900px) {
+
+  .creative-cv-timeline::before {
+    left: 20px;
+  }
+
+  .creative-cv-item {
+    width: 100%;
+    left: 0 !important;
+    padding-left: 4rem;
+    text-align: left !important;
+  }
+
+  .creative-cv-item::before {
+    left: 10px !important;
+    right: auto !important;
+  }
+}

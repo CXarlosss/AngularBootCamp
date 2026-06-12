@@ -1,0 +1,190 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.contactForm {
+  position: relative;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 6rem 4rem;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 2rem 5rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  overflow: hidden;
+}
+
+/* Fondo decorativo */
+
+.contactForm::before {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  top: -120px;
+  right: -120px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ======================================================
+   TITLE
+   ====================================================== */
+
+.contactForm h2 {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--glass-text);
+  margin-bottom: 4rem;
+}
+
+.contactForm h2::after {
+  content: "";
+  display: block;
+  width: 70px;
+  height: 3px;
+  margin: 1.5rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   GRID
+   ====================================================== */
+
+.formGrid {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+/* ======================================================
+   FIELDS
+   ====================================================== */
+
+.field,
+.fieldFull {
+  display: flex;
+  flex-direction: column;
+}
+
+.field label,
+.fieldFull label {
+  font-size: 1.3rem;
+  margin-bottom: 0.8rem;
+  color: var(--glass-text);
+  font-weight: 500;
+}
+
+/* Inputs */
+
+.field input,
+.fieldFull textarea {
+  padding: 1.2rem 1.4rem;
+  font-size: 1.4rem;
+
+  border-radius: var(--glass-radius-sm);
+  border: 1px solid var(--glass-border);
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.6);
+  backdrop-filter: blur(var(--glass-blur-light));
+
+  color: var(--glass-text);
+
+  transition: all 0.3s ease;
+  resize: none;
+}
+
+/* Focus */
+
+.field input:focus,
+.fieldFull textarea:focus {
+  outline: none;
+  border-color: var(--glass-accent);
+  box-shadow:
+    0 0 0 2px rgba(var(--glass-accent-rgb), 0.25),
+    0 0 20px rgba(var(--glass-accent-rgb), 0.15);
+}
+
+/* Error state */
+
+.field input[aria-invalid="true"],
+.fieldFull textarea[aria-invalid="true"] {
+  border-color: #ff5a5a;
+  box-shadow: 0 0 0 2px rgba(255, 90, 90, 0.25);
+}
+
+/* ======================================================
+   ERROR TEXT
+   ====================================================== */
+
+.error {
+  margin-top: 0.6rem;
+  font-size: 1.2rem;
+  color: #ff5a5a;
+}
+
+/* ======================================================
+   ACTIONS
+   ====================================================== */
+
+.actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+/* ======================================================
+   SUCCESS MESSAGE
+   ====================================================== */
+
+.successMessage {
+  text-align: center;
+  font-size: 1.6rem;
+  color: var(--glass-accent);
+  padding: 2rem;
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.6);
+  border-radius: var(--glass-radius-sm);
+  border: 1px solid var(--glass-border);
+
+  backdrop-filter: blur(6px);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 800px) {
+
+  .contactForm {
+    padding: 4rem 2rem;
+  }
+
+  .row {
+    grid-template-columns: 1fr;
+  }
+
+  .contactForm h2 {
+    font-size: 2.4rem;
+  }
+
+}

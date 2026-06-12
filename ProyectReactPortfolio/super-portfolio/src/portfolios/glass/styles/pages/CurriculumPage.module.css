@@ -1,0 +1,55 @@
+/* ======================================================
+   PRINT VERSION – PROFESIONAL LIMPIO
+   ====================================================== */
+
+@media print {
+
+  body {
+    background: white !important;
+  }
+
+  .curriculumWrapper {
+    padding: 0 !important;
+  }
+
+  .curriculumPage {
+    display: block !important;
+    max-width: 100% !important;
+  }
+
+  .leftColumn,
+  .rightColumn {
+    display: block !important;
+  }
+
+  .cvBlock {
+    background: white !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    border: none !important;
+    padding: 1.5rem 0 !important;
+    margin-bottom: 2rem;
+  }
+
+  /* Títulos más formales en print */
+
+  h1, h2, h3 {
+    color: black !important;
+  }
+
+  p, li, span {
+    color: black !important;
+  }
+
+  a {
+    color: black !important;
+    text-decoration: none !important;
+  }
+
+  /* Evitar saltos raros */
+
+  section {
+    page-break-inside: avoid;
+  }
+
+}

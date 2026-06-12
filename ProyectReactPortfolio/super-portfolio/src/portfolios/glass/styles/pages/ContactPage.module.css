@@ -1,0 +1,170 @@
+/* ==============================================================
+   CONTACT PAGE – COHERENTE CON GLASS THEME NATURAL
+   ============================================================== */
+
+.contactPage {
+  min-height: 100vh;
+  width: 100%;
+  padding: 3rem 1.5rem;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  background:
+    radial-gradient(circle at 15% 25%, rgba(var(--glass-accent-rgb), 0.08), transparent 45%),
+    radial-gradient(circle at 85% 75%, rgba(var(--glass-accent-rgb), 0.06), transparent 50%);
+}
+
+/* ==============================================================
+   WRAPPER PRINCIPAL
+   ============================================================== */
+
+.contactPageContainer {
+  max-width: 1280px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ==============================================================
+   TÍTULO
+   ============================================================== */
+
+.pageTitle {
+  font-size: 2.5rem;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--glass-text);
+  margin-top: 0;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+/* ==============================================================
+   GRID PRINCIPAL
+   ============================================================== */
+
+.contactGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: stretch;
+}
+
+.pageForm,
+.pageInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.pageForm > *,
+.pageInfo > * {
+  flex: 1 1 auto;
+}
+
+/* ==============================================================
+   MAPA / BLOQUE EXTRA
+   ============================================================== */
+
+.pageMap {
+  margin-top: 3rem;
+  width: 100%;
+}
+
+.mapCard {
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow: 0 0.8rem 2rem rgba(var(--glass-shadow-rgb), 0.15);
+
+  padding: 0.8rem;
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.mapCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 1.2rem 2.8rem rgba(var(--glass-shadow-rgb), 0.25);
+}
+
+.mapCard iframe {
+  display: block;
+  width: 100%;
+  height: 350px;
+  border: 0;
+  border-radius: calc(var(--glass-radius) - 0.6rem);
+}
+
+/* ==============================================================
+   RESPONSIVE
+   ============================================================== */
+
+@media (max-width: 900px) {
+
+  .contactPage {
+    padding: 2rem 1.2rem;
+  }
+
+  .contactGrid {
+    grid-template-columns: 1fr;
+    gap: 1.8rem;
+  }
+
+  .pageTitle {
+    font-size: 2rem;
+    margin-bottom: 1.8rem;
+  }
+
+  .mapCard iframe {
+    height: 280px;
+  }
+}
+
+@media (max-width: 480px) {
+
+  .contactPage {
+    padding: 1.5rem 1rem;
+  }
+
+  .contactGrid {
+    gap: 1.5rem;
+  }
+
+  .pageTitle {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .mapCard iframe {
+    height: 220px;
+  }
+}
+
+/* ==============================================================
+   DARK MODE – TOTALMENTE INTEGRADO CON GLASS
+   ============================================================== */
+
+@media (prefers-color-scheme: dark) {
+
+  .contactPage {
+    background:
+      radial-gradient(circle at 20% 30%, rgba(var(--glass-accent-rgb), 0.08), transparent 45%),
+      radial-gradient(circle at 80% 70%, rgba(var(--glass-accent-rgb), 0.06), transparent 50%);
+  }
+
+  .pageTitle {
+    color: var(--glass-text);
+  }
+
+  .mapCard {
+    background: var(--glass-bg-base);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+  }
+
+}

@@ -1,0 +1,34 @@
+:root {
+
+  /* === Base Colors === */
+  --px-bg-0: #0e1117;
+  --px-bg-1: #151922;
+  --px-bg-2: #1c2230;
+
+  --px-border: #242a38;
+
+  /* === Accent === */
+  --px-accent: #5e81ff;
+  --px-accent-soft: rgba(94, 129, 255, 0.15);
+
+  /* === Text === */
+  --px-text-primary: #e6eaf2;
+  --px-text-secondary: #8b93a7;
+  --px-text-muted: #5f6678;
+
+  /* === Spacing === */
+  --px-space-xs: 6px;
+  --px-space-sm: 10px;
+  --px-space-md: 16px;
+  --px-space-lg: 24px;
+  --px-space-xl: 40px;
+
+  /* === Radius === */
+  --px-radius-sm: 4px;
+  --px-radius-md: 8px;
+
+  /* === Typography === */
+  --px-font-family: "Inter", system-ui, sans-serif;
+  --px-font-mono: "JetBrains Mono", monospace;
+
+}

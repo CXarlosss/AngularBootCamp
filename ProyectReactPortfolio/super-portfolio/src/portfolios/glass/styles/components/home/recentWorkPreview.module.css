@@ -1,0 +1,119 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.recentWork {
+  position: relative;
+  padding: 6rem 4rem;
+  text-align: center;
+}
+
+/* Fondo atmosférico suave */
+
+.recentWork::before {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  top: -150px;
+  right: -150px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.08),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ======================================================
+   TITULO PRINCIPAL
+   ====================================================== */
+
+.mainTitle {
+  font-size: 3rem;
+  font-weight: 600;
+  margin-bottom: 4rem;
+  color: var(--glass-text);
+  letter-spacing: -0.5px;
+  position: relative;
+}
+
+/* Línea decorativa bajo el título */
+
+.mainTitle::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 1.5rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   GRID PROYECTOS
+   ====================================================== */
+
+.projectsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ======================================================
+   EFECTO HOVER GLOBAL EN TARJETAS
+   (ProjectThumbnail hereda glass)
+   ====================================================== */
+
+.projectsGrid > * {
+  transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+.projectsGrid > *:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 2rem 4rem rgba(var(--glass-shadow-rgb), 0.35);
+}
+
+/* ======================================================
+   BOTÓN FINAL
+   ====================================================== */
+
+.projectsButtonContainer {
+  margin-top: 5rem;
+  display: flex;
+  justify-content: center;
+}
+
+/* Ajuste visual para botón secondary */
+
+.projectsButtonContainer a,
+.projectsButtonContainer button {
+  padding: 1.2rem 3rem;
+  font-size: 1.4rem;
+  border-radius: var(--glass-radius-sm);
+  transition: all 0.3s ease;
+}
+
+.projectsButtonContainer a:hover,
+.projectsButtonContainer button:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 1.2rem 2.5rem rgba(var(--glass-shadow-rgb), 0.35);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .recentWork {
+    padding: 4rem 2rem;
+  }
+
+  .mainTitle {
+    font-size: 2.4rem;
+  }
+
+}

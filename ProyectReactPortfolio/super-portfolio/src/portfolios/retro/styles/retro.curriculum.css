@@ -1,0 +1,185 @@
+/* =========================================
+   RETRO CURRICULUM MODULE
+========================================= */
+
+.retro-cv-container {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  position: relative;
+}
+
+/* =========================================
+   BOOT HEADER
+========================================= */
+
+.retro-cv-boot-header {
+  font-size: 1rem;
+  letter-spacing: 3px;
+  color: var(--matrix-green);
+  text-shadow: 0 0 8px var(--matrix-green);
+  margin-bottom: 15px;
+  animation: cvBootGlow 2s ease-in-out infinite alternate;
+}
+
+@keyframes cvBootGlow {
+  from { text-shadow: 0 0 4px var(--matrix-green); }
+  to   { text-shadow: 0 0 14px var(--matrix-green); }
+}
+
+/* =========================================
+   LOAD MESSAGE
+========================================= */
+
+.retro-cv-loading {
+  font-size: 1rem;
+  color: var(--matrix-green);
+  text-shadow: 0 0 6px var(--matrix-green);
+  margin-bottom: 6px;
+}
+
+/* =========================================
+   PROGRESS BAR
+========================================= */
+
+.retro-cv-progress {
+  margin-top: 8px;
+  font-family: monospace;
+  letter-spacing: 2px;
+  font-size: 0.85rem;
+  color: var(--matrix-green);
+  text-shadow: 0 0 6px var(--matrix-green);
+}
+
+/* =========================================
+   MODULE WRAPPER
+========================================= */
+
+.retro-cv-module {
+  margin-top: 30px;
+  animation: moduleFade 0.6s ease forwards;
+}
+
+@keyframes moduleFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* =========================================
+   SECTION TITLES
+========================================= */
+
+.retro-cv-section-title {
+  font-size: 1.15rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-top: 30px;
+  margin-bottom: 15px;
+
+  color: var(--matrix-green);
+  text-shadow: 0 0 10px var(--matrix-green);
+
+  position: relative;
+}
+
+/* Línea decorativa tipo BIOS */
+
+.retro-cv-section-title::before {
+  content: "0xFF_" attr(data-id);
+  position: absolute;
+  left: -140px;
+  font-size: 0.65rem;
+  color: rgba(0,255,65,0.35);
+  letter-spacing: 1px;
+}
+
+/* =========================================
+   SECTION CONTENT
+========================================= */
+
+.retro-cv-section-content {
+  padding: 18px 22px;
+  background: rgba(0, 255, 65, 0.035);
+  border-left: 2px solid rgba(0, 255, 65, 0.25);
+  border-radius: 6px;
+
+  font-size: 0.95rem;
+  color: var(--matrix-text);
+
+  position: relative;
+  overflow: hidden;
+
+  animation: cvFadeIn 0.5s ease forwards;
+}
+
+/* Efecto sutil interno tipo energía */
+
+.retro-cv-section-content::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at top left,
+    rgba(0,255,65,0.08),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* Líneas internas */
+
+.retro-cv-section-content div {
+  margin-bottom: 6px;
+  transition: 0.2s ease;
+}
+
+.retro-cv-section-content div:hover {
+  color: var(--matrix-green);
+  transform: translateX(4px);
+}
+
+/* =========================================
+   READY STATE
+========================================= */
+
+.retro-cv-ready {
+  margin-top: 40px;
+  font-size: 1rem;
+  color: var(--matrix-green);
+  text-shadow: 0 0 8px var(--matrix-green);
+  animation: cvPulse 1.5s infinite alternate;
+}
+
+@keyframes cvPulse {
+  from { opacity: 0.7; }
+  to   { opacity: 1; }
+}
+
+/* =========================================
+   DIVIDER
+========================================= */
+
+.retro-cv-divider {
+  margin: 35px 0;
+  opacity: 0.2;
+}
+
+/* =========================================
+   FADE ANIMATION
+========================================= */
+
+@keyframes cvFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

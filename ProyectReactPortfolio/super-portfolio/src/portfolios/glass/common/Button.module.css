@@ -1,0 +1,190 @@
+/* Button.module.css – Glass Apple Style Premium */
+
+/* ======================================================
+   🧊 VARIABLES LOCALES – Consistencia con el sistema
+   ====================================================== */
+.button {
+  --accent-blue: rgba(98, 146, 190, 0.9);
+  --accent-blue-light: rgba(98, 146, 190, 0.1);
+  --accent-blue-medium: rgba(98, 146, 190, 0.2);
+  --accent-blue-border: rgba(98, 146, 190, 0.25);
+  --accent-blue-border-hover: rgba(98, 146, 190, 0.4);
+  --text-primary: rgba(18, 25, 33, 0.9);
+  --text-secondary: rgba(18, 25, 33, 0.7);
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-bg-hover: rgba(255, 255, 255, 0.2);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-border-hover: rgba(255, 255, 255, 0.35);
+  --radius-pill: 40px;
+  --radius-default: 12px;
+  --transition: all 0.2s ease;
+}
+
+/* ======================================================
+   🧩 ESTILOS BASE – Todos los botones
+   ====================================================== */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.7rem 1.8rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.95rem;
+  font-weight: 550;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  text-decoration: none;
+  cursor: pointer;
+  transition: var(--transition);
+  background: transparent;
+  color: inherit;
+  white-space: nowrap;
+}
+
+.button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(98, 146, 190, 0.25);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ======================================================
+   🎨 VARIANTES
+   ====================================================== */
+
+/* ✅ Primario – Acento azul acero, glass sutil */
+.primary {
+  background: var(--accent-blue-light);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid var(--accent-blue-border);
+  color: #2a4e6b; /* azul acero oscuro */
+}
+
+.primary:hover {
+  background: var(--accent-blue-medium);
+  border-color: var(--accent-blue-border-hover);
+  color: #1e3b4f;
+  transform: translateY(-1px);
+}
+
+/* ✅ Secundario – Glass neutro, ideal para acciones complementarias */
+.secondary {
+  background: var(--glass-bg);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+}
+
+.secondary:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--glass-border-hover);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+/* ✅ Outline – Borde sutil, sin fondo */
+.outline {
+  background: transparent;
+  border: 1px solid var(--accent-blue-border);
+  color: #2a4e6b;
+}
+
+.outline:hover {
+  background: rgba(98, 146, 190, 0.04);
+  border-color: var(--accent-blue-border-hover);
+  color: #1e3b4f;
+  transform: translateY(-1px);
+}
+
+/* ✅ Ghost – Sin borde, apenas visible, hover suave */
+.ghost {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+}
+
+.ghost:hover {
+  background: rgba(0, 0, 0, 0.02);
+  color: var(--text-primary);
+}
+
+/* ======================================================
+   📱 RESPONSIVE – Ajuste de padding en móvil
+   ====================================================== */
+@media (max-width: 768px) {
+  .button {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .button {
+    padding: 0.55rem 1.2rem;
+    font-size: 0.85rem;
+    white-space: normal; /* permite texto en varias líneas */
+  }
+}
+
+/* ======================================================
+   🌙 DARK MODE – Adaptación elegante
+   ====================================================== */
+@media (prefers-color-scheme: dark) {
+  .button {
+    --text-primary: rgba(255, 255, 255, 0.95);
+    --text-secondary: rgba(255, 255, 255, 0.8);
+    --accent-blue-light: rgba(98, 146, 190, 0.15);
+    --accent-blue-medium: rgba(98, 146, 190, 0.25);
+    --accent-blue-border: rgba(98, 146, 190, 0.3);
+    --accent-blue-border-hover: rgba(98, 146, 190, 0.45);
+    --glass-bg: rgba(0, 0, 0, 0.3);
+    --glass-bg-hover: rgba(0, 0, 0, 0.5);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --glass-border-hover: rgba(255, 255, 255, 0.2);
+  }
+
+  .primary {
+    color: #c0e0ff;
+  }
+
+  .primary:hover {
+    color: white;
+  }
+
+  .outline {
+    color: #c0e0ff;
+  }
+
+  .outline:hover {
+    color: white;
+  }
+
+  .secondary {
+    color: rgba(255, 255, 255, 0.8);
+  }
+
+  .secondary:hover {
+    color: white;
+  }
+
+  .ghost {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .ghost:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+  }
+
+  .button:focus {
+    box-shadow: 0 0 0 3px rgba(98, 146, 190, 0.4);
+  }
+}

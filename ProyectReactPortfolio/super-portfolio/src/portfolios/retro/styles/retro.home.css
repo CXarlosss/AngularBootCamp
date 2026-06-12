@@ -1,0 +1,175 @@
+/* ==============================
+   RETRO HOME – CINEMATIC MODE
+============================== */
+
+.retro-home {
+  position: relative;
+  animation: fadeInHome 1.2s ease;
+}
+
+/* ==============================
+   BOOT BLOCK
+============================== */
+
+.retro-boot-block {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  letter-spacing: 1px;
+}
+
+.retro-boot-line {
+  opacity: 0;
+  color: #00ff41;
+  text-shadow: 0 0 6px #00ff41;
+  animation: bootLineAppear 0.6s ease forwards;
+}
+
+/* glitch micro flicker */
+.retro-boot-line:nth-child(odd) {
+  animation: bootLineAppear 0.6s ease forwards, glitchFlicker 2s infinite;
+}
+
+@keyframes bootLineAppear {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glitchFlicker {
+  0% { opacity: 1; }
+  48% { opacity: 1; }
+  50% { opacity: 0.6; }
+  52% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+/* ==============================
+   STATUS BLOCK
+============================== */
+
+.retro-status-block {
+  line-height: 2;
+  letter-spacing: 2px;
+  font-size: 0.9rem;
+}
+
+.retro-highlight {
+  opacity: 0.85;
+}
+
+.retro-green {
+  color: #00ff41;
+  text-shadow: 0 0 12px #00ff41, 0 0 24px rgba(0,255,65,0.4);
+  animation: pulseGlow 2.5s infinite ease-in-out;
+}
+
+@keyframes pulseGlow {
+  0% { text-shadow: 0 0 8px #00ff41; }
+  50% { text-shadow: 0 0 16px #00ff41, 0 0 30px rgba(0,255,65,0.6); }
+  100% { text-shadow: 0 0 8px #00ff41; }
+}
+
+/* ==============================
+   DIVIDER
+============================== */
+
+.retro-divider-line {
+  height: 1px;
+  margin: 40px 0;
+  background: linear-gradient(
+    to right,
+    transparent,
+    rgba(0,255,65,0.6),
+    transparent
+  );
+  box-shadow: 0 0 12px rgba(0,255,65,0.4);
+}
+
+/* ==============================
+   WELCOME
+============================== */
+
+.retro-welcome {
+  font-size: 1.4rem;
+  letter-spacing: 4px;
+  text-shadow: 0 0 15px #00ff41;
+  margin-bottom: 10px;
+}
+
+.retro-subtext {
+  opacity: 0.6;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+/* ==============================
+   COMMAND LIST
+============================== */
+
+.retro-command-header {
+  margin-bottom: 15px;
+  letter-spacing: 3px;
+}
+
+.retro-command-list {
+  opacity: 0.7;
+  padding-left: 12px;
+  transition: 0.25s ease;
+  cursor: default;
+}
+
+.retro-command-list:hover {
+  opacity: 1;
+  transform: translateX(4px);
+  text-shadow: 0 0 10px #00ff41;
+}
+
+/* ==============================
+   SYSTEM MESSAGE
+============================== */
+
+.retro-system-message {
+  margin-top: 30px;
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+
+/* Cursor stronger */
+.cursor {
+  display: inline-block;
+  width: 10px;
+  height: 1rem;
+  background: #00ff41;
+  margin-left: 4px;
+  animation: blink 1s step-end infinite;
+}
+
+/* ==============================
+   GLOBAL FADE
+============================== */
+
+@keyframes fadeInHome {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes blink {
+  0%, 50%, 100% { opacity: 1; }
+  25%, 75% { opacity: 0; }
+}
+.retro-command-list.clickable {
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.retro-command-list.clickable:hover {
+  color: #00ff88;
+  text-shadow: 0 0 8px #00ff88;
+  transform: translateX(6px);
+}

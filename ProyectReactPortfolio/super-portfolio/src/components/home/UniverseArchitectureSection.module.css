@@ -1,0 +1,135 @@
+.universeSection {
+    padding: 120px 0;
+    position: relative;
+}
+
+.sectionHeader {
+    margin-bottom: 80px;
+}
+
+.tag {
+    font-family: 'monospace';
+    color: var(--accentSecondary);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 25px;
+}
+
+.description {
+    font-size: 1.15rem;
+    color: var(--textMuted);
+    line-height: 1.7;
+}
+
+.description strong {
+    color: #fff;
+}
+
+/* Bento Grid */
+.bentoGrid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(2, 380px);
+    gap: 20px;
+}
+
+.bentoItem {
+    background: var(--cardBg);
+    border: 1px solid var(--cardBorder);
+    border-radius: 4px;
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.cardHeader {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.dimIcon {
+    font-size: 1.5rem;
+}
+
+.bentoItem h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.bentoItem p {
+    color: var(--textMuted);
+    font-size: 1rem;
+}
+
+.dimVisual {
+    margin-top: 20px;
+    flex: 1;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dimVisual img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0.6;
+}
+
+.cardAction {
+    margin-top: auto;
+    font-family: 'monospace';
+    font-size: 0.75rem;
+    color: var(--accentSecondary);
+    padding-top: 20px;
+}
+
+.bentoItem:hover .cardAction {
+    color: var(--accentPrimary);
+}
+
+.bentoItem.active {
+    border-color: var(--accentPrimary);
+    background: rgba(255, 255, 255, 0.05);
+    box-shadow: 0 0 20px rgba(74, 141, 250, 0.2);
+}
+
+.resetCard {
+    grid-column: span 12;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.2);
+    padding: 20px;
+    text-align: center;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.resetCard:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: var(--accentSecondary);
+}
+
+@media (max-width: 991px) {
+    .bentoGrid {
+        grid-template-rows: auto;
+        grid-template-columns: 1fr;
+    }
+
+    .bentoItem {
+        grid-column: span 1 !important;
+        min-height: 300px;
+    }
+}

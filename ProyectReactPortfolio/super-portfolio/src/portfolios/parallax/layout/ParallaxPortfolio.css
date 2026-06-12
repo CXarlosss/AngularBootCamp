@@ -1,0 +1,189 @@
+/* ================================
+   ROOT CONTAINER
+================================ */
+
+.parallax-root {
+  min-height: 100vh;
+  width: 100%;
+  background: #0F1117;
+  color: #E6EDF3;
+
+  display: flex;
+  flex-direction: column;
+
+  font-family: -apple-system, BlinkMacSystemFont, 
+               "Segoe UI", Roboto, Oxygen, Ubuntu, 
+               Cantarell, "Open Sans", "Helvetica Neue", 
+               sans-serif;
+
+  position: relative;
+  overflow-x: hidden;
+}
+
+
+/* ================================
+   MAIN CONTENT AREA
+================================ */
+
+.parallax-root.arch-mode {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.parallax-root.recruiter-mode {
+  min-height: 100vh;
+  overflow-y: auto;
+}
+
+/* ================================
+   DASHBOARD CONTENT WRAPPER
+================================ */
+
+.dashboard-layout {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+
+  padding: 120px 60px 160px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 120px;
+}
+
+
+/* ================================
+   MODULE (DOMAIN)
+================================ */
+
+.dashboard-module {
+  background: #161B22;
+  border: 1px solid rgba(77,166,255,0.12);
+  border-radius: 16px;
+
+  padding: 48px;
+
+  transition: border 0.3s ease, transform 0.3s ease;
+}
+
+.dashboard-module:hover {
+  border-color: rgba(77,166,255,0.4);
+  transform: translateY(-2px);
+}
+
+
+/* ================================
+   MODULE HEADER
+================================ */
+
+.module-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+
+  margin-bottom: 40px;
+  color: #4DA6FF;
+}
+
+.module-accent {
+  width: 6px;
+  height: 28px;
+  border-radius: 4px;
+  background: linear-gradient(
+    180deg,
+    #4DA6FF,
+    #2F81F7
+  );
+}
+
+
+/* ================================
+   NODE GRID
+================================ */
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+
+/* ================================
+   NODE CARD
+================================ */
+
+.dashboard-node {
+  background: #0D1117;
+  border: 1px solid rgba(77,166,255,0.08);
+  border-radius: 12px;
+
+  padding: 20px 24px;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  transition: all 0.25s ease;
+  cursor: pointer;
+}
+
+.dashboard-node:hover {
+  border-color: rgba(77,166,255,0.4);
+  background: #111827;
+  transform: translateY(-2px);
+}
+
+
+/* ================================
+   CONNECTIONS SVG
+================================ */
+
+.universe-connections {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+
+/* ================================
+   OVERLAY LAYER
+================================ */
+
+.engineering-overlay {
+  position: fixed;
+  top: 80px;
+  right: 40px;
+  width: 420px;
+
+  background: #161B22;
+  border: 1px solid rgba(77,166,255,0.2);
+  border-radius: 12px;
+
+  padding: 32px;
+
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+
+  z-index: 100;
+}
+
+
+/* ================================
+   SCROLLBAR (OPTIONAL POLISH)
+================================ */
+
+.parallax-root::-webkit-scrollbar {
+  width: 8px;
+}
+
+.parallax-root::-webkit-scrollbar-track {
+  background: #0F1117;
+}
+
+.parallax-root::-webkit-scrollbar-thumb {
+  background: rgba(77,166,255,0.4);
+  border-radius: 4px;
+}

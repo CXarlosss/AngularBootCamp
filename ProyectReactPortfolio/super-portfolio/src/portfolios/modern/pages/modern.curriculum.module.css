@@ -1,0 +1,90 @@
+/* ===============================
+   HERO
+================================ */
+
+.modern-cv-title {
+  font-size: clamp(3.5rem, 6vw, 5rem);
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  line-height: 1.05;
+  margin-bottom: 1.5rem;
+}
+
+.modern-cv-subtitle {
+  font-size: 1.1rem;
+  color: var(--modern-muted);
+  line-height: 1.7;
+  max-width: 600px;
+}
+
+/* ===============================
+   SECTION TITLE
+================================ */
+
+.modern-cv-section-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin-bottom: 4rem;
+}
+
+/* ===============================
+   TIMELINE
+================================ */
+
+.modern-cv-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 5rem;
+  position: relative;
+}
+
+/* LINE */
+
+.modern-cv-timeline::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--modern-border);
+}
+
+/* ITEM */
+
+.modern-cv-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.5rem;
+}
+
+.modern-cv-item-header h3 {
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.modern-cv-item-header span {
+  font-size: 0.85rem;
+  color: var(--modern-muted);
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+/* DESCRIPTION */
+
+.modern-cv-timeline p {
+  line-height: 1.7;
+  color: var(--modern-muted);
+}
+
+/* STACK */
+
+.modern-cv-stack {
+  margin-top: 2rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}

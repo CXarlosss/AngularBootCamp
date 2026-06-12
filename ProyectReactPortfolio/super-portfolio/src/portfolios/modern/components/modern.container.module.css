@@ -1,0 +1,35 @@
+.modern-container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+
+  padding-left: 3rem;
+  padding-right: 3rem;
+}
+
+/* VARIANTS */
+
+.modern-container--default {
+  max-width: var(--modern-max-width);
+}
+
+.modern-container--wide {
+  max-width: 1440px;
+}
+
+.modern-container--narrow {
+  max-width: 880px;
+}
+
+.modern-container--full {
+  max-width: 100%;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 768px) {
+  .modern-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}

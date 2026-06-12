@@ -1,0 +1,119 @@
+/* ===============================
+   HERO
+================================ */
+
+.modern-hero {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 8rem;
+  align-items: center;
+  position: relative;
+}
+
+@media (max-width: 1024px) {
+  .modern-hero {
+    grid-template-columns: 1fr;
+    gap: 5rem;
+  }
+}
+
+.modern-hero-left {
+  max-width: 760px;
+}
+
+.modern-hero-title {
+  font-size: clamp(4.5rem, 8vw, 7rem);
+  font-weight: 900;
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  margin-bottom: 2rem;
+}
+
+.modern-hero-subtitle {
+  font-size: 1.15rem;
+  line-height: 1.8;
+  color: var(--modern-muted);
+  max-width: 540px;
+}
+
+.modern-hero-cta {
+  margin-top: 3.5rem;
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+/* ===============================
+   HERO BOX (Nordic brutal block)
+================================ */
+
+.modern-hero-box {
+  border: 3px solid var(--modern-text);
+  padding: 5rem;
+  background: var(--modern-bg);
+
+  font-weight: 700;
+  font-size: 1.2rem;
+  line-height: 1.7;
+
+  position: relative;
+  transform: translateY(30px);
+}
+
+.modern-hero-box::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  width: 100%;
+  height: 100%;
+  background: var(--modern-bg-soft);
+  z-index: -1;
+}
+
+.modern-hero-box:hover {
+  transform: translateY(20px);
+  transition: 0.4s ease;
+}
+
+/* ===============================
+   STATS
+================================ */
+
+.modern-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 4rem;
+}
+
+/* ===============================
+   PROJECT PREVIEW
+================================ */
+.modern-home-section-title {
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  margin-bottom: 5rem;
+}
+
+
+.modern-project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 3rem;
+}
+
+/* ===============================
+   FINAL CTA
+================================ */
+.modern-final-cta {
+  text-align: center;
+  padding: 4rem 0;
+}
+
+.modern-final-cta h2 {
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  margin-bottom: 3rem;
+}

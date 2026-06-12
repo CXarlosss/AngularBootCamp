@@ -1,0 +1,133 @@
+/* =================================
+   BASE
+================================= */
+
+.creative-home {
+  padding: 10rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8rem;
+}
+
+.creative-home > div:not(:first-child) {
+  border-top: var(--creative-border);
+  padding-top: 5rem;
+}
+
+/* =================================
+   HERO
+================================= */
+
+.creative-home-hero {
+  display: flex;
+  flex-direction: column;
+}
+
+.creative-home-hero h1 {
+  font-size: clamp(4rem, 12vw, 10rem);
+  font-weight: 900;
+  line-height: 0.85;
+  letter-spacing: -3px;
+}
+
+.creative-hero-accent {
+  color: var(--creative-primary);
+}
+
+/* =================================
+   MANIFESTO
+================================= */
+
+.creative-home-manifesto {
+  background: var(--creative-secondary);
+  border: var(--creative-border);
+  padding: 2.5rem;
+  max-width: 700px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  box-shadow: 14px 14px 0 var(--creative-dark);
+}
+
+/* =================================
+   PREVIEW BLOCKS
+================================= */
+
+.creative-home-preview {
+  display: flex;
+  gap: 4rem;
+  flex-wrap: wrap;
+}
+
+.creative-preview-block {
+  background: white;
+  border: var(--creative-border);
+  padding: 2.5rem;
+  min-width: 220px;
+  transition: transform 0.2s ease;
+  box-shadow: 12px 12px 0 var(--creative-dark);
+}
+
+.creative-preview-block:hover {
+  transform: translate(-6px, -6px);
+}
+
+.creative-preview-block span {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--creative-primary);
+}
+
+.creative-preview-block p {
+  margin-top: 0.5rem;
+  font-weight: 700;
+}
+
+/* =================================
+   CTA
+================================= */
+
+.creative-cta-block {
+  display: inline-block;
+  background: var(--creative-primary);
+  border: var(--creative-border);
+  padding: 1.2rem 2.2rem;
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: 1px;
+  color: white;
+  cursor: pointer;
+  margin-top: 4rem;
+  text-transform: uppercase;
+  transition: transform 0.15s ease, background 0.15s ease;
+  box-shadow: 10px 10px 0 var(--creative-dark);
+}
+
+.creative-cta-block:hover {
+  transform: translate(-6px, -6px);
+  background: var(--creative-secondary);
+  color: var(--creative-black);
+}
+
+/* =================================
+   RESPONSIVE
+================================= */
+
+@media (max-width: 900px) {
+
+  .creative-home {
+    padding: 7rem 2rem;
+  }
+
+  .creative-home-hero h1 {
+    font-size: clamp(3rem, 14vw, 6rem);
+  }
+
+  .creative-home-preview {
+    gap: 2rem;
+  }
+
+  .creative-preview-block {
+    padding: 2rem;
+  }
+}

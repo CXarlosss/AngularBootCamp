@@ -1,0 +1,149 @@
+/* ======================================================
+   PAGE WRAPPER
+   ====================================================== */
+
+.aboutAurora {
+  min-height: 100vh;
+  padding: 8rem 4rem;
+
+  position: relative;
+}
+
+/* Fondo decorativo sutil */
+
+.aboutAurora::before {
+  content: "";
+  position: absolute;
+  width: 400px;
+  height: 400px;
+  top: -150px;
+  right: -150px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.12),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+.aboutAurora::after {
+  content: "";
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  bottom: -120px;
+  left: -120px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.1),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ======================================================
+   GRID LAYOUT
+   ====================================================== */
+
+.dashboardGrid {
+  max-width: 1400px;
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 3rem;
+}
+
+/* ======================================================
+   WIDGET BASE
+   ====================================================== */
+
+.widget {
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 2rem 5rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  transition: all 0.35s ease;
+}
+
+.widget:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 3rem 6rem rgba(var(--glass-shadow-rgb), 0.4);
+}
+
+/* ======================================================
+   GRID POSITIONS (DESKTOP)
+   ====================================================== */
+
+/* Intro ocupa más espacio */
+
+.widgetIntro {
+  grid-column: span 8;
+}
+
+/* Skills lateral */
+
+.widgetSkills {
+  grid-column: span 4;
+}
+
+/* Education */
+
+.widgetEducation {
+  grid-column: span 6;
+}
+
+/* Experience */
+
+.widgetExperience {
+  grid-column: span 6;
+}
+
+/* Interests full width */
+
+.widgetInterests {
+  grid-column: span 12;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 1200px) {
+
+  .dashboardGrid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+
+  .widgetIntro,
+  .widgetSkills,
+  .widgetEducation,
+  .widgetExperience,
+  .widgetInterests {
+    grid-column: span 6;
+  }
+
+}
+
+@media (max-width: 768px) {
+
+  .aboutAurora {
+    padding: 6rem 2rem;
+  }
+
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .widget {
+    grid-column: span 1;
+  }
+
+}

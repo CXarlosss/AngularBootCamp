@@ -1,0 +1,82 @@
+const education = [
+  {
+    id: "neoland-2025",
+    title: "Bootcamp de Desarrollo Web Full Stack",
+    org: "Neoland",
+    start: { label: "Enero 2025", dateTime: "2025-01" },
+    end: { label: "Marzo 2025", dateTime: "2025-03" },
+    bullets: [
+      "Formación intensiva en desarrollo web moderno con proyectos reales.",
+      "Frontend modular con HTML, CSS, JavaScript, React, Redux y Web Components (LitElement).",
+      "Backend con Node.js y Express, modelado de datos en MongoDB y despliegue en la nube.",
+      "Trabajo en equipo bajo metodologías ágiles y control de versiones con Git/GitHub.",
+    ],
+    skills: [
+      "HTML",
+      "CSS",
+      "JavaScript",
+      "React",
+      "Redux",
+      "Web Components",
+      "Node.js",
+      "Express",
+      "MongoDB",
+      "Agile",
+    ],
+  },
+  {
+    id: "42-madrid-2024",
+    title: "Piscine 42 Madrid – Curso intensivo de programación",
+    org: "Fundación Telefónica",
+    start: { label: "Abril 2024", dateTime: "2024-04" },
+    end: { label: "Julio 2024", dateTime: "2024-07" },
+    bullets: [
+      "Metodología peer-to-peer basada en proyectos, sin clases magistrales.",
+      "Resolución de problemas con C y shell scripting aplicando algoritmos y estructuras de datos.",
+      "Desarrollo de habilidades clave: autogestión, pensamiento lógico y trabajo en equipo.",
+    ],
+    skills: [
+      "C",
+      "Shell",
+      "Algoritmos",
+      "Estructuras de datos",
+      "Git",
+      "Trabajo en equipo",
+    ],
+  },
+  {
+    id: "ibm-2024",
+    title: "Front-End Web Development Foundation Course",
+    org: "IBM",
+    start: { label: "Marzo 2024", dateTime: "2024-03" },
+    end: { label: "Junio 2024", dateTime: "2024-06" },
+    bullets: [
+      "Creación de interfaces responsivas con HTML, CSS, Flexbox y Bootstrap 5.",
+      "Autenticación de usuarios y gestión de datos en tiempo real con Firebase y Firestore.",
+      "Publicación de proyectos en hosting gratuito y despliegue básico en la nube.",
+    ],
+    skills: [
+      "HTML",
+      "CSS",
+      "Bootstrap",
+      "Responsive Design",
+      "Firebase",
+      "Flexbox",
+    ],
+  },
+  {
+    id: "aspasia-2023-2024",
+    title: "Programación orientada a objetos y Bases de datos relacionales",
+    org: "Aspasia",
+    start: { label: "Septiembre 2023", dateTime: "2023-09" },
+    end: { label: "Marzo 2024", dateTime: "2024-03" },
+    bullets: [
+      "Diseño y normalización de bases de datos relacionales con SQL avanzado.",
+      "Integración de aplicaciones con bases de datos mediante ORM y frameworks.",
+      "Buenas prácticas de pruebas, depuración, seguridad y metodologías ágiles.",
+    ],
+    skills: ["OOP", "SQL", "ORM", "Testing", "Agile"],
+  },
+];
+
+export default education;

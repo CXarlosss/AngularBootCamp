@@ -1,0 +1,164 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.languagesSection {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 6rem 4rem;
+}
+
+/* ======================================================
+   TITULO
+   ====================================================== */
+
+.mainTitle {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--glass-text);
+  margin-bottom: 5rem;
+  letter-spacing: -0.5px;
+  position: relative;
+}
+
+.mainTitle::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 1.5rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   GRID
+   ====================================================== */
+
+.languagesGrid {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: grid;
+  gap: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+/* ======================================================
+   LANGUAGE CARD
+   ====================================================== */
+
+.languagePill {
+  padding: 2.5rem 2.5rem;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur-light));
+  -webkit-backdrop-filter: blur(var(--glass-blur-light));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius-sm);
+
+  box-shadow:
+    0 1.2rem 3rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  transition: all 0.35s ease;
+}
+
+.languagePill:hover {
+  transform: translateY(-6px);
+  box-shadow:
+    0 2rem 4rem rgba(var(--glass-shadow-rgb), 0.35);
+}
+
+/* ======================================================
+   HEADER
+   ====================================================== */
+
+.languageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+/* Nombre */
+
+.languageName {
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: var(--glass-text);
+  display: flex;
+  align-items: center;
+}
+
+/* Nivel */
+
+.languageLevel {
+  padding: 0.4rem 1rem;
+  font-size: 1.2rem;
+  font-weight: 500;
+
+  background: rgba(var(--glass-bg-soft-rgb), 0.8);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+
+  color: var(--glass-accent);
+}
+
+/* ======================================================
+   DESCRIPCIÓN
+   ====================================================== */
+
+.languageDescription {
+  font-size: 1.4rem;
+  line-height: 1.6;
+  color: var(--glass-text-light);
+  margin-bottom: 1.5rem;
+}
+
+/* ======================================================
+   PROGRESS (meter personalizado)
+   ====================================================== */
+
+.languagePill meter {
+  height: 8px;
+  border-radius: 10px;
+  overflow: hidden;
+  appearance: none;
+}
+
+/* Chrome */
+
+.languagePill meter::-webkit-meter-bar {
+  background: rgba(var(--glass-bg-soft-rgb), 0.6);
+  border-radius: 10px;
+}
+
+.languagePill meter::-webkit-meter-optimum-value {
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* Firefox */
+
+.languagePill meter::-moz-meter-bar {
+  background: var(--glass-accent);
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .languagesSection {
+    padding: 4rem 2rem;
+  }
+
+  .mainTitle {
+    font-size: 2.4rem;
+  }
+
+}

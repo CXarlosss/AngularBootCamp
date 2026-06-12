@@ -1,0 +1,18 @@
+:root {
+  --play-bg: #0b0f1a;
+  --play-surface: #121826;
+  --play-surface-2: #161d2e;
+
+  --play-accent-blue: #00e0ff;
+  --play-accent-purple: #8a2cff;
+
+  --play-text-primary: #e6f1ff;
+  --play-text-secondary: #8b9bb4;
+
+  --play-border: rgba(255, 255, 255, 0.06);
+
+  --play-glow-blue: 0 0 25px rgba(0, 224, 255, 0.5);
+  --play-glow-purple: 0 0 25px rgba(138, 44, 255, 0.5);
+
+  --play-radius: 16px;
+}

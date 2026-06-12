@@ -1,0 +1,103 @@
+/* ======================================================
+   WRAPPER
+   ====================================================== */
+
+.summary {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 6rem 4rem;
+
+  background: var(--glass-bg-base);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+
+  border: 1px solid var(--glass-border);
+  border-radius: var(--glass-radius);
+
+  box-shadow:
+    0 2rem 5rem rgba(var(--glass-shadow-rgb), 0.25);
+
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fondo decorativo sutil */
+
+.summary::before {
+  content: "";
+  position: absolute;
+  width: 280px;
+  height: 280px;
+  top: -120px;
+  left: -120px;
+  background: radial-gradient(
+    circle,
+    rgba(var(--glass-accent-rgb), 0.1),
+    transparent 70%
+  );
+  pointer-events: none;
+}
+
+/* ======================================================
+   TITLE
+   ====================================================== */
+
+.summaryTitle {
+  text-align: center;
+  font-size: 3rem;
+  font-weight: 700;
+  color: var(--glass-text);
+  margin-bottom: 3.5rem;
+  letter-spacing: -0.5px;
+  position: relative;
+}
+
+.summaryTitle::after {
+  content: "";
+  display: block;
+  width: 80px;
+  height: 3px;
+  margin: 1.5rem auto 0 auto;
+  background: var(--glass-accent);
+  border-radius: 10px;
+}
+
+/* ======================================================
+   TEXT
+   ====================================================== */
+
+.summaryText {
+  font-size: 1.6rem;
+  line-height: 1.8;
+  color: var(--glass-text-light);
+  text-align: center;
+  max-width: 850px;
+  margin: 0 auto;
+}
+
+/* Strong emphasis */
+
+.summaryText strong {
+  color: var(--glass-text);
+  font-weight: 600;
+}
+
+/* ======================================================
+   RESPONSIVE
+   ====================================================== */
+
+@media (max-width: 900px) {
+
+  .summary {
+    padding: 4rem 2rem;
+  }
+
+  .summaryTitle {
+    font-size: 2.4rem;
+  }
+
+  .summaryText {
+    font-size: 1.5rem;
+  }
+
+}
