@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { AuthService } from '../../../core/auth/auth.service';
@@ -39,10 +39,16 @@ export class CoachDashboardComponent implements OnInit, OnDestroy {
     return 'Buenas noches';
   };
 
-  async ngOnInit() {
-    const coachId = this.auth.profile()?.id;
-    if (!coachId) return;
+  constructor() {
+    effect(() => {
+      const coachId = this.auth.profile()?.id;
+      if (coachId && this.loading()) {
+        this.initializeDashboard(coachId);
+      }
+    });
+  }
 
+  async initializeDashboard(coachId: string) {
     try {
       // Cargar todo en paralelo
       const [clientsData, _] = await Promise.all([
@@ -61,6 +67,8 @@ export class CoachDashboardComponent implements OnInit, OnDestroy {
       this.loading.set(false);
     }
   }
+
+  ngOnInit() {}
 
   private async loadStats(coachId: string) {
     // Código de invitación

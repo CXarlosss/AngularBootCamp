@@ -1,5 +1,5 @@
 import {
-  Component, inject, signal,
+  Component, inject, signal, effect,
   ChangeDetectionStrategy, OnInit
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -75,12 +75,16 @@ export class CoachClientsComponent implements OnInit {
   clients = signal<Profile[]>([]);
   loading = signal(true);
 
-  async ngOnInit(): Promise<void> {
-    const id = this.auth.profile()?.id;
-    if (id) {
-      this.clients.set(await this.coachSvc.getClients(id));
-    }
-    this.loading.set(false);
+  constructor() {
+    effect(() => {
+      const id = this.auth.profile()?.id;
+      if (id) {
+        this.coachSvc.getClients(id).then(clients => {
+          this.clients.set(clients);
+          this.loading.set(false);
+        });
+      }
+    });
   }
 
   initials(name: string): string {
