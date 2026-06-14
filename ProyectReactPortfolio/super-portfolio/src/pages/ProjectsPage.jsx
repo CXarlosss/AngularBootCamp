@@ -41,8 +41,24 @@ const FEATURED_PROJECTS = [
         links: { github: "https://github.com/CXarlosss/codesynapse-web", demo: "#" }
     },
     {
-        title: "LocalMarket",
+        title: "MarketMesh",
         id: "CASE_03",
+        tags: "Angular 21 · D3.js · Fastify · WebSocket",
+        context: "Predictive marketplace with real-time intelligence and advanced visualizations.",
+        challenge: "Integrate a real-time predictive engine with force-directed graphs to anticipate user purchases.",
+        implementation: [
+            "<strong>Jaccard similarity engine</strong> for co-purchase recommendations.",
+            "Real-time stock prediction forecasting hours until empty.",
+            "<strong>D3.js</strong> force simulation with animated aura effects.",
+            "Predictive checkout alerts with cross-sell suggestions via <strong>WebSockets</strong>."
+        ],
+        impact: "Transformed a static shopping experience into an interactive, predictive ecosystem.",
+        learned: "Merging predictive algorithms with dynamic data visualization in Angular.",
+        links: { github: "https://github.com/CXarlosss/marketmesh-web", demo: "https://marketmesh.vercel.app" }
+    },
+    {
+        title: "LocalMarket",
+        id: "CASE_04",
         tags: "Angular 21 · TypeScript · SSR · Lighthouse",
         context: "Digital marketplace designed for extreme performance and local business integration.",
         challenge: "Optimize initial load times and render blocking resources to achieve near-perfect Lighthouse scores.",
@@ -58,7 +74,7 @@ const FEATURED_PROJECTS = [
     },
     {
         title: "Professional Nutritionist Portal",
-        id: "CASE_04",
+        id: "CASE_05",
         tags: "Next.js · TypeScript · SEO-Driven Architecture",
         context: "Professional web platform built to support real content publishing, long-term scalability and performance.",
         challenge: "Design a modular architecture capable of handling dynamic blog content while maintaining <strong>SEO performance</strong>.",
@@ -73,7 +89,7 @@ const FEATURED_PROJECTS = [
     },
     {
         title: "OP_Task: Management System",
-        id: "CASE_05",
+        id: "CASE_06",
         tags: "React · TypeScript · Role-Based Architecture",
         context: "Full-stack application designed to manage projects, tasks and team roles with authentication.",
         challenge: "Implement a scalable task management system with structured <strong>role permissions</strong>.",
