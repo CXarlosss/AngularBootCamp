@@ -25,6 +25,16 @@ const projects = [
     border: 'border-emerald-500/30'
   },
   {
+    title: 'MarketMesh',
+    description: 'Marketplace predictivo: grafo de co-compras en tiempo real, alertas de stock con velocidad de venta, y checkout inteligente.',
+    stack: ['Angular 17+', 'D3.js', 'Fastify', 'WebSocket'],
+    demo: 'https://marketmesh.vercel.app',
+    repo: 'https://github.com/CarlosDePetronila/marketmesh',
+    icon: <Rocket className="text-pink-400" size={24} />,
+    color: 'from-pink-500/20 to-rose-500/5',
+    border: 'border-pink-500/30'
+  },
+  {
     title: 'LocalMarket',
     description: 'Marketplace con optimización de carga del 35% y métricas perfectas en Lighthouse.',
     stack: ['Angular 21', 'TypeScript', 'Lighthouse', 'RxJS'],
