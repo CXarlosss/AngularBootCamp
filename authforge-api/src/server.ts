@@ -6,7 +6,7 @@ import authRoutes from './routes/auth.js';
 const app = Fastify({ logger: true });
 
 await app.register(cors, { 
-  origin: '*',
+  origin: true,
   credentials: true,
   allowedHeaders: ['Content-Type', 'Authorization'],
 });
