@@ -38,23 +38,24 @@ const FEATURED_PROJECTS = [
         ],
         impact: "Achieved 18s indexing for 150 files and 2.7s query times, all running privately without external dependencies.",
         learned: "Optimizing vector databases in SQLite and parsing Abstract Syntax Trees for deep code analysis.",
-        links: { github: "https://github.com/CXarlosss/codesynapse-web", demo: "#" }
+        links: { github: "https://github.com/CXarlosss/codesynapse-web", demo: "https://codesynapse.vercel.app" }
     },
     {
-        title: "MarketMesh",
+        title: "AuthForge",
         id: "CASE_03",
-        tags: "Angular 21 · D3.js · Fastify · WebSocket",
-        context: "Predictive marketplace with real-time intelligence and advanced visualizations.",
-        challenge: "Integrate a real-time predictive engine with force-directed graphs to anticipate user purchases.",
+        tags: "Node.js · Fastify · TypeScript · JWT · SQLite",
+        context: "Identity Provider universal with JWT rotative tokens, 2FA (TOTP), OAuth2 Client (GitHub), RBAC and real-time session management. Protects FluxForge and any app with SSO.",
+        challenge: "Centralize authentication and identity management across multiple applications with high security standards.",
         implementation: [
-            "<strong>Jaccard similarity engine</strong> for co-purchase recommendations.",
-            "Real-time stock prediction forecasting hours until empty.",
-            "<strong>D3.js</strong> force simulation with animated aura effects.",
-            "Predictive checkout alerts with cross-sell suggestions via <strong>WebSockets</strong>."
+            "<strong>JWT access tokens</strong> (15min) + refresh tokens (7d) with automatic rotation.",
+            "<strong>2FA TOTP</strong> with QR codes compatible with Google Authenticator.",
+            "<strong>OAuth2 Client</strong> for GitHub social login.",
+            "<strong>RBAC middleware</strong> with role-based route protection.",
+            "Real-time session dashboard for admins with remote revocation."
         ],
-        impact: "Transformed a static shopping experience into an interactive, predictive ecosystem.",
-        learned: "Merging predictive algorithms with dynamic data visualization in Angular.",
-        links: { github: "https://github.com/CXarlosss/marketmesh-web", demo: "https://marketmesh.vercel.app" }
+        impact: "Created a robust, reusable Identity Provider that currently secures FluxForge and is ready for future integrations.",
+        learned: "Implementing secure token rotation, TOTP algorithms, and OAuth2 flows from scratch.",
+        links: { github: "https://github.com/CXarlosss/authforge-api", demo: "https://flux-forge-wine.vercel.app" }
     },
     {
         title: "LocalMarket",
@@ -71,36 +72,6 @@ const FEATURED_PROJECTS = [
         impact: "Delivered a complete end-to-end MVP achieving a 35% load optimization and an outstanding UX.",
         learned: "Advanced Angular architectural patterns and the impact of render strategies on real-world performance.",
         links: { github: "#", demo: "#" }
-    },
-    {
-        title: "Professional Nutritionist Portal",
-        id: "CASE_05",
-        tags: "Next.js · TypeScript · SEO-Driven Architecture",
-        context: "Professional web platform built to support real content publishing, long-term scalability and performance.",
-        challenge: "Design a modular architecture capable of handling dynamic blog content while maintaining <strong>SEO performance</strong>.",
-        implementation: [
-            "Built with <strong>Next.js App Router</strong> and <strong>TypeScript</strong> for type-safety.",
-            "Structured dynamic routes for content scalability and performance.",
-            "Implemented advanced <strong>SEO metadata strategies</strong> and asset optimization."
-        ],
-        impact: "Optimized load performance with clean Lighthouse results.",
-        learned: "Balancing <strong>SEO strategy</strong>, developer experience and performance.",
-        links: { github: "https://github.com/CXarlosss/Pagina_De_Nutricionista", demo: "https://pagina-de-nutricionista-2j9ud676x-carlos-projects-ac914b64.vercel.app/" }
-    },
-    {
-        title: "OP_Task: Management System",
-        id: "CASE_06",
-        tags: "React · TypeScript · Role-Based Architecture",
-        context: "Full-stack application designed to manage projects, tasks and team roles with authentication.",
-        challenge: "Implement a scalable task management system with structured <strong>role permissions</strong>.",
-        implementation: [
-            "React + TypeScript frontend with a highly <strong>modular folder architecture</strong>.",
-            "React Router v6 and <strong>TanStack Query</strong> for server state management.",
-            "Full implementation of <strong>role-based logic</strong> and secure user flows."
-        ],
-        impact: "Successfully built a complete management dashboard with clean state flow.",
-        learned: "The critical importance of <strong>predictable state flow</strong> and component isolation.",
-        links: { github: "https://github.com/CXarlosss/OP_Task", demo: "https://spiffy-youtiao-e5d23a.netlify.app/" }
     }
 ];
 
