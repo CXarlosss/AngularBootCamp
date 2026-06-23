@@ -17,7 +17,35 @@ if (!isConfigured) {
 // Safe export: null when credentials missing so the rest of the app
 // can detect offline/local mode without crashing at module load time.
 export const supabase: SupabaseClient | null = isConfigured
-  ? createClient(supabaseUrl!, supabaseAnonKey!)
+  ? createClient(supabaseUrl!, supabaseAnonKey!, {
+      global: {
+        headers: {},
+      },
+    })
   : null;
 
 export const isSupabaseAvailable = isConfigured;
+
+// Helper para modo familia (RLS Audit Fix)
+export const setFamilyToken = (token: string) => {
+  if (supabase) {
+    // Inject custom header for RLS
+    (supabase as any).rest.headers['x-family-token'] = token;
+  }
+};
+
+// Helper para modo jugador (RLS Audit Fix)
+export const setPlayerPin = (pin: string) => {
+  if (supabase) {
+    // Inject custom header for RLS
+    (supabase as any).rest.headers['x-player-pin'] = pin;
+  }
+};
+
+// Limpiar headers al salir (RLS Audit Fix)
+export const clearAuthHeaders = () => {
+  if (supabase) {
+    delete (supabase as any).rest.headers['x-family-token'];
+    delete (supabase as any).rest.headers['x-player-pin'];
+  }
+};
