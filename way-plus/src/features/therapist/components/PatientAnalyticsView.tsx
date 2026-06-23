@@ -42,7 +42,7 @@ export function PatientAnalyticsView({ patientId }: { patientId: string }) {
         const homeworkWayIds = patient?.homeworkWayIds || [];
 
         // 2. Obtener logs de actividad de Supabase
-        let logs: Record<string, unknown>[] = [];
+        let logs: any[] = [];
         if (supabase) {
           const { data: dbLogs } = await supabase
             .from('activity_logs')
@@ -56,7 +56,7 @@ export function PatientAnalyticsView({ patientId }: { patientId: string }) {
         const now = new Date();
         const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         
-        const thisWeekLogs = logs.filter(l => new Date(l.created_at) >= oneWeekAgo);
+        const thisWeekLogs = logs.filter(l => new Date(l.created_at).getTime() >= oneWeekAgo.getTime());
         const completedThisWeek = thisWeekLogs.filter(l => l.action === 'way_completed');
         
         // Calcular evolución (mock o real si hay suficientes logs)
@@ -69,7 +69,7 @@ export function PatientAnalyticsView({ patientId }: { patientId: string }) {
 
         // Generar alertas inteligentes
         const alerts: string[] = [];
-        const relaxationLogs = logs.filter(l => l.way_id?.includes('relaxation'));
+        const relaxationLogs = logs.filter(l => typeof l.way_id === 'string' && l.way_id.includes('relaxation'));
         const lastRelaxation = relaxationLogs[0] ? new Date(relaxationLogs[0].created_at) : null;
         
         if (!lastRelaxation || (now.getTime() - lastRelaxation.getTime()) > 3 * 24 * 60 * 60 * 1000) {
@@ -176,7 +176,7 @@ export function PatientAnalyticsView({ patientId }: { patientId: string }) {
                   <YAxis hide />
                   <Tooltip 
                     contentStyle={{ borderRadius: 12, border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', fontWeight: 'bold', fontSize: 13 }}
-                    formatter={(value: number) => [`${value} Ways`, 'Completados']}
+                    formatter={(value: any) => [`${value} Ways`, 'Completados']}
                   />
                   <Line type="monotone" dataKey="ways" stroke={COLORS.indigo} strokeWidth={4} dot={{ r: 5, fill: COLORS.indigo, stroke: 'white', strokeWidth: 2 }} />
                 </LineChart>
