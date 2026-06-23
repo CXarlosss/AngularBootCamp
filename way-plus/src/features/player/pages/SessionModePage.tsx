@@ -6,7 +6,7 @@ import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { registry } from '@/content/registry';
 import { sessionService, type PlannedSession, type SessionSummary } from '@/core/services/sessionService';
 import { WayRenderer } from '@/features/content/components/WayRenderer';
-import { CelebrationOverlay } from '@/features/rewards/components/CelebrationOverlay';
+const CelebrationOverlay = React.lazy(() => import('@/features/rewards/components/CelebrationOverlay').then(m => ({ default: m.CelebrationOverlay })));
 import { type Way } from '@/core/engine/types';
 
 export function SessionModePage() {
@@ -160,21 +160,24 @@ export function SessionModePage() {
       <AnimatePresence mode="wait">
         <motion.div
           key={currentWay.id}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 1.05 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
           className="h-screen"
         >
           <WayRenderer way={currentWay} onComplete={handleComplete} />
         </motion.div>
       </AnimatePresence>
 
-      <CelebrationOverlay 
-        show={celebration.show} 
-        type="happy"
-        coins={celebration.coins} 
-        onComplete={() => {}} 
-      />
+      <React.Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999]"><div className="w-32 h-32 rounded-full bg-yellow-400 animate-pulse" /></div>}>
+        <CelebrationOverlay 
+          show={celebration.show} 
+          type="happy"
+          coins={celebration.coins} 
+          onComplete={() => {}} 
+        />
+      </React.Suspense>
     </div>
   );
 }

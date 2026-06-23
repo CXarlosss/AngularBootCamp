@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { syncService, SyncStatusState } from '@/core/services/syncService';
+import { syncService } from '@/core/services/syncService';
+import type { SyncStatusState } from '@/core/services/syncService';
 
 const STATUS_CONFIG = {
   synced: { text: '☁️ Guardado', color: '#10B981', bg: '#D1FAE5' },
@@ -12,9 +13,10 @@ export const SyncStatus: React.FC = () => {
   const [status, setStatus] = useState<SyncStatusState>('synced');
 
   useEffect(() => {
-    return syncService.subscribeToSyncStatus((newStatus) => {
+    const unsub = syncService.subscribeToSyncStatus((newStatus) => {
       setStatus(newStatus);
     });
+    return () => { unsub(); };
   }, []);
 
   const config = STATUS_CONFIG[status];

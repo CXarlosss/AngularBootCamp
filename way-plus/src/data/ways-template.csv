@@ -1,0 +1,2 @@
+id,step,stepTitle,wayNumber,title,shortDescription,stimulusType,stimulusText,stimulusAudioUrl,stimulusImageUrl,choiceA,choiceB,correctChoice,theme,difficulty,estimatedTimeSeconds,imageFilename,hasRealImage,isHomeworkEligible,skills
+s1-w1,1,STEP Relajación,1,Respiración Profunda,¿Cómo nos sentimos cuando respiramos despacio?,text,¿Cómo nos sentimos cuando respiramos despacio?,,,Feliz,Enfadado,A,relaxation,easy,10,way_s1_w1.webp,TRUE,TRUE,emotional.regulation

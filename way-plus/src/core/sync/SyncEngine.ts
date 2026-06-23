@@ -24,13 +24,13 @@ type SyncStatusListener = (state: SyncState) => void;
 
 export class SyncEngine {
   private patientId: string | null = null;
-  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private isPulling = false;
   private knownAchievements = new Set<string>();
   private activityQueue: ActivityLogData[] = [];
   private unsubscribePlayer: (() => void) | null = null;
   private unsubscribeRewards: (() => void) | null = null;
   private isPushing = false;
+  private pushRequested = false;
   private cleanupUnloadGuard: (() => void) | null = null;
 
   private syncState: SyncState = {
@@ -50,6 +50,10 @@ export class SyncEngine {
    * FIX: El reset del circuit breaker es ahora completamente LAZY.
    * Comprueba el tiempo cada vez que se pide el estado.
    */
+  public push(): void {
+    this.requestBackgroundPush();
+  }
+
   getStatus(): SyncState {
     if (this.syncState.circuitPausedUntil && Date.now() > this.syncState.circuitPausedUntil) {
       this.syncState = {
@@ -106,19 +110,19 @@ export class SyncEngine {
   }
 
   stop() {
-    if (this.debounceTimer) clearTimeout(this.debounceTimer);
     this.unsubscribePlayer?.();
     this.unsubscribeRewards?.();
     this.cleanupUnloadGuard?.();
     this.statusListeners.clear();
     this.patientId = null;
+    this.pushRequested = false;
     this.emitStatus({ status: 'idle' });
   }
 
   logActivity(data: Omit<ActivityLogData, 'patientId'>) {
     if (!this.patientId) return;
     this.activityQueue.push({ ...data, patientId: this.patientId });
-    this.debouncedPush();
+    this.requestBackgroundPush();
   }
 
   private async initialPull() {
@@ -156,25 +160,70 @@ export class SyncEngine {
     }
   }
 
+  private saveLocalCache() {
+    if (!this.patientId) return;
+    const player = usePlayerStore.getState();
+    const rewards = useRewardsStore.getState();
+    HydrationCache.save(this.patientId, {
+      coins: rewards.wayCoins,
+      completedWays: player.profile?.completedWays || [],
+      avatar: player.profile?.avatar ?? '',
+      name: player.profile?.name ?? '',
+      currentLevel: player.profile?.currentLevel ?? 'pregamer',
+    });
+  }
+
   private subscribeToStores() {
     this.unsubscribePlayer = usePlayerStore.subscribe((s: any, p: any) => {
-      if (s.profile?.completedWays !== p.profile?.completedWays) this.debouncedPush();
+      if (s.profile?.completedWays !== p.profile?.completedWays) {
+        this.saveLocalCache();
+        this.requestBackgroundPush();
+      }
     });
     this.unsubscribeRewards = useRewardsStore.subscribe((s: any, p: any) => {
-      if (s.wayCoins !== p.wayCoins || s.achievements !== p.achievements) this.debouncedPush();
+      if (s.wayCoins !== p.wayCoins || s.achievements !== p.achievements) {
+        this.saveLocalCache();
+        this.requestBackgroundPush();
+      }
     });
   }
 
-  private debouncedPush() {
-    if (this.debounceTimer) clearTimeout(this.debounceTimer);
-    this.debounceTimer = setTimeout(() => this.push(), SYNC_DEBOUNCE_MS);
+  private requestBackgroundPush() {
+    this.pushRequested = true;
+    this.processPushQueue();
   }
 
-  private async push() {
+  private async processPushQueue() {
     if (this.circuitOpen || !this.patientId || this.isPulling || this.isPushing) return;
-    this.isPushing = true;
-    this.emitStatus({ status: 'pushing' });
 
+    while (this.pushRequested) {
+      this.pushRequested = false;
+      this.isPushing = true;
+      this.emitStatus({ status: 'pushing' });
+
+      try {
+        await this.performPush();
+        this.emitStatus({ status: 'idle', lastSyncAt: Date.now(), consecutiveErrors: 0 });
+      } catch (e) {
+        const newErrors = this.syncState.consecutiveErrors + 1;
+        if (newErrors >= CIRCUIT_BREAK_THRESHOLD) {
+          this.emitStatus({
+            status: 'circuit_open', consecutiveErrors: newErrors,
+            circuitPausedUntil: Date.now() + CIRCUIT_RESET_MS,
+          });
+          this.pushRequested = false; // Stop trying if circuit is open
+        } else {
+          this.emitStatus({ status: 'error', consecutiveErrors: newErrors });
+          // If we had a network error, wait a moment before the next retry (if requested)
+          await new Promise(res => setTimeout(res, 2000));
+        }
+      } finally {
+        this.isPushing = false;
+      }
+    }
+  }
+
+  private async performPush() {
     const player = usePlayerStore.getState();
     const rewards = useRewardsStore.getState();
     const currentAchIds = (rewards.achievements ?? []).map((a: any) => typeof a === 'string' ? a : a.id);
@@ -183,7 +232,7 @@ export class SyncEngine {
     const logsToSend = [...this.activityQueue];
 
     const syncData: PatientSyncData = {
-      patientId: this.patientId,
+      patientId: this.patientId!,
       coins: rewards.wayCoins,
       inventory: (rewards.inventory || []).map((i: any) => i.id),
       equippedAvatarId: rewards.currentAvatar?.base || null,
@@ -193,39 +242,19 @@ export class SyncEngine {
       performanceConfig: useConfigStore.getState().performance,
     };
 
-    try {
-      if (logsToSend.length > 0) {
-        await syncService.logActivityBatch(logsToSend);
-        this.activityQueue = this.activityQueue.filter(l => !logsToSend.includes(l));
-      }
-
-      await Promise.all([
-        syncService.pushProgress(syncData),
-        ...newAchievements.map(id => syncService.pushAchievement(this.patientId!, id).then(() => {
-          this.knownAchievements.add(id);
-        }))
-      ]);
-
-      HydrationCache.save(this.patientId, {
-        coins: rewards.wayCoins, completedWays: player.profile?.completedWays || [],
-        avatar: player.profile?.avatar ?? '', name: player.profile?.name ?? '',
-        currentLevel: player.profile?.currentLevel ?? 'pregamer',
-      });
-
-      this.emitStatus({ status: 'idle', lastSyncAt: Date.now(), consecutiveErrors: 0 });
-    } catch (e) {
-      const newErrors = this.syncState.consecutiveErrors + 1;
-      if (newErrors >= CIRCUIT_BREAK_THRESHOLD) {
-        this.emitStatus({
-          status: 'circuit_open', consecutiveErrors: newErrors,
-          circuitPausedUntil: Date.now() + CIRCUIT_RESET_MS,
-        });
-      } else {
-        this.emitStatus({ status: 'error', consecutiveErrors: newErrors });
-      }
-    } finally {
-      this.isPushing = false;
+    if (logsToSend.length > 0) {
+      await syncService.logActivityBatch(logsToSend);
+      this.activityQueue = this.activityQueue.filter(l => !logsToSend.includes(l));
     }
+
+    await Promise.all([
+      syncService.pushProgress(syncData),
+      ...newAchievements.map(id => syncService.pushAchievement(this.patientId!, id).then(() => {
+        this.knownAchievements.add(id);
+      }))
+    ]);
+
+    this.saveLocalCache();
   }
 
   private clearEmergencyState() {

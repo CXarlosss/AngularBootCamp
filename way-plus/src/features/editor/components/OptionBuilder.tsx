@@ -57,7 +57,7 @@ export const OptionBuilder: React.FC<Props> = ({ options, onChange, type }) => {
           {options.map((opt, idx) => (
             <motion.div
               key={opt.id}
-              layout
+              layout="position"
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
@@ -65,6 +65,7 @@ export const OptionBuilder: React.FC<Props> = ({ options, onChange, type }) => {
                 borderRadius: 24, padding: 20, position: 'relative', transition: 'all 0.2s', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
                 border: opt.isCorrect ? '4px solid #10B981' : '4px solid #F1F5F9',
                 background: opt.isCorrect ? '#ECFDF5' : 'white',
+                willChange: 'transform'
               }}
             >
               <div style={{ position: 'absolute', top: -12, right: -12, display: 'flex', gap: 8, zIndex: 10 }}>

@@ -82,6 +82,12 @@ class AudioService {
     return this.enabled;
   }
 
+  public preloadSound(type: SoundType): void {
+    // Our sounds are real-time WebAudio oscillators so there is no buffer to fetch.
+    // However, calling initContext early prevents the cold-start instantiation lag.
+    this.initContext();
+  }
+
   // --- UI SFX SYNTHESIS ---
 
   playSFX(type: SoundType) {

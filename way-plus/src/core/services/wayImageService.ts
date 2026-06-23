@@ -10,7 +10,7 @@ const THEME_PICTOS: Record<string, string> = {
 };
 
 export function getWayImageBase(stepNumber: number, wayNumber: number): string {
-  return `/images/ways/way_s${stepNumber}_w${wayNumber}`;
+  return `/images/ways/webp/way_s${stepNumber}_w${wayNumber}`;
 }
 
 export function getWayPlaceholder(theme: string = 'default'): string {
@@ -43,49 +43,36 @@ export function useWayImage(stepNumber: number, wayNumber: number, theme: string
 
     const basePath = getWayImageBase(stepNumber, wayNumber);
     
-    // Intentamos cargar todas las extensiones en paralelo para máxima velocidad
-    const loadPromises = EXTENSIONS.map(ext => {
-      return new Promise<string>((resolve, reject) => {
-        const img = new Image();
-        const url = basePath + ext;
-        img.onload = () => {
-          if (cancelledRef.current) reject('cancelled');
-          else resolve(url);
-        };
-        img.onerror = () => reject('failed');
-        img.src = url;
-      });
-    });
-
-    // Tomamos la primera que resuelva (usualmente .webp o .png)
-    // Usamos una implementación compatible con navegadores que no soportan Promise.any
-    const anyPromise = (promises: Promise<string>[]) => {
-      return new Promise<string>((resolve, reject) => {
-        let rejectedCount = 0;
-        promises.forEach(p => {
-          p.then(resolve).catch(() => {
-            rejectedCount++;
-            if (rejectedCount === promises.length) reject('all_failed');
+    const tryExtensions = async () => {
+      for (const ext of EXTENSIONS) {
+        if (cancelledRef.current) return;
+        try {
+          const url = basePath + ext;
+          await new Promise<void>((resolve, reject) => {
+            const img = new Image();
+            img.onload = () => resolve();
+            img.onerror = () => reject();
+            img.src = url;
           });
-        });
-      });
+          if (!cancelledRef.current) {
+            setSrc(url);
+            setLoaded(true);
+            return; // Success, stop trying other extensions
+          }
+        } catch (e) {
+          // Continue to next extension
+        }
+      }
+      
+      // Si todas fallan, usamos el pictograma de categoría
+      if (!cancelledRef.current) {
+        setHasError(true);
+        setSrc(getWayPlaceholder(theme));
+        setLoaded(true);
+      }
     };
 
-    anyPromise(loadPromises)
-      .then(url => {
-        if (!cancelledRef.current) {
-          setSrc(url);
-          setLoaded(true);
-        }
-      })
-      .catch(() => {
-        // Si todas fallan, usamos el pictograma de categoría
-        if (!cancelledRef.current) {
-          setHasError(true);
-          setSrc(getWayPlaceholder(theme));
-          setLoaded(true);
-        }
-      });
+    tryExtensions();
 
     return () => {
       cancelledRef.current = true;
@@ -97,8 +84,7 @@ export function useWayImage(stepNumber: number, wayNumber: number, theme: string
 
 export function preloadWayImages(stepNumber: number, wayNumber: number) {
   const basePath = getWayImageBase(stepNumber, wayNumber);
-  EXTENSIONS.forEach(ext => {
-    const img = new Image();
-    img.src = basePath + ext;
-  });
+  // Solo precargar webp para no spammar la red con posibles 404s
+  const img = new Image();
+  img.src = basePath + '.webp';
 }

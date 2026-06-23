@@ -15,7 +15,6 @@ import { homeworkService } from '@/core/services/homeworkService';
 import { syncService } from '@/core/services/syncService';
 import type { Step, Way } from '@/core/engine/types';
 
-import { WayPath } from '@/features/player/components/WayPath';
 import { normalizeWayText } from '@/shared/lib/way-text-utils';
 
 /* ─── Back button ────────────────────────────────────────────────────── */
@@ -34,6 +33,17 @@ function BackButton({ onPress }: { onPress: () => void }) {
   );
 }
 
+function WayProgressIndicator({ current, total }: { current: number, total: number }) {
+  return (
+    <div className="flex items-center gap-1.5">
+      {Array.from({ length: total }).map((_, i) => (
+        <div key={i} className={`w-2.5 h-2.5 rounded-full transition-all ${i < current ? 'bg-indigo-500 scale-110' : 'bg-indigo-100'}`} />
+      ))}
+    </div>
+  );
+}
+
+/* ─── Skeleton ───────────────────────────────────────────────────────── */
 /* ─── Page ───────────────────────────────────────────────────────────── */
 export function WayPlayerPage() {
   const { levelId, stepId, wayId } = useParams<{
@@ -45,8 +55,12 @@ export function WayPlayerPage() {
 
   const completeWay = usePlayerStore(state => state.completeWay);
   const completedWays = usePlayerStore(state => state.profile?.completedWays || []);
-  const { celebrateCompletion, addCoins, checkAndUpdateStreak } = useRewardsStore();
-  const { dailyChallenge, completeDailyChallenge, profile } = usePlayerStore();
+  const celebrateCompletion = useRewardsStore(s => s.celebrateCompletion);
+  const addCoins = useRewardsStore(s => s.addCoins);
+  const checkAndUpdateStreak = useRewardsStore(s => s.checkAndUpdateStreak);
+  const dailyChallenge = usePlayerStore(s => s.dailyChallenge);
+  const completeDailyChallenge = usePlayerStore(s => s.completeDailyChallenge);
+  const profile = usePlayerStore(s => s.profile);
 
   const [celebration, setCelebration] = useState<{
     show: boolean; type: 'happy' | 'sad' | 'step-complete' | 'annex-complete'; coins: number;
@@ -58,7 +72,8 @@ export function WayPlayerPage() {
   const [loading, setLoading] = useState(true);
   const [showBoostSelector, setShowBoostSelector] = useState(false);
   const [selectedBoostId, setSelectedBoostId] = useState<string | null>(null);
-  const { ownedBoosts, consumeBoost } = useRewardsStore();
+  const ownedBoosts = useRewardsStore(s => s.ownedBoosts);
+  const consumeBoost = useRewardsStore(s => s.consumeBoost);
   
   // Performance timer state
   const [loadTime, setLoadTime] = useState(0);
@@ -160,7 +175,14 @@ export function WayPlayerPage() {
 
       // Preload situational image (background)
       import('@/core/services/wayImageService').then(({ preloadWayImages }) => {
-        preloadWayImages(nextWay.stepNumber || step?.stepNumber || 1, nextWay.wayNumber || (nextIdx + 1));
+        const preload = () => {
+          preloadWayImages(nextWay.stepNumber || step?.stepNumber || 1, nextWay.wayNumber || (nextIdx + 1));
+        };
+        if ('requestIdleCallback' in window) {
+          (window as any).requestIdleCallback(preload, { timeout: 2000 });
+        } else {
+          setTimeout(preload, 1000);
+        }
       });
     }
   }, [currentIdx, ways, step]);
@@ -410,7 +432,7 @@ export function WayPlayerPage() {
       {/* ── Top bar - Premium Glass ── */}
       <div className="sticky top-0 z-[60] bg-white/60 backdrop-blur-2xl border-b border-white/20 p-4 flex items-center justify-between gap-4 shadow-[0_1px_20px_rgba(0,0,0,0.02)]">
         <BackButton onPress={() => navigate(`/play/${levelId}/${stepId}`)} />
-        <WayPath
+        <WayProgressIndicator
           current={currentIdx + 1}
           total={ways.length}
         />

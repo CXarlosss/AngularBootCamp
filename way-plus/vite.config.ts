@@ -11,7 +11,16 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.png', 'icons/*.png'],
+      includeAssets: [
+        'favicon.png', 
+        'icons/*.png',
+        'images/ways/webp/way_s1_w1.webp',
+        'images/ways/webp/way_s1_w2.webp',
+        'images/ways/webp/way_s1_w3.webp',
+        'images/ways/webp/way_s1_w4.webp',
+        'images/ways/webp/way_s1_w5.webp',
+        'images/ways/webp/way_s1_w6.webp'
+      ],
       manifest: {
         name: 'WAY+',
         short_name: 'WAY+',
@@ -73,6 +82,31 @@ export default defineConfig({
   build: {
     sourcemap: false,
     reportCompressedSize: false,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
+              return 'react-vendor';
+            }
+            if (id.includes('zustand')) {
+              return 'state';
+            }
+            if (id.includes('framer-motion')) {
+              return 'framer';
+            }
+            if (id.includes('@supabase')) {
+              return 'supabase';
+            }
+            if (id.includes('jspdf')) {
+              return 'pdf';
+            }
+            return 'vendor';
+          }
+        }
+      }
+    },
+    chunkSizeWarningLimit: 500,
   },
   resolve: {
     alias: {
@@ -82,7 +116,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'zustand', 'framer-motion'],
+    include: ['react', 'react-dom', 'zustand', 'framer-motion', '@supabase/supabase-js'],
     force: true,
   },
 })

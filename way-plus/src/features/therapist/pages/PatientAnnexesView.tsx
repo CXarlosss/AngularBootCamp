@@ -13,7 +13,8 @@ export function PatientAnnexesView() {
   useEffect(() => {
     if (!patientId || !user) return;
     
-    patientService.getById(patientId).then(patient => {
+    patientService.getAll().then((patients: any[]) => {
+      const patient = patients.find(p => p.id === patientId);
       if (patient) {
         setPatientName(patient.name);
       } else {

@@ -1,64 +1,90 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 
-interface WayPathProps {
-  current: number;
-  total: number;
+export interface WayNode {
+  id: string;
+  step: number;
+  wayNumber: number;
+  title: string;
+  isCompleted: boolean;
+  isCurrent: boolean;
+  isLocked: boolean;
 }
 
-/**
- * WayPath - Visualizador de camino de progreso.
- * Muestra el progreso actual junto al porcentaje de una forma lúdica.
- */
-export function WayPath({ current, total }: WayPathProps) {
-  const percentage = Math.round((current / total) * 100);
+export interface WayStep {
+  step: number;
+  title: string;
+  totalWays: number;
+  completedCount: number;
+  nodes: WayNode[];
+}
 
+export interface WayPathProps {
+  steps: WayStep[];
+  onWayClick: (wayId: string) => void;
+}
+
+export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
   return (
-    <div className="flex items-center gap-5 bg-white/60 backdrop-blur-xl p-4 rounded-[24px] border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.05)]">
-      <div className="flex items-center gap-2">
-        {Array.from({ length: total }).map((_, i) => (
-          <motion.div
-            key={i}
-            initial={false}
-            animate={{ 
-              scale: i === current - 1 ? 1.4 : (i < current ? 1 : 0.7),
-              background: i < current 
-                ? 'linear-gradient(135deg, #6366f1, #4f46e5)' 
-                : 'linear-gradient(135deg, #f1f5f9, #e2e8f0)',
-              boxShadow: i < current 
-                ? '0 4px 12px rgba(79,70,229,0.3)' 
-                : 'none'
-            }}
-            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-            className="w-4 h-4 rounded-full border-2 border-white relative"
-          >
-            {i === current - 1 && (
-              <motion.div 
-                layoutId="path-active"
-                className="absolute -top-1 -left-1 -right-1 -bottom-1 rounded-full border-2 border-indigo-400 opacity-50"
-                animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            )}
-          </motion.div>
-        ))}
-      </div>
-      
-      <div className="flex flex-col">
-        <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em] leading-none mb-1">Tu Camino</span>
-        <div className="flex items-baseline gap-1">
-          <span className="text-2xl font-black text-[#0F172A] tabular-nums leading-none">
-            {current}
-          </span>
-          <span className="text-sm font-bold text-slate-400">/</span>
-          <span className="text-sm font-bold text-slate-400 tabular-nums">
-            {total}
-          </span>
-          <div className="ml-2 px-2 py-0.5 bg-indigo-600 text-white text-[10px] font-black rounded-full shadow-sm">
-            {percentage}%
+    <div className="w-full flex flex-col gap-12 pb-12">
+      {steps.map(step => (
+        <div key={step.step} className="bg-white rounded-[40px] p-8 shadow-sm border-4 border-gray-100">
+          {/* Cabecera del Step */}
+          <div className="flex justify-between items-center mb-8 px-2">
+            <h2 className="text-3xl font-black text-[#1E1B4B] uppercase tracking-wide">
+              {step.title.toUpperCase().startsWith('STEP') ? step.title : `STEP ${step.step}: ${step.title}`}
+            </h2>
+            <div className="text-xl font-bold text-gray-500 bg-gray-100 px-6 py-2 rounded-full">
+              {step.completedCount}/{step.totalWays} {step.completedCount === step.totalWays && '✓'}
+            </div>
+          </div>
+          
+          {/* Scroll horizontal del sendero */}
+          <div className="flex items-center overflow-x-auto pb-12 pt-6 px-4 snap-x snap-mandatory scroll-smooth hide-scrollbar" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+            {step.nodes.map((node, i) => {
+              const isLast = i === step.nodes.length - 1;
+              const nextNode = isLast ? null : step.nodes[i + 1];
+              
+              return (
+                <div key={node.id} className="flex items-center snap-center shrink-0">
+                  {/* Nodo */}
+                  <div className="flex flex-col items-center relative z-10 w-28">
+                    <button
+                      disabled={node.isLocked}
+                      onPointerDown={() => !node.isLocked && onWayClick(node.id)}
+                      aria-label={`Way ${node.wayNumber}: ${node.title}`}
+                      className={`
+                        flex items-center justify-center rounded-full border-4 transition-all duration-300 font-black touch-manipulation select-none shrink-0
+                        ${node.isCurrent ? 'w-24 h-24 bg-blue-500 border-blue-600 text-white animate-way-pulse text-4xl shadow-xl' : 'w-20 h-20 text-3xl'}
+                        ${node.isCompleted ? 'bg-green-400 border-green-500 text-white' : ''}
+                        ${!node.isCompleted && !node.isCurrent && !node.isLocked ? 'bg-white border-gray-300 text-gray-400' : ''}
+                        ${node.isLocked ? 'bg-slate-100 border-slate-200 text-slate-300 opacity-60 cursor-not-allowed' : 'cursor-pointer active:scale-95'}
+                      `}
+                    >
+                      {node.isCompleted ? '✓' : node.isLocked ? '🔒' : node.wayNumber}
+                    </button>
+                    
+                    {/* Título corto */}
+                    <span className={`absolute -bottom-10 text-sm font-bold text-center w-36 leading-tight
+                      ${node.isCurrent ? 'text-blue-600' : node.isCompleted ? 'text-green-600' : 'text-gray-400'}`}>
+                      {node.title.length > 18 ? node.title.substring(0, 18) + '...' : node.title}
+                    </span>
+                  </div>
+                  
+                  {/* Conector */}
+                  {!isLast && (
+                    <div className="w-16 h-2 relative -mx-4 z-0 shrink-0">
+                      <div className={`absolute inset-0 top-1/2 -translate-y-1/2 h-2 
+                        ${node.isCompleted && nextNode?.isCompleted ? 'bg-green-400' : 
+                          node.isCompleted && nextNode?.isCurrent ? 'bg-gradient-to-r from-green-400 to-blue-500' : 
+                          'border-t-4 border-dotted border-gray-300'}`} />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
-      </div>
+      ))}
     </div>
   );
-}
+};

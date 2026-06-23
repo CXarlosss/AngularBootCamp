@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { startOfWeek, format, addWeeks, subWeeks } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ClinicalAnnexType, AnnexWeekStatus, ClinicalAnnex } from '../../types/clinicalAnnex';
+import type { ClinicalAnnexType, AnnexWeekStatus, ClinicalAnnex } from '../../types/clinicalAnnex';
 import { getOrCreateAnnex, getWeekStatus, flushOfflineAnnexes } from '../../services/clinicalAnnexService';
 import { RelaxationAnnexForm } from './RelaxationAnnexForm';
 import { SelfCheckAnnexForm } from './SelfCheckAnnexForm';

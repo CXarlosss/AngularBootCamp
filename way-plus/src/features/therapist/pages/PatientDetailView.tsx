@@ -143,16 +143,6 @@ export function PatientDetailView() {
     setShowTextLabels 
   } = useConfigStore();
 
-
-  const { 
-    accessibility, 
-    performance, 
-    setReduceMotion, 
-    setHighAccessibility, 
-    setPerformanceMode, 
-    setShowTextLabels 
-  } = useConfigStore();
-
   const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
   const roleplayLog = usePlayerStore(s => s.roleplayLog) ?? {};
 

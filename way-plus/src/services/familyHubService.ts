@@ -1,5 +1,5 @@
 import { supabase } from '@/core/services/supabaseClient';
-import { FamilyDashboardData, HomeworkStatus } from '../types/familyHub';
+import type { FamilyDashboardData, HomeworkStatus } from '../types/familyHub';
 
 const DB_NAME = 'wayplus-family';
 const STORE_NAME = 'family_cache';
@@ -20,6 +20,7 @@ async function getFamilyDB(): Promise<IDBDatabase> {
 
 // --- Validación de token (Edge Function) ---
 export async function validateFamilyToken(token: string): Promise<{ patient_id: string; valid: boolean }> {
+  if (!supabase) throw new Error('Servicio offline');
   const { data, error } = await supabase.functions.invoke('family-auth', {
     body: { token },
   });
@@ -30,6 +31,7 @@ export async function validateFamilyToken(token: string): Promise<{ patient_id: 
 
 // --- Dashboard data (solo lectura) ---
 export async function getFamilyDashboard(patientId: string): Promise<FamilyDashboardData> {
+  if (!supabase) throw new Error('Servicio offline');
   // 1. Intentar Supabase
   const { data: profile } = await supabase
     .from('patient_profiles')
@@ -91,6 +93,7 @@ export function subscribeToHomeworkCompletions(
   patientId: string,
   onHomeworkCompleted: (wayId: string, wayTitle: string) => void
 ) {
+  if (!supabase) return () => {};
   const channel = supabase
     .channel(`family-${patientId}`)
     .on(
@@ -111,6 +114,6 @@ export function subscribeToHomeworkCompletions(
     .subscribe();
 
   return () => {
-    supabase.removeChannel(channel);
+    supabase?.removeChannel(channel);
   };
 }

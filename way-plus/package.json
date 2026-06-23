@@ -11,7 +11,11 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "precommit": "npm run test:run"
+    "precommit": "npm run test:run",
+    "ways:export": "tsx scripts/exportMasterToJson.ts",
+    "ways:generate": "npm run ways:export && tsx scripts/wayGenerator.ts",
+    "ways:validate": "tsx scripts/validateWays.ts",
+    "images:process": "tsx scripts/process-images.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.0",
@@ -57,6 +61,7 @@
     "jsdom": "^26.1.0",
     "react-is": "^19.2.5",
     "sharp": "^0.34.5",
+    "tsx": "^4.22.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.9",

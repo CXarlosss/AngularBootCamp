@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import type { Way } from '@/core/engine/types';
 import { PictoOption } from '@/shared/ui/PictoOption';
-import { CelebrationOverlay } from '@/features/rewards/components/CelebrationOverlay';
+const CelebrationOverlay = React.lazy(() => import('@/features/rewards/components/CelebrationOverlay').then(m => ({ default: m.CelebrationOverlay })));
 import { adaptiveEngine, type DifficultyAdjustment } from '@/core/engine/adaptiveDifficulty';
 import { motion, AnimatePresence } from 'framer-motion';
 import { audioService } from '@/core/utils/audioService';
@@ -257,11 +257,13 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
         />
       </div>
 
-      <CelebrationOverlay 
-        show={celebration.show} 
-        type={celebration.type} 
-        coins={celebration.type === 'happy' ? 10 : 0}
-      />
+      <React.Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999]"><div className="w-32 h-32 rounded-full bg-yellow-400 animate-pulse" /></div>}>
+        <CelebrationOverlay 
+          show={celebration.show} 
+          type={celebration.type} 
+          coins={celebration.type === 'happy' ? 10 : 0}
+        />
+      </React.Suspense>
 
       <AnimatePresence>
         {adaptive?.modifications.showHint && (

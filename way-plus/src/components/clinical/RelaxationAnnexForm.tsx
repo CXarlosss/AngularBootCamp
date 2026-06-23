@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { ClinicalAnnex, RelaxationContent } from '../../types/clinicalAnnex';
+import type { ClinicalAnnex, RelaxationContent } from '../../types/clinicalAnnex';
 import { updateAnnexContent } from '../../services/clinicalAnnexService';
-import { downloadAnnexPDF } from '../../services/pdfExportService';
+import { exportAnnexPDF, type PDFAudience, type CompletedWayInfo } from '../../services/pdfExportService';
+import { ClinicalAnnexPrefill } from '../../services/clinicalAnnexPrefill';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Props {
@@ -29,6 +30,28 @@ export function RelaxationAnnexForm({ annex, onClose, patientName }: Props) {
   const [content, setContent] = useState<RelaxationContent>(annex.content as RelaxationContent || {});
   const [status, setStatus] = useState<'draft' | 'completed'>('draft');
   const [saving, setSaving] = useState(false);
+  const [audience, setAudience] = useState<PDFAudience>('clinical');
+  const [wayTags, setWayTags] = useState<Array<{ id: string; label: string; emoji: string; color: string }>>([]);
+  const [metrics, setMetrics] = useState<any>(null);
+  const [selectedWayIds, setSelectedWayIds] = useState<Set<string>>(new Set());
+  const [completedWaysData, setCompletedWaysData] = useState<CompletedWayInfo[]>([]);
+
+  React.useEffect(() => {
+    const loadPrefill = async () => {
+      const ways = await ClinicalAnnexPrefill.getWeeklyCompletedWays(annex.patient_id, annex.week_start);
+      const weeklyMetrics = await ClinicalAnnexPrefill.getWeeklyMetrics(annex.patient_id, annex.week_start);
+      
+      setCompletedWaysData(ways);
+      setWayTags(ClinicalAnnexPrefill.generateWayTags(ways));
+      setMetrics(weeklyMetrics);
+      setSelectedWayIds(new Set(ways.map(w => w.id)));
+
+      if (!content.therapistNotes) {
+        setContent(prev => ({ ...prev, therapistNotes: ClinicalAnnexPrefill.generateFamilySummary(weeklyMetrics, patientName) }));
+      }
+    };
+    loadPrefill();
+  }, [annex.patient_id, annex.week_start]);
 
   async function handleSave(completed = false) {
     setSaving(true);
@@ -40,7 +63,26 @@ export function RelaxationAnnexForm({ annex, onClose, patientName }: Props) {
   }
 
   function handleExport() {
-    downloadAnnexPDF({ ...annex, content, status }, patientName);
+    const selectedWays = completedWaysData.filter(w => selectedWayIds.has(w.id));
+    const totalSelectedMinutes = Math.round(selectedWays.reduce((sum, w) => sum + w.timeSpentSeconds, 0) / 60);
+
+    exportAnnexPDF({
+      patientName: patientName,
+      patientAge: 8, // TODO: Cargar del perfil
+      avatarEmoji: '🌟', // TODO: Cargar del perfil
+      weekStart: annex.week_start,
+      weekEnd: annex.week_start, // TODO: Calcular fin de semana
+      therapistName: 'Maite', // TODO: Cargar de useAuth() o similar
+      licenseNumber: 'Col: 12345',
+      completedWays: selectedWays,
+      totalTimeMinutes: totalSelectedMinutes || 0,
+      sessionsAttended: metrics?.sessionsAttended || 0,
+      technique: content.technique || '',
+      duration: content.durationMinutes ? `${content.durationMinutes} min` : '',
+      childResponse: content.childResponse as any || 'positive',
+      therapistNotes: content.therapistNotes || '',
+      annexType: 'relaxation'
+    }, audience, `WAY+_${patientName}_${annex.week_start}_${audience}`);
   }
 
   return (
@@ -123,11 +165,82 @@ export function RelaxationAnnexForm({ annex, onClose, patientName }: Props) {
             />
           </div>
 
-          {/* Auto data */}
+          {/* Auto data (Smart Prefill) */}
           <div style={{ backgroundColor: '#f5f5f5', padding: '16px', borderRadius: '12px' }}>
-            <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>Resumen semanal (auto)</h4>
-            <p style={{ margin: '4px 0', fontSize: '13px' }}>Ways completados: <strong>{annex.auto_data.ways_completed_this_week}</strong></p>
-            <p style={{ margin: '4px 0', fontSize: '13px' }}>Tiempo total: <strong>{annex.auto_data.total_time_minutes} min</strong></p>
+            <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', color: '#333' }}>Retos completados esta semana</h3>
+            <p style={{ margin: '0 0 12px 0', fontSize: '13px', color: '#666' }}>Toca para incluir/excluir del anexo</p>
+            
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+              {wayTags.map(tag => (
+                <button
+                  key={tag.id}
+                  onClick={() => {
+                    const newSet = new Set(selectedWayIds);
+                    if (newSet.has(tag.id)) newSet.delete(tag.id);
+                    else newSet.add(tag.id);
+                    setSelectedWayIds(newSet);
+                  }}
+                  style={{
+                    padding: '8px 12px', borderRadius: '20px', border: 'none',
+                    fontSize: '13px', fontWeight: 'bold', cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    backgroundColor: selectedWayIds.has(tag.id) ? tag.color : '#E5E7EB',
+                    color: selectedWayIds.has(tag.id) ? 'white' : '#6B7280',
+                    opacity: selectedWayIds.has(tag.id) ? 1 : 0.5,
+                  }}
+                >
+                  {tag.emoji} {tag.label}
+                </button>
+              ))}
+            </div>
+
+            {metrics && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
+                <div style={{ backgroundColor: '#DBEAFE', color: '#1E40AF', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{metrics.totalWaysCompleted}</div>
+                  <div style={{ fontSize: '11px' }}>Retos</div>
+                </div>
+                <div style={{ backgroundColor: '#D1FAE5', color: '#065F46', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{metrics.totalTimeMinutes}</div>
+                  <div style={{ fontSize: '11px' }}>Minutos</div>
+                </div>
+                <div style={{ backgroundColor: '#FEF3C7', color: '#92400E', padding: '10px', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '18px', fontWeight: 'bold' }}>{metrics.sessionsAttended}</div>
+                  <div style={{ fontSize: '11px' }}>Días</div>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Audiencia Toggle */}
+          <div>
+            <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', color: '#666' }}>Versión del PDF</h4>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={() => setAudience('clinical')}
+                style={{
+                  ...responseButtonStyle,
+                  borderColor: audience === 'clinical' ? '#2563EB' : '#ddd',
+                  backgroundColor: audience === 'clinical' ? '#2563EB' : '#f5f5f5',
+                  color: audience === 'clinical' ? 'white' : '#666',
+                  flex: 1, padding: '12px', fontSize: '14px'
+                }}
+              >
+                🩺 Clínico
+              </button>
+              <button
+                onClick={() => setAudience('family')}
+                style={{
+                  ...responseButtonStyle,
+                  borderColor: audience === 'family' ? '#22C55E' : '#ddd',
+                  backgroundColor: audience === 'family' ? '#22C55E' : '#f5f5f5',
+                  color: audience === 'family' ? 'white' : '#666',
+                  flex: 1, padding: '12px', fontSize: '14px'
+                }}
+              >
+                👨‍👩‍👧 Familiar
+              </button>
+            </div>
           </div>
         </div>
 

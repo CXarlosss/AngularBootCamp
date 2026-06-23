@@ -223,7 +223,10 @@ export async function pushProgress(data: PatientSyncData): Promise<void> {
 export async function pullProgress(patientId: string) {
   if (!isSupabaseAvailable || !supabase || !isUUID(patientId)) return null;
   const [profileRes, achRes] = await Promise.all([
-    supabase.from('patient_profiles').select('*').eq('id', patientId).single(),
+    supabase.from('patient_profiles')
+      .select('name, equipped_avatar_id, completed_ways, coins, current_level, accessibility_config, performance_config, last_sync')
+      .eq('id', patientId)
+      .single(),
     supabase.from('patient_achievements').select('achievement_id').eq('patient_id', patientId)
   ]);
   if (profileRes.error) return null;

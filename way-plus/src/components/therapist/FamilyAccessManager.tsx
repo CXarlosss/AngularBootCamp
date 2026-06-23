@@ -14,6 +14,10 @@ export function FamilyAccessManager({ patientId, patientName }: Props) {
   const [loading, setLoading] = useState(false);
 
   async function generateLink() {
+    if (!supabase) {
+      alert('Servicio offline');
+      return;
+    }
     setLoading(true);
     const token = crypto.randomUUID();
     

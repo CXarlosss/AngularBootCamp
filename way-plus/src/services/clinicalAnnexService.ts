@@ -1,5 +1,5 @@
 import { supabase } from '@/core/services/supabaseClient';
-import { 
+import type { 
   ClinicalAnnex, 
   ClinicalAnnexType, 
   ClinicalAnnexAutoData,

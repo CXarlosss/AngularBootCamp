@@ -15,6 +15,32 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+@layer base {
+  button, [role="button"], .way-card, .picto-option {
+    touch-action: manipulation;
+    transition: transform 0.1s ease-out;
+  }
+  
+  button:active, [role="button"]:active, .way-card:active, .picto-option:active {
+    transform: scale(0.95);
+  }
+}
+
+@keyframes way-pulse {
+  0%, 100% { 
+    transform: scale(1); 
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); 
+  }
+  50% { 
+    transform: scale(1.1); 
+    box-shadow: 0 0 0 16px rgba(59, 130, 246, 0); 
+  }
+}
+
+.animate-way-pulse {
+  animation: way-pulse 2s infinite;
+}
+
 /* ── Root elements — MUST use min-height, never height ──────── */
 html {
   min-height: 100%;

@@ -1,24 +1,8 @@
-/**
- * PlayerLoginPage.tsx
- * Ruta: /player
- */
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase, isSupabaseAvailable } from '@/core/services/supabaseClient';
-
-const C = {
-  indigo:   '#4F46E5',
-  indigoLt: '#EEF2FF',
-  text:     '#1E1B4B',
-  muted:    '#6B7280',
-  border:   '#E2E8F0',
-  white:    '#ffffff',
-  bg:       '#F0F4FF',
-  rose:     '#EF4444',
-  emerald:  '#10B981',
-};
+import { audioService } from '@/core/utils/audioService';
 
 interface PatientInfo {
   id: string;
@@ -27,37 +11,7 @@ interface PatientInfo {
   pin: string;
 }
 
-const KEYS = ['1','2','3','4','5','6','7','8','9','','0','⌫'];
-
-function Keypad({ onKey }: { onKey: (k: string) => void }) {
-  return (
-    <div style={{
-      display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)',
-      gap: 12, width: '100%', maxWidth: 280,
-    }}>
-      {KEYS.map((key, i) => (
-        <motion.button
-          key={i}
-          aria-label={key === '⌫' ? 'Borrar último número' : key ? `Número ${key}` : undefined}
-          whileTap={key ? { scale: 0.9 } : {}}
-          onClick={() => key && onKey(key)}
-          style={{
-            height: 72, borderRadius: 20,
-            background: key ? C.white : 'transparent',
-            border: key ? `2px solid ${C.border}` : 'none',
-            fontSize: key === '⌫' ? 24 : 28,
-            fontWeight: 800, color: C.text,
-            cursor: key ? 'pointer' : 'default',
-            boxShadow: key ? '0 4px 12px rgba(0,0,0,0.06)' : 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}
-        >
-          {key}
-        </motion.button>
-      ))}
-    </div>
-  );
-}
+const PIN_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'DEL', '0', 'OK'];
 
 export function PlayerLoginPage() {
   const navigate = useNavigate();
@@ -66,6 +20,8 @@ export function PlayerLoginPage() {
   const [pin, setPin] = useState('');
   const [error, setError] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [attempts, setAttempts] = useState(0);
+  const [locked, setLocked] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -97,65 +53,77 @@ export function PlayerLoginPage() {
     load();
   }, []);
 
-  const [attempts, setAttempts] = useState(0);
-  const [locked, setLocked] = useState(false);
+  const validatePin = () => {
+    if (!patient) return;
+    if (pin === patient.pin) {
+      setSuccess(true);
+      setAttempts(0);
+      audioService.playSFX('success');
+      sessionStorage.setItem('way-active-pin', pin);
+      setTimeout(() => {
+        navigate('/player/home');
+      }, 800);
+    } else {
+      const nextAttempts = attempts + 1;
+      setAttempts(nextAttempts);
+      setError(true);
+      audioService.playSFX('error');
+      
+      if (nextAttempts >= 3) {
+        setLocked(true);
+        setTimeout(() => {
+          setLocked(false);
+          setAttempts(0);
+          setPin('');
+          setError(false);
+        }, 30000); // 30 second lockout
+      } else {
+        setTimeout(() => {
+          setPin('');
+          setError(false);
+        }, 1000);
+      }
+    }
+  };
 
-  const handleKey = (key: string) => {
+  const handleKeyPress = (key: string) => {
     if (success || locked) return;
 
-    if (key === '⌫') {
+    if (key === 'DEL') {
+      audioService.playSFX('click');
       setPin(prev => prev.slice(0, -1));
       setError(false);
-      return;
-    }
-
-    if (pin.length >= 4) return;
-
-    const newPin = pin + key;
-    setPin(newPin);
-
-    if (newPin.length === 4) {
-      if (patient && newPin === patient.pin) {
-        setSuccess(true);
-        setAttempts(0);
-        sessionStorage.setItem('way-active-pin', newPin);
+    } else if (key === 'OK') {
+      if (pin.length > 0) {
+        validatePin();
+      }
+    } else if (pin.length < 4) {
+      audioService.playSFX('click');
+      const newPin = pin + key;
+      setPin(newPin);
+      setError(false);
+      
+      // Auto-submit opcional (si quieres mantener la fluidez sin el botón OK obligatoriamente)
+      if (newPin.length === 4 && patient && newPin === patient.pin) {
+        // Small delay to allow the dot to scale before succeeding
         setTimeout(() => {
-          navigate('/player/home');
-        }, 800);
-      } else {
-        const nextAttempts = attempts + 1;
-        setAttempts(nextAttempts);
-        setError(true);
-        
-        if (nextAttempts >= 3) {
-          setLocked(true);
-          setTimeout(() => {
-            setLocked(false);
-            setAttempts(0);
-            setPin('');
-            setError(false);
-          }, 30000); // 30 second lockout
-        } else {
-          setTimeout(() => {
-            setPin('');
-            setError(false);
-          }, 1000);
-        }
+          setSuccess(true);
+          setAttempts(0);
+          audioService.playSFX('success');
+          sessionStorage.setItem('way-active-pin', newPin);
+          setTimeout(() => navigate('/player/home'), 800);
+        }, 150);
+      } else if (newPin.length === 4) {
+        // Invalid pin auto-check
+        setTimeout(() => validatePin(), 150);
       }
     }
   };
 
   if (loading) {
     return (
-      <div style={{
-        minHeight: '100dvh', background: C.bg,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-          style={{ fontSize: 40 }}
-        >
+      <div className="min-h-[100dvh] bg-[#F0F4FF] flex items-center justify-center">
+        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="text-5xl">
           ⏳
         </motion.div>
       </div>
@@ -164,103 +132,89 @@ export function PlayerLoginPage() {
 
   if (!patient) {
     return (
-      <div style={{
-        minHeight: '100dvh', background: C.bg,
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'center',
-        padding: 32, textAlign: 'center', gap: 16,
-      }}>
-        <div style={{ fontSize: 56 }}>⚙️</div>
-        <h2 style={{ fontSize: 20, fontWeight: 900, color: C.text, margin: 0 }}>
-          Tablet no configurada
-        </h2>
-        <p style={{ color: C.muted, fontSize: 14, margin: 0 }}>
-          Maite necesita configurar esta tablet desde el panel del terapeuta.
-        </p>
+      <div className="min-h-[100dvh] bg-[#F0F4FF] flex flex-col items-center justify-center p-8 text-center gap-4">
+        <div className="text-6xl">⚙️</div>
+        <h2 className="text-2xl font-black text-[#1E1B4B]">Tablet no configurada</h2>
+        <p className="text-[#6B7280]">Maite necesita configurar esta tablet desde el panel del terapeuta.</p>
       </div>
     );
   }
 
   return (
-    <div style={{
-      minHeight: '100dvh',
-      background: `linear-gradient(160deg, #EEF2FF 0%, ${C.bg} 100%)`,
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: 32, gap: 32,
-    }}>
+    <div className="min-h-[100dvh] bg-gradient-to-br from-[#EEF2FF] to-[#F0F4FF] flex flex-col items-center justify-center p-8 gap-8 touch-none">
 
-      <motion.div
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        style={{ textAlign: 'center' }}
-      >
-        <motion.div
-          animate={success ? { scale: [1, 1.2, 1] } : {}}
-          style={{ fontSize: 80, marginBottom: 12, lineHeight: 1 }}
-        >
+      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+        <motion.div animate={success ? { scale: [1, 1.2, 1] } : {}} className="text-8xl mb-4 leading-none">
           {patient.equipped_avatar_id}
         </motion.div>
-        <h1 style={{ fontSize: 28, fontWeight: 900, color: C.text, margin: 0 }}>
+        <h1 className="text-4xl font-black text-[#1E1B4B] uppercase tracking-wide">
           ¡Hola, {patient.name}!
         </h1>
-        <p style={{ color: C.muted, fontSize: 15, margin: '8px 0 0' }}>
+        <p className="text-indigo-500 font-bold text-lg mt-2">
           Introduce tu PIN para jugar
         </p>
       </motion.div>
 
-      <div style={{ display: 'flex', gap: 16 }}>
-        {[0, 1, 2, 3].map(i => (
-          <motion.div
+      {/* Puntos del PIN */}
+      <div className="flex justify-center gap-6 mb-4 h-12">
+        {[0, 1, 2, 3].map((i) => (
+          <div
             key={i}
-            animate={{
-              scale: pin.length === i + 1 ? [1, 1.2, 1] : 1,
-              backgroundColor: error
-                ? C.rose
-                : success
-                ? C.emerald
-                : pin.length > i
-                ? C.indigo
-                : C.border,
-            }}
-            transition={{ duration: 0.2 }}
-            style={{
-              width: 20, height: 20, borderRadius: '50%',
-            }}
+            className={`
+              w-10 h-10 rounded-full border-4
+              transition-all duration-200
+              ${error 
+                ? 'bg-red-500 border-red-600 scale-100' 
+                : success 
+                ? 'bg-green-500 border-green-600 scale-110'
+                : i < pin.length 
+                ? 'bg-indigo-500 border-indigo-600 scale-110' 
+                : 'bg-white border-indigo-200 scale-100'
+              }
+            `}
           />
         ))}
       </div>
 
-      <AnimatePresence>
-        {error && !locked && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            style={{
-              fontSize: 14, fontWeight: 700, color: C.rose,
-              marginTop: -16,
-            }}
-          >
-            PIN incorrecto, inténtalo de nuevo ({3 - attempts} restantes)
-          </motion.div>
-        )}
-        {locked && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            style={{
-              fontSize: 14, fontWeight: 700, color: C.rose,
-              marginTop: -16, textAlign: 'center'
-            }}
-          >
-            Demasiados intentos.<br/>Espera 30 segundos o avisa a Maite.
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Mensajes de error */}
+      <div className="h-8 mb-4 flex items-center justify-center">
+        <AnimatePresence>
+          {error && !locked && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-lg font-bold text-red-500 bg-red-50 px-4 py-2 rounded-full">
+              PIN incorrecto ({3 - attempts} intentos)
+            </motion.div>
+          )}
+          {locked && (
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-lg font-bold text-red-500 bg-red-50 px-4 py-2 rounded-full text-center">
+              Demasiados intentos.<br/>Avisa a Maite.
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
-      <Keypad onKey={handleKey} />
+      {/* Teclado */}
+      <div className="grid grid-cols-3 gap-4 w-full max-w-md mx-auto">
+        {PIN_KEYS.map((key) => (
+          <button
+            key={key}
+            onPointerDown={() => handleKeyPress(key)}
+            className={`
+              h-[140px] w-full rounded-3xl text-5xl font-black
+              bg-white border-b-8 border-indigo-200 text-[#1E1B4B]
+              active:scale-[0.97] active:border-b-4 active:translate-y-1
+              transition-all duration-75 ease-out
+              flex items-center justify-center
+              select-none touch-manipulation
+              shadow-sm hover:bg-indigo-50
+              ${key === 'OK' ? 'bg-green-400 border-green-600 text-white hover:bg-green-500' : ''}
+              ${key === 'DEL' ? 'bg-red-100 border-red-300 text-red-500 hover:bg-red-200' : ''}
+            `}
+            aria-label={key === 'DEL' ? 'Borrar' : key === 'OK' ? 'Confirmar' : `Número ${key}`}
+          >
+            {key === 'DEL' ? '←' : key === 'OK' ? '✓' : key}
+          </button>
+        ))}
+      </div>
     </div>
   );
 }

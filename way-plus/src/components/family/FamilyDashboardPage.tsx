@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { FamilyDashboardData, HomeworkStatus } from '@/types/familyHub';
+import type { FamilyDashboardData, HomeworkStatus } from '@/types/familyHub';
 import { validateFamilyToken, getFamilyDashboard, subscribeToHomeworkCompletions } from '@/services/familyHubService';
 import { motion } from 'framer-motion';
 
