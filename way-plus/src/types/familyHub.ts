@@ -21,6 +21,10 @@ export interface FamilyDashboardData {
   avatar_progress_percent: number;
   homework_pending: number;
   homework_completed_this_week: number;
+  homework_list: HomeworkStatus[];
+  ways_this_week: number;
+  minutes_this_week: number;
+  days_active_this_week: number;
 }
 
 export interface HomeworkStatus {

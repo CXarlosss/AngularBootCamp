@@ -49,17 +49,29 @@ export async function getFamilyDashboard(patientId: string): Promise<FamilyDashb
     .from('activity_logs')
     .select('way_id, action, created_at, metadata')
     .eq('patient_id', patientId)
-    .eq('action', 'way_completed')
     .order('created_at', { ascending: false });
 
   const completedSet = new Set(profile?.completed_ways || []);
   const homeworkIds = patient?.homework_way_ids || [];
   
+  // Real stats this week
+  const now = new Date();
+  const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const thisWeekLogs = (logs || []).filter((l: any) => new Date(l.created_at) >= oneWeekAgo);
+  const completedThisWeek = thisWeekLogs.filter((l: any) => l.action === 'way_completed');
+  const minutesThisWeek = Math.round(thisWeekLogs.reduce((acc: number, l: any) => acc + (l.metadata?.durationSeconds || 0), 0) / 60) || 0;
+  const daysActiveThisWeek = new Set(thisWeekLogs.map((l: any) => new Date(l.created_at).toDateString())).size;
+  
+  const { waysMasterData } = await import('@/data/ways-master-data');
+  
   const homeworkStatus: HomeworkStatus[] = homeworkIds.map((wayId: string) => {
-    const log = logs?.find((l: any) => l.way_id === wayId);
+    const log = (logs || []).find((l: any) => l.way_id === wayId && l.action === 'way_completed');
+    const masterData = waysMasterData.find(w => w.id === wayId);
+    
     return {
       way_id: wayId,
-      way_title: `Way ${wayId}`, // Se resuelve con join a tabla ways si es necesario
+      way_title: masterData?.title || `Way ${wayId}`,
+      module: masterData?.stepTitle || 'General',
       completed: completedSet.has(wayId),
       completed_at: log?.created_at,
     };
@@ -78,6 +90,10 @@ export async function getFamilyDashboard(patientId: string): Promise<FamilyDashb
     avatar_progress_percent: Math.round(((profile?.completed_ways?.length || 0) / 57) * 100),
     homework_pending: homeworkStatus.filter(h => !h.completed).length,
     homework_completed_this_week: homeworkStatus.filter(h => h.completed).length,
+    homework_list: homeworkStatus,
+    ways_this_week: completedThisWeek.length,
+    minutes_this_week: minutesThisWeek,
+    days_active_this_week: daysActiveThisWeek,
   };
 
   // 2. Cachear en IndexedDB para offline
