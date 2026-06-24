@@ -52,15 +52,6 @@ export function PlayerStartPage() {
 
         {/* Welcome Text */}
         <div className="space-y-3">
-          <motion.h1 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-5xl font-black text-[#1E1B4B] tracking-tight leading-[0.9]"
-            style={{ fontFamily: 'Outfit, sans-serif' }}
-          >
-            ¡EMPEZAR!
-          </motion.h1>
           <motion.p 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -79,9 +70,9 @@ export function PlayerStartPage() {
           whileHover={{ scale: 1.04, y: -2 }}
           whileTap={{ scale: 0.96 }}
           onClick={handleStart}
-          className="w-full py-6 bg-gradient-to-br from-indigo-600 to-violet-700 text-white text-2xl font-black rounded-[28px] shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] border-b-[6px] border-indigo-900 active:border-b-0 transition-all flex items-center justify-center gap-3"
+          className="w-full py-6 mt-8 bg-gradient-to-br from-indigo-600 to-violet-700 text-white text-3xl font-black rounded-[28px] shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] border-b-[6px] border-indigo-900 active:border-b-0 transition-all flex items-center justify-center gap-3"
         >
-          ¡ADELANTE! 🚀
+          EMPEZAR
         </motion.button>
       </motion.div>
 

@@ -207,8 +207,8 @@ function ShopItemCard({ item, onTap }: { item: ShopItem; onTap: () => void }) {
               {isBoost ? `Tienes ${ownedBoosts[item.id] || 0}` : 'Ponerme'}
             </div>
           ) : (
-            <div className={`rounded-xl py-1 flex items-center justify-center gap-1 font-black text-xs ${canAfford ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}`}>
-              <span className={canAfford ? 'drop-shadow-sm' : 'opacity-50'}>🪙</span>
+            <div className={`rounded-xl py-1 flex items-center justify-center gap-1 font-black text-xs bg-amber-100 text-amber-600 ${!canAfford ? 'opacity-50' : ''}`}>
+              <span className={canAfford ? 'drop-shadow-sm' : ''}>🪙</span>
               {item.price}
             </div>
           )}
@@ -231,6 +231,11 @@ export function RewardsShopPage() {
 
   const [category, setCategory] = useState('all');
   const [selected, setSelected] = useState<ShopItem | Boost | null>(null);
+  const [limit, setLimit] = useState(6);
+
+  useEffect(() => {
+    setLimit(6);
+  }, [category]);
 
   const ALL_ITEMS = [
     ...SHOP_CATALOG,
@@ -240,6 +245,8 @@ export function RewardsShopPage() {
   const filtered = ALL_ITEMS.filter(
     item => category === 'all' || item.category === category
   );
+
+  const displayed = filtered.slice(0, limit);
 
   const avatarEmoji =
     currentAvatar?.base === 'base-dragon' ? '🐉' :
@@ -346,7 +353,7 @@ export function RewardsShopPage() {
       <main className="relative z-10 max-w-3xl mx-auto p-4 pb-24">
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
-          {filtered.map(item => (
+          {displayed.map(item => (
             <ShopItemCard
               key={item.id}
               item={item}
@@ -354,6 +361,19 @@ export function RewardsShopPage() {
             />
           ))}
         </div>
+
+        {limit < filtered.length && (
+          <div className="flex justify-center mt-8">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => { playSFX('click'); setLimit(prev => prev + 6); }}
+              className="bg-indigo-100 text-indigo-600 font-black px-8 py-3 rounded-full border-2 border-indigo-200"
+            >
+              Ver más artículos
+            </motion.button>
+          </div>
+        )}
 
         {filtered.length === 0 && (
           <div className="empty-glass">

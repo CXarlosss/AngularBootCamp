@@ -153,6 +153,10 @@ export function AnnexesDashboard({ patientId, therapistId, patientName }: Props)
               )}
               {status === 'empty' && (
                 <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenForm(type);
+                  }}
                   style={{
                     marginTop: '8px',
                     padding: '12px',
