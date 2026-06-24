@@ -38,7 +38,10 @@ export function AvatarColorable() {
     return inventory.find(i => i.id === petId);
   }, [currentAvatar.pet, inventory]);
 
-  const avatarImg = AVATAR_IMAGES[currentAvatar.base] || AVATAR_IMAGES['base-unicorn'];
+  const avatarEmoji = 
+    currentAvatar.base === 'base-dragon' ? '🐉' :
+    currentAvatar.base === 'base-puppy'  ? '🐶' :
+    currentAvatar.base === 'base-kitten' ? '🐱' : '🦄';
 
   return (
     <div className="w-full flex flex-col items-center" style={{ fontFamily: 'Verdana, sans-serif' }}>
@@ -93,19 +96,19 @@ export function AvatarColorable() {
           }} />
         </div>
 
-        {/* Imagen del Avatar */}
-        <div className="relative w-48 h-48">
+        {/* Imagen del Avatar (Emoji) */}
+        <div className="relative w-48 h-48 flex items-center justify-center">
           <AnimatePresence mode="wait">
-            <motion.img
+            <motion.div
               key={currentAvatar.base}
-              src={avatarImg}
-              alt="Avatar"
               initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
               animate={{ scale: 1, opacity: 1, rotate: 0 }}
               exit={{ scale: 1.1, opacity: 0 }}
-              className="w-full h-full object-contain relative z-10 drop-shadow-2xl"
+              className="text-8xl relative z-10 drop-shadow-2xl"
               transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-            />
+            >
+              {avatarEmoji}
+            </motion.div>
           </AnimatePresence>
 
           {/* Accesorios Flotantes (Emojis) */}

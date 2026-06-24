@@ -28,9 +28,14 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
       return;
     }
     
+    // Play success sound
+    if (type !== 'sad') {
+      audioService.playSFX('success');
+    }
+    
     const timer1 = setTimeout(() => {
       setPhase('coins');
-      // Count up animation
+      // Count up animation with slot effect timing
       if (coins > 0) {
         let current = 0;
         const interval = setInterval(() => {
@@ -54,124 +59,92 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
       clearTimeout(timer1);
       clearTimeout(timer2);
     };
-  }, [show, coins, onComplete]);
+  }, [show, coins, onComplete, type]);
 
   if (!show) return null;
 
-  const particles = ['🥇', '⭐', '✨', '🎉', '🌈', '💎', '🏅', '🌟'];
+  const particles = ['🥇', '⭐', '✨', '🎉', '🌟', '💎'];
 
   return (
     <AnimatePresence mode="wait">
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none overflow-hidden"
-      >
-        {/* Background Overlay with Animated Gradient - More Vibrant */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="absolute inset-0 bg-[#0F172A]/90 backdrop-blur-md"
-        >
-          {!reduceMotion && (
-            <div className="absolute inset-0 overflow-hidden">
-              <motion.div 
-                animate={{ 
-                  scale: [1, 1.2, 1],
-                  rotate: [0, 90, 180, 270, 360],
-                  opacity: [0.3, 0.5, 0.3]
-                }}
-                transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.4)_0%,rgba(16,185,129,0.1)_30%,transparent_70%)]"
-              />
-              <motion.div 
-                animate={{ 
-                  scale: [1.2, 1, 1.2],
-                  rotate: [360, 270, 180, 90, 0],
-                  opacity: [0.2, 0.4, 0.2]
-                }}
-                transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-                className="absolute -bottom-1/2 -right-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_50%_50%,rgba(245,158,11,0.3)_0%,rgba(236,72,153,0.1)_40%,transparent_70%)]"
-              />
-            </div>
-          )}
-        </motion.div>
+      <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none overflow-hidden">
         
-        {/* Particles Engine - Increased Density */}
+        {/* Flash de luz suave inicial */}
+        {type !== 'sad' && !reduceMotion && phase === 'enter' && (
+          <div className="celebration-flash" />
+        )}
+        
+        {/* Arco iris sutil de fondo */}
         {type !== 'sad' && !reduceMotion && (
-          <div className="absolute inset-0 pointer-events-none">
-            {Array.from({ length: 80 }).map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ 
-                  x: (Math.random() * 120 - 10) + '%', 
-                  y: -100,
-                  rotate: 0,
-                  scale: 0.1 + Math.random() * 0.8
-                }}
-                animate={{ 
-                  y: '120vh',
-                  rotate: Math.random() * 1080,
-                  x: `+=${(Math.random() - 0.5) * 600}px`
-                }}
-                transition={{ 
-                  duration: 3 + Math.random() * 4,
-                  ease: [0.23, 1, 0.32, 1],
-                  delay: Math.random() * 3
-                }}
-                className="absolute text-3xl sm:text-4xl filter drop-shadow-md"
-              >
-                {particles[i % particles.length]}
-              </motion.div>
+          <div className="rainbow-subtle" />
+        )}
+
+        {/* Explosión de estrellas centrales */}
+        {type !== 'sad' && !reduceMotion && phase === 'enter' && (
+          <div className="absolute inset-0 flex items-center justify-center z-10">
+            {Array.from({ length: 12 }).map((_, i) => (
+              <div
+                key={`star-${i}`}
+                className="star-burst"
+                style={{
+                  '--sx': `${Math.cos(i * 30 * Math.PI / 180) * 300}px`,
+                  '--sy': `${Math.sin(i * 30 * Math.PI / 180) * 300}px`
+                } as React.CSSProperties}
+              />
             ))}
+          </div>
+        )}
+
+        {/* Partículas con física real */}
+        {type !== 'sad' && !reduceMotion && (
+          <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center">
+            {Array.from({ length: 40 }).map((_, i) => {
+              const angle = Math.random() * Math.PI * 2;
+              const distance = 100 + Math.random() * 300;
+              const tx = Math.cos(angle) * distance;
+              const ty = Math.sin(angle) * distance - 200; // upward bias
+              const rot = Math.random() * 720 - 360;
+              return (
+                <div
+                  key={`particle-${i}`}
+                  className="particle-physics filter drop-shadow-md"
+                  style={{
+                    '--tx': `${tx}px`,
+                    '--ty': `${ty}px`,
+                    '--rot': `${rot}deg`,
+                    animationDelay: `${Math.random() * 0.2}s`
+                  } as React.CSSProperties}
+                >
+                  {particles[i % particles.length]}
+                </div>
+              );
+            })}
           </div>
         )}
         
         {/* Celebration Container */}
         <motion.div
-          initial={reduceMotion ? { opacity: 0, y: 50 } : { scale: 0.2, rotate: -20, opacity: 0, y: 100 }}
+          initial={reduceMotion ? { opacity: 0, y: 50 } : { scale: 0.2, rotate: -10, opacity: 0, y: 100 }}
           animate={{ scale: 1, rotate: 0, opacity: 1, y: 0 }}
-          exit={{ scale: 0.5, opacity: 0, filter: 'blur(20px)', transition: { duration: 0.3 } }}
-          className="relative z-10"
+          exit={{ scale: 0.8, opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
+          className="relative z-30"
         >
-          {/* Light Rays Effect */}
-          {!reduceMotion && type !== 'sad' && (
-            <motion.div 
-              animate={{ rotate: 360 }}
-              transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] pointer-events-none opacity-40"
-              style={{
-                background: 'conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.4) 20deg, transparent 40deg, rgba(255,255,255,0.4) 60deg, transparent 80deg, rgba(255,255,255,0.4) 100deg, transparent 120deg, rgba(255,255,255,0.4) 140deg, transparent 160deg, rgba(255,255,255,0.4) 180deg, transparent 200deg, rgba(255,255,255,0.4) 220deg, transparent 240deg, rgba(255,255,255,0.4) 260deg, transparent 280deg, rgba(255,255,255,0.4) 300deg, transparent 320deg, rgba(255,255,255,0.4) 340deg, transparent 360deg)',
-                maskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)',
-                WebkitMaskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)'
-              }}
-            />
-          )}
-
-          {/* Main Card - Glassmorphism Upgrade */}
-          <div 
-            className="bg-white/90 backdrop-blur-2xl rounded-[4rem] p-10 shadow-[0_40px_100px_-15px_rgba(0,0,0,0.6)] text-center max-w-xs sm:max-w-sm border-[12px] border-white/50 relative overflow-hidden"
-            style={{ fontFamily: 'Verdana, sans-serif' }}
-          >
-            {/* Glossy Overlay */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/10 to-white/30 pointer-events-none" />
-
+          {/* Main Card - Glassmorphism Premium */}
+          <div className="celebration-card w-[320px] sm:w-[400px]" style={{ fontFamily: 'Verdana, sans-serif' }}>
+            
             {/* Avatar / Trophy Circle */}
-            <div className="relative mb-12">
-              <motion.div
-                animate={reduceMotion ? {} : { rotate: 360, scale: [1, 1.2, 1] }}
-                transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-                className="absolute inset-0 bg-gradient-to-br from-amber-300 via-yellow-500 to-orange-500 rounded-full blur-3xl opacity-30 scale-150"
-              />
+            <div className="relative mb-8 mt-4">
+              {type !== 'sad' && !reduceMotion && (
+                <div className="glow-gold" />
+              )}
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 200 }}
-                className="relative w-32 h-32 bg-white rounded-full mx-auto flex items-center justify-center text-7xl shadow-2xl border-4 border-amber-100/50"
+                transition={{ delay: 0.2, type: 'spring', stiffness: 300, damping: 15 }}
+                className="relative w-32 h-32 bg-white rounded-full mx-auto flex items-center justify-center text-7xl shadow-2xl border-[6px] border-amber-100 z-10"
               >
-                <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-50 to-orange-100 opacity-50" />
-                <span className="relative z-10 filter drop-shadow-lg">
+                <div className="absolute inset-0 rounded-full bg-gradient-to-b from-transparent to-amber-50/50" />
+                <span className="relative z-10 filter drop-shadow-md">
                   {type === 'happy' && '🏆'}
                   {type === 'sad' && '😢'}
                   {type === 'step-complete' && '👑'}
@@ -181,28 +154,18 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
             </div>
 
             {/* Content */}
-            <div className="space-y-6 relative z-10">
+            <div className="space-y-4 relative z-10">
               {type === 'happy' && (
                 <>
-                  <div className="space-y-2">
-                    <motion.h2 
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 0.4, repeat: 1, repeatDelay: 1 }}
-                      className="text-6xl font-black tracking-tighter leading-none"
-                      style={{ 
-                        background: 'linear-gradient(to bottom, #F59E0B, #D97706)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        filter: 'drop-shadow(0 4px 0 #92400E)'
-                      }}
-                    >
+                  <div className="text-impact">
+                    <h2 className="text-5xl sm:text-6xl font-black tracking-tighter leading-none text-transparent bg-clip-text bg-gradient-to-b from-amber-400 to-amber-600 drop-shadow-sm">
                       ¡BRAVO!
-                    </motion.h2>
-                    <p className="text-3xl font-black text-indigo-900 tracking-tighter leading-none mt-2">{labelCampeon.toUpperCase()}</p>
+                    </h2>
                   </div>
+                  <p className="text-2xl font-black text-slate-800 tracking-tight">{labelCampeon}</p>
                   
-                  <div className="bg-indigo-600 rounded-[2.5rem] py-3 px-6 shadow-lg shadow-indigo-200">
-                    <p className="text-white font-black text-xs uppercase tracking-widest leading-none">Super Atleta WAY+</p>
+                  <div className="inline-block bg-indigo-50/80 border border-indigo-100 rounded-full py-2 px-4 shadow-sm mt-2">
+                    <p className="text-indigo-600 font-black text-xs uppercase tracking-widest">Super Atleta WAY+</p>
                   </div>
                 </>
               )}
@@ -210,14 +173,18 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
               {type === 'sad' && (
                 <>
                   <h2 className="text-5xl font-black text-rose-500 tracking-tighter">¡CASI!</h2>
-                  <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">¡Inténtalo otra vez!</p>
+                  <p className="text-slate-600 font-bold uppercase tracking-widest text-sm">¡Inténtalo de nuevo!</p>
                 </>
               )}
               
               {type === 'step-complete' && (
                 <>
-                  <h2 className="text-5xl font-black text-amber-500 tracking-tighter">¡INCREÍBLE!</h2>
-                  <p className="text-slate-500 font-black uppercase tracking-widest text-sm">Nivel Superado</p>
+                  <div className="text-impact">
+                    <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-400 to-amber-600 drop-shadow-sm tracking-tighter">
+                      ¡INCREÍBLE!
+                    </h2>
+                  </div>
+                  <p className="text-slate-800 font-black uppercase tracking-widest text-sm">Nivel Superado</p>
                 </>
               )}
             </div>
@@ -226,33 +193,26 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
             <AnimatePresence>
               {phase === 'coins' && coins > 0 && (
                 <motion.div
-                  initial={reduceMotion ? { opacity: 0 } : { y: 40, opacity: 0, scale: 0.5, rotate: 10 }}
-                  animate={{ y: 0, opacity: 1, scale: 1, rotate: 0 }}
-                  className="mt-8 relative"
+                  initial={reduceMotion ? { opacity: 0 } : { y: 20, opacity: 0, scale: 0.8 }}
+                  animate={{ y: 0, opacity: 1, scale: 1 }}
+                  className="mt-8 flex items-center justify-center gap-4"
                 >
-                  <div className="absolute inset-0 bg-amber-400 blur-2xl opacity-20 scale-110" />
-                  <div className="relative bg-gradient-to-br from-amber-400 to-orange-500 rounded-[3rem] py-5 px-10 border-b-[8px] border-orange-700 shadow-2xl flex items-center justify-center gap-5">
-                    <motion.div 
-                      animate={reduceMotion ? {} : { rotateY: 360 }}
-                      transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
-                      className="text-5xl drop-shadow-lg"
-                    >
-                      🪙
-                    </motion.div>
-                    <div className="text-left">
-                      <div className="text-[10px] font-black text-orange-100 uppercase tracking-widest leading-none mb-1">Medallas</div>
-                      <div className="text-5xl font-black text-white tabular-nums leading-none">+{displayCoins}</div>
+                  <div className="coin-3d-gold">
+                    🪙
+                  </div>
+                  <div className="text-left flex flex-col justify-center overflow-hidden h-[70px]">
+                    <div className="text-xs font-black text-amber-600 uppercase tracking-widest mb-1">Medallas</div>
+                    <div className="flex items-center text-5xl font-black text-slate-800 leading-none">
+                      <span className="text-amber-500 mr-1">+</span>
+                      <div className="slot-number !text-slate-800" key={displayCoins}>{displayCoins}</div>
                     </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-
-          {/* Exterior Glow Decor */}
-          <div className="absolute -inset-10 bg-white/5 blur-3xl -z-10 rounded-full" />
         </motion.div>
-      </motion.div>
+      </div>
     </AnimatePresence>
   );
 };

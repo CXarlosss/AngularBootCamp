@@ -58,8 +58,6 @@ export const LevelSelectPage: React.FC = () => {
     navigate(`/play/way/${wayId}`);
   };
 
-  // Compute current way
-  // El primer way de todos los steps que no está completado
   const currentWayId = useMemo(() => {
     for (const step of steps) {
       if (!step.ways) continue;
@@ -70,14 +68,8 @@ export const LevelSelectPage: React.FC = () => {
     return null;
   }, [steps, completedWays]);
 
-  const totalWays = steps.reduce((acc, s) => acc + (s.ways?.length ?? 0), 0);
-  const totalDone = completedWays.length;
-  const globalPct = totalWays > 0 ? Math.round((totalDone / totalWays) * 100) : 0;
-
-  // Flatten ways to find homework ways efficiently
   const allWays = useMemo(() => steps.flatMap(s => s.ways || []), [steps]);
   
-  // Respetar el orden exacto (Drag&Drop) en el que Maite guardó las tareas
   const activeHomeworks = useMemo(() => {
     return Array.from(homeworkIds)
       .map(id => allWays.find(w => w.id === id))
@@ -85,51 +77,53 @@ export const LevelSelectPage: React.FC = () => {
   }, [homeworkIds, allWays]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#FFFBF0] to-[#F0F4FF] pb-32 relative font-[Verdana,sans-serif]">
+    <div className="min-h-screen bg-dynamic bg-dynamic--normal pb-32 relative font-[Verdana,sans-serif] overflow-hidden">
+      {/* Elementos decorativos orgánicos */}
+      <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-indigo-300/30 rounded-full blur-[100px] animate-blob mix-blend-multiply pointer-events-none" />
+      <div className="absolute bottom-1/4 right-[-10%] w-[500px] h-[500px] bg-sky-300/20 rounded-full blur-[120px] animate-blob-delayed mix-blend-multiply pointer-events-none" />
+
       <button
         onClick={handleLogout}
-        className="absolute top-4 right-4 w-12 h-12 rounded-2xl bg-black/5 border-none text-gray-400 text-xs font-black cursor-pointer flex items-center justify-center touch-manipulation hover:bg-black/10 active:scale-95 transition-all z-50"
+        className="absolute top-4 right-4 w-12 h-12 rounded-2xl header-glass text-indigo-900 text-xs font-black cursor-pointer flex items-center justify-center touch-manipulation hover:bg-white/80 active:scale-95 transition-all z-50"
       >
-        SALIR
+        <span className="text-xl">🚪</span>
       </button>
 
       {/* Header Avatar & Stats */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="pt-10 pb-6 px-6 flex flex-col items-center gap-4"
+        className="pt-12 pb-8 px-6 flex flex-col items-center gap-4 relative z-10"
       >
-        <motion.div
-          animate={{ y: [0, -6, 0] }}
-          transition={{ repeat: Infinity, duration: 3, ease: 'easeInOut' }}
-          className="w-24 h-24 rounded-[32px] bg-white shadow-xl shadow-indigo-500/10 flex items-center justify-center text-5xl"
-        >
-          {profile?.avatar && /\p{Emoji}/u.test(profile.avatar) ? profile.avatar : '🌟'}
-        </motion.div>
+        <div className="avatar-float">
+          <div className="w-28 h-28 rounded-3xl header-glass flex items-center justify-center text-6xl glow-soft">
+            {profile?.avatar && /\p{Emoji}/u.test(profile.avatar) ? profile.avatar : '🌟'}
+          </div>
+        </div>
 
-        <div className="text-center">
-          <div className="text-3xl font-black text-[#1E1B4B]">
+        <div className="text-center mt-2">
+          <div className="text-4xl font-black text-[#1E1B4B] tracking-tight">
             {profile?.name ? `¡Hola, ${profile.name}!` : '¡Hola!'}
           </div>
-          <div className="text-base text-gray-500 font-bold mt-1">
+          <div className="text-lg text-indigo-900/60 font-bold mt-1">
             ¿Qué aprendemos hoy?
           </div>
         </div>
 
         <motion.div
           whileTap={{ scale: 0.95 }}
-          className="bg-gradient-to-br from-amber-400 to-amber-600 rounded-2xl px-6 py-3 flex items-center gap-3 shadow-lg shadow-amber-500/40"
+          className="header-glass rounded-2xl px-6 py-3 flex items-center gap-3 mt-2"
         >
-          <span className="text-3xl">🪙</span>
-          <span className="text-xl font-black text-white">
-            {wayCoins ?? 0} medallas
+          <span className="text-4xl coin-3d drop-shadow-md">🪙</span>
+          <span className="text-2xl font-black text-amber-500">
+            {wayCoins ?? 0}
           </span>
         </motion.div>
       </motion.div>
 
       {/* Tu Camino de Hoy (Homework) */}
       {activeHomeworks.length > 0 && (
-        <div className="px-6 mb-12 max-w-2xl mx-auto">
+        <div className="px-6 mb-12 max-w-2xl mx-auto relative z-10">
           <div className="flex items-center gap-3 mb-6">
             <span className="text-3xl">🏠</span>
             <span className="text-xl font-black text-[#1E1B4B] uppercase tracking-wide">Tu camino de hoy</span>
@@ -141,28 +135,27 @@ export const LevelSelectPage: React.FC = () => {
               return (
                 <motion.div
                   key={way.id}
-                  whileTap={{ scale: 0.97 }}
+                  whileTap={!isDone ? { scale: 0.97 } : {}}
                   onPointerDown={() => handleWayClick(way.id)}
                   className={`
-                    relative rounded-[40px] h-36 px-6 flex items-center gap-6 cursor-pointer overflow-hidden touch-manipulation select-none
-                    ${isDone ? 'bg-[#F1F2FF] border-4 border-[#E8E9FF]' : 'bg-white border-[6px] border-amber-400 shadow-xl shadow-amber-500/20'}
+                    h-36 px-6 flex items-center gap-6 
+                    ${isDone ? 'homework-card homework-card--done' : 'homework-card bg-amber-400 text-white'}
                   `}
                 >
                   {!isDone && (
-                    <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
-                         style={{ backgroundImage: 'linear-gradient(45deg, #F59E0B 25%, transparent 25%, transparent 50%, #F59E0B 50%, #F59E0B 75%, transparent 75%, transparent)', backgroundSize: '24px 24px' }} />
+                    <div className="absolute inset-0 pattern-homework pointer-events-none opacity-50" />
                   )}
 
-                  <div className={`text-6xl ${isDone ? 'grayscale opacity-50' : ''}`}>
+                  <div className={`text-6xl ${isDone ? 'grayscale opacity-50' : 'drop-shadow-lg'}`}>
                     {way.id?.includes('relaxation') ? '🧘' : way.id?.includes('assertiveness') ? '🗣️' : '✨'}
                   </div>
                   
                   <div className="flex-1 min-w-0 z-10">
-                    <div className={`text-2xl font-black leading-tight ${isDone ? 'text-gray-500' : 'text-[#1E1B4B]'}`}>
+                    <div className={`text-2xl font-black leading-tight ${isDone ? 'text-gray-400' : 'text-white drop-shadow-sm'}`}>
                       {normalizeWayText(way.title)}
                     </div>
-                    <div className={`text-base font-black mt-2 ${isDone ? 'text-gray-400' : 'text-amber-500'}`}>
-                      {isDone ? '✓ ¡LOGRADO!' : 'EJERCICIO ESPECIAL'}
+                    <div className={`text-sm font-bold mt-2 uppercase tracking-wider ${isDone ? 'text-gray-400' : 'text-amber-100'}`}>
+                      {isDone ? '✓ Logrado' : 'Ejercicio Especial'}
                     </div>
                   </div>
 
@@ -170,9 +163,9 @@ export const LevelSelectPage: React.FC = () => {
                     <motion.div 
                       animate={{ x: [0, 8, 0] }}
                       transition={{ repeat: Infinity, duration: 1.5 }}
-                      className="text-4xl text-amber-500 z-10"
+                      className="text-4xl text-amber-100 z-10 font-black"
                     >
-                      ▶
+                      ›
                     </motion.div>
                   )}
                 </motion.div>
@@ -183,20 +176,16 @@ export const LevelSelectPage: React.FC = () => {
       )}
 
       {/* Map (WayPath) */}
-      <div className="px-6 max-w-4xl mx-auto w-full">
+      <div className="px-6 max-w-4xl mx-auto w-full relative z-10">
         {loading ? (
-          <div className="flex flex-col gap-8">
-            {[1, 2].map(i => <div key={i} className="h-64 rounded-[40px] bg-white/60 animate-pulse" />)}
+          <div className="flex justify-center py-12">
+            <div className="spinner-glass" />
           </div>
         ) : (
           <WayPath
             steps={steps.map(step => {
               const stepWays = step.ways || [];
               const doneCount = stepWays.filter(w => completedWays.includes(w.id)).length;
-              
-              // Helper to check if way is unlocked.
-              // Logic: A way is unlocked if it's the current way, OR it's completed, OR we don't have strict progression enabled.
-              // For simplicity, anything up to currentWayId is unlocked. Anything after is locked.
               let foundCurrent = false;
               
               return {
@@ -208,10 +197,6 @@ export const LevelSelectPage: React.FC = () => {
                   const isCompleted = completedWays.includes(way.id);
                   const isCurrent = way.id === currentWayId;
                   if (isCurrent) foundCurrent = true;
-                  
-                  // Si ya pasamos el currentWayId, están bloqueados
-                  // Si el currentWayId no está en este step, y no tenemos ninguno completado, asumimos bloqueado a menos que sea el step 1.
-                  // Usaremos una lógica sencilla: si no está completado y no es current, y foundCurrent es true, está bloqueado.
                   const isLocked = !isCompleted && !isCurrent && foundCurrent;
                   
                   return {
@@ -240,15 +225,16 @@ export const LevelSelectPage: React.FC = () => {
             className="fixed inset-0 pointer-events-none flex items-center justify-center z-[999]"
           >
             {['🎉', '⭐', '🌟', '🎊', '✨'].map((emoji, i) => (
-              <motion.div
+              <div
                 key={i}
-                initial={{ y: 0, x: (i - 2) * 80, opacity: 1, scale: 0 }}
-                animate={{ y: -400, opacity: 0, scale: 2 }}
-                transition={{ duration: 1.5, delay: i * 0.1 }}
-                className="absolute text-6xl"
+                className="celebration-particle"
+                style={{ 
+                  left: `${50 + (i - 2) * 15}%`, 
+                  animationDelay: `${i * 0.1}s` 
+                }}
               >
                 {emoji}
-              </motion.div>
+              </div>
             ))}
           </motion.div>
         )}

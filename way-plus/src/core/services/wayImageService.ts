@@ -48,19 +48,15 @@ export function useWayImage(stepNumber: number, wayNumber: number, theme: string
         if (cancelledRef.current) return;
         try {
           const url = basePath + ext;
-          await new Promise<void>((resolve, reject) => {
-            const img = new Image();
-            img.onload = () => resolve();
-            img.onerror = () => reject();
-            img.src = url;
-          });
-          if (!cancelledRef.current) {
+          // Use fetch HEAD to avoid 404 errors polluting the console
+          const response = await fetch(url, { method: 'HEAD' });
+          if (response.ok && !cancelledRef.current) {
             setSrc(url);
             setLoaded(true);
             return; // Success, stop trying other extensions
           }
         } catch (e) {
-          // Continue to next extension
+          // Network error or CORS, continue to next extension
         }
       }
       

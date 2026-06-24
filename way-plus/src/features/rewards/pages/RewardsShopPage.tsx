@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRewardsStore } from '../store/rewardsStore';
@@ -7,26 +7,6 @@ import { SHOP_CATALOG } from '../data/shopCatalog';
 import { BOOSTS_CATALOG } from '../data/boosts';
 import type { ShopItem } from '../data/shopCatalog';
 import type { Boost } from '../data/boosts';
-
-/* ─── colours ────────────────────────────────────────────────────── */
-const C = {
-  indigo:  '#4F46E5',
-  amber:   '#F59E0B',
-  emerald: '#10B981',
-  rose:    '#F43F5E',
-  text:    '#1E1B4B',
-  muted:   '#6B7280',
-  border:  '#E8E9FF',
-  white:   '#ffffff',
-  bg:      '#F4F5FF',
-};
-
-const RARITY_STYLE: Record<string, { border: string; bg: string; label: string; badge: string }> = {
-  common:    { border: '#D1D5DB', bg: '#F9FAFB', label: 'BÁSICO',    badge: '' },
-  rare:      { border: '#93C5FD', bg: '#EFF6FF', label: 'ESPECIAL',  badge: '⭐' },
-  epic:      { border: '#C4B5FD', bg: '#F5F3FF', label: 'ÉPICO',     badge: '💎' },
-  legendary: { border: '#FDE68A', bg: '#FFFBEB', label: '¡LEGENDARIO!', badge: '👑' },
-};
 
 const CATEGORIES = [
   { id: 'all',   label: 'TODO',    icon: '🏪' },
@@ -47,23 +27,25 @@ function PurchaseModal({
   onClose: () => void;
   onConfirm: () => void;
 }) {
-  const [status, setStatus] = useState<'idle' | 'success' | 'fail'>('idle');
+  const [status, setStatus] = useState<'idle' | 'success'>('idle');
   const { playSFX } = useAudio();
+
+  // Reset status when item changes
+  useEffect(() => {
+    setStatus('idle');
+  }, [item]);
 
   if (!item) return null;
   const canAfford = coins >= item.price;
 
   const handleBuy = () => {
-    if (!canAfford) { 
-      playSFX('error');
-      setStatus('fail'); 
-      return; 
-    }
+    if (!canAfford) return; // Silent return, button is disabled anyway
+    
     playSFX('coins');
     onConfirm();
     playSFX('success');
     setStatus('success');
-    setTimeout(() => { setStatus('idle'); onClose(); }, 1800);
+    setTimeout(() => { setStatus('idle'); onClose(); }, 2000);
   };
 
   return (
@@ -73,76 +55,85 @@ function PurchaseModal({
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={status === 'idle' ? onClose : undefined}
-        style={{
-          position: 'fixed', inset: 0, zIndex: 100,
-          background: 'rgba(0,0,0,.55)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          padding: 20,
-        }}
+        className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm"
+        style={{ fontFamily: 'Verdana, sans-serif' }}
       >
         <motion.div
-          initial={{ scale: 0.8, y: 40 }}
+          initial={{ scale: 0.9, y: 20 }}
           animate={{ scale: 1, y: 0 }}
-          exit={{ scale: 0.8, y: 40 }}
+          exit={{ scale: 0.9, y: 20 }}
           onClick={e => e.stopPropagation()}
-          style={{
-            background: C.white, borderRadius: 28,
-            padding: 28, width: '100%', maxWidth: 320,
-            textAlign: 'center', boxShadow: '0 20px 60px rgba(0,0,0,.25)',
-          }}
+          className="relative bg-white/95 backdrop-blur-xl rounded-[2.5rem] p-8 w-full max-w-sm text-center shadow-2xl border-4 border-white overflow-hidden"
         >
           {status === 'success' ? (
-            <>
-              <div style={{ fontSize: 64, marginBottom: 12 }}>🎉</div>
-              <div style={{ fontWeight: 800, fontSize: 22, color: C.emerald }}>¡Es tuyo!</div>
-              <div style={{ color: C.muted, marginTop: 6 }}>Ya está en tu mochila</div>
-            </>
-          ) : status === 'fail' ? (
-            <>
-              <div style={{ fontSize: 64, marginBottom: 12 }}>😢</div>
-              <div style={{ fontWeight: 800, fontSize: 20, color: C.rose }}>¡Faltan medallas!</div>
-              <div style={{ color: C.muted, marginTop: 6, marginBottom: 16 }}>
-                Necesitas {item.price - coins} 🏅 más
+            <div className="py-4">
+              {/* Celebración de compra interna */}
+              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="coin-burst"
+                    style={{
+                      '--tx': `${(Math.random() - 0.5) * 200}px`,
+                      animationDelay: `${Math.random() * 0.2}s`
+                    } as React.CSSProperties}
+                  >
+                    ✨
+                  </div>
+                ))}
               </div>
-              <motion.button whileTap={{ scale: 0.95 }} onClick={onClose}
-                style={{ width: '100%', padding: '14px', borderRadius: 16, border: 'none', background: '#F1F2FF', color: C.indigo, fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>
-                Volver
-              </motion.button>
-            </>
+              
+              <motion.div 
+                animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 0.5 }}
+                className="text-7xl mb-4"
+              >
+                🎉
+              </motion.div>
+              <h3 className="font-black text-2xl text-emerald-500 tracking-tight">¡Es tuyo!</h3>
+              <p className="text-slate-500 font-bold mt-2">Ya está en tu mochila</p>
+            </div>
           ) : (
             <>
-              <div style={{ fontSize: 72, marginBottom: 8 }}>{item.icon}</div>
-              <div style={{ fontWeight: 800, fontSize: 20, color: C.text, marginBottom: 4 }}>{item.name}</div>
-              <div style={{ color: C.muted, fontSize: 13, marginBottom: 20 }}>
-                ¿Quieres comprar este artículo?
+              {/* Fondo decorativo del modal */}
+              <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-indigo-50 to-transparent -z-10" />
+              
+              <div className="relative mb-6">
+                <div className="absolute inset-0 bg-amber-200/30 rounded-full blur-2xl" />
+                <motion.div 
+                  animate={{ y: [-5, 5, -5] }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                  className="text-7xl filter drop-shadow-lg relative z-10"
+                >
+                  {item.icon}
+                </motion.div>
               </div>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 6,
-                background: '#FEF3C7', border: '1.5px solid #FCD34D',
-                borderRadius: 20, padding: '8px 18px', marginBottom: 24,
-              }}>
-                <span style={{ fontSize: 20 }}>🪙</span>
-                <span style={{ fontWeight: 800, fontSize: 20, color: C.amber }}>{item.price}</span>
+              
+              <h3 className="font-black text-2xl text-slate-800 tracking-tight mb-2">{item.name}</h3>
+              <p className="text-slate-500 font-bold text-sm mb-6">¿Quieres añadir esto a tu colección?</p>
+              
+              <div className="inline-flex items-center gap-2 bg-amber-50 border-2 border-amber-200 rounded-2xl px-6 py-3 mb-8">
+                <span className="text-2xl drop-shadow-sm">🪙</span>
+                <span className="font-black text-2xl text-amber-600">{item.price}</span>
               </div>
-              {!canAfford && (
-                <div style={{ color: C.rose, fontSize: 12, fontWeight: 600, marginBottom: 12 }}>
-                  Tienes {coins} 🪙 — te faltan {item.price - coins}
-                </div>
-              )}
-              <div style={{ display: 'flex', gap: 10 }}>
-                <motion.button whileTap={{ scale: 0.95 }} onClick={onClose}
-                  style={{ flex: 1, padding: '14px', borderRadius: 16, border: '2px solid #E8E9FF', background: C.white, color: C.muted, fontWeight: 700, fontSize: 16, cursor: 'pointer' }}>
-                  Cancelar
+              
+              <div className="flex gap-3">
+                <motion.button 
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  onClick={onClose}
+                  className="flex-1 py-4 rounded-2xl font-black text-slate-500 bg-slate-100 border-2 border-slate-200"
+                >
+                  Volver
                 </motion.button>
-                <motion.button whileTap={{ scale: 0.95 }} onClick={handleBuy}
+                <motion.button 
+                  whileHover={canAfford ? { scale: 1.02 } : {}}
+                  whileTap={canAfford ? { scale: 0.98 } : {}}
+                  onClick={handleBuy}
                   disabled={!canAfford}
-                  style={{
-                    flex: 1, padding: '14px', borderRadius: 16, border: 'none',
-                    background: canAfford ? C.emerald : '#D1D5DB',
-                    color: '#fff', fontWeight: 700, fontSize: 16,
-                    cursor: canAfford ? 'pointer' : 'not-allowed',
-                  }}>
-                  {canAfford ? '¡Conseguir!' : 'Sin medallas suficientes'}
+                  className="btn-buy flex-1 py-4 text-lg"
+                >
+                  {canAfford ? '¡Conseguir!' : `🪙 ${item.price}`}
                 </motion.button>
               </div>
             </>
@@ -168,79 +159,62 @@ function ShopItemCard({ item, onTap }: { item: ShopItem; onTap: () => void }) {
 
   const equipped = !isBoost && currentAvatar?.[item.category as keyof typeof currentAvatar] === item.id;
   const canAfford = wayCoins >= item.price;
-  const rs = RARITY_STYLE[item.rarity] ?? RARITY_STYLE.common;
+  
+  // Determine card style based on rarity
+  const rarityClass = 
+    item.rarity === 'legendary' ? 'shop-card--legendary' :
+    item.rarity === 'epic' ? 'shop-card--epic' :
+    item.rarity === 'rare' ? 'shop-card--rare' : '';
+
+  const badge = 
+    item.rarity === 'legendary' ? '👑' :
+    item.rarity === 'epic' ? '💎' :
+    item.rarity === 'rare' ? '⭐' : '';
 
   return (
-    <motion.button
-      whileHover={{ y: -3, boxShadow: '0 8px 24px rgba(79,70,229,.15)' }}
-      whileTap={{ scale: 0.95 }}
+    <div
       onClick={() => { playSFX('click'); onTap(); }}
-      style={{
-        background: rs.bg,
-        border: `2px solid ${equipped ? C.emerald : rs.border}`,
-        borderRadius: 16, padding: '12px 8px',
-        cursor: 'pointer', textAlign: 'center',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-        position: 'relative', overflow: 'hidden',
-        boxShadow: equipped ? `0 0 0 3px ${C.emerald}` : 'none',
-        transition: 'box-shadow .2s',
-        minHeight: 130,
-        justifyContent: 'space-between',
-      }}
+      className={`shop-card ${rarityClass} flex flex-col items-center justify-between min-h-[160px] p-4`}
     >
+      {/* Equipped Glow */}
+      {equipped && <div className="equipped-glow" />}
+
       {/* Rarity badge */}
-      {rs.badge && (
-        <span style={{
-          position: 'absolute', top: 8, right: 8,
-          fontSize: 16, lineHeight: 1,
-        }}>{rs.badge}</span>
-      )}
+      {badge && <div className="rarity-badge">{badge}</div>}
 
-      {/* Rarity label */}
-      <span style={{
-        fontSize: 8, fontWeight: 700, letterSpacing: '0.6px',
-        color: C.muted, textTransform: 'uppercase',
-      }}>{rs.label}</span>
+      {/* Icon with float effect */}
+      <motion.div 
+        animate={{ y: [-2, 2, -2] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", delay: Math.random() }}
+        className="text-5xl drop-shadow-md mt-2 relative z-10"
+      >
+        {item.icon}
+      </motion.div>
 
-      {/* Icon */}
-      <span style={{ fontSize: 36, lineHeight: 1 }}>{item.icon}</span>
+      {/* Info container */}
+      <div className="w-full flex flex-col items-center gap-2 mt-auto relative z-10">
+        <span className="font-black text-slate-700 text-xs text-center leading-tight">
+          {item.name}
+        </span>
 
-      {/* Name */}
-      <span style={{
-        fontSize: 10, fontWeight: 700, color: C.text,
-        lineHeight: 1.2, textAlign: 'center',
-      }}>{item.name}</span>
-
-      {/* Price / state */}
-      <div style={{ width: '100%' }}>
-        {equipped ? (
-          <div style={{
-            background: C.emerald, color: '#fff',
-            borderRadius: 10, padding: '6px 0',
-            fontWeight: 700, fontSize: 12,
-          }}>✅ PUESTO</div>
-        ) : owned ? (
-          <div style={{
-            background: isBoost ? '#FEF3C7' : '#E8E9FF', 
-            color: isBoost ? C.amber : C.indigo,
-            borderRadius: 10, padding: '6px 0',
-            fontWeight: 700, fontSize: 12,
-          }}>
-            {isBoost ? `TIENES ${ownedBoosts[item.id] || 0}` : 'PONERME'}
-          </div>
-        ) : (
-          <div style={{
-            background: canAfford ? '#FEF3C7' : '#F3F4F6',
-            color: canAfford ? C.amber : C.muted,
-            borderRadius: 8, padding: '4px 0',
-            fontWeight: 700, fontSize: 11,
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-          }}>
-            <span>🪙</span>{item.price}
-          </div>
-        )}
+        <div className="w-full">
+          {equipped ? (
+            <div className="bg-emerald-500 text-white rounded-xl py-1.5 text-center font-black text-[10px] uppercase tracking-wider shadow-sm">
+              ✅ Puesto
+            </div>
+          ) : owned ? (
+            <div className="bg-indigo-100 text-indigo-700 rounded-xl py-1.5 text-center font-black text-[10px] uppercase tracking-wider">
+              {isBoost ? `Tienes ${ownedBoosts[item.id] || 0}` : 'Ponerme'}
+            </div>
+          ) : (
+            <div className={`rounded-xl py-1 flex items-center justify-center gap-1 font-black text-xs ${canAfford ? 'bg-amber-100 text-amber-600' : 'bg-slate-100 text-slate-400'}`}>
+              <span className={canAfford ? 'drop-shadow-sm' : 'opacity-50'}>🪙</span>
+              {item.price}
+            </div>
+          )}
+        </div>
       </div>
-    </motion.button>
+    </div>
   );
 }
 
@@ -298,92 +272,80 @@ export function RewardsShopPage() {
   };
 
   return (
-    <div style={{ background: C.bg, minHeight: '100dvh', paddingBottom: 80 }}>
+    <div className="min-h-screen bg-[#F8FAFF] relative overflow-y-auto" style={{ fontFamily: 'Verdana, sans-serif' }}>
+      
+      {/* Immersive Background Decor */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden opacity-40">
+        <motion.div 
+          animate={{ x: [0, 50, 0], y: [0, 30, 0] }}
+          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute -top-20 -left-20 w-96 h-96 bg-indigo-300/40 rounded-full blur-[100px]" 
+        />
+        <motion.div 
+          animate={{ x: [0, -50, 0], y: [0, -30, 0] }}
+          transition={{ duration: 25, repeat: Infinity, ease: "easeInOut" }}
+          className="absolute top-1/3 -right-20 w-[500px] h-[500px] bg-amber-200/30 rounded-full blur-[120px]" 
+        />
+      </div>
 
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <div style={{
-        background: 'linear-gradient(135deg,#3730A3,#4F46E5)',
-        padding: '18px 16px 16px',
-        position: 'sticky', top: 0, zIndex: 30,
-      }}>
-        <div style={{ maxWidth: 480, margin: '0 auto' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div onClick={() => { playSFX('click'); navigate('/'); }} style={{ cursor: 'pointer' }}>
-              <div style={{ fontWeight: 800, fontSize: 20, color: '#fff' }}>🏪 Tienda WAY+</div>
-              <div style={{ color: '#A5B4FC', fontSize: 13 }}>Escaparate de ilusiones</div>
+      {/* ── Header Premium ──────────────────────────────────────────────── */}
+      <div className="sticky top-0 z-50 bg-indigo-600/90 backdrop-blur-2xl border-b border-indigo-500/50 shadow-lg">
+        <div className="max-w-3xl mx-auto px-4 py-4 sm:py-6">
+          <div className="flex items-center justify-between mb-4">
+            
+            <div onClick={() => { playSFX('click'); navigate('/'); }} className="cursor-pointer group flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-xl group-hover:-translate-x-1 transition-transform">
+                🔙
+              </div>
+              <div>
+                <h1 className="font-black text-2xl text-white tracking-tight drop-shadow-sm">Tienda WAY+</h1>
+                <p className="text-indigo-200 text-xs font-bold uppercase tracking-widest">Escaparate Mágico</p>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                background: 'rgba(255,255,255,.15)', borderRadius: 20,
-                padding: '8px 16px',
-              }}>
-                <span style={{ fontSize: 18 }}>🪙</span>
+            
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-indigo-900/40 border border-indigo-400/30 rounded-2xl px-4 py-2 shadow-inner">
+                <div className="coin-float-3d text-2xl drop-shadow-lg">🪙</div>
                 <motion.span
                   key={wayCoins}
-                  initial={{ scale: 1.4, color: '#FDE68A' }}
-                  animate={{ scale: 1, color: '#fff' }}
-                  style={{ fontWeight: 800, fontSize: 18 }}
+                  initial={{ scale: 1.5, color: '#FDE68A' }}
+                  animate={{ scale: 1, color: '#ffffff' }}
+                  className="font-black text-xl tabular-nums tracking-tight"
                 >
                   {wayCoins}
                 </motion.span>
               </div>
-              <div style={{
-                fontSize: 32, background: 'rgba(255,255,255,.12)',
-                borderRadius: 14, padding: '4px 10px',
-              }}>{avatarEmoji}</div>
+              <div className="text-3xl bg-white/10 border border-white/20 rounded-2xl p-2 drop-shadow-md">
+                {avatarEmoji}
+              </div>
             </div>
+            
           </div>
 
-          {/* Hint */}
-          <div style={{
-            background: 'rgba(255,255,255,.1)', borderRadius: 12,
-            padding: '8px 12px', fontSize: 12, color: '#C7D2FE', textAlign: 'center',
-            marginBottom: 20
-          }}>
-            👆 Toca un artículo para probártelo · Toca dos veces para comprar
-          </div>
-
-          {/* ── Category filter ─────────────────────────────────── */}
-          <div style={{
-            display: 'flex', gap: 12, overflowX: 'auto',
-            paddingBottom: 4,
-            scrollbarWidth: 'none',
-            justifyContent: 'space-between'
-          }}>
-            {CATEGORIES.map(cat => (
-              <motion.button
-                key={cat.id}
-                whileTap={{ scale: 0.92 }}
-                onClick={() => { playSFX('click'); setCategory(cat.id); }}
-                style={{
-                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                  padding: '8px 4px', borderRadius: 16, flexShrink: 0,
-                  border: 'none',
-                  background: category === cat.id ? 'rgba(255,255,255,0.2)' : 'transparent',
-                  color: '#fff',
-                  fontWeight: 900, fontSize: 9, cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  opacity: category === cat.id ? 1 : 0.5,
-                  minWidth: 64
-                }}
-              >
-                <span style={{ fontSize: 24 }}>{cat.icon}</span>
-                <span style={{ textTransform: 'uppercase', letterSpacing: 0.5 }}>{cat.label}</span>
-              </motion.button>
-            ))}
+          {/* ── Category Filter - Glassmorphism ─────────────────────────────────── */}
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0">
+            {CATEGORIES.map(cat => {
+              const isActive = category === cat.id;
+              return (
+                <motion.div
+                  key={cat.id}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => { playSFX('click'); setCategory(cat.id); }}
+                  className={`category-pill ${isActive ? 'category-pill--active text-white' : 'text-indigo-200'} min-w-[80px] flex-shrink-0 flex flex-col items-center gap-1`}
+                >
+                  <span className="text-2xl drop-shadow-sm">{cat.icon}</span>
+                  <span>{cat.label}</span>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '24px 12px' }}>
-
-        {/* ── Grid ─────────────────────────────────────────────── */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 10,
-        }}>
+      {/* ── Main Content ─────────────────────────────────────────────── */}
+      <main className="relative z-10 max-w-3xl mx-auto p-4 pb-24">
+        
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 sm:gap-6">
           {filtered.map(item => (
             <ShopItemCard
               key={item.id}
@@ -394,11 +356,13 @@ export function RewardsShopPage() {
         </div>
 
         {filtered.length === 0 && (
-          <div style={{ textAlign: 'center', color: C.muted, padding: 40, fontSize: 14 }}>
-            No hay artículos en esta categoría
+          <div className="empty-glass">
+            <div className="text-6xl mb-4 opacity-50">👻</div>
+            <h3 className="font-black text-xl text-slate-700 tracking-tight">¡Vaya, está vacío!</h3>
+            <p className="text-slate-500 font-bold mt-2">No hay artículos en esta sección aún.</p>
           </div>
         )}
-      </div>
+      </main>
 
       {/* ── Purchase modal ────────────────────────────────────── */}
       <PurchaseModal

@@ -103,9 +103,7 @@ export function PlayerLoginPage() {
       setPin(newPin);
       setError(false);
       
-      // Auto-submit opcional (si quieres mantener la fluidez sin el botón OK obligatoriamente)
       if (newPin.length === 4 && patient && newPin === patient.pin) {
-        // Small delay to allow the dot to scale before succeeding
         setTimeout(() => {
           setSuccess(true);
           setAttempts(0);
@@ -114,7 +112,6 @@ export function PlayerLoginPage() {
           setTimeout(() => navigate('/player/home'), 800);
         }, 150);
       } else if (newPin.length === 4) {
-        // Invalid pin auto-check
         setTimeout(() => validatePin(), 150);
       }
     }
@@ -122,17 +119,15 @@ export function PlayerLoginPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-[#F0F4FF] flex items-center justify-center">
-        <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: 'linear' }} className="text-5xl">
-          ⏳
-        </motion.div>
+      <div className="min-h-[100dvh] bg-dynamic bg-dynamic--normal flex items-center justify-center">
+        <div className="spinner-glass" />
       </div>
     );
   }
 
   if (!patient) {
     return (
-      <div className="min-h-[100dvh] bg-[#F0F4FF] flex flex-col items-center justify-center p-8 text-center gap-4">
+      <div className="min-h-[100dvh] bg-dynamic bg-dynamic--normal flex flex-col items-center justify-center p-8 text-center gap-4">
         <div className="text-6xl">⚙️</div>
         <h2 className="text-2xl font-black text-[#1E1B4B]">Tablet no configurada</h2>
         <p className="text-[#6B7280]">Maite necesita configurar esta tablet desde el panel del terapeuta.</p>
@@ -141,10 +136,10 @@ export function PlayerLoginPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-gradient-to-br from-[#EEF2FF] to-[#F0F4FF] flex flex-col items-center justify-center p-8 gap-8 touch-none">
+    <div className={`min-h-[100dvh] flex flex-col items-center justify-center p-8 gap-8 touch-none bg-dynamic ${error ? 'bg-dynamic--error' : success ? 'bg-dynamic--success' : 'bg-dynamic--normal'}`}>
 
       <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <motion.div animate={success ? { scale: [1, 1.2, 1] } : {}} className="text-8xl mb-4 leading-none">
+        <motion.div animate={success ? { scale: [1, 1.2, 1] } : {}} className="text-8xl mb-4 leading-none avatar-float">
           {patient.equipped_avatar_id}
         </motion.div>
         <h1 className="text-4xl font-black text-[#1E1B4B] uppercase tracking-wide">
@@ -161,15 +156,14 @@ export function PlayerLoginPage() {
           <div
             key={i}
             className={`
-              w-10 h-10 rounded-full border-4
-              transition-all duration-200
+              pin-dot
               ${error 
-                ? 'bg-red-500 border-red-600 scale-100' 
+                ? 'pin-dot--error' 
                 : success 
-                ? 'bg-green-500 border-green-600 scale-110'
+                ? 'pin-dot--success'
                 : i < pin.length 
-                ? 'bg-indigo-500 border-indigo-600 scale-110' 
-                : 'bg-white border-indigo-200 scale-100'
+                ? 'pin-dot--filled' 
+                : ''
               }
             `}
           />
@@ -180,13 +174,13 @@ export function PlayerLoginPage() {
       <div className="h-8 mb-4 flex items-center justify-center">
         <AnimatePresence>
           {error && !locked && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-lg font-bold text-red-500 bg-red-50 px-4 py-2 rounded-full">
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-lg font-bold text-rose-500 glass-message">
               PIN incorrecto ({3 - attempts} intentos)
             </motion.div>
           )}
           {locked && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-lg font-bold text-red-500 bg-red-50 px-4 py-2 rounded-full text-center">
-              Demasiados intentos.<br/>Avisa a Maite.
+            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-lg font-bold text-rose-500 glass-message text-center">
+              🔒 Demasiados intentos.<br/>Avisa a Maite.
             </motion.div>
           )}
         </AnimatePresence>
@@ -194,26 +188,22 @@ export function PlayerLoginPage() {
 
       {/* Teclado */}
       <div className="grid grid-cols-3 gap-4 w-full max-w-md mx-auto">
-        {PIN_KEYS.map((key) => (
-          <button
-            key={key}
-            onPointerDown={() => handleKeyPress(key)}
-            className={`
-              h-[140px] w-full rounded-3xl text-5xl font-black
-              bg-white border-b-8 border-indigo-200 text-[#1E1B4B]
-              active:scale-[0.97] active:border-b-4 active:translate-y-1
-              transition-all duration-75 ease-out
-              flex items-center justify-center
-              select-none touch-manipulation
-              shadow-sm hover:bg-indigo-50
-              ${key === 'OK' ? 'bg-green-400 border-green-600 text-white hover:bg-green-500' : ''}
-              ${key === 'DEL' ? 'bg-red-100 border-red-300 text-red-500 hover:bg-red-200' : ''}
-            `}
-            aria-label={key === 'DEL' ? 'Borrar' : key === 'OK' ? 'Confirmar' : `Número ${key}`}
-          >
-            {key === 'DEL' ? '←' : key === 'OK' ? '✓' : key}
-          </button>
-        ))}
+        {PIN_KEYS.map((key) => {
+          let extraClass = '';
+          if (key === 'OK') extraClass = 'key-mechanical--ok';
+          if (key === 'DEL') extraClass = 'key-mechanical--del';
+          
+          return (
+            <button
+              key={key}
+              onPointerDown={() => handleKeyPress(key)}
+              className={`h-[140px] w-full key-mechanical ${extraClass}`}
+              aria-label={key === 'DEL' ? 'Borrar' : key === 'OK' ? 'Confirmar' : `Número ${key}`}
+            >
+              {key === 'DEL' ? '←' : key === 'OK' ? '✓' : key}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
