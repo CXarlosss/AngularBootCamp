@@ -14,6 +14,7 @@ import { HomeworkCelebration } from '@/features/player/components/HomeworkCelebr
 import { homeworkService } from '@/core/services/homeworkService';
 import { syncService } from '@/core/services/syncService';
 import type { Step, Way } from '@/core/engine/types';
+import { cn } from '@/shared/lib/utils';
 
 import { normalizeWayText } from '@/shared/lib/way-text-utils';
 
@@ -408,46 +409,42 @@ export function WayPlayerPage() {
     : 'title-gradient--autonomy';
 
   return (
-    <div className={`min-h-screen ${themeClass} bg-dynamic relative overflow-y-auto`} style={{ fontFamily: 'Verdana, sans-serif' }}>
-      {/* ── Top bar - Immersive Glass ── */}
-      <div className="sticky top-0 z-[60] header-immersive p-4 flex items-center justify-between gap-4">
+    <div className={`min-h-screen ${themeClass} bg-slate-50 relative overflow-y-auto`} style={{ fontFamily: 'Verdana, sans-serif' }}>
+      {/* ── Top bar - Clean & Accessible ── */}
+      <div className="sticky top-0 z-[60] bg-white/90 backdrop-blur-md border-b-2 border-slate-200/60 px-4 py-3 flex items-center justify-between">
         <BackButton onPress={() => navigate(`/play/${levelId}/${stepId}`)} />
-        <WayProgressIndicator
-          current={currentIdx + 1}
-          total={ways.length}
-        />
+        
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 font-bold text-slate-500">
+             ⏱️ {(loadTime / 1000).toFixed(0)}s
+          </div>
+
+          <motion.div
+            className="bg-amber-50 rounded-full px-4 py-2 flex items-center gap-2 border-[2px] border-amber-200 shadow-sm"
+          >
+            <span className="text-xl">⭐</span>
+            <span className="text-lg font-black text-amber-600 tracking-tight">
+              {profile?.coins ?? 0}
+            </span>
+          </motion.div>
+        </div>
       </div>
 
       {/* ── Main Content ── */}
       <main className="relative z-10 max-w-4xl mx-auto pt-4 pb-24">
-        {/* Mission Briefing Title */}
-        <div className="px-6 mb-6 sm:mb-10">
-          <div className="flex flex-col items-center text-center gap-3">
-             <div className="mission-badge">
-               <span className="mission-badge__dot" />
-               <span className="text-[10px] font-black text-indigo-700 uppercase tracking-widest">Misión en Curso</span>
-             </div>
-             
-             <div className="flex items-center gap-4">
-                <h1 className={`text-3xl sm:text-5xl font-black ${titleGradientClass} leading-tight tracking-tight`}>
-                  {normalizeWayText(currentWay?.title ?? currentWay?.name ?? currentWay?.stimulus?.text ?? 'Reto')}
-                </h1>
-                
-                <button
-                  onClick={() => {
-                    const text = currentWay?.title || currentWay?.name || currentWay?.stimulus?.text || '';
-                    audioService.speak(normalizeWayText(text));
-                  }}
-                  className="voice-btn"
-                >
-                  🔊
-                </button>
-             </div>
-             
-             <p className="text-slate-500 font-bold text-xs sm:text-sm uppercase tracking-widest mt-2">
-               {step.title} • Reto {currentIdx + 1} de {ways.length}
-             </p>
-          </div>
+        {/* Progress Dots */}
+        <div className="w-full flex justify-center gap-2 mb-6 px-4">
+          {ways.map((w, i) => (
+             <div 
+               key={w.id} 
+               className={cn(
+                 "h-2 rounded-full transition-all duration-300",
+                 i < currentIdx ? "bg-emerald-400 w-8" : 
+                 i === currentIdx ? "bg-indigo-500 w-12" : 
+                 "bg-slate-200 w-4"
+               )}
+             />
+          ))}
         </div>
 
         <AnimatePresence mode="wait">

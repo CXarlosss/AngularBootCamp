@@ -54,9 +54,11 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
     const option = way.options.find(o => o.id === optionId);
     if (!option) return;
 
+    audioService.stopSpeak();
     setAttempts(prev => prev + 1);
     
     if (option.isCorrect) {
+      audioService.playSFX('success');
       adaptiveEngine.addAttempt({
         wayId: way.id,
         timestamp: Date.now(),
@@ -66,11 +68,12 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
       });
 
       completeWay(way.id, attempts + 1);
-      celebrateCompletion('way');
+      
       setCelebration({ show: true, type: 'happy' });
       
-      const delay = reduceMotion ? 2000 : 3500;
+      const delay = reduceMotion ? 1500 : 2500;
       setTimeout(() => {
+        celebrateCompletion('way');
         onComplete({
           duration_seconds: Math.floor((Date.now() - startTime) / 1000),
           attempts: attempts + 1,
@@ -83,8 +86,9 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
         audioService.playSFX('success');
         return;
       }
+      audioService.playSFX('error');
       setCelebration({ show: true, type: 'sad' });
-      setTimeout(() => setCelebration({ show: false, type: 'happy' }), 2000);
+      setTimeout(() => setCelebration({ show: false, type: 'happy' }), 1000);
     }
   };
 
@@ -101,161 +105,88 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
       case 'double-choice':
       default:
         return (
-          <div className="w-full max-w-2xl mx-auto px-4 pb-12 flex flex-col items-center gap-4 sm:gap-8 relative z-10">
-            {/* Situational Scene Container */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="w-full relative group"
-            >
-              <div className="relative aspect-[16/10] w-full rounded-3xl sm:rounded-[3rem] overflow-hidden bg-slate-100 border-4 sm:border-[12px] border-white shadow-[0_20px_40px_-10px_rgba(0,0,0,0.2)] sm:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.3)]">
-                
-                {/* Image Layer */}
-                <AnimatePresence mode="wait">
-                  {imgLoaded ? (
-                    <motion.img 
-                      key="real-image"
-                      src={situationImg} 
-                      alt="Situación" 
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <motion.div 
-                      key="skeleton"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute inset-0 bg-slate-200"
-                    >
-                      <motion.div 
-                        animate={{ x: ['-100%', '100%'] }}
-                        transition={{ repeat: Infinity, duration: 1.5, ease: 'linear' }}
-                        className="w-full h-full bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                      />
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                
-                {/* Error/Fallback Label */}
-                {hasError && (
-                  <div className="absolute inset-x-0 bottom-0 bg-indigo-600/90 backdrop-blur-md py-3 text-center">
-                    <span className="text-white font-black text-xs uppercase tracking-widest">
-                      Situación en preparación... ✨
-                    </span>
-                  </div>
-                )}
-
-                {/* Decorative Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
-                <div className="absolute top-6 left-6 flex gap-2">
-                  <div className="bg-white/90 backdrop-blur-md px-4 py-2 rounded-2xl shadow-sm border border-white/50 flex items-center gap-2">
-                    <span className="text-lg">📍</span>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Contexto Real</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Floating Element - Stimulus */}
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="absolute -bottom-4 sm:-bottom-6 left-1/2 -translate-x-1/2 w-[90%] sm:w-[85%] bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-[2.5rem] p-3 sm:p-6 shadow-[0_15px_30px_-5px_rgba(0,0,0,0.1)] sm:shadow-[0_20px_50px_-10px_rgba(0,0,0,0.15)] border border-white flex items-center gap-3 sm:gap-6"
-              >
-                {way.stimulus.image && (
-                  <div className="w-12 h-12 sm:w-20 sm:h-20 bg-indigo-50 rounded-xl sm:rounded-2xl p-2 sm:p-3 flex items-center justify-center shrink-0 shadow-inner">
-                    <img src={way.stimulus.image} alt="Ref" className="w-full h-full object-contain" />
-                  </div>
-                )}
-                <div className="flex-1">
-                  <h2 className="text-base sm:text-2xl font-black text-slate-800 leading-tight tracking-tight">
-                    {way.stimulus.text}
-                  </h2>
-                  <div className="h-1 w-8 sm:h-1.5 sm:w-12 bg-indigo-500 rounded-full mt-1 sm:mt-2" />
-                </div>
-              </motion.div>
-            </motion.div>
-
-            <div className="h-4" />
-
-            {/* Options Section */}
-            <div className="w-full grid grid-cols-1 gap-5 mt-4">
-              <div className="flex items-center justify-center gap-3 mb-2 opacity-50">
-                <div className="h-px w-full bg-slate-200" />
-                <span className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] whitespace-nowrap">Toca la opción correcta</span>
-                <div className="h-px w-full bg-slate-200" />
-              </div>
-
-              {way.options.map((option, idx) => (
-                <motion.div 
-                  key={option.id}
-                  initial={{ opacity: 0, x: idx % 2 === 0 ? -20 : 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.4 + (idx * 0.1) }}
-                  className="relative group"
-                >
-                  <PictoOption
-                    option={option}
-                    onSelect={() => handleDoubleChoiceSelect(option.id)}
-                    disabled={celebration.show}
-                    className={cn(
-                      "hover:ring-4 hover:ring-indigo-100 transition-all",
-                      celebration.show && celebration.type === 'happy' && option.isCorrect && "ring-8 ring-emerald-400 scale-[1.03] z-20 shadow-[0_30px_60px_-15px_rgba(16,185,129,0.4)]"
-                    )}
+          <div className="w-full flex flex-col items-center px-4 bg-transparent max-w-4xl mx-auto h-full relative z-10">
+            <div className="w-full h-[50vh] sm:h-[55vh] bg-slate-200 rounded-[2rem] sm:rounded-[3rem] overflow-hidden shadow-md relative border-[6px] border-white shrink-0 mt-2">
+              <AnimatePresence mode="wait">
+                {imgLoaded ? (
+                  <motion.img 
+                    key="real-image"
+                    src={situationImg} 
+                    alt="Situación" 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="w-full h-full object-contain bg-white"
                   />
-                  <div className="absolute top-4 left-4 bg-slate-100/50 backdrop-blur-md w-8 h-8 rounded-full flex items-center justify-center text-xs font-black text-slate-400 border border-white pointer-events-none group-hover:bg-indigo-500 group-hover:text-white transition-colors">
-                    {String.fromCharCode(65 + idx)}
-                  </div>
-                </motion.div>
-              ))}
+                ) : (
+                  <motion.div 
+                    key="skeleton"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="absolute inset-0 bg-slate-200 animate-pulse"
+                  />
+                )}
+              </AnimatePresence>
             </div>
 
-            {/* Next Button Overlay */}
-            <AnimatePresence>
-              {celebration.show && celebration.type === 'happy' && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 pointer-events-auto"
-                >
-                  <button
-                    onClick={() => onComplete({
-                      duration_seconds: Math.floor((Date.now() - startTime) / 1000),
-                      attempts: attempts + 1,
-                      completed: true
-                    })}
-                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-12 py-5 rounded-[2.5rem] font-black text-xl shadow-[0_20px_50px_rgba(79,70,229,0.5)] flex items-center gap-3 active:scale-95 transition-all"
+            <div className="w-full text-center mt-6 shrink-0 flex flex-col items-center">
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-slate-800 leading-tight tracking-tight px-4 line-clamp-2" style={{ fontFamily: 'Verdana, sans-serif' }}>
+                {way.stimulus.text}
+              </h2>
+            </div>
+
+            <div className="w-full flex justify-center gap-6 sm:gap-8 mt-6 shrink-0 pb-6">
+              {way.options.map((option, idx) => {
+                const isSelected = celebration.show && celebration.type === 'happy' && option.isCorrect;
+                const isWrong = celebration.show && celebration.type === 'sad' && !option.isCorrect;
+
+                return (
+                  <motion.button 
+                    key={option.id}
+                    disabled={celebration.show}
+                    onClick={() => handleDoubleChoiceSelect(option.id)}
+                    whileTap={{ scale: 0.95 }}
+                    className={cn(
+                      "w-[45%] h-[140px] sm:h-[180px] bg-white rounded-[2rem] border-b-[8px] sm:border-b-[12px] border-slate-200 shadow-sm flex flex-col items-center justify-center p-4 transition-colors relative overflow-hidden",
+                      isSelected && "border-emerald-500 bg-emerald-50 border-b-0 translate-y-[8px] sm:translate-y-[12px]",
+                      isWrong && "border-rose-500 bg-rose-50 border-b-0 translate-y-[8px] sm:translate-y-[12px]",
+                      !celebration.show && "hover:bg-slate-50 hover:border-slate-300 active:border-b-0 active:translate-y-[8px] sm:active:translate-y-[12px]"
+                    )}
                   >
-                    CONTINUAR ➔
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    {option.image ? (
+                      <img src={option.image} className="w-16 h-16 sm:w-28 sm:h-28 object-contain drop-shadow-md z-10" alt={option.label} />
+                    ) : (
+                      <span className="text-5xl sm:text-7xl z-10">🎯</span>
+                    )}
+                    
+                    <span className="mt-2 font-black text-slate-700 text-sm sm:text-xl uppercase tracking-tight z-10">
+                      {option.label}
+                    </span>
+
+                    {isSelected && <motion.div initial={{opacity: 0}} animate={{opacity: [0, 0.4, 0]}} transition={{duration: 0.5}} className="absolute inset-0 bg-emerald-400 z-0 mix-blend-overlay pointer-events-none" />}
+                    {isWrong && <motion.div initial={{opacity: 0}} animate={{opacity: [0, 0.4, 0]}} transition={{duration: 0.5}} className="absolute inset-0 bg-rose-400 z-0 mix-blend-overlay pointer-events-none" />}
+                  </motion.button>
+                );
+              })}
+            </div>
           </div>
         );
     }
   };
 
   return (
-    <div className="relative w-full flex flex-col items-center justify-center min-h-[85vh] overflow-hidden" style={{
-      background: 'radial-gradient(circle at 50% -20%, #F8FAFF 0%, #EEF2FF 100%)'
-    }}>
-      {/* Background Decorations */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], rotate: [0, 90, 0] }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-          style={{ position: 'absolute', top: '-10%', left: '-10%', width: '40%', height: '40%', background: 'radial-gradient(circle, rgba(79,70,229,0.03) 0%, transparent 70%)', borderRadius: '50%' }}
-        />
-        <motion.div 
-          animate={{ scale: [1.2, 1, 1.2], rotate: [90, 0, 90] }}
-          transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-          style={{ position: 'absolute', bottom: '-5%', right: '-5%', width: '50%', height: '50%', background: 'radial-gradient(circle, rgba(16,185,129,0.03) 0%, transparent 70%)', borderRadius: '50%' }}
-        />
-      </div>
+    <div className="relative w-full flex flex-col items-center justify-start min-h-[calc(100vh-80px)]" style={{ fontFamily: 'Verdana, sans-serif' }}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={way.id}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="w-full h-full"
+        >
+          {renderStrategy()}
+        </motion.div>
+      </AnimatePresence>
 
       <React.Suspense fallback={<div className="fixed inset-0 flex items-center justify-center bg-black/50 z-[9999]"><div className="w-32 h-32 rounded-full bg-yellow-400 animate-pulse" /></div>}>
         <CelebrationOverlay 
@@ -279,9 +210,6 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
         )}
       </AnimatePresence>
 
-      {renderStrategy()}
-
-      {/* Modeling Video Overlay */}
       <AnimatePresence>
         {way.modelingVideoUrl && (
           <div style={{ position: 'absolute', bottom: 16, right: 16, zIndex: 40 }}>
@@ -321,7 +249,7 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
                   fontSize: 32, cursor: 'pointer'
                 }}
               >
-                ×
+                ✕
               </button>
               <video 
                 src={way.modelingVideoUrl} 
@@ -330,7 +258,7 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
                 style={{ width: '100%', borderRadius: 24, boxShadow: '0 20px 50px rgba(0,0,0,0.5)' }} 
               />
               <div style={{ textAlign: 'center', color: '#fff', marginTop: 16, fontWeight: 700 }}>
-                ¡Mira cómo se hace! 🌟
+                ¡Mira cómo se hace! 👀
               </div>
             </div>
           </motion.div>
