@@ -27,56 +27,75 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
   return (
     <div className="w-full flex flex-col gap-12 pb-12">
       {steps.map(step => (
-        <div key={step.step} className="bg-white rounded-[40px] p-8 shadow-sm border-4 border-gray-100">
+        <div key={step.step} className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-8 shadow-sm border-[3px] border-slate-200/60 transition-shadow hover:shadow-md">
           {/* Cabecera del Step */}
-          <div className="flex justify-between items-center mb-8 px-2">
-            <h2 className="text-3xl font-black text-[#1E1B4B] uppercase tracking-wide">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 px-2">
+            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-tight">
               {step.title.toUpperCase().startsWith('STEP') ? step.title : `STEP ${step.step}: ${step.title}`}
             </h2>
-            <div className="text-xl font-bold text-gray-500 bg-gray-100 px-6 py-2 rounded-full">
-              {step.completedCount}/{step.totalWays} {step.completedCount === step.totalWays && '✓'}
+            <div className="text-sm font-bold text-slate-500 bg-slate-100 px-6 py-2 rounded-full self-start sm:self-auto flex items-center gap-2 shadow-inner">
+              <span>{step.completedCount}/{step.totalWays}</span>
+              {step.completedCount === step.totalWays && <span className="text-emerald-500 text-lg drop-shadow-sm">✓</span>}
             </div>
           </div>
           
           {/* Scroll horizontal del sendero */}
-          <div className="flex items-center overflow-x-auto pb-12 pt-6 px-4 snap-x snap-mandatory scroll-smooth hide-scrollbar" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
+          <div className="flex items-center overflow-x-auto pb-12 pt-8 px-4 snap-x snap-mandatory scroll-smooth hide-scrollbar" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
             {step.nodes.map((node, i) => {
               const isLast = i === step.nodes.length - 1;
               const nextNode = isLast ? null : step.nodes[i + 1];
               
+              const isCompleted = node.isCompleted;
+              const isCurrent = node.isCurrent;
+              const isLocked = node.isLocked;
+              
               return (
-                <div key={node.id} className="flex items-center snap-center shrink-0">
+                <div key={node.id} className="flex items-center snap-center shrink-0 group relative">
                   {/* Nodo */}
-                  <div className="flex flex-col items-center relative z-10 w-28">
+                  <div className="flex flex-col items-center relative z-10 w-28 sm:w-32">
                     <button
-                      disabled={node.isLocked}
-                      onPointerDown={() => !node.isLocked && onWayClick(node.id)}
+                      disabled={isLocked}
+                      onPointerDown={() => !isLocked && onWayClick(node.id)}
                       aria-label={`Way ${node.wayNumber}: ${node.title}`}
                       className={`
-                        flex items-center justify-center rounded-full border-4 transition-all duration-300 font-black touch-manipulation select-none shrink-0
-                        ${node.isCurrent ? 'w-24 h-24 bg-blue-500 border-blue-600 text-white animate-way-pulse text-4xl shadow-xl' : 'w-20 h-20 text-3xl'}
-                        ${node.isCompleted ? 'bg-green-400 border-green-500 text-white' : ''}
-                        ${!node.isCompleted && !node.isCurrent && !node.isLocked ? 'bg-white border-gray-300 text-gray-400' : ''}
-                        ${node.isLocked ? 'bg-slate-100 border-slate-200 text-slate-300 opacity-60 cursor-not-allowed' : 'cursor-pointer active:scale-95'}
+                        relative flex items-center justify-center rounded-full border-[4px] transition-all duration-300 font-black touch-manipulation select-none shrink-0 focus-visible:ring-4 ring-violet-400/50
+                        ${isCurrent ? 'w-24 h-24 sm:w-28 sm:h-28 bg-violet-50 border-violet-500 text-violet-700 animate-node-pulse text-4xl shadow-[0_0_20px_rgba(139,92,246,0.3)] z-20' : 'w-20 h-20 sm:w-24 sm:h-24 text-3xl'}
+                        ${isCompleted ? 'bg-emerald-50 border-emerald-400 text-emerald-600' : ''}
+                        ${!isCompleted && !isCurrent && !isLocked ? 'bg-white border-slate-300 text-slate-400 hover:border-slate-400 hover:bg-slate-50 cursor-pointer active:scale-95' : ''}
+                        ${isLocked ? 'bg-slate-50 border-slate-200 text-slate-300 opacity-60 cursor-not-allowed' : ''}
                       `}
                     >
-                      {node.isCompleted ? '✓' : node.isLocked ? '🔒' : node.wayNumber}
+                      {isCompleted ? (
+                        <span className="animate-check-appear text-4xl drop-shadow-sm">✓</span>
+                      ) : isLocked ? (
+                        <span className="text-2xl opacity-80">🔒</span>
+                      ) : (
+                        node.wayNumber
+                      )}
                     </button>
                     
                     {/* Título corto */}
-                    <span className={`absolute -bottom-10 text-sm font-bold text-center w-36 leading-tight
-                      ${node.isCurrent ? 'text-blue-600' : node.isCompleted ? 'text-green-600' : 'text-gray-400'}`}>
-                      {node.title.length > 18 ? node.title.substring(0, 18) + '...' : node.title}
+                    <span className={`absolute -bottom-10 sm:-bottom-12 text-xs sm:text-sm font-bold text-center w-40 leading-tight transition-colors duration-300
+                      ${isCurrent ? 'text-violet-700' : isCompleted ? 'text-emerald-600' : 'text-slate-400'}
+                      ${!isLocked && !isCompleted && !isCurrent ? 'group-hover:text-slate-600' : ''}
+                    `}>
+                      {node.title.length > 20 ? node.title.substring(0, 20) + '...' : node.title}
                     </span>
                   </div>
                   
                   {/* Conector */}
                   {!isLast && (
-                    <div className="w-16 h-2 relative -mx-4 z-0 shrink-0">
-                      <div className={`absolute inset-0 top-1/2 -translate-y-1/2 h-2 
-                        ${node.isCompleted && nextNode?.isCompleted ? 'bg-green-400' : 
-                          node.isCompleted && nextNode?.isCurrent ? 'bg-gradient-to-r from-green-400 to-blue-500' : 
-                          'border-t-4 border-dotted border-gray-300'}`} />
+                    <div className="w-12 sm:w-16 h-2 relative -mx-4 sm:-mx-6 z-0 shrink-0">
+                      <div className={`absolute inset-0 top-1/2 -translate-y-1/2 h-2 rounded-full overflow-hidden transition-colors duration-500
+                        ${isCompleted && nextNode?.isCompleted ? 'bg-emerald-400' : 
+                          isCompleted && nextNode?.isCurrent ? 'bg-gradient-to-r from-emerald-400 to-violet-400' : 
+                          'bg-slate-200'}`} 
+                      >
+                         {/* Animated progress overlay if current is next */}
+                         {isCompleted && nextNode?.isCurrent && (
+                           <div className="absolute inset-0 bg-white/30 animate-pulse" />
+                         )}
+                      </div>
                     </div>
                   )}
                 </div>

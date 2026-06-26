@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase, isSupabaseAvailable } from '@/core/services/supabaseClient';
@@ -27,7 +27,6 @@ export function PlayerLoginPage() {
     async function load() {
       const patientId = sessionStorage.getItem('way-active-patient');
       if (!patientId) {
-        // AUTO-CONFIG for Testing: Pedro
         sessionStorage.setItem('way-active-patient', '048cc2eb-a861-4ad4-ac1a-2fdf916e430b');
         sessionStorage.setItem('way-active-pin', '1234');
         window.location.reload();
@@ -39,13 +38,13 @@ export function PlayerLoginPage() {
         return;
       }
 
-      const { data, error } = await supabase
+      const { data, error: err } = await supabase
         .from('patient_profiles')
         .select('id, name, equipped_avatar_id, pin')
         .eq('id', patientId)
         .single();
 
-      if (!error && data) {
+      if (!err && data) {
         setPatient(data);
       }
       setLoading(false);
@@ -53,13 +52,13 @@ export function PlayerLoginPage() {
     load();
   }, []);
 
-  const validatePin = () => {
+  const validatePin = useCallback((currentPin: string) => {
     if (!patient) return;
-    if (pin === patient.pin) {
+    if (currentPin === patient.pin) {
       setSuccess(true);
       setAttempts(0);
-      audioService.playSFX('success');
-      sessionStorage.setItem('way-active-pin', pin);
+      try { audioService.playSFX('success'); } catch (e) {}
+      sessionStorage.setItem('way-active-pin', currentPin);
       setTimeout(() => {
         navigate('/player/home');
       }, 800);
@@ -67,7 +66,7 @@ export function PlayerLoginPage() {
       const nextAttempts = attempts + 1;
       setAttempts(nextAttempts);
       setError(true);
-      audioService.playSFX('error');
+      try { audioService.playSFX('error'); } catch (e) {}
       
       if (nextAttempts >= 3) {
         setLocked(true);
@@ -76,7 +75,7 @@ export function PlayerLoginPage() {
           setAttempts(0);
           setPin('');
           setError(false);
-        }, 30000); // 30 second lockout
+        }, 30000);
       } else {
         setTimeout(() => {
           setPin('');
@@ -84,21 +83,21 @@ export function PlayerLoginPage() {
         }, 1000);
       }
     }
-  };
+  }, [patient, attempts, navigate]);
 
-  const handleKeyPress = (key: string) => {
+  const handleKeyPress = useCallback((key: string) => {
     if (success || locked) return;
 
     if (key === 'DEL') {
-      audioService.playSFX('click');
+      try { audioService.playSFX('click'); } catch (e) {}
       setPin(prev => prev.slice(0, -1));
       setError(false);
     } else if (key === 'OK') {
       if (pin.length > 0) {
-        validatePin();
+        validatePin(pin);
       }
     } else if (pin.length < 4) {
-      audioService.playSFX('click');
+      try { audioService.playSFX('click'); } catch (e) {}
       const newPin = pin + key;
       setPin(newPin);
       setError(false);
@@ -107,100 +106,128 @@ export function PlayerLoginPage() {
         setTimeout(() => {
           setSuccess(true);
           setAttempts(0);
-          audioService.playSFX('success');
+          try { audioService.playSFX('success'); } catch (e) {}
           sessionStorage.setItem('way-active-pin', newPin);
           setTimeout(() => navigate('/player/home'), 800);
         }, 150);
       } else if (newPin.length === 4) {
-        setTimeout(() => validatePin(), 150);
+        setTimeout(() => validatePin(newPin), 150);
       }
     }
-  };
+  }, [success, locked, pin, patient, validatePin]);
 
   if (loading) {
     return (
-      <div className="min-h-[100dvh] bg-dynamic bg-dynamic--normal flex items-center justify-center">
-        <div className="spinner-glass" />
+      <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50">
+        <div className="w-12 h-12 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin" />
       </div>
     );
   }
 
   if (!patient) {
     return (
-      <div className="min-h-[100dvh] bg-dynamic bg-dynamic--normal flex flex-col items-center justify-center p-8 text-center gap-4">
-        <div className="text-6xl">⚙️</div>
-        <h2 className="text-2xl font-black text-[#1E1B4B]">Tablet no configurada</h2>
-        <p className="text-[#6B7280]">Maite necesita configurar esta tablet desde el panel del terapeuta.</p>
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center p-8 text-center gap-4 bg-slate-50">
+        <div className="text-6xl drop-shadow-sm">⚙️</div>
+        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Tablet no configurada</h2>
+        <p className="text-slate-600 font-medium max-w-sm">Maite necesita configurar esta tablet desde el panel del terapeuta.</p>
       </div>
     );
   }
 
-  return (
-    <div className={`min-h-[100dvh] flex flex-col items-center justify-center p-8 gap-8 touch-none bg-dynamic ${error ? 'bg-dynamic--error' : success ? 'bg-dynamic--success' : 'bg-dynamic--normal'}`}>
+  const bgClass = error 
+    ? 'from-rose-50/50 to-red-100/50' 
+    : success 
+    ? 'from-emerald-50/50 to-teal-100/50' 
+    : 'from-indigo-50/30 to-violet-50/30';
 
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
-        <motion.div animate={success ? { scale: [1, 1.2, 1] } : {}} className="text-8xl mb-4 leading-none avatar-float">
+  return (
+    <div className={`min-h-[100dvh] flex flex-col items-center justify-center p-4 sm:p-8 gap-6 sm:gap-8 touch-none bg-gradient-to-br ${bgClass} transition-colors duration-500`}>
+
+      <motion.div 
+        initial={{ opacity: 0, y: -20 }} 
+        animate={{ opacity: 1, y: 0 }} 
+        transition={{ type: "spring", stiffness: 120, damping: 20 }}
+        className="text-center z-10"
+      >
+        <motion.div 
+          animate={success ? { scale: [1, 1.1, 1] } : { y: [-2, 2, -2] }} 
+          transition={success ? { duration: 0.5 } : { duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          className="text-7xl sm:text-8xl mb-2 sm:mb-4 leading-none drop-shadow-md"
+        >
           {patient.equipped_avatar_id}
         </motion.div>
-        <h1 className="text-4xl font-black text-[#1E1B4B] uppercase tracking-wide">
+        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight uppercase">
           ¡Hola, {patient.name}!
         </h1>
-        <p className="text-indigo-500 font-bold text-lg mt-2">
+        <p className="text-indigo-600 font-bold text-base sm:text-lg mt-2 tracking-wide">
           Introduce tu PIN para jugar
         </p>
       </motion.div>
 
-      {/* Puntos del PIN */}
-      <div className="flex justify-center gap-6 mb-4 h-12">
-        {[0, 1, 2, 3].map((i) => (
-          <div
-            key={i}
-            className={`
-              pin-dot
-              ${error 
-                ? 'pin-dot--error' 
-                : success 
-                ? 'pin-dot--success'
-                : i < pin.length 
-                ? 'pin-dot--filled' 
-                : ''
-              }
-            `}
-          />
-        ))}
+      <div className="flex justify-center gap-4 sm:gap-6 mb-2 h-10 sm:h-12 z-10">
+        {[0, 1, 2, 3].map((i) => {
+          const isFilled = i < pin.length;
+          return (
+            <motion.div
+              key={i}
+              animate={{
+                scale: isFilled ? 1.15 : 1,
+                backgroundColor: error ? '#F43F5E' : success ? '#10B981' : isFilled ? '#4F46E5' : '#F1F5F9',
+                borderColor: error ? '#F43F5E' : success ? '#10B981' : isFilled ? '#4F46E5' : '#CBD5E1'
+              }}
+              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-4 shadow-sm"
+            />
+          );
+        })}
       </div>
 
-      {/* Mensajes de error */}
-      <div className="h-8 mb-4 flex items-center justify-center">
+      <div className="h-10 mb-2 flex items-center justify-center z-10">
         <AnimatePresence>
           {error && !locked && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-lg font-bold text-rose-500 glass-message">
+            <motion.div 
+              initial={{ opacity: 0, y: -8 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0 }} 
+              className="px-6 py-2 rounded-full bg-rose-100 text-rose-600 font-bold shadow-sm"
+            >
               PIN incorrecto ({3 - attempts} intentos)
             </motion.div>
           )}
           {locked && (
-            <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="text-lg font-bold text-rose-500 glass-message text-center">
-              🔒 Demasiados intentos.<br/>Avisa a Maite.
+            <motion.div 
+              initial={{ opacity: 0, y: -8 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              exit={{ opacity: 0 }} 
+              className="px-6 py-2 rounded-full bg-rose-100 text-rose-600 font-bold shadow-sm text-center"
+            >
+              🔒 Demasiados intentos. Avisa a Maite.
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Teclado */}
-      <div className="grid grid-cols-3 gap-4 w-full max-w-md mx-auto">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-[320px] sm:max-w-sm mx-auto z-10">
         {PIN_KEYS.map((key) => {
-          let extraClass = '';
-          if (key === 'OK') extraClass = 'key-mechanical--ok';
-          if (key === 'DEL') extraClass = 'key-mechanical--del';
+          const isNumber = !['DEL', 'OK'].includes(key);
+          const isOk = key === 'OK';
+          const isDel = key === 'DEL';
           
           return (
             <button
               key={key}
               onPointerDown={() => handleKeyPress(key)}
-              className={`h-[140px] w-full key-mechanical ${extraClass}`}
-              aria-label={key === 'DEL' ? 'Borrar' : key === 'OK' ? 'Confirmar' : `Número ${key}`}
+              disabled={locked}
+              className={`
+                relative flex items-center justify-center h-20 sm:h-24 rounded-3xl font-black text-2xl sm:text-3xl
+                transition-[transform,box-shadow,background-color] duration-150 active:scale-95 select-none focus-visible:ring-4 ring-indigo-400/50
+                ${isNumber ? 'bg-white text-slate-800 border-b-4 border-slate-200 hover:bg-slate-50' : ''}
+                ${isOk ? 'bg-emerald-100 text-emerald-700 border-b-4 border-emerald-200 hover:bg-emerald-200' : ''}
+                ${isDel ? 'bg-rose-100 text-rose-700 border-b-4 border-rose-200 hover:bg-rose-200' : ''}
+                ${locked ? 'opacity-50 cursor-not-allowed' : ''}
+              `}
+              aria-label={isDel ? 'Borrar' : isOk ? 'Confirmar' : `Número ${key}`}
             >
-              {key === 'DEL' ? '←' : key === 'OK' ? '✓' : key}
+              {isDel ? '⌫' : isOk ? '✓' : key}
             </button>
           );
         })}

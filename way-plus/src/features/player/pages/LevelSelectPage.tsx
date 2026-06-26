@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '../store/playerStore';
@@ -9,6 +9,13 @@ import type { Step, Way } from '@/core/engine/types';
 import { patientService } from '@/core/services/patientService';
 import { normalizeWayText } from '@/shared/lib/way-text-utils';
 import { WayPath } from '../components/WayPath';
+
+const DECORATIVE_BLOBS = (
+  <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+    <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-violet-300/20 rounded-full blur-[80px] animate-blob-float mix-blend-multiply" />
+    <div className="absolute bottom-1/4 right-[-10%] w-[500px] h-[500px] bg-teal-300/20 rounded-full blur-[100px] animate-blob-float mix-blend-multiply" style={{ animationDelay: '2s' }} />
+  </div>
+);
 
 export const LevelSelectPage: React.FC = () => {
   const navigate = useNavigate();
@@ -24,10 +31,10 @@ export const LevelSelectPage: React.FC = () => {
     return Array.isArray(profile?.completedWays) ? profile.completedWays : [];
   }, [profile?.completedWays]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     sessionStorage.removeItem('way-active-patient');
     window.location.href = '/player';
-  };
+  }, []);
 
   useEffect(() => {
     const patientId = sessionStorage.getItem('way-active-patient');
@@ -53,10 +60,10 @@ export const LevelSelectPage: React.FC = () => {
     }
   }, [completedWays.length]);
 
-  const handleWayClick = (wayId: string) => {
-    audioService.playSFX('click');
-    navigate(`/play/way/${wayId}`);
-  };
+  const handleWayClick = useCallback((wayId: string) => {
+    try { audioService.playSFX('click'); } catch(e) {}
+    requestAnimationFrame(() => navigate(`/play/way/${wayId}`));
+  }, [navigate]);
 
   const currentWayId = useMemo(() => {
     for (const step of steps) {
@@ -76,46 +83,78 @@ export const LevelSelectPage: React.FC = () => {
       .filter(Boolean) as Way[];
   }, [homeworkIds, allWays]);
 
+  const wayPathSteps = useMemo(() => steps.map(step => {
+    const stepWays = step.ways || [];
+    const doneCount = stepWays.filter(w => completedWays.includes(w.id)).length;
+    let foundCurrent = false;
+    
+    return {
+      step: step.stepNumber || 0,
+      title: step.title || '',
+      totalWays: stepWays.length,
+      completedCount: doneCount,
+      nodes: stepWays.map((way, idx) => {
+        const isCompleted = completedWays.includes(way.id);
+        const isCurrent = way.id === currentWayId;
+        if (isCurrent) foundCurrent = true;
+        const isLocked = !isCompleted && !isCurrent && foundCurrent;
+        
+        return {
+          id: way.id || '',
+          step: step.stepNumber || 0,
+          wayNumber: way.wayNumber || (idx + 1),
+          title: way.title || '',
+          isCompleted,
+          isCurrent,
+          isLocked
+        };
+      })
+    };
+  }), [steps, completedWays, currentWayId]);
+
   return (
-    <div className="min-h-screen bg-dynamic bg-dynamic--normal pb-32 relative font-[Verdana,sans-serif] overflow-hidden">
-      {/* Elementos decorativos orgánicos */}
-      <div className="absolute top-[-10%] left-[-10%] w-[400px] h-[400px] bg-indigo-300/30 rounded-full blur-[100px] animate-blob mix-blend-multiply pointer-events-none" />
-      <div className="absolute bottom-1/4 right-[-10%] w-[500px] h-[500px] bg-sky-300/20 rounded-full blur-[120px] animate-blob-delayed mix-blend-multiply pointer-events-none" />
+    <div className="min-h-screen bg-slate-50 pb-32 relative font-[Verdana,sans-serif] overflow-hidden">
+      {DECORATIVE_BLOBS}
 
       <button
         onClick={handleLogout}
-        className="absolute top-4 right-4 w-12 h-12 rounded-2xl header-glass text-indigo-900 text-xs font-black cursor-pointer flex items-center justify-center touch-manipulation hover:bg-white/80 active:scale-95 transition-all z-50"
+        aria-label="Cerrar sesión"
+        className="absolute top-4 sm:top-6 right-4 sm:right-6 w-12 h-12 rounded-2xl bg-white/80 backdrop-blur-md text-slate-700 text-xl font-black cursor-pointer flex items-center justify-center touch-manipulation hover:bg-white active:scale-95 transition-[transform,background-color] duration-150 z-50 border-[3px] border-slate-200/60 shadow-sm focus-visible:ring-4 ring-violet-400/50"
       >
-        <span className="text-xl">🚪</span>
+        🚪
       </button>
 
       {/* Header Avatar & Stats */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="pt-12 pb-8 px-6 flex flex-col items-center gap-4 relative z-10"
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className="pt-16 sm:pt-20 pb-8 px-6 flex flex-col items-center gap-4 relative z-10"
       >
-        <div className="avatar-float">
-          <div className="w-28 h-28 rounded-3xl header-glass flex items-center justify-center text-6xl glow-soft">
+        <motion.div 
+          animate={{ y: [-4, 4, -4] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-3xl bg-white/80 backdrop-blur-md flex items-center justify-center text-5xl sm:text-6xl drop-shadow-md border-[3px] border-slate-200/60">
             {profile?.avatar && /\p{Emoji}/u.test(profile.avatar) ? profile.avatar : '🌟'}
           </div>
-        </div>
+        </motion.div>
 
         <div className="text-center mt-2">
-          <div className="text-4xl font-black text-[#1E1B4B] tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
             {profile?.name ? `¡Hola, ${profile.name}!` : '¡Hola!'}
-          </div>
-          <div className="text-lg text-indigo-900/60 font-bold mt-1">
+          </h1>
+          <p className="text-base sm:text-lg text-slate-500 font-bold mt-1 tracking-wide">
             ¿Qué aprendemos hoy?
-          </div>
+          </p>
         </div>
 
         <motion.div
           whileTap={{ scale: 0.95 }}
-          className="header-glass rounded-2xl px-6 py-3 flex items-center gap-3 mt-2"
+          className="bg-white/80 backdrop-blur-md rounded-2xl px-6 py-3 flex items-center gap-3 mt-2 border-[3px] border-amber-200/60 shadow-sm cursor-pointer"
         >
-          <span className="text-4xl coin-3d drop-shadow-md">🪙</span>
-          <span className="text-2xl font-black text-amber-500">
+          <span className="text-3xl sm:text-4xl drop-shadow-sm">🪙</span>
+          <span className="text-xl sm:text-2xl font-black text-amber-500 tracking-tight">
             {wayCoins ?? 0}
           </span>
         </motion.div>
@@ -123,52 +162,48 @@ export const LevelSelectPage: React.FC = () => {
 
       {/* Tu Camino de Hoy (Homework) */}
       {activeHomeworks.length > 0 && (
-        <div className="px-6 mb-12 max-w-2xl mx-auto relative z-10">
+        <div className="px-4 sm:px-6 mb-12 max-w-2xl mx-auto relative z-10">
           <div className="flex items-center gap-3 mb-6">
-            <span className="text-3xl">🏠</span>
-            <span className="text-xl font-black text-[#1E1B4B] uppercase tracking-wide">Tu camino de hoy</span>
+            <span className="text-2xl sm:text-3xl drop-shadow-sm">🏠</span>
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 uppercase tracking-wide">Tu camino de hoy</h2>
           </div>
           
-          <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4 sm:gap-6">
             {activeHomeworks.map(way => {
               const isDone = completedWays.includes(way.id);
               return (
-                <motion.div
+                <motion.button
                   key={way.id}
                   whileTap={!isDone ? { scale: 0.97 } : {}}
                   onPointerDown={() => handleWayClick(way.id)}
                   className={`
-                    h-36 px-6 flex items-center gap-6 
-                    ${isDone ? 'homework-card homework-card--done' : 'homework-card bg-amber-400 text-white'}
+                    relative w-full h-auto min-h-[120px] p-6 flex items-center gap-4 sm:gap-6 rounded-[2rem] text-left transition-[transform,shadow] duration-150 focus-visible:ring-4 ring-violet-400/50
+                    ${isDone ? 'bg-white/80 border-[3px] border-slate-200/60' : 'bg-gradient-to-r from-amber-400 to-orange-400 border-[3px] border-amber-300 shadow-md hover:shadow-lg'}
                   `}
                 >
-                  {!isDone && (
-                    <div className="absolute inset-0 pattern-homework pointer-events-none opacity-50" />
-                  )}
-
-                  <div className={`text-6xl ${isDone ? 'grayscale opacity-50' : 'drop-shadow-lg'}`}>
+                  <div className={`text-5xl sm:text-6xl shrink-0 ${isDone ? 'grayscale opacity-50' : 'drop-shadow-md'}`}>
                     {way.id?.includes('relaxation') ? '🧘' : way.id?.includes('assertiveness') ? '🗣️' : '✨'}
                   </div>
                   
                   <div className="flex-1 min-w-0 z-10">
-                    <div className={`text-2xl font-black leading-tight ${isDone ? 'text-gray-400' : 'text-white drop-shadow-sm'}`}>
+                    <h3 className={`text-xl sm:text-2xl font-black leading-tight tracking-tight ${isDone ? 'text-slate-400' : 'text-white drop-shadow-sm'}`}>
                       {normalizeWayText(way.title)}
-                    </div>
-                    <div className={`text-sm font-bold mt-2 uppercase tracking-wider ${isDone ? 'text-gray-400' : 'text-amber-100'}`}>
+                    </h3>
+                    <p className={`text-xs sm:text-sm font-bold mt-2 uppercase tracking-wider ${isDone ? 'text-slate-400' : 'text-amber-100'}`}>
                       {isDone ? '✓ Logrado' : 'Ejercicio Especial'}
-                    </div>
+                    </p>
                   </div>
 
                   {!isDone && (
                     <motion.div 
-                      animate={{ x: [0, 8, 0] }}
-                      transition={{ repeat: Infinity, duration: 1.5 }}
-                      className="text-4xl text-amber-100 z-10 font-black"
+                      animate={{ x: [0, 6, 0] }}
+                      transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                      className="text-3xl sm:text-4xl text-amber-100 z-10 font-black shrink-0"
                     >
                       ›
                     </motion.div>
                   )}
-                </motion.div>
+                </motion.button>
               );
             })}
           </div>
@@ -176,41 +211,14 @@ export const LevelSelectPage: React.FC = () => {
       )}
 
       {/* Map (WayPath) */}
-      <div className="px-6 max-w-4xl mx-auto w-full relative z-10">
+      <div className="px-4 sm:px-6 max-w-4xl mx-auto w-full relative z-10">
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="spinner-glass" />
+            <div className="w-12 h-12 rounded-full border-4 border-violet-200 border-t-violet-600 animate-spin" />
           </div>
         ) : (
           <WayPath
-            steps={steps.map(step => {
-              const stepWays = step.ways || [];
-              const doneCount = stepWays.filter(w => completedWays.includes(w.id)).length;
-              let foundCurrent = false;
-              
-              return {
-                step: step.stepNumber || 0,
-                title: step.title || '',
-                totalWays: stepWays.length,
-                completedCount: doneCount,
-                nodes: stepWays.map((way, idx) => {
-                  const isCompleted = completedWays.includes(way.id);
-                  const isCurrent = way.id === currentWayId;
-                  if (isCurrent) foundCurrent = true;
-                  const isLocked = !isCompleted && !isCurrent && foundCurrent;
-                  
-                  return {
-                    id: way.id || '',
-                    step: step.stepNumber || 0,
-                    wayNumber: way.wayNumber || (idx + 1),
-                    title: way.title || '',
-                    isCompleted,
-                    isCurrent,
-                    isLocked
-                  };
-                })
-              };
-            })}
+            steps={wayPathSteps}
             onWayClick={handleWayClick}
           />
         )}
@@ -225,16 +233,15 @@ export const LevelSelectPage: React.FC = () => {
             className="fixed inset-0 pointer-events-none flex items-center justify-center z-[999]"
           >
             {['🎉', '⭐', '🌟', '🎊', '✨'].map((emoji, i) => (
-              <div
+              <motion.div
                 key={i}
-                className="celebration-particle"
-                style={{ 
-                  left: `${50 + (i - 2) * 15}%`, 
-                  animationDelay: `${i * 0.1}s` 
-                }}
+                initial={{ y: "100vh", x: `${50 + (i - 2) * 15}vw` }}
+                animate={{ y: "-10vh", x: `${50 + (i - 2) * 20}vw` }}
+                transition={{ duration: 2, delay: i * 0.1, type: "spring" }}
+                className="absolute text-5xl sm:text-6xl drop-shadow-lg"
               >
                 {emoji}
-              </div>
+              </motion.div>
             ))}
           </motion.div>
         )}

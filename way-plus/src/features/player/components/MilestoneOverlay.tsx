@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
 import { audioService } from '@/core/utils/audioService';
 
 interface MilestoneOverlayProps {
@@ -15,30 +14,15 @@ export const MilestoneOverlay: React.FC<MilestoneOverlayProps> = ({
 }) => {
   useEffect(() => {
     if (show) {
-      audioService.playSFX('milestone');
+      try { audioService.playSFX('milestone'); } catch(e) {}
       
-      // Lanzar confeti!
-      const duration = 3 * 1000;
-      const animationEnd = Date.now() + duration;
-      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+      const timer = setTimeout(() => {
+        onClose();
+      }, 4000); // Auto-dismiss after 4 seconds
 
-      const randomInRange = (min: number, max: number) => Math.random() * (max - min) + min;
-
-      const interval: any = setInterval(() => {
-        const timeLeft = animationEnd - Date.now();
-
-        if (timeLeft <= 0) {
-          return clearInterval(interval);
-        }
-
-        const particleCount = 50 * (timeLeft / duration);
-        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-        confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-      }, 250);
-
-      return () => clearInterval(interval);
+      return () => clearTimeout(timer);
     }
-  }, [show]);
+  }, [show, onClose]);
 
   return (
     <AnimatePresence>
@@ -49,23 +33,14 @@ export const MilestoneOverlay: React.FC<MilestoneOverlayProps> = ({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[999] flex items-center justify-center p-6 text-center overflow-hidden"
         >
-          {/* Background Overlay - Aurora Glass */}
-          <div className="absolute inset-0 bg-[#0F172A]/90 backdrop-blur-md" />
-          <motion.div 
-            animate={{ 
-              scale: [1, 1.2, 1],
-              rotate: [0, 90, 180, 270, 360],
-              opacity: [0.2, 0.4, 0.2]
-            }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="absolute -top-1/2 -left-1/2 w-[200%] h-[200%] bg-[radial-gradient(circle_at_50%_50%,rgba(79,70,229,0.3)_0%,transparent_70%)]"
-          />
+          {/* Background Overlay - Soft Glass */}
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" />
 
-          {/* Light Rays Effect */}
+          {/* Gentle light rays behind */}
           <motion.div 
             animate={{ rotate: 360 }}
-            transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none opacity-30"
+            transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] pointer-events-none opacity-20"
             style={{
               background: 'conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.4) 20deg, transparent 40deg, rgba(255,255,255,0.4) 60deg, transparent 80deg, rgba(255,255,255,0.4) 100deg, transparent 120deg, rgba(255,255,255,0.4) 140deg, transparent 160deg, rgba(255,255,255,0.4) 180deg, transparent 200deg, rgba(255,255,255,0.4) 220deg, transparent 240deg, rgba(255,255,255,0.4) 260deg, transparent 280deg, rgba(255,255,255,0.4) 300deg, transparent 320deg, rgba(255,255,255,0.4) 340deg, transparent 360deg)',
               maskImage: 'radial-gradient(circle at center, black 0%, transparent 70%)',
@@ -73,39 +48,70 @@ export const MilestoneOverlay: React.FC<MilestoneOverlayProps> = ({
             }}
           />
 
+          {/* Gentle Particles (max 8) */}
+          {[...Array(8)].map((_, i) => (
+             <motion.div
+               key={i}
+               initial={{ opacity: 0, y: 0, x: 0 }}
+               animate={{ 
+                 opacity: [0, 1, 0],
+                 y: -100 - Math.random() * 50,
+                 x: (Math.random() - 0.5) * 100
+               }}
+               transition={{ duration: 2 + Math.random(), delay: Math.random() }}
+               className="absolute top-1/2 left-1/2 text-3xl pointer-events-none"
+             >
+               ✨
+             </motion.div>
+          ))}
+
           <motion.div
-            initial={{ scale: 0.5, y: 100, opacity: 0 }}
-            animate={{ scale: 1, y: 0, opacity: 1 }}
-            exit={{ scale: 0.5, y: 100, opacity: 0 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-            className="relative z-10 bg-white/95 backdrop-blur-2xl rounded-[4rem] p-10 max-w-sm w-full shadow-[0_40px_100px_-15px_rgba(0,0,0,0.6)] border-[12px] border-white/50"
-            style={{ fontFamily: 'Verdana, sans-serif' }}
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 120 }}
+            className="relative z-10 bg-white/95 backdrop-blur-2xl rounded-[3rem] p-8 sm:p-10 max-w-sm w-full shadow-[0_20px_60px_-15px_rgba(0,0,0,0.3)] border-[6px] border-white/60 focus-visible:ring-4 ring-violet-400/50"
           >
-            <div className="relative mb-8">
+            <div className="relative mb-6">
               <motion.div 
-                animate={{ scale: [1, 1.2, 1], rotate: [0, 5, -5, 0] }}
-                transition={{ duration: 4, repeat: Infinity }}
-                className="text-8xl filter drop-shadow-2xl"
+                animate={{ y: [-4, 4, -4] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                className="text-7xl sm:text-8xl drop-shadow-lg"
               >
                 🏆
               </motion.div>
             </div>
 
-            <h2 className="text-4xl font-black text-slate-800 mb-4 leading-none tracking-tight uppercase">
-              {title}
+            <div className="flex justify-center items-center gap-1 mb-2">
+               <span className="text-amber-400 text-xl">⭐</span>
+               <span className="text-amber-400 text-xl">⭐</span>
+               <span className="text-amber-400 text-xl">⭐</span>
+               <span className="text-amber-400 text-xl">⭐</span>
+               <span className="text-amber-400 text-xl">⭐</span>
+            </div>
+
+            <h2 className="text-sm font-black text-violet-600 mb-2 uppercase tracking-widest">
+              ¡NUEVO LOGRO!
             </h2>
-            <p className="text-xl text-indigo-500 font-bold mb-10 leading-tight">
+            
+            <h3 className="text-3xl font-black text-slate-900 mb-6 leading-none tracking-tight">
+              {title}
+            </h3>
+
+            <p className="text-base text-slate-600 font-medium mb-8 leading-relaxed max-w-[250px] mx-auto">
               {subtitle}
             </p>
 
-            <motion.button
-              whileHover={{ scale: 1.05, y: -2 }}
-              whileTap={{ scale: 0.95, y: 0 }}
-              onClick={onClose}
-              className="w-full bg-gradient-to-br from-indigo-600 to-violet-700 text-white rounded-[2.5rem] py-5 px-8 text-xl font-black shadow-[0_15px_30px_-5px_rgba(79,70,229,0.4)] border-b-[6px] border-indigo-900 active:border-b-0 transition-all uppercase tracking-widest"
-            >
-              ¡SOY UN CAMPEÓN!
-            </motion.button>
+            <div className="flex flex-col gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={onClose}
+                className="w-full bg-violet-600 hover:bg-violet-700 text-white rounded-2xl py-4 px-6 text-lg font-black transition-colors uppercase tracking-wide focus-visible:ring-4 ring-violet-400/50"
+              >
+                Continuar
+              </motion.button>
+            </div>
           </motion.div>
         </motion.div>
       )}
