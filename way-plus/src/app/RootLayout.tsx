@@ -12,7 +12,7 @@ import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KioskGate } from '@/features/kiosk/components/KioskGate';
-import { InstallPrompt } from '@/features/pwa/components/InstallPrompt';
+
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { CardUnlockOverlay } from '@/features/rewards/components/CardUnlockOverlay';
 import { SecretManager } from '@/features/rewards/components/SecretManager';
@@ -279,7 +279,6 @@ export function RootLayout() {
         </div>
       </div>
       {!therapist && <BottomNav />}
-      <InstallPrompt />
       <CardUnlockOverlay />
       <SecretManager />
       <AchievementManager />

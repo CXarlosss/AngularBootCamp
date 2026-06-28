@@ -63,17 +63,13 @@ export function PlayerStartPage() {
         </div>
 
         {/* CTA Button */}
-        <motion.button
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          whileHover={{ scale: 1.04, y: -2 }}
-          whileTap={{ scale: 0.96 }}
+        <button
           onClick={handleStart}
-          className="w-full py-6 mt-8 bg-gradient-to-br from-indigo-600 to-violet-700 text-white text-3xl font-black rounded-[28px] shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] border-b-[6px] border-indigo-900 active:border-b-0 transition-all flex items-center justify-center gap-4"
+          className="group relative w-full max-w-xs mx-auto h-16 sm:h-18 rounded-[2rem] bg-violet-500 hover:bg-violet-400 active:bg-violet-600 active:scale-[0.97] transition-all duration-150 shadow-lg shadow-violet-500/30 flex items-center justify-center gap-3 text-white font-black text-xl sm:text-2xl tracking-tight focus-visible:ring-4 focus-visible:ring-violet-400/50"
         >
-          <span className="text-4xl">▶️</span> EMPEZAR
-        </motion.button>
+          <span className="text-2xl group-hover:scale-110 transition-transform duration-150">▶️</span>
+          EMPEZAR
+        </button>
       </motion.div>
 
       {/* Decorative floating dots */}
