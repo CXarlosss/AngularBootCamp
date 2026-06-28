@@ -70,9 +70,9 @@ export function PlayerStartPage() {
           whileHover={{ scale: 1.04, y: -2 }}
           whileTap={{ scale: 0.96 }}
           onClick={handleStart}
-          className="w-full py-6 mt-8 bg-gradient-to-br from-indigo-600 to-violet-700 text-white text-3xl font-black rounded-[28px] shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] border-b-[6px] border-indigo-900 active:border-b-0 transition-all flex items-center justify-center gap-3"
+          className="w-full py-6 mt-8 bg-gradient-to-br from-indigo-600 to-violet-700 text-white text-3xl font-black rounded-[28px] shadow-[0_20px_40px_-10px_rgba(79,70,229,0.4)] border-b-[6px] border-indigo-900 active:border-b-0 transition-all flex items-center justify-center gap-4"
         >
-          EMPEZAR
+          <span className="text-4xl">▶️</span> EMPEZAR
         </motion.button>
       </motion.div>
 
