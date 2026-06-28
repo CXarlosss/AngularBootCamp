@@ -106,7 +106,9 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
         setHighlightedChoice(null);
         setCelebration({ show: false, type: 'happy' });
         audioService.stopSpeak();
-        audioService.speak(way.stimulus.text);
+        if (way.stimulus.text) {
+          audioService.speak(way.stimulus.text);
+        }
       }, 1500);
     }
   };
