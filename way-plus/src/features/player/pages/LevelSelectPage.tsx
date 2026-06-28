@@ -141,10 +141,10 @@ export const LevelSelectPage: React.FC = () => {
         </motion.div>
 
         <div className="text-center mt-2">
-          <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
             {profile?.name ? `¡Hola, ${profile.name}!` : '¡Hola!'}
           </h1>
-          <p className="text-base sm:text-lg text-slate-500 font-bold mt-1 tracking-wide">
+          <p className="text-lg sm:text-xl lg:text-2xl text-slate-600 font-bold mt-1 tracking-wide">
             ¿Qué aprendemos hoy?
           </p>
         </div>
@@ -165,7 +165,7 @@ export const LevelSelectPage: React.FC = () => {
         <div className="px-4 sm:px-6 mb-12 max-w-2xl mx-auto relative z-10">
           <div className="flex items-center gap-3 mb-6">
             <span className="text-2xl sm:text-3xl drop-shadow-sm">🏠</span>
-            <h2 className="text-lg sm:text-xl font-black text-slate-900 uppercase tracking-wide">Tu camino de hoy</h2>
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 uppercase tracking-wide">Tu camino de hoy</h2>
           </div>
           
           <div className="flex flex-col gap-4 sm:gap-6">
@@ -181,15 +181,15 @@ export const LevelSelectPage: React.FC = () => {
                     ${isDone ? 'bg-white/80 border-[3px] border-slate-200/60' : 'bg-gradient-to-r from-amber-400 to-orange-400 border-[3px] border-amber-300 shadow-md hover:shadow-lg'}
                   `}
                 >
-                  <div className={`text-5xl sm:text-6xl shrink-0 ${isDone ? 'grayscale opacity-50' : 'drop-shadow-md'}`}>
+                  <div className={`text-4xl sm:text-5xl shrink-0 ${isDone ? 'grayscale opacity-50' : 'drop-shadow-md'}`}>
                     {way.id?.includes('relaxation') ? '🧘' : way.id?.includes('assertiveness') ? '🗣️' : '✨'}
                   </div>
                   
                   <div className="flex-1 min-w-0 z-10">
-                    <h3 className={`text-xl sm:text-2xl font-black leading-tight tracking-tight ${isDone ? 'text-slate-400' : 'text-white drop-shadow-sm'}`}>
+                    <h3 className={`text-lg sm:text-xl lg:text-2xl font-black leading-tight tracking-tight ${isDone ? 'text-slate-400' : 'text-white drop-shadow-sm'}`}>
                       {normalizeWayText(way.title)}
                     </h3>
-                    <p className={`text-xs sm:text-sm font-bold mt-2 uppercase tracking-wider ${isDone ? 'text-slate-400' : 'text-amber-100'}`}>
+                    <p className={`text-xs sm:text-sm lg:text-base font-bold mt-2 uppercase tracking-wider ${isDone ? 'text-slate-400' : 'text-amber-100'}`}>
                       {isDone ? '✓ Logrado' : 'Ejercicio Especial'}
                     </p>
                   </div>

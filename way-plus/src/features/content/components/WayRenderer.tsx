@@ -149,7 +149,7 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
             </div>
 
             <div className="w-full text-center mt-6 shrink-0 flex flex-col items-center">
-              <h2 data-testid="way-question" className="text-2xl sm:text-3xl md:text-5xl font-black text-slate-800 leading-tight tracking-tight px-4 line-clamp-2" style={{ fontFamily: 'Verdana, sans-serif' }}>
+              <h2 data-testid="way-question" className="text-lg sm:text-xl lg:text-2xl font-black text-slate-800 leading-tight tracking-tight px-4 line-clamp-2 max-w-3xl mx-auto" style={{ fontFamily: 'Verdana, sans-serif' }}>
                 {way.stimulus.text}
               </h2>
             </div>
@@ -179,10 +179,10 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
                     {option.image ? (
                       <img src={option.image} className="w-16 h-16 sm:w-28 sm:h-28 object-contain drop-shadow-md z-10" alt={option.label} />
                     ) : (
-                      <span className="text-5xl sm:text-7xl z-10">🎯</span>
+                      <span className="text-4xl sm:text-5xl lg:text-6xl z-10">🎯</span>
                     )}
                     
-                    <span className="mt-2 font-black text-slate-700 text-sm sm:text-xl uppercase tracking-tight z-10">
+                    <span className="mt-2 font-black text-slate-700 text-base sm:text-lg lg:text-xl uppercase tracking-tight z-10">
                       {option.label}
                     </span>
 

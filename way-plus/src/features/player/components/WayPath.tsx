@@ -30,7 +30,7 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
         <div key={step.step} className="bg-white/80 backdrop-blur-md rounded-[2.5rem] p-6 sm:p-8 shadow-sm border-[3px] border-slate-200/60 transition-shadow hover:shadow-md">
           {/* Cabecera del Step */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8 px-2">
-            <h2 className="text-2xl sm:text-3xl font-black text-slate-900 uppercase tracking-tight">
+            <h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-slate-800 leading-snug text-center px-4 max-w-3xl mx-auto">
               {step.title.toUpperCase().startsWith('STEP') ? step.title : `STEP ${step.step}: ${step.title}`}
             </h2>
             <div className="text-sm font-bold text-slate-500 bg-slate-100 px-6 py-2 rounded-full self-start sm:self-auto flex items-center gap-2 shadow-inner">
@@ -61,16 +61,16 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
                       aria-label={`Way ${node.wayNumber}: ${node.title}`}
                       className={`
                         relative flex items-center justify-center rounded-full border-[4px] transition-all duration-300 font-black touch-manipulation select-none shrink-0 focus-visible:ring-4 ring-violet-400/50
-                        ${isCurrent ? 'w-24 h-24 sm:w-28 sm:h-28 bg-violet-50 border-violet-500 text-violet-700 animate-node-pulse text-4xl shadow-[0_0_20px_rgba(139,92,246,0.3)] z-20' : 'w-20 h-20 sm:w-24 sm:h-24 text-3xl'}
+                        ${isCurrent ? 'w-24 h-24 sm:w-28 sm:h-28 bg-violet-50 border-violet-500 text-violet-700 animate-node-pulse text-3xl sm:text-4xl shadow-[0_0_20px_rgba(139,92,246,0.3)] z-20' : 'w-20 h-20 sm:w-24 sm:h-24 text-2xl sm:text-3xl'}
                         ${isCompleted ? 'bg-emerald-50 border-emerald-400 text-emerald-600' : ''}
                         ${!isCompleted && !isCurrent && !isLocked ? 'bg-white border-slate-300 text-slate-400 hover:border-slate-400 hover:bg-slate-50 cursor-pointer active:scale-95' : ''}
                         ${isLocked ? 'bg-slate-50 border-slate-200 text-slate-300 opacity-60 cursor-not-allowed' : ''}
                       `}
                     >
                       {isCompleted ? (
-                        <span className="animate-check-appear text-4xl drop-shadow-sm">✓</span>
+                        <span className="animate-check-appear text-3xl sm:text-4xl drop-shadow-sm">✓</span>
                       ) : isLocked ? (
-                        <span className="text-2xl opacity-80">🔒</span>
+                        <span className="text-xl sm:text-2xl opacity-80">🔒</span>
                       ) : (
                         node.wayNumber
                       )}
