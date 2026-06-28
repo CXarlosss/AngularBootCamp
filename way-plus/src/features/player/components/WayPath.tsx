@@ -41,9 +41,9 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
           
           {/* Scroll horizontal del sendero */}
           <div className="flex items-center overflow-x-auto pb-12 pt-8 px-4 snap-x snap-mandatory scroll-smooth hide-scrollbar" style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}>
-            {step.nodes.map((node, i) => {
-              const isLast = i === step.nodes.length - 1;
-              const nextNode = isLast ? null : step.nodes[i + 1];
+            {step.nodes.filter(n => !n.isLocked).map((node, i, visibleNodes) => {
+              const isLast = i === visibleNodes.length - 1;
+              const nextNode = isLast ? null : visibleNodes[i + 1];
               
               const isCompleted = node.isCompleted;
               const isCurrent = node.isCurrent;
@@ -54,6 +54,8 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
                   {/* Nodo */}
                   <div className="flex flex-col items-center relative z-10 w-28 sm:w-32">
                     <button
+                      data-testid={`way-node-${node.id}`}
+                      data-state={isCurrent ? 'current' : 'completed'}
                       disabled={isLocked}
                       onPointerDown={() => !isLocked && onWayClick(node.id)}
                       aria-label={`Way ${node.wayNumber}: ${node.title}`}

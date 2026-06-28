@@ -30,8 +30,11 @@ Call log:
   - text: 🧠 WAY+ 🪙 0
   - button "🔊"
   - button "🦄"
-- button "SALIR"
-- text: 🌟 ¡Hola, Gamer! ¿Qué aprendemos hoy? 🪙 0 medallas
+- button "Cerrar sesión": 🚪
+- text: 🌟
+- heading "¡Hola, Gamer!" [level=1]
+- paragraph: ¿Qué aprendemos hoy?
+- text: 🪙 0
 - 'heading "STEP 1: Primeros Pasos" [level=2]'
 - text: 0/1
 - 'button "Way 1: Way 1"': "1"

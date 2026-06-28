@@ -91,7 +91,11 @@ describe('SyncEngine', () => {
       vi.useFakeTimers();
       const now = Date.now();
       await engine.start();
-      for (let i = 0; i < 3; i++) await engine['push']();
+      for (let i = 0; i < 3; i++) {
+        const p = engine['push']();
+        vi.advanceTimersByTime(2500);
+        await p;
+      }
       expect(engine.getStatus().status).toBe('circuit_open');
       vi.setSystemTime(now + 40_000);
       expect(engine.getStatus().status).not.toBe('circuit_open');

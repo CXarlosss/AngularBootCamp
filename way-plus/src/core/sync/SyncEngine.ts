@@ -33,6 +33,7 @@ export class SyncEngine {
   private pushRequested = false;
   private cleanupUnloadGuard: (() => void) | null = null;
 
+  private debounceTimer: ReturnType<typeof setTimeout> | null = null;
   private syncState: SyncState = {
     status: 'idle',
     lastSyncAt: null,
@@ -50,8 +51,10 @@ export class SyncEngine {
    * FIX: El reset del circuit breaker es ahora completamente LAZY.
    * Comprueba el tiempo cada vez que se pide el estado.
    */
-  public push(): void {
-    this.requestBackgroundPush();
+  public push(): Promise<void> {
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    this.pushRequested = true;
+    return this.processPushQueue();
   }
 
   getStatus(): SyncState {
@@ -110,6 +113,7 @@ export class SyncEngine {
   }
 
   stop() {
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
     this.unsubscribePlayer?.();
     this.unsubscribeRewards?.();
     this.cleanupUnloadGuard?.();
@@ -189,8 +193,11 @@ export class SyncEngine {
   }
 
   private requestBackgroundPush() {
-    this.pushRequested = true;
-    this.processPushQueue();
+    if (this.debounceTimer) clearTimeout(this.debounceTimer);
+    this.debounceTimer = setTimeout(() => {
+      this.pushRequested = true;
+      this.processPushQueue();
+    }, SYNC_DEBOUNCE_MS);
   }
 
   private async processPushQueue() {

@@ -33,6 +33,8 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
   const [startTime] = useState(Date.now());
   const [adaptive, setAdaptive] = useState<DifficultyAdjustment | null>(null);
   const [extraLifeUsed, setExtraLifeUsed] = useState(false);
+  const [attemptState, setAttemptState] = useState<'idle' | 'error' | 'retry'>('idle');
+  const [highlightedChoice, setHighlightedChoice] = useState<string | null>(null);
 
   const completeWay = usePlayerStore((s) => s.completeWay);
   const celebrateCompletion = useRewardsStore((s) => s.celebrateCompletion);
@@ -51,6 +53,8 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
   );
 
   const handleDoubleChoiceSelect = (optionId: string) => {
+    if (attemptState === 'error') return;
+
     const option = way.options.find(o => o.id === optionId);
     if (!option) return;
 
@@ -58,6 +62,7 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
     setAttempts(prev => prev + 1);
     
     if (option.isCorrect) {
+      setAttemptState('idle');
       audioService.playSFX('success');
       adaptiveEngine.addAttempt({
         wayId: way.id,
@@ -86,9 +91,23 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
         audioService.playSFX('success');
         return;
       }
+      
+      setAttemptState('error');
       audioService.playSFX('error');
       setCelebration({ show: true, type: 'sad' });
-      setTimeout(() => setCelebration({ show: false, type: 'happy' }), 1000);
+      
+      const correctOptionId = way.options.find(o => o.isCorrect)?.id;
+      if (correctOptionId) {
+        setHighlightedChoice(correctOptionId);
+      }
+      
+      setTimeout(() => {
+        setAttemptState('retry');
+        setHighlightedChoice(null);
+        setCelebration({ show: false, type: 'happy' });
+        audioService.stopSpeak();
+        audioService.speak(way.stimulus.text);
+      }, 1500);
     }
   };
 
@@ -130,7 +149,7 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
             </div>
 
             <div className="w-full text-center mt-6 shrink-0 flex flex-col items-center">
-              <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-slate-800 leading-tight tracking-tight px-4 line-clamp-2" style={{ fontFamily: 'Verdana, sans-serif' }}>
+              <h2 data-testid="way-question" className="text-2xl sm:text-3xl md:text-5xl font-black text-slate-800 leading-tight tracking-tight px-4 line-clamp-2" style={{ fontFamily: 'Verdana, sans-serif' }}>
                 {way.stimulus.text}
               </h2>
             </div>
@@ -139,18 +158,22 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
               {way.options.map((option, idx) => {
                 const isSelected = celebration.show && celebration.type === 'happy' && option.isCorrect;
                 const isWrong = celebration.show && celebration.type === 'sad' && !option.isCorrect;
+                const isHighlighted = highlightedChoice === option.id;
 
                 return (
                   <motion.button 
                     key={option.id}
-                    disabled={celebration.show}
+                    data-testid="choice-option"
+                    data-choice-id={option.id}
+                    disabled={celebration.show || attemptState === 'error'}
                     onClick={() => handleDoubleChoiceSelect(option.id)}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                      "w-[45%] h-[140px] sm:h-[180px] bg-white rounded-[2rem] border-b-[8px] sm:border-b-[12px] border-slate-200 shadow-sm flex flex-col items-center justify-center p-4 transition-colors relative overflow-hidden",
+                      "w-[45%] h-[140px] sm:h-[180px] bg-white rounded-[2rem] border-b-[8px] sm:border-b-[12px] border-slate-200 shadow-sm flex flex-col items-center justify-center p-4 transition-all relative overflow-hidden duration-300",
                       isSelected && "border-emerald-500 bg-emerald-50 border-b-0 translate-y-[8px] sm:translate-y-[12px]",
                       isWrong && "border-rose-500 bg-rose-50 border-b-0 translate-y-[8px] sm:translate-y-[12px]",
-                      !celebration.show && "hover:bg-slate-50 hover:border-slate-300 active:border-b-0 active:translate-y-[8px] sm:active:translate-y-[12px]"
+                      isHighlighted && "bg-gradient-to-br from-amber-100 to-amber-200 border-amber-300 shadow-[0_0_20px_rgba(251,191,36,0.5)] duration-700",
+                      !celebration.show && attemptState !== 'error' && "hover:bg-slate-50 hover:border-slate-300 active:border-b-0 active:translate-y-[8px] sm:active:translate-y-[12px]"
                     )}
                   >
                     {option.image ? (
@@ -175,10 +198,11 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
   };
 
   return (
-    <div className="relative w-full flex flex-col items-center justify-start min-h-[calc(100vh-80px)]" style={{ fontFamily: 'Verdana, sans-serif' }}>
+    <div className={cn("relative w-full flex flex-col items-center justify-start min-h-[calc(100vh-80px)] transition-colors duration-500", attemptState === 'error' && "bg-rose-50")} style={{ fontFamily: 'Verdana, sans-serif' }}>
       <AnimatePresence mode="wait">
         <motion.div
           key={way.id}
+          data-testid="way-renderer"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
@@ -197,7 +221,19 @@ export const WayRenderer: React.FC<Props> = ({ way, onComplete, activeBoostId })
       </React.Suspense>
 
       <AnimatePresence>
-        {adaptive?.modifications.showHint && (
+        {attemptState === 'error' && (
+          <motion.div 
+            data-testid="error-feedback"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-10 bg-white text-rose-600 px-8 py-4 rounded-full font-black text-2xl border-4 border-rose-100 shadow-xl flex items-center gap-4 z-40"
+          >
+            <span className="text-4xl">🚫</span> Inténtalo de nuevo
+          </motion.div>
+        )}
+        
+        {adaptive?.modifications.showHint && attemptState !== 'error' && (
           <motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}

@@ -14,14 +14,14 @@
 ```
 Error: expect(locator).toBeVisible() failed
 
-Locator: locator('text=✅').first()
+Locator: getByRole('heading', { name: /Progreso de (Pedro|Paciente)/i })
 Expected: visible
-Timeout: 5000ms
+Timeout: 10000ms
 Error: element(s) not found
 
 Call log:
-  - Expect "toBeVisible" with timeout 5000ms
-  - waiting for locator('text=✅').first()
+  - Expect "toBeVisible" with timeout 10000ms
+  - waiting for getByRole('heading', { name: /Progreso de (Pedro|Paciente)/i })
 
 ```
 
@@ -30,14 +30,15 @@ Call log:
   - text: 🧠 WAY+ 🪙 500
   - button "🔊"
   - button "🦄"
-- text: 👤
-- heading "Progreso de Paciente" [level=1]
-- paragraph: 🏫 WAY+ Centro Clínico
-- text: 😄 Paciente ha completado 1 retos esta semana 1 Retos semana 10 Min semana 1 Días activo
-- heading "Tareas para casa" [level=2]
-- text: No hay tareas asignadas por Maite ahora mismo.
-- heading "Últimos logros" [level=2]
-- text: "🏆 Comenzando la aventura 🐉 Desbloqueó: Dragón Azul"
+- text: ✨ 🎈 👤
+- heading "¡Hola, familia! 👋" [level=1]
+- paragraph: Así va el progreso de Paciente
+- heading "¡Paciente ha completado 1 retos esta semana! 🌟" [level=2]
+- text: Inicio de semana ¡Sigue así!
+- heading "Sus Logros" [level=3]
+- text: 🏆 Aventurero Constante 🐉 Nuevo Amigo
+- heading "Misiones para casa" [level=3]
+- text: ✨ No hay misiones pendientes por ahora. ¡A descansar!
 - navigation:
   - button "🏠 Inicio"
   - button "🧠 Terapeuta"
@@ -115,14 +116,14 @@ Call log:
   64 | 
   65 |     // 3. Verify it loads and shows Pedro's progress
   66 |     // Wait for the h1 to appear using getByRole
-  67 |     await expect(page.getByRole('heading', { name: /Progreso de (Pedro|Paciente)/i })).toBeVisible({ timeout: 10000 });
+> 67 |     await expect(page.getByRole('heading', { name: /Progreso de (Pedro|Paciente)/i })).toBeVisible({ timeout: 10000 });
+     |                                                                                        ^ Error: expect(locator).toBeVisible() failed
   68 | 
   69 |     // Verify stats with simple text locator to avoid span breaks
   70 |     await expect(page.locator('text=1 retos').or(page.locator('text=1 Retos'))).toBeVisible();
   71 | 
   72 |     // Verify homework tracker check
-> 73 |     await expect(page.locator('text=✅').first()).toBeVisible();
-     |                                                  ^ Error: expect(locator).toBeVisible() failed
+  73 |     await expect(page.locator('text=✅').first()).toBeVisible();
   74 |     
   75 |     // Check if there is a reminder button for the pending one
   76 |     const remindButton = page.getByRole('button', { name: /Recordar a Pedro/i });
