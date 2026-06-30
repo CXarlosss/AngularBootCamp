@@ -235,12 +235,24 @@ export function WayPlayerPage() {
           </div>
         </div>
         
-        <div className="max-w-2xl mx-auto mt-1 h-1 bg-slate-200 rounded-full overflow-hidden">
-          <motion.div 
-            className={cn("h-full rounded-full", isWarning ? 'bg-amber-500' : 'bg-violet-500')}
-            style={{ width: `${progressPercent}%` }}
-            transition={{ duration: 1 }}
-          />
+        <div className="max-w-2xl mx-auto mt-1 flex gap-2">
+          {/* Timer Progress */}
+          <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+            <motion.div 
+              className={cn("h-full rounded-full", isWarning ? 'bg-amber-500' : 'bg-violet-500')}
+              style={{ width: `${progressPercent}%` }}
+              transition={{ duration: 1 }}
+            />
+          </div>
+          {/* Way Progress */}
+          <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+            <motion.div 
+              className="h-full rounded-full bg-emerald-400"
+              initial={false}
+              animate={{ width: `${((currentIdx + 1) / Math.max(1, ways.length)) * 100}%` }}
+              transition={{ duration: 0.5 }}
+            />
+          </div>
         </div>
         
         <AnimatePresence>

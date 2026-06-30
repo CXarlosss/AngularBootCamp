@@ -40,6 +40,13 @@ export const WayRenderer: React.FC<Props> = ({
     if (localSpeaking) return;
     
     const questionText = way.stimulus?.text || way.title || '';
+    if (!questionText.trim()) {
+      // WAY sin texto: liberar inmediatamente
+      setLocalSpeaking(false);
+      onSpeakStart?.();
+      onSpeakEnd?.();
+      return;
+    }
     const optionsText = way.options?.map((o, idx) => 
       `Opción ${String.fromCharCode(65 + idx)}: ${o.label}`
     ).join('. ');
@@ -66,12 +73,21 @@ export const WayRenderer: React.FC<Props> = ({
     });
   }, [way, localSpeaking, onSpeakStart, onSpeakEnd]);
 
-  // Audio inicial automático
+  // Audio inicial automático — con timeout de seguridad
   useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      // Fallback: si tras 5s sigue "speaking", forzar liberación
+      setLocalSpeaking(false);
+      onSpeakEnd?.();
+    }, 5000);
+
     speakFullQuestion();
-    return () => audioService.stopSpeak();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [way.id]);
+
+    return () => {
+      clearTimeout(timeoutId);
+      audioService.stopSpeak();
+    };
+  }, [way.id]); // ← SOLO way.id, NUNCA speakFullQuestion
 
   const handleChoice = useCallback((optionId: string) => {
     if (isLocked) return;
@@ -153,12 +169,14 @@ export const WayRenderer: React.FC<Props> = ({
           const isError = attemptState === 'error' && !isCorrect && !isHighlighted;
           
           return (
-            <button
+            <motion.button
               key={option.id}
               data-testid="choice-option"
               data-choice-id={option.id}
               onPointerDown={() => handleChoice(option.id)}
               disabled={isLocked}
+              animate={isError ? { x: [0, -4, 4, -4, 4, 0] } : {}}
+              transition={{ duration: 0.2 }}
               className={cn(
                 "flex-1 min-h-[100px] sm:min-h-[110px] rounded-xl border-2 p-2 flex flex-col items-center justify-center gap-1.5 transition-all duration-150 relative overflow-hidden active:scale-95",
                 isLocked && !isHighlighted ? "opacity-40 pointer-events-none" : "opacity-100",
@@ -166,7 +184,7 @@ export const WayRenderer: React.FC<Props> = ({
                   ? "bg-amber-50 border-amber-300 ring-2 ring-amber-200"
                   : isError
                   ? "bg-rose-50 border-rose-200"
-                  : "bg-white border-slate-200 hover:border-violet-300 active:border-violet-400",
+                  : "bg-white border-slate-200 hover:bg-violet-50 active:bg-violet-100",
                 isCorrect && attemptState === 'retry' ? "border-emerald-300 bg-emerald-50" : ""
               )}
               aria-label={`Opción ${String.fromCharCode(65 + idx)}: ${option.label}`}
@@ -174,6 +192,19 @@ export const WayRenderer: React.FC<Props> = ({
               {isHighlighted && (
                 <div className="absolute inset-0 bg-amber-400/10 animate-pulse rounded-xl" />
               )}
+              
+              <AnimatePresence>
+                {attemptState === 'idle' && highlightedChoice === option.id && isCorrect && (
+                   <motion.div
+                     initial={{ scale: 1.2, opacity: 0 }}
+                     animate={{ scale: 1, opacity: 1 }}
+                     transition={{ duration: 0.15 }}
+                     className="absolute top-2 right-2 text-emerald-500 font-bold"
+                   >
+                     ✓
+                   </motion.div>
+                )}
+              </AnimatePresence>
               
               {option.image ? (
                 <img 
@@ -190,7 +221,7 @@ export const WayRenderer: React.FC<Props> = ({
               <span className="text-sm font-bold text-slate-700 text-center leading-normal" style={{ fontFamily: 'Verdana, sans-serif' }}>
                 {option.label}
               </span>
-            </button>
+            </motion.button>
           );
         })}
       </div>
