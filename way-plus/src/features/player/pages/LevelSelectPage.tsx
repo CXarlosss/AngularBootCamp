@@ -16,10 +16,10 @@ export const LevelSelectPage: React.FC = () => {
   const currentLevel = profile?.currentLevel || 'pregamer';
   const wayCoins = useRewardsStore(s => s.wayCoins);
   const [steps, setSteps] = useState<Step[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [homeworkIds, setHomeworkIds] = useState<Set<string>>(new Set());
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [showOfflineBanner, setShowOfflineBanner] = useState(true);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -31,6 +31,14 @@ export const LevelSelectPage: React.FC = () => {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
+
+  useEffect(() => {
+    const patientId = sessionStorage.getItem('way-active-patient');
+    if (patientId && profile?.name) {
+      localStorage.setItem('way-last-patient-id', patientId);
+      localStorage.setItem('way-last-patient-name', profile.name);
+    }
+  }, [profile]);
   
   const completedWays = useMemo(() => {
     return Array.isArray(profile?.completedWays) ? profile.completedWays : [];

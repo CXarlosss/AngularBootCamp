@@ -133,20 +133,39 @@ export function PlayerLoginPage() {
   }
 
   if (!isSupabaseAvailable || !isOnline) {
+    const lastPatientId = localStorage.getItem('way-last-patient-id') || 'offline-pedro';
+    const lastPatientName = localStorage.getItem('way-last-patient-name') || 'Pedro';
+    
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 gap-4 bg-slate-50 text-center" style={{ fontFamily: 'Verdana, sans-serif' }}>
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 gap-3 bg-slate-50 text-center" style={{ fontFamily: 'Verdana, sans-serif' }}>
         <span className="text-lg">📡</span>
         <h2 className="text-base font-bold text-slate-800 leading-normal">No hay internet</h2>
-        <p className="text-sm text-slate-500 leading-normal">Puedes jugar con los ejercicios guardados.</p>
+        <p className="text-sm text-slate-500 leading-normal">
+          Última sesión: <span className="font-bold text-slate-700">{lastPatientName}</span>
+        </p>
         <button
           onClick={() => {
-            sessionStorage.setItem('way-active-patient', 'offline-pedro');
+            sessionStorage.setItem('way-active-patient', lastPatientId);
             sessionStorage.setItem('way-active-pin', '1234');
             window.location.href = '/player/home';
           }}
-          className="px-6 py-3 min-h-[44px] rounded-xl bg-violet-500 text-white font-bold text-sm active:scale-95 transition-transform duration-150"
+          className="px-6 py-3 min-h-[44px] rounded-xl bg-violet-500 text-white font-bold text-sm active:scale-95 transition-transform duration-150 w-full max-w-[250px]"
         >
-          Jugar sin conexión
+          Jugar como {lastPatientName}
+        </button>
+        <button
+          onClick={() => {
+            const newId = `offline-${Date.now()}`;
+            const name = prompt('¿Cómo te llamas?') || 'Invitado';
+            localStorage.setItem('way-last-patient-id', newId);
+            localStorage.setItem('way-last-patient-name', name);
+            sessionStorage.setItem('way-active-patient', newId);
+            sessionStorage.setItem('way-active-pin', '1234');
+            window.location.href = '/player/home';
+          }}
+          className="px-4 py-3 min-h-[44px] rounded-xl bg-white border-2 border-slate-200 text-slate-600 font-bold text-xs active:scale-95 transition-transform duration-150 w-full max-w-[250px]"
+        >
+          Nuevo jugador
         </button>
       </div>
     );

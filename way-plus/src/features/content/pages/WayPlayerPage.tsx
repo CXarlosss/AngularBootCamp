@@ -53,6 +53,14 @@ export function WayPlayerPage() {
   const sessionEndedRef = useRef(false);
   const wayStartTime = useRef<number>(Date.now());
 
+  useEffect(() => {
+    const patientId = sessionStorage.getItem('way-active-patient');
+    if (patientId && profile?.name) {
+      localStorage.setItem('way-last-patient-id', patientId);
+      localStorage.setItem('way-last-patient-name', profile.name);
+    }
+  }, [profile]);
+
   // Timer global
   useEffect(() => {
     const interval = setInterval(() => {
