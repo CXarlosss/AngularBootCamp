@@ -2,6 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Family Flow Multi-page', () => {
   test('Padre abre link mágico y ve datos reales y cambia de UI', async ({ page }) => {
+    page.on('console', msg => console.log('BROWSER:', msg.text()));
+
     await page.route('**/*', async (route) => {
       const url = route.request().url();
       if (!url.includes('supabase.co')) {
@@ -26,24 +28,27 @@ test.describe('Family Flow Multi-page', () => {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([{
+          body: JSON.stringify({
             id: '048cc2eb-a861-4ad4-ac1a-2fdf916e430b',
+            name: 'Pedro',
+            pin: '1234',
+            equipped_avatar_id: 'avatar-1',
             coins: 200,
             current_level: 'pregamer',
             completed_ways: ['s1-w1']
-          }])
+          })
         });
       } else if (url.includes('/patients')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([{
+          body: JSON.stringify({
             id: '048cc2eb-a861-4ad4-ac1a-2fdf916e430b',
             name: 'Pedro',
             avatar_emoji: '👦',
             gender: 'masculino',
             homework_way_ids: ['s1-w1', 's2-w2']
-          }])
+          })
         });
       } else if (url.includes('activity_logs')) {
         await route.fulfill({
@@ -63,14 +68,15 @@ test.describe('Family Flow Multi-page', () => {
     await page.goto('/family/test-token');
 
     // 3. Verify it loads and shows Pedro's progress
-    // Wait for the h1 to appear using getByRole
-    await expect(page.getByRole('heading', { name: /Progreso de (Pedro|Paciente)/i })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByText(/Progreso de (Pedro|Paciente)/i)).toBeVisible({ timeout: 10000 });
 
     // Verify stats with simple text locator to avoid span breaks
     await expect(page.locator('text=1 retos').or(page.locator('text=1 Retos'))).toBeVisible();
 
     // Verify homework tracker check
-    await expect(page.locator('text=✅').first()).toBeVisible();
+    const listHtml = await page.locator('.hw-card').first().evaluate(node => node.outerHTML).catch(() => 'NOT FOUND');
+    console.log("HW CARD FIRST:", listHtml);
+    await expect(page.locator('.hw-card--completed').first()).toBeVisible();
     
     // Check if there is a reminder button for the pending one
     const remindButton = page.getByRole('button', { name: /Recordar a Pedro/i });

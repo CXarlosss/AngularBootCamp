@@ -11,6 +11,8 @@ interface CelebrationOverlayProps {
   onComplete?: () => void;
 }
 
+const PARTICLE_EMOJIS = ['⭐', '✨', '🎉'];
+
 export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({ 
   show, type, coins = 0, onComplete 
 }) => {
@@ -18,7 +20,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
   const [displayCoins, setDisplayCoins] = useState(0);
   const { reduceMotion } = useConfigStore((s) => s.accessibility);
   const profile = usePlayerStore(s => s.profile);
-  const isFemale = profile.gender === 'female';
+  const isFemale = profile?.gender === 'female';
   const labelCampeon = isFemale ? '¡Eres una campeona!' : '¡Eres un campeón!';
   
   useEffect(() => {
@@ -28,14 +30,12 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
       return;
     }
     
-    // Play success sound
     if (type !== 'sad') {
       audioService.playSFX('success');
     }
     
     const timer1 = setTimeout(() => {
       setPhase('coins');
-      // Count up animation with slot effect timing
       if (coins > 0) {
         let current = 0;
         const interval = setInterval(() => {
@@ -49,7 +49,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
         }, 50);
       }
     }, 800);
-
+    
     const timer2 = setTimeout(() => {
       setPhase('exit');
       setTimeout(() => onComplete?.(), 500);
@@ -63,158 +63,134 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
 
   if (!show) return null;
 
-  const particles = ['🥇', '⭐', '✨', '🎉', '🌟', '💎'];
+  const getEmoji = () => {
+    switch (type) {
+      case 'happy': return '🏆';
+      case 'sad': return '😢';
+      case 'step-complete': return '👑';
+      case 'annex-complete': return '🧩';
+      default: return '⭐';
+    }
+  };
+
+  const getTitle = () => {
+    switch (type) {
+      case 'happy': return '¡Bravo!';
+      case 'sad': return '¡Casi!';
+      case 'step-complete': return '¡Increíble!';
+      case 'annex-complete': return '¡Completado!';
+      default: return '¡Bien!';
+    }
+  };
+
+  const getSubtitle = () => {
+    switch (type) {
+      case 'happy': return labelCampeon;
+      case 'sad': return 'Inténtalo de nuevo';
+      case 'step-complete': return 'Nivel superado';
+      case 'annex-complete': return 'Anexo completado';
+      default: return '';
+    }
+  };
+
+  const titleColor = type === 'sad' ? 'text-rose-500' : 'text-amber-600';
+  const badgeColor = type === 'sad' ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-amber-50 border-amber-200 text-amber-600';
 
   return (
     <AnimatePresence mode="wait">
-      <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-none overflow-hidden">
-        
-        {/* Flash de luz suave inicial */}
-        {type !== 'sad' && !reduceMotion && phase === 'enter' && (
-          <div className="celebration-flash" />
-        )}
-        
-        {/* Arco iris sutil de fondo */}
-        {type !== 'sad' && !reduceMotion && (
-          <div className="rainbow-subtle" />
-        )}
-
-        {/* Explosión de estrellas centrales */}
-        {type !== 'sad' && !reduceMotion && phase === 'enter' && (
-          <div className="absolute inset-0 flex items-center justify-center z-10">
-            {Array.from({ length: 12 }).map((_, i) => (
-              <div
-                key={`star-${i}`}
-                className="star-burst"
-                style={{
-                  '--sx': `${Math.cos(i * 30 * Math.PI / 180) * 300}px`,
-                  '--sy': `${Math.sin(i * 30 * Math.PI / 180) * 300}px`
-                } as React.CSSProperties}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Partículas con física real */}
-        {type !== 'sad' && !reduceMotion && (
-          <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center">
-            {Array.from({ length: 40 }).map((_, i) => {
-              const angle = Math.random() * Math.PI * 2;
-              const distance = 100 + Math.random() * 300;
-              const tx = Math.cos(angle) * distance;
-              const ty = Math.sin(angle) * distance - 200; // upward bias
-              const rot = Math.random() * 720 - 360;
+      <motion.div
+        data-testid="celebration-overlay"
+        key="overlay"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/20"
+      >
+        {/* Partículas suaves */}
+        {!reduceMotion && type !== 'sad' && (
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {Array.from({ length: 6 }).map((_, i) => {
+              const angle = (i / 6) * Math.PI * 2;
+              const tx = Math.cos(angle) * 80;
+              const ty = Math.sin(angle) * 80 - 40;
               return (
-                <div
-                  key={`particle-${i}`}
-                  className="particle-physics filter drop-shadow-md"
-                  style={{
-                    '--tx': `${tx}px`,
-                    '--ty': `${ty}px`,
-                    '--rot': `${rot}deg`,
-                    animationDelay: `${Math.random() * 0.2}s`
-                  } as React.CSSProperties}
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+                  animate={{ 
+                    opacity: [0, 1, 0], 
+                    scale: [0.5, 1, 0.5],
+                    x: tx,
+                    y: ty
+                  }}
+                  transition={{ 
+                    duration: 1.5, 
+                    delay: i * 0.1,
+                    ease: "easeOut"
+                  }}
+                  className="absolute left-1/2 top-1/2 text-xs"
                 >
-                  {particles[i % particles.length]}
-                </div>
+                  {PARTICLE_EMOJIS[i % PARTICLE_EMOJIS.length]}
+                </motion.div>
               );
             })}
           </div>
         )}
-        
-        {/* Celebration Container */}
-        <motion.div
-          initial={reduceMotion ? { opacity: 0, y: 50 } : { scale: 0.2, rotate: -10, opacity: 0, y: 100 }}
-          animate={{ scale: 1, rotate: 0, opacity: 1, y: 0 }}
-          exit={{ scale: 0.8, opacity: 0, filter: 'blur(10px)', transition: { duration: 0.3 } }}
-          className="relative z-30"
-        >
-          {/* Main Card - Glassmorphism Premium */}
-          <div className="celebration-card w-[320px] sm:w-[400px]" style={{ fontFamily: 'Verdana, sans-serif' }}>
-            
-            {/* Avatar / Trophy Circle */}
-            <div className="relative mb-8 mt-4">
-              {type !== 'sad' && !reduceMotion && (
-                <div className="glow-gold" />
-              )}
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: 'spring', stiffness: 300, damping: 15 }}
-                className="relative w-32 h-32 bg-white rounded-full mx-auto flex items-center justify-center text-7xl shadow-2xl border-[6px] border-amber-100 z-10"
-              >
-                <div className="absolute inset-0 rounded-full bg-gradient-to-b from-transparent to-amber-50/50" />
-                <span className="relative z-10 filter drop-shadow-md">
-                  {type === 'happy' && '🏆'}
-                  {type === 'sad' && '😢'}
-                  {type === 'step-complete' && '👑'}
-                  {type === 'annex-complete' && '🧩'}
-                </span>
-              </motion.div>
-            </div>
 
-            {/* Content */}
-            <div className="space-y-4 relative z-10">
-              {type === 'happy' && (
-                <>
-                  <div className="text-impact">
-                    <h2 className="text-5xl sm:text-6xl font-black tracking-tighter leading-none text-transparent bg-clip-text bg-gradient-to-b from-amber-400 to-amber-600 drop-shadow-sm">
-                      ¡BRAVO!
-                    </h2>
-                  </div>
-                  <p className="text-2xl font-black text-slate-800 tracking-tight">{labelCampeon}</p>
-                  
-                  <div className="inline-block bg-indigo-50/80 border border-indigo-100 rounded-full py-2 px-4 shadow-sm mt-2">
-                    <p className="text-indigo-600 font-black text-xs uppercase tracking-widest">Super Atleta WAY+</p>
-                  </div>
-                </>
-              )}
-              
-              {type === 'sad' && (
-                <>
-                  <h2 className="text-5xl font-black text-rose-500 tracking-tighter">¡CASI!</h2>
-                  <p className="text-slate-600 font-bold uppercase tracking-widest text-sm">¡Inténtalo de nuevo!</p>
-                </>
-              )}
-              
-              {type === 'step-complete' && (
-                <>
-                  <div className="text-impact">
-                    <h2 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-amber-400 to-amber-600 drop-shadow-sm tracking-tighter">
-                      ¡INCREÍBLE!
-                    </h2>
-                  </div>
-                  <p className="text-slate-800 font-black uppercase tracking-widest text-sm">Nivel Superado</p>
-                </>
-              )}
-            </div>
-            
-            {/* Points / Coins Section */}
-            <AnimatePresence>
-              {phase === 'coins' && coins > 0 && (
-                <motion.div
-                  initial={reduceMotion ? { opacity: 0 } : { y: 20, opacity: 0, scale: 0.8 }}
-                  animate={{ y: 0, opacity: 1, scale: 1 }}
-                  className="mt-8 flex items-center justify-center gap-4"
-                >
-                  <div className="coin-3d-gold">
-                    🪙
-                  </div>
-                  <div className="text-left flex flex-col justify-center overflow-hidden h-[70px]">
-                    <div className="text-xs font-black text-amber-600 uppercase tracking-widest mb-1">Medallas</div>
-                    <div className="flex items-center text-5xl font-black text-slate-800 leading-none">
-                      <span className="text-amber-500 mr-1">+</span>
-                      <div className="slot-number !text-slate-800" key={displayCoins}>{displayCoins}</div>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+        {/* Card */}
+        <motion.div
+          initial={reduceMotion ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          transition={{ duration: 0.2, ease: "easeOut" }}
+          className="relative z-10 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 w-[280px] sm:w-[320px] text-center"
+          style={{ fontFamily: 'Verdana, sans-serif' }}
+        >
+          {/* Emoji */}
+          <div className="w-12 h-12 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center text-2xl mx-auto mb-3">
+            {getEmoji()}
           </div>
+
+          {/* Título */}
+          <h2 data-testid="celebration-title" className={`text-base font-bold ${titleColor} leading-normal mb-1`}>
+            {getTitle()}
+          </h2>
+
+          {/* Subtítulo */}
+          <p className="text-sm font-bold text-slate-700 leading-normal">
+            {getSubtitle()}
+          </p>
+
+          {/* Badge */}
+          {type !== 'sad' && (
+            <div className={`inline-block mt-2 px-3 py-1 rounded-full border text-xs font-bold ${badgeColor}`}>
+              Super atleta WAY+
+            </div>
+          )}
+
+          {/* Monedas */}
+          <AnimatePresence>
+            {phase === 'coins' && coins > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.2 }}
+                className="mt-4 flex items-center justify-center gap-2"
+              >
+                <span className="text-sm">🪙</span>
+                <div className="text-left">
+                  <div className="text-[10px] font-bold text-amber-600">Medallas</div>
+                  <div data-testid="celebration-coins" className="text-lg font-bold text-slate-800 leading-none">
+                    +{displayCoins}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </motion.div>
-      </div>
+      </motion.div>
     </AnimatePresence>
   );
 };
-
-

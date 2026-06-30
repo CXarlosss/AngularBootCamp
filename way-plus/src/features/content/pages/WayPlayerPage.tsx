@@ -8,49 +8,28 @@ import { MilestoneOverlay } from '@/features/player/components/MilestoneOverlay'
 import { registry } from '@/content/registry';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { audioService } from '@/core/utils/audioService';
-import { useConfigStore } from '@/core/stores/configStore';
-import { BoostSelector } from '@/features/rewards/components/BoostSelector';
 import { HomeworkCelebration } from '@/features/player/components/HomeworkCelebration';
 import { homeworkService } from '@/core/services/homeworkService';
 import { syncService } from '@/core/services/syncService';
 import type { Step, Way } from '@/core/engine/types';
 import { cn } from '@/shared/lib/utils';
 
-import { normalizeWayText } from '@/shared/lib/way-text-utils';
+const SESSION_DURATION = 15 * 60;
+const WARNING_THRESHOLD = 3 * 60;
 
-/* ─── Back button ────────────────────────────────────────────────────── */
-function BackButton({ onPress }: { onPress: () => void }) {
-  return (
-    <button
-      onClick={onPress}
-      className="w-12 h-12 rounded-full header-glass flex items-center justify-center text-xl hover:bg-white/90 active:scale-95 transition-all group"
-    >
-      <span className="group-hover:-translate-x-1 transition-transform">🚪</span>
-    </button>
-  );
+function getSessionTimeLeft(): number {
+  const start = sessionStorage.getItem('way-session-start');
+  if (!start) {
+    sessionStorage.setItem('way-session-start', Date.now().toString());
+    return SESSION_DURATION;
+  }
+  const elapsed = Math.floor((Date.now() - parseInt(start)) / 1000);
+  return Math.max(0, SESSION_DURATION - elapsed);
 }
 
-function WayProgressIndicator({ current, total }: { current: number, total: number }) {
-  const percent = total > 0 ? (current / total) * 100 : 0;
-  return (
-    <div className="w-32 sm:w-48 progress-liquid">
-      <div 
-        className="progress-liquid__fill"
-        style={{ width: `${percent}%` }}
-      />
-    </div>
-  );
-}
-
-/* ─── Page ───────────────────────────────────────────────────────────── */
 export function WayPlayerPage() {
-  const { levelId, stepId, wayId } = useParams<{
-    levelId: string; stepId: string; wayId: string;
-  }>();
+  const { levelId, stepId, wayId } = useParams<{ levelId: string; stepId: string; wayId: string }>();
   const navigate = useNavigate();
-  const { reduceMotion } = useConfigStore((s) => s.accessibility);
-  const { disableFilters } = useConfigStore((s) => s.performance);
-
   const completeWay = usePlayerStore(state => state.completeWay);
   const completedWays = usePlayerStore(state => state.profile?.completedWays || []);
   const celebrateCompletion = useRewardsStore(s => s.celebrateCompletion);
@@ -59,80 +38,80 @@ export function WayPlayerPage() {
   const dailyChallenge = usePlayerStore(s => s.dailyChallenge);
   const completeDailyChallenge = usePlayerStore(s => s.completeDailyChallenge);
   const profile = usePlayerStore(s => s.profile);
-
+  
   const [celebration, setCelebration] = useState<{
     show: boolean; type: 'happy' | 'sad' | 'step-complete' | 'annex-complete'; coins: number;
   }>({ show: false, type: 'happy', coins: 0 });
-
   const [showMilestone, setShowMilestone] = useState(false);
-
   const [step, setStep] = useState<Step | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showBoostSelector, setShowBoostSelector] = useState(false);
-  const [selectedBoostId, setSelectedBoostId] = useState<string | null>(null);
-  const ownedBoosts = useRewardsStore(s => s.ownedBoosts);
-  const consumeBoost = useRewardsStore(s => s.consumeBoost);
-  
-  // Performance timer state
-  const [loadTime, setLoadTime] = useState(0);
-  const loadingTimerRef = useRef<any>(null);
+  const [showHomeworkCelebration, setShowHomeworkCelebration] = useState(false);
+  const [isHomework, setIsHomework] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(() => getSessionTimeLeft());
+  const [showTimeWarning, setShowTimeWarning] = useState(false);
+  const sessionEndedRef = useRef(false);
+  const wayStartTime = useRef<number>(Date.now());
 
-  // Load step from registry with robust fallback
+  // Timer global
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const left = getSessionTimeLeft();
+      setTimeLeft(left);
+      
+      if (left <= WARNING_THRESHOLD && left > 0) {
+        setShowTimeWarning(true);
+      }
+      
+      if (left <= 0 && !sessionEndedRef.current) {
+        sessionEndedRef.current = true;
+      }
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, []);
+
+  // Load step
   useEffect(() => {
     if (!stepId || !levelId) return;
-
-    const loadStep = async (forceCloud = false) => {
-      const startTime = performance.now();
+    
+    const loadStep = async () => {
       setLoading(true);
-      setLoadTime(0);
-      
-      // Start UI timer
-      if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
-      loadingTimerRef.current = setInterval(() => {
-        setLoadTime(prev => prev + 100);
-      }, 100);
-
       try {
-        console.log(`[WayPlayer] 🚀 Cargando contenido: ${stepId} (ForceCloud: ${forceCloud})...`);
-        
-        let foundStep: Step | null = null;
-        
-        if (forceCloud) {
-          // If forced, we go straight to cloud and wait
-          await registry.syncFromCloud(levelId);
+        let foundStep = await registry.getStepByIdAsync(stepId);
+        if (!foundStep && navigator.onLine) {
+          await registry.getStepsForLevel(levelId);
           foundStep = await registry.getStepByIdAsync(stepId);
-        } else {
-          // Normal flow: memory/idb/local
-          foundStep = await registry.getStepByIdAsync(stepId);
-          
-          // If not found and we are online, try a quick level sync
-          if (!foundStep && navigator.onLine) {
-            console.log('[WayPlayer] 🔍 Contenido no encontrado localmente, intentando descarga de emergencia...');
-            await registry.getStepsForLevel(levelId); // This triggers cloud fetch if cache is empty
-            foundStep = await registry.getStepByIdAsync(stepId);
-          }
         }
-        
-        // Final fallback: check the level steps again
         if (!foundStep) {
           const levelSteps = await registry.getStepsForLevel(levelId);
           foundStep = levelSteps.find(s => s.id === stepId) || null;
         }
-        
         setStep(foundStep);
-        const duration = (performance.now() - startTime).toFixed(2);
-        console.log(`[WayPlayer] ✅ Contenido cargado en ${duration}ms`);
       } catch (err) {
-        console.error('[WayPlayer] Error crítico de carga:', err);
+        console.error('[WayPlayer] Error:', err);
       } finally {
-        if (loadingTimerRef.current) clearInterval(loadingTimerRef.current);
         setLoading(false);
       }
     };
-
+    
     loadStep();
   }, [stepId, levelId]);
 
+  // Check homework
+  useEffect(() => {
+    const patientId = sessionStorage.getItem('way-active-patient');
+    if (patientId && wayId) {
+      homeworkService.isHomework(patientId, wayId).then(setIsHomework);
+    }
+  }, [wayId]);
+
+  // Reset timer on new way
+  useEffect(() => {
+    wayStartTime.current = Date.now();
+  }, [wayId]);
+
+  // Derived state
   const ways: Way[] = step?.ways ?? [];
   const currentIdx = useMemo(() => {
     if (!wayId) return 0;
@@ -143,154 +122,57 @@ export function WayPlayerPage() {
   const currentWay = ways[currentIdx] ?? null;
   const isLastWay = currentIdx === ways.length - 1;
 
-  // Predictive prefetching for the next way
-  useEffect(() => {
-    const nextIdx = currentIdx + 1;
-    const nextWay = ways[nextIdx];
-    if (nextWay && nextWay.id) {
-      const urls = [
-        nextWay.stimulus?.image,
-        ...(nextWay.options?.map(o => o.image) || [])
-      ].filter((u): u is string => typeof u === 'string');
-      
-      // Preload specific pictograms
-      import('@/core/utils/preloadService').then(({ preloadImages }) => {
-        const startPreload = performance.now();
-        preloadImages(urls)
-          .then(() => {
-            if (import.meta.env.DEV) {
-              const endPreload = performance.now();
-              console.log(`[Timer] 📦 Preload exitoso para ${nextWay.id} (${urls.length} imgs) en ${(endPreload - startPreload).toFixed(2)}ms`);
-            }
-          })
-          .catch((err) => {
-            if (import.meta.env.DEV) {
-              console.warn(`[Timer] ❌ Fallo de precarga en ${nextWay.id}:`, err);
-              console.warn('URLs fallidas:', urls);
-            }
-          });
-      });
+  const handleSpeakStart = useCallback(() => setIsSpeaking(true), []);
+  const handleSpeakEnd = useCallback(() => setIsSpeaking(false), []);
 
-      // Preload situational image (background)
-      import('@/core/services/wayImageService').then(({ preloadWayImages }) => {
-        const preload = () => {
-          preloadWayImages(nextWay.stepNumber || step?.stepNumber || 1, nextWay.wayNumber || (nextIdx + 1));
-        };
-        if ('requestIdleCallback' in window) {
-          (window as any).requestIdleCallback(preload, { timeout: 2000 });
-        } else {
-          setTimeout(preload, 1000);
-        }
-      });
-    }
-  }, [currentIdx, ways, step]);
-
-  // Lectura automática al entrar
-  useEffect(() => {
-    if (currentWay && !celebration.show) {
-      const textToSpeak = currentWay.title || currentWay.name || currentWay.stimulus?.text || '';
-      const timer = setTimeout(() => {
-        audioService.speak(normalizeWayText(textToSpeak));
-      }, 800);
-      return () => clearTimeout(timer);
-    }
-  }, [currentWay, celebration.show]);
-
-
-  const [showHomeworkCelebration, setShowHomeworkCelebration] = useState(false);
-  const [isHomework, setIsHomework] = useState(false);
-  const wayStartTime = useRef<number>(Date.now());
-
-  // Reset clock on new way
-  useEffect(() => {
-    wayStartTime.current = Date.now();
-  }, [wayId]);
-
-  // Check if this is homework
-  useEffect(() => {
-    const patientId = sessionStorage.getItem('way-active-patient');
-    if (patientId && wayId) {
-      homeworkService.isHomework(patientId, wayId).then(setIsHomework);
-    }
-  }, [wayId]);
-
-  const handleWayComplete = useCallback((_summary?: any) => {
-    if (!currentWay) return;
+  const handleWayComplete = useCallback((success: boolean) => {
+    if (!currentWay || !wayId) return;
     
-    // 1. Marcar como completado
-    completeWay(currentWay.id, 1);
-    
-    // 2. Calcular recompensas
-    const isDaily = currentWay.id === dailyChallenge.wayId && !dailyChallenge.completed;
-    const bonus = isDaily ? 30 : 0;
-    
-    if (isDaily) {
-      completeDailyChallenge();
-      addCoins(bonus, 'daily_challenge');
-    }
-
-    // 3. Decidir tipo de celebración
-    if (isHomework) {
-      setShowHomeworkCelebration(true);
+    if (success) {
+      completeWay(currentWay.id, 1);
+      const isDaily = currentWay.id === dailyChallenge.wayId && !dailyChallenge.completed;
+      const bonus = isDaily ? 30 : 0;
       
-      // Log con flag de refuerzo terapéutico
-      syncService.logActivity({
-        patientId: sessionStorage.getItem('way-active-patient') || '',
-        wayId: currentWay.id,
-        action: 'way_completed',
-        attempts: 1,
-        metadata: { 
-          theme: currentWay.theme,
-          isHomework: true, 
-          bonus,
-          timeSpentMs: Date.now() - (wayStartTime.current || 0)
-        }
-      });
-
-      const nextWay = ways[currentIdx + 1];
-      setTimeout(() => {
-        if (isLastWay) {
-          celebrateCompletion('step');
-          setShowMilestone(true);
-        } else if (nextWay) {
-          navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
-        } else {
-          navigate(`/play/${levelId}/${stepId}`);
-        }
-      }, 3500);
-    } else if (isLastWay) {
-      celebrateCompletion('step');
-      setShowMilestone(true);
-    } else {
-      celebrateCompletion('way');
+      if (isDaily) {
+        completeDailyChallenge();
+        addCoins(bonus, 'daily_challenge');
+      }
       
-      syncService.logActivity({
-        patientId: sessionStorage.getItem('way-active-patient') || '',
-        wayId: currentWay.id,
-        action: 'way_completed',
-        attempts: 1,
-        metadata: { 
-          theme: currentWay.theme,
-          isHomework: false, 
-          bonus,
-          timeSpentMs: Date.now() - (wayStartTime.current || 0)
-        }
-      });
-
-      setCelebration({ 
-        show: true, 
-        type: 'happy', 
-        coins: 10 + bonus 
-      });
-
-      const nextWay = ways[currentIdx + 1];
-      if (nextWay) {
+      addCoins(10 + bonus, 'way_completed');
+      
+      if (timeLeft <= 0) {
+        navigate('/session-end', { state: { reason: 'time-up' } });
+        return;
+      }
+      
+      if (isHomework) {
+        setShowHomeworkCelebration(true);
         setTimeout(() => {
-          navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
-        }, 3000); 
+          const nextWay = ways[currentIdx + 1];
+          if (isLastWay) {
+            celebrateCompletion('step');
+            setShowMilestone(true);
+          } else if (nextWay) {
+            navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
+          } else {
+            navigate(`/play/${levelId}/${stepId}`);
+          }
+        }, 3500);
+      } else if (isLastWay) {
+        celebrateCompletion('step');
+        setShowMilestone(true);
+      } else {
+        celebrateCompletion('way');
+        setCelebration({ show: true, type: 'happy', coins: 10 + bonus });
+        const nextWay = ways[currentIdx + 1];
+        if (nextWay) {
+          setTimeout(() => {
+            navigate(`/play/${levelId}/${stepId}/${nextWay.id}`, { replace: true });
+          }, 3000);
+        }
       }
     }
-  }, [currentWay, isLastWay, ways, currentIdx, levelId, stepId, navigate, completeWay, celebrateCompletion, dailyChallenge, completeDailyChallenge, addCoins, isHomework]);
+  }, [currentWay, wayId, timeLeft, completeWay, dailyChallenge, completeDailyChallenge, addCoins, isHomework, ways, currentIdx, isLastWay, levelId, stepId, navigate, celebrateCompletion]);
 
   const handleCelebrationDone = () => {
     setCelebration(c => ({ ...c, show: false }));
@@ -299,189 +181,129 @@ export function WayPlayerPage() {
     }
   };
 
+  const handleBack = useCallback(() => {
+    audioService.stopSpeak();
+    navigate(`/play/${levelId}/${stepId}`);
+  }, [navigate, levelId, stepId]);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  const isWarning = timeLeft <= WARNING_THRESHOLD;
+  const progressPercent = (timeLeft / SESSION_DURATION) * 100;
+
   if (!step || !currentWay) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-8 text-center bg-[#F8FAFF] relative overflow-hidden">
-        {/* Animated Background Blobs */}
-        <motion.div 
-          animate={{ scale: [1, 1.2, 1], opacity: [0.1, 0.2, 0.1] }}
-          transition={{ duration: 8, repeat: Infinity }}
-          className="absolute top-1/4 -left-20 w-80 h-80 bg-rose-200 rounded-full blur-[100px] pointer-events-none"
-        />
-        <motion.div 
-          animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.15, 0.1] }}
-          transition={{ duration: 10, repeat: Infinity, delay: 1 }}
-          className="absolute bottom-1/4 -right-20 w-96 h-96 bg-indigo-100 rounded-full blur-[120px] pointer-events-none"
-        />
-
-        <motion.div 
-          initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
-          animate={{ scale: 1, opacity: 1, rotate: 0 }}
-          transition={{ type: 'spring', damping: 15 }}
-          className="relative mb-12"
-        >
-          <div className="text-[140px] filter drop-shadow-2xl select-none">🧩</div>
-          <motion.div 
-            animate={{ 
-              y: [0, -15, 0],
-              rotate: [0, 15, 0]
-            }}
-            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -top-4 -right-4 text-5xl"
-          >
-            ✨
-          </motion.div>
-          <motion.div 
-            animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 3, repeat: Infinity }}
-            className="absolute -bottom-2 -left-2 text-3xl"
-          >
-            🔍
-          </motion.div>
-        </motion.div>
-        
-        <motion.h2 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="text-4xl sm:text-5xl font-black text-slate-800 mb-6 tracking-tight max-w-lg leading-tight"
-        >
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-3 px-6">
+        <span className="text-lg">🤷</span>
+        <h1 className="text-base font-bold text-slate-700 text-center leading-normal">
           ¡Ups! Este reto se ha escondido
-        </motion.h2>
-        
-        <motion.p 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="text-slate-500 font-medium text-lg mb-12 max-w-sm leading-relaxed"
+        </h1>
+        <button
+          onClick={() => navigate(`/play/${levelId}/${stepId}`)}
+          className="px-5 py-3 min-h-[44px] rounded-xl bg-violet-600 text-white font-bold text-sm active:scale-95 transition-transform duration-150"
         >
-          No te preocupes, estamos buscando el camino correcto para ti. A veces los retos juegan al escondite.
-        </motion.p>
-        
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="flex flex-col sm:flex-row gap-4 relative z-10"
-        >
-          <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => navigate(`/play/${levelId}/${stepId}`)}
-            className="bg-white text-slate-600 border-2 border-slate-100 px-10 py-5 rounded-[2.5rem] font-black text-lg shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-3"
-          >
-            <span>🔙</span> VOLVER AL MÓDULO
-          </motion.button>
-          
-          <motion.button
-            whileHover={{ scale: 1.05, y: -2 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => window.location.reload()}
-            className="bg-indigo-600 text-white px-10 py-5 rounded-[2.5rem] font-black text-lg shadow-xl shadow-indigo-200 hover:bg-indigo-700 transition-all flex items-center justify-center gap-3"
-          >
-            <span>🚀</span> INTENTAR DE NUEVO
-          </motion.button>
-        </motion.div>
-
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
-          className="mt-12 text-[10px] font-black text-slate-300 uppercase tracking-[0.3em]"
-        >
-          Error ID: {stepId || 'unknown'}-{wayId || 'index'}
-        </motion.div>
+          Volver al módulo
+        </button>
       </div>
     );
   }
 
-  // Determinar tema basado en el tipo de step o way
-  const themeClass = currentWay.id?.includes('relaxation') 
-    ? 'bg-theme--relaxation' 
-    : currentWay.id?.includes('assertiveness') 
-    ? 'bg-theme--assertiveness' 
-    : 'bg-theme--autonomy';
-
-  const titleGradientClass = currentWay.id?.includes('relaxation') 
-    ? 'title-gradient--relaxation' 
-    : currentWay.id?.includes('assertiveness') 
-    ? 'title-gradient--assertiveness' 
-    : 'title-gradient--autonomy';
-
   return (
-    <div className={`min-h-screen ${themeClass} bg-slate-50 relative overflow-y-auto`} style={{ fontFamily: 'Verdana, sans-serif' }}>
-      {/* ── Top bar - Clean & Accessible ── */}
-      <div className="sticky top-0 z-[60] bg-white/90 backdrop-blur-md border-b-2 border-slate-200/60 px-4 py-3 flex items-center justify-between">
-        <BackButton onPress={() => navigate(`/play/${levelId}/${stepId}`)} />
-        
-        <div className="flex items-center gap-4">
-          <div className="hidden sm:flex items-center gap-2 bg-slate-100 rounded-full px-4 py-2 font-bold text-slate-500">
-             ⏱️ {(loadTime / 1000).toFixed(0)}s
-          </div>
-
-          <motion.div
-            className="bg-amber-50 rounded-full px-4 py-2 flex items-center gap-2 border-[2px] border-amber-200 shadow-sm"
+    <div className="min-h-screen bg-slate-50 flex flex-col" style={{ fontFamily: 'Verdana, sans-serif' }}>
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/95 border-b border-slate-200 px-4 py-2">
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          <button
+            onClick={handleBack}
+            className="w-11 h-11 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-sm active:scale-95 transition-transform duration-150"
+            aria-label="Volver"
           >
-            <span className="text-xl">⭐</span>
-            <span className="text-lg font-black text-amber-600 tracking-tight">
-              {profile?.coins ?? 0}
-            </span>
-          </motion.div>
+            ←
+          </button>
+          
+          <div data-testid="timer-display" className={cn(
+            "flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs",
+            isWarning ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+          )}>
+            <span className={isWarning ? 'animate-pulse' : ''}>⏱️</span>
+            <span>{minutes}:{seconds.toString().padStart(2, '0')}</span>
+          </div>
+          
+          <div data-testid="coin-display" className="flex items-center gap-1 text-amber-600 font-bold text-xs">
+            <span>⭐</span>
+            <span>{profile?.coins ?? 0}</span>
+          </div>
         </div>
+        
+        <div className="max-w-2xl mx-auto mt-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+          <motion.div 
+            className={cn("h-full rounded-full", isWarning ? 'bg-amber-500' : 'bg-violet-500')}
+            style={{ width: `${progressPercent}%` }}
+            transition={{ duration: 1 }}
+          />
+        </div>
+        
+        <AnimatePresence>
+          {showTimeWarning && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden max-w-2xl mx-auto"
+            >
+              <p className="text-center text-[10px] font-bold text-amber-600 py-0.5 animate-pulse">
+                ⏱️ Últimos WAYs, ¡vamos a terminar!
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </header>
+
+      {/* Progress dots */}
+      <div className="flex justify-center gap-1.5 py-2 px-4">
+        {ways.map((w, i) => (
+          <div 
+            key={w.id} 
+            className={cn(
+              "h-1.5 rounded-full transition-all duration-300",
+              i < currentIdx ? "bg-emerald-400 w-6" : 
+              i === currentIdx ? "bg-violet-500 w-8" : 
+              "bg-slate-200 w-4"
+            )}
+          />
+        ))}
       </div>
 
-      {/* ── Main Content ── */}
-      <main className="relative z-10 max-w-4xl mx-auto pt-4 pb-24">
-        {/* Progress Dots */}
-        <div className="w-full flex justify-center gap-2 mb-6 px-4">
-          {ways.map((w, i) => (
-             <div 
-               key={w.id} 
-               className={cn(
-                 "h-2 rounded-full transition-all duration-300",
-                 i < currentIdx ? "bg-emerald-400 w-8" : 
-                 i === currentIdx ? "bg-indigo-500 w-12" : 
-                 "bg-slate-200 w-4"
-               )}
-             />
-          ))}
-        </div>
-
+      {/* Main */}
+      <main data-testid="way-player-main" className="flex-1 px-4 pb-4 max-w-2xl mx-auto w-full">
         <AnimatePresence mode="wait">
           {loading ? (
-            <div key="loader" className="w-full max-w-md aspect-video stimulus-card mx-auto flex flex-col items-center justify-center gap-6">
-               <div className="loader-orbit">
-                 <div className="loader-orbit__ring" />
-                 <div className="loader-orbit__center">
-                   {currentWay.id?.includes('relaxation') ? '🧘' : currentWay.id?.includes('assertiveness') ? '🗣️' : '✨'}
-                 </div>
-               </div>
-               <div className="flex flex-col items-center gap-2">
-                 <span className="text-indigo-900/60 font-black uppercase tracking-[0.2em] text-sm">Preparando Reto...</span>
-                 <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-[10px] font-black font-mono">
-                   { (loadTime / 1000).toFixed(1) }s
-                 </div>
-               </div>
+            <div className="flex flex-col items-center justify-center py-8 gap-3">
+              <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
+              <span className="text-xs font-bold text-slate-400">Cargando...</span>
             </div>
           ) : (
             <motion.div
               key={currentWay.id}
-              initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95, y: -20 }}
-              transition={{ duration: 0.4, ease: [0.23, 1, 0.32, 1] }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.3 }}
             >
               <WayRenderer
                 way={currentWay}
                 onComplete={handleWayComplete}
-                activeBoostId={selectedBoostId}
+                isSpeaking={isSpeaking}
+                onSpeakStart={handleSpeakStart}
+                onSpeakEnd={handleSpeakEnd}
+                sessionEnding={timeLeft <= 0}
               />
             </motion.div>
           )}
         </AnimatePresence>
       </main>
 
-      {/* ── Overlays ── */}
+      {/* Overlays */}
       <CelebrationOverlay
         show={celebration.show}
         type={celebration.type}
@@ -491,14 +313,14 @@ export function WayPlayerPage() {
       
       <MilestoneOverlay
         show={showMilestone}
-        title="¡MÓDULO COMPLETADO!"
-        subtitle={`Has superado todos los retos de ${step.title}. ¡Eres increíble!`}
+        title="¡Módulo completado!"
+        subtitle={`Has superado todos los retos de ${step.title}`}
         onClose={() => {
           setShowMilestone(false);
           navigate(`/play/${levelId}/${stepId}`);
         }}
       />
-
+      
       <HomeworkCelebration
         show={showHomeworkCelebration}
         playerName={profile?.name || ''}
@@ -508,4 +330,3 @@ export function WayPlayerPage() {
     </div>
   );
 }
-

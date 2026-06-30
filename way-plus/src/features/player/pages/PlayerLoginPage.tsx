@@ -32,18 +32,15 @@ export function PlayerLoginPage() {
         window.location.reload();
         return;
       }
-
       if (!isSupabaseAvailable || !supabase) {
         setLoading(false);
         return;
       }
-
       const { data, error: err } = await supabase
         .from('patient_profiles')
         .select('id, name, equipped_avatar_id, pin')
         .eq('id', patientId)
         .single();
-
       if (!err && data) {
         setPatient(data);
       }
@@ -87,7 +84,6 @@ export function PlayerLoginPage() {
 
   const handleKeyPress = useCallback((key: string) => {
     if (success || locked) return;
-
     if (key === 'DEL') {
       try { audioService.playSFX('click'); } catch (e) {}
       setPin(prev => prev.slice(0, -1));
@@ -119,86 +115,81 @@ export function PlayerLoginPage() {
   if (loading) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50">
-        <div className="w-12 h-12 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin" />
+        <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
       </div>
     );
   }
 
   if (!patient) {
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center p-8 text-center gap-4 bg-slate-50">
-        <div className="text-6xl drop-shadow-sm">⚙️</div>
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Tablet no configurada</h2>
-        <p className="text-slate-600 font-medium max-w-sm">Maite necesita configurar esta tablet desde el panel del terapeuta.</p>
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 text-center gap-3 bg-slate-50">
+        <span className="text-lg">⚙️</span>
+        <h2 className="text-base font-bold text-slate-800 leading-normal">Tablet no configurada</h2>
+        <p className="text-sm text-slate-500 font-medium max-w-sm leading-normal">
+          Maite necesita configurar esta tablet desde el panel del terapeuta.
+        </p>
       </div>
     );
   }
 
-  const bgClass = error 
-    ? 'from-rose-50/50 to-red-100/50' 
-    : success 
-    ? 'from-emerald-50/50 to-teal-100/50' 
-    : 'from-indigo-50/30 to-violet-50/30';
-
   return (
-    <div className={`min-h-[100dvh] flex flex-col items-center justify-center p-4 sm:p-8 gap-6 sm:gap-8 touch-none bg-gradient-to-br ${bgClass} transition-colors duration-500`}>
-
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }} 
-        animate={{ opacity: 1, y: 0 }} 
-        transition={{ type: "spring", stiffness: 120, damping: 20 }}
-        className="text-center z-10"
-      >
-        <motion.div 
-          animate={success ? { scale: [1, 1.1, 1] } : { y: [-2, 2, -2] }} 
-          transition={success ? { duration: 0.5 } : { duration: 4, repeat: Infinity, ease: "easeInOut" }}
-          className="text-7xl sm:text-8xl mb-2 sm:mb-4 leading-none drop-shadow-md"
-        >
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center p-4 sm:p-6 gap-4 sm:gap-6 bg-slate-50">
+      {/* Avatar + Título */}
+      <div className="text-center">
+        <div className="text-lg mb-1 leading-none">
           {patient.equipped_avatar_id}
-        </motion.div>
-        <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight uppercase">
+        </div>
+        <h1 className="text-base font-bold text-slate-800 leading-normal">
           ¡Hola, {patient.name}!
         </h1>
-        <p className="text-indigo-600 font-bold text-base sm:text-lg mt-2 tracking-wide">
+        <p className="text-sm text-slate-500 font-bold mt-1 leading-normal">
           Introduce tu PIN para jugar
         </p>
-      </motion.div>
+      </div>
 
-      <div className="flex justify-center gap-4 sm:gap-6 mb-2 h-10 sm:h-12 z-10">
+      {/* Dots PIN */}
+      <div className="flex justify-center gap-3 sm:gap-4 h-8 sm:h-10">
         {[0, 1, 2, 3].map((i) => {
           const isFilled = i < pin.length;
+          const dotClasses = error
+            ? 'bg-rose-500 border-rose-500 scale-110'
+            : success
+            ? 'bg-emerald-500 border-emerald-500 scale-110'
+            : isFilled
+            ? 'bg-violet-500 border-violet-500 scale-110'
+            : 'bg-slate-100 border-slate-300';
+
           return (
-            <motion.div
+            <div
+              data-testid={`pin-dot-${i}`}
               key={i}
-              animate={{
-                scale: isFilled ? 1.15 : 1,
-                backgroundColor: error ? '#F43F5E' : success ? '#10B981' : isFilled ? '#4F46E5' : '#F1F5F9',
-                borderColor: error ? '#F43F5E' : success ? '#10B981' : isFilled ? '#4F46E5' : '#CBD5E1'
-              }}
-              className="w-6 h-6 sm:w-8 sm:h-8 rounded-full border-4 shadow-sm"
+              className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-300 ${dotClasses}`}
             />
           );
         })}
       </div>
 
-      <div className="h-10 mb-2 flex items-center justify-center z-10">
+      {/* Mensajes */}
+      <div className="h-8 flex items-center justify-center">
         <AnimatePresence>
           {error && !locked && (
             <motion.div 
-              initial={{ opacity: 0, y: -8 }} 
+              data-testid="login-error"
+              initial={{ opacity: 0, y: -4 }} 
               animate={{ opacity: 1, y: 0 }} 
               exit={{ opacity: 0 }} 
-              className="px-6 py-2 rounded-full bg-rose-100 text-rose-600 font-bold shadow-sm"
+              className="px-4 py-1.5 rounded-full bg-rose-100 text-rose-600 font-bold text-xs"
             >
               PIN incorrecto ({3 - attempts} intentos)
             </motion.div>
           )}
           {locked && (
             <motion.div 
-              initial={{ opacity: 0, y: -8 }} 
+              data-testid="login-locked"
+              initial={{ opacity: 0, y: -4 }} 
               animate={{ opacity: 1, y: 0 }} 
               exit={{ opacity: 0 }} 
-              className="px-6 py-2 rounded-full bg-rose-100 text-rose-600 font-bold shadow-sm text-center"
+              className="px-4 py-1.5 rounded-full bg-rose-100 text-rose-600 font-bold text-xs text-center"
             >
               🔒 Demasiados intentos. Avisa a Maite.
             </motion.div>
@@ -206,7 +197,8 @@ export function PlayerLoginPage() {
         </AnimatePresence>
       </div>
 
-      <div className="grid grid-cols-3 gap-3 sm:gap-4 w-full max-w-[320px] sm:max-w-sm mx-auto z-10">
+      {/* Teclado numérico */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full max-w-[280px] sm:max-w-xs mx-auto">
         {PIN_KEYS.map((key) => {
           const isNumber = !['DEL', 'OK'].includes(key);
           const isOk = key === 'OK';
@@ -214,15 +206,16 @@ export function PlayerLoginPage() {
           
           return (
             <button
+              data-testid={`pin-key-${key}`}
               key={key}
               onPointerDown={() => handleKeyPress(key)}
               disabled={locked}
               className={`
-                relative flex items-center justify-center h-20 sm:h-24 rounded-3xl font-black text-2xl sm:text-3xl
-                transition-[transform,box-shadow,background-color] duration-150 active:scale-95 select-none focus-visible:ring-4 ring-indigo-400/50
-                ${isNumber ? 'bg-white text-slate-800 border-b-4 border-slate-200 hover:bg-slate-50' : ''}
-                ${isOk ? 'bg-emerald-100 text-emerald-700 border-b-4 border-emerald-200 hover:bg-emerald-200' : ''}
-                ${isDel ? 'bg-rose-100 text-rose-700 border-b-4 border-rose-200 hover:bg-rose-200' : ''}
+                relative flex items-center justify-center h-16 sm:h-[72px] rounded-2xl font-bold text-lg
+                transition-all duration-150 active:scale-95 select-none focus-visible:ring-2 ring-violet-400/40
+                ${isNumber ? 'bg-white text-slate-800 border-2 border-slate-200 hover:bg-slate-50' : ''}
+                ${isOk ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 hover:bg-emerald-200' : ''}
+                ${isDel ? 'bg-rose-100 text-rose-700 border-2 border-rose-200 hover:bg-rose-200' : ''}
                 ${locked ? 'opacity-50 cursor-not-allowed' : ''}
               `}
               aria-label={isDel ? 'Borrar' : isOk ? 'Confirmar' : `Número ${key}`}

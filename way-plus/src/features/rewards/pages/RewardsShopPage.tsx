@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useRewardsStore } from '../store/rewardsStore';
 import { useAudio } from '@/core/hooks/useAudio';
 import { SHOP_CATALOG } from '../data/shopCatalog';
@@ -18,12 +18,9 @@ export function RewardsShopPage() {
   const equipPart       = useRewardsStore(s => s.equipPart);
   const ownedBoosts     = useRewardsStore(s => s.ownedBoosts) || {};
   const { playSFX } = useAudio();
-
   const [limit, setLimit] = useState(6);
-  // Animación por item comprado
   const [justBought, setJustBought] = useState<string | null>(null);
 
-  // Combine items
   const ALL_ITEMS = useMemo(() => {
     return [
       ...SHOP_CATALOG,
@@ -33,22 +30,16 @@ export function RewardsShopPage() {
 
   const displayed = useMemo(() => ALL_ITEMS.slice(0, limit), [ALL_ITEMS, limit]);
 
-  // Handle direct inline buy or equip
   const handleAction = (item: ShopItem) => {
     const isBoost = (item as any).effect !== undefined;
     const owned = isBoost ? (ownedBoosts[item.id] > 0) : (purchaseHistory.includes(item.id) || item.price === 0);
     const equipped = !isBoost && currentAvatar?.[item.category as keyof typeof currentAvatar] === item.id;
-
-    if (equipped) return; // Ya lo tiene puesto
-
+    if (equipped) return;
     if (owned && !isBoost) {
-      // Si ya lo tiene y no es pocion, equipar
       playSFX('click');
       equipPart(item.category as any, item.id as any);
       return;
     }
-
-    // Comprar
     if (wayCoins >= item.price) {
       playSFX('coins');
       if (isBoost) {
@@ -67,7 +58,6 @@ export function RewardsShopPage() {
     }
   };
 
-  // Calcular items equipados para la Mochila
   const equippedItems = useMemo(() => {
     if (!currentAvatar) return [];
     return Object.values(currentAvatar).map(id => ALL_ITEMS.find(i => i.id === id)).filter(Boolean) as ShopItem[];
@@ -76,40 +66,35 @@ export function RewardsShopPage() {
   return (
     <div className="min-h-screen bg-slate-50 relative overflow-y-auto" style={{ fontFamily: 'Verdana, sans-serif' }}>
       
-      {/* ── Top bar - Clean ── */}
-      <div className="sticky top-0 z-[60] bg-white/90 backdrop-blur-md border-b-2 border-slate-200/60 px-4 py-3 flex items-center justify-between">
+      {/* Top bar */}
+      <div className="sticky top-0 z-[60] bg-white border-b border-slate-200 px-4 py-2.5 flex items-center justify-between">
         <button
           onClick={() => { playSFX('click'); navigate('/'); }}
-          className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-xl hover:bg-slate-200 active:scale-95 transition-all group"
+          className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-full bg-slate-100 flex items-center justify-center text-sm active:scale-95 transition-transform duration-150"
+          aria-label="Volver"
         >
-          <span className="group-hover:-translate-x-1 transition-transform">🔙</span>
+          🔙
         </button>
         
-        <div className="flex items-center gap-4">
-          <motion.div
-            key={wayCoins}
-            initial={{ scale: 1.2, color: '#F59E0B' }}
-            animate={{ scale: 1, color: '#D97706' }}
-            className="bg-amber-50 rounded-full px-5 py-2 flex items-center gap-2 border-[2px] border-amber-200 shadow-sm"
-          >
-            <span className="text-2xl drop-shadow-sm">⭐</span>
-            <span className="text-xl font-black tabular-nums tracking-tight">
-              {wayCoins}
-            </span>
-          </motion.div>
+        <div className="flex items-center gap-2 bg-amber-50 rounded-full px-3 py-1.5 border border-amber-200">
+          <span className="text-lg">⭐</span>
+          <span className="text-base font-bold tabular-nums text-amber-700">
+            {wayCoins}
+          </span>
         </div>
       </div>
 
-      {/* ── Main Content ── */}
-      <main className="relative z-10 max-w-4xl mx-auto p-4 sm:p-6 pb-32">
-        <div className="text-center mb-8">
-          <h1 className="font-black text-3xl sm:text-4xl text-slate-800 tracking-tight flex items-center justify-center gap-3">
-            <span>🏪</span> TIENDA DE RECOMPENSAS
+      {/* Main Content */}
+      <main className="relative z-10 max-w-2xl mx-auto p-4 pb-28">
+        <div className="text-center mb-4">
+          <h1 className="text-base font-bold text-slate-800 leading-normal flex items-center justify-center gap-2">
+            <span className="text-lg">🏪</span>
+            Tienda de recompensas
           </h1>
         </div>
 
-        {/* Grid 2 columnas: Items enormes */}
-        <div className="grid grid-cols-2 gap-4 sm:gap-6">
+        {/* Grid */}
+        <div className="grid grid-cols-2 gap-3">
           {displayed.map(item => {
             const isBoost = (item as any).effect !== undefined;
             const owned = isBoost ? (ownedBoosts[item.id] > 0) : (purchaseHistory.includes(item.id) || item.price === 0);
@@ -118,102 +103,98 @@ export function RewardsShopPage() {
             const isJustBought = justBought === item.id;
 
             return (
-              <motion.div
+              <div
+                data-testid={`shop-item-${item.id}`}
                 key={item.id}
-                layoutId={`shop-item-${item.id}`}
                 className={cn(
-                  "bg-white rounded-[2rem] border-[4px] border-slate-100 shadow-sm p-4 sm:p-6 flex flex-col items-center text-center relative overflow-hidden transition-all",
-                  equipped && "border-emerald-400 bg-emerald-50",
-                  isJustBought && "ring-8 ring-amber-300 scale-105 z-20"
+                  "bg-white rounded-2xl border-2 border-slate-200 shadow-sm p-3 flex flex-col items-center text-center relative overflow-hidden transition-all duration-150",
+                  equipped && "border-emerald-300 bg-emerald-50",
+                  isJustBought && "ring-2 ring-amber-300 scale-[1.02] z-20"
                 )}
               >
-                {/* Rarity & Celebration */}
-                <AnimatePresence>
-                  {isJustBought && (
-                    <motion.div 
-                      initial={{ opacity: 0 }} 
-                      animate={{ opacity: [0, 1, 0] }} 
-                      transition={{ duration: 1 }} 
-                      className="absolute inset-0 bg-amber-400 mix-blend-overlay pointer-events-none" 
-                    />
-                  )}
-                </AnimatePresence>
-
-                <div className="text-6xl sm:text-7xl mb-2 drop-shadow-md relative z-10">
+                {isJustBought && (
+                  <div className="absolute inset-0 bg-amber-400/10 pointer-events-none" />
+                )}
+                
+                <div data-testid={`shop-item-icon-${item.id}`} className="text-lg mb-2 relative z-10">
                   {item.icon}
                 </div>
                 
-                <h3 className="font-black text-slate-700 text-sm sm:text-xl leading-tight mb-auto z-10">
+                <h3 data-testid={`shop-item-name-${item.id}`} className="font-bold text-slate-700 text-sm leading-normal mb-auto relative z-10">
                   {item.name}
                 </h3>
-
-                <div className="mt-4 w-full z-10">
+                
+                <div className="mt-3 w-full relative z-10">
                   {equipped ? (
-                    <button disabled className="w-full bg-emerald-500 text-white font-black py-3 sm:py-4 rounded-xl text-sm sm:text-lg uppercase tracking-wider shadow-sm">
-                      ✅ Puesto
+                    <button data-testid={`shop-item-button-${item.id}`} disabled className="w-full min-h-[44px] bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs shadow-sm">
+                      Puesto
                     </button>
                   ) : owned && !isBoost ? (
                     <button 
+                      data-testid={`shop-item-button-${item.id}`}
                       onClick={() => handleAction(item)}
-                      className="w-full bg-indigo-100 text-indigo-700 hover:bg-indigo-200 active:scale-95 transition-transform font-black py-3 sm:py-4 rounded-xl text-sm sm:text-lg uppercase tracking-wider"
+                      className="w-full min-h-[44px] bg-violet-100 text-violet-700 hover:bg-violet-200 active:scale-95 transition-transform duration-150 font-bold py-2 rounded-xl text-xs"
                     >
                       Ponerme
                     </button>
                   ) : (
                     <button
+                      data-testid={`shop-item-button-${item.id}`}
                       disabled={!canAfford}
                       onClick={() => handleAction(item)}
                       className={cn(
-                        "w-full flex items-center justify-center gap-2 font-black py-3 sm:py-4 rounded-xl text-sm sm:text-lg uppercase transition-all shadow-sm",
+                        "w-full min-h-[44px] flex items-center justify-center gap-1.5 font-bold py-2 rounded-xl text-xs transition-all duration-150 shadow-sm",
                         canAfford 
                           ? "bg-amber-400 text-amber-900 hover:bg-amber-500 active:scale-95" 
                           : "bg-slate-100 text-slate-400 cursor-not-allowed"
                       )}
                     >
                       <span>⭐ {item.price}</span>
-                      {canAfford && <span className="hidden sm:inline">COMPRAR</span>}
                     </button>
                   )}
                 </div>
-              </motion.div>
+              </div>
             );
           })}
         </div>
 
         {limit < ALL_ITEMS.length && (
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center mt-6">
             <button
+              data-testid="load-more"
               onClick={() => { playSFX('click'); setLimit(prev => prev + 6); }}
-              className="bg-indigo-50 text-indigo-600 hover:bg-indigo-100 font-black px-10 py-4 rounded-full text-lg transition-colors"
+              className="bg-violet-50 text-violet-600 hover:bg-violet-100 font-bold px-6 py-3 min-h-[44px] rounded-full text-sm active:scale-95 transition-transform duration-150"
             >
-              ➕ VER MÁS
+              Ver más
             </button>
           </div>
         )}
       </main>
 
-      {/* ── Mochila (Equipado) ── */}
-      <div className="fixed bottom-0 inset-x-0 bg-white/95 backdrop-blur-xl border-t-[3px] border-slate-200 p-4 sm:p-6 z-[70] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-2xl">🎒</span>
-            <h3 className="font-black text-slate-800 text-lg uppercase tracking-wider">Mi Mochila (Puesto)</h3>
+      {/* Mochila (Equipado) */}
+      <div data-testid="backpack" className="fixed bottom-0 inset-x-0 bg-white border-t-2 border-slate-200 p-4 z-[70] shadow-sm">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-lg">🎒</span>
+            <h3 className="font-bold text-slate-800 text-sm">Mi mochila</h3>
           </div>
           
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          <div 
+            className="flex items-center gap-2 overflow-x-auto pb-1"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
             {equippedItems.map(item => (
-              <div key={item.id} className="flex items-center gap-2 bg-slate-100 border-2 border-slate-200 rounded-2xl px-4 py-2 whitespace-nowrap">
-                <span className="text-2xl drop-shadow-sm">{item.icon}</span>
-                <span className="font-bold text-slate-600 text-sm">{item.name}</span>
+              <div key={item.id} className="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-3 py-2 whitespace-nowrap">
+                <span className="text-sm">{item.icon}</span>
+                <span className="font-bold text-slate-600 text-xs">{item.name}</span>
               </div>
             ))}
             {equippedItems.length === 0 && (
-              <span className="text-slate-400 font-bold text-sm italic">Tu mochila está vacía... ¡A comprar!</span>
+              <span className="text-slate-400 font-bold text-xs">Tu mochila está vacía</span>
             )}
           </div>
         </div>
       </div>
-
     </div>
   );
 }

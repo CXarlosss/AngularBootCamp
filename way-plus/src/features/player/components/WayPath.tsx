@@ -1,4 +1,5 @@
 import React from 'react';
+import { normalizeWayText } from '@/shared/lib/way-text-utils';
 
 export interface WayNode {
   id: string;
@@ -24,96 +25,91 @@ export interface WayPathProps {
 }
 
 export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
-  // HF1: Solo steps con al menos un nodo completado o actual
   const visibleSteps = steps.filter(step => 
     step.nodes.some(n => n.isCompleted || n.isCurrent)
   );
 
   return (
-    <div className="w-full flex flex-col gap-6 pb-8">
+    <div className="w-full flex flex-col gap-3 pb-4">
       {visibleSteps.map(step => {
-        // HF1: Solo nodos completados o actual. Futuros = null (no renderizar)
         const visibleNodes = step.nodes.filter(n => n.isCompleted || n.isCurrent);
-        const currentNode = visibleNodes.find(n => n.isCurrent);
+        const stepTitle = normalizeWayText(step.title) || `Paso ${step.step}`;
         
         return (
-          <div 
+          <article 
+            data-testid={`step-card-${step.step}`}
             key={step.step} 
-            className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200"
+            className="bg-white rounded-xl p-3 shadow-sm border border-slate-200"
           >
-            {/* Cabecera del Step */}
-            <div className="flex items-center justify-between gap-3 mb-4 px-1">
-              <h2 className="text-sm sm:text-base font-bold text-slate-700 leading-snug line-clamp-2 flex-1">
-                {step.title.toUpperCase().startsWith('STEP') 
-                  ? step.title 
-                  : `Paso ${step.step}: ${step.title}`}
+            {/* Header compacto */}
+            <div className="flex items-center justify-between gap-3 mb-2">
+              <h2 className="text-sm font-bold text-slate-700 leading-normal flex-1 min-w-0">
+                {stepTitle}
               </h2>
-              <div className="text-xs font-bold text-slate-400 bg-slate-100 px-3 py-1.5 rounded-full flex items-center gap-1.5 shrink-0">
-                <span>{step.completedCount}/{step.totalWays}</span>
+              <div className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-full shrink-0">
+                {step.completedCount}/{step.totalWays}
                 {step.completedCount === step.totalWays && (
-                  <span className="text-emerald-500">✓</span>
+                  <span className="text-emerald-500 ml-1">✓</span>
                 )}
               </div>
             </div>
             
-            {/* Sendero horizontal */}
-            <div 
-              className="flex items-center overflow-x-auto pb-6 pt-2 px-2 snap-x snap-mandatory scroll-smooth"
-              style={{ msOverflowStyle: 'none', scrollbarWidth: 'none' }}
+            {/* Sendero */}
+            <nav 
+              className="flex items-center overflow-x-auto pt-1 px-1 pb-2"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {visibleNodes.map((node, i) => {
                 const isLast = i === visibleNodes.length - 1;
                 const isCompleted = node.isCompleted;
                 const isCurrent = node.isCurrent;
+                const nodeLabel = node.title 
+                  ? (node.title.length > 12 ? node.title.substring(0, 12) + '…' : node.title)
+                  : `Ejercicio ${node.wayNumber}`;
                 
                 return (
-                  <div key={node.id} className="flex items-center snap-center shrink-0">
+                  <div key={node.id} className="flex items-center shrink-0">
                     {/* Nodo */}
-                    <div className="flex flex-col items-center relative w-20 sm:w-24">
-                      <button
-                        data-testid={`way-node-${node.id}`}
-                        data-state={isCurrent ? 'current' : 'completed'}
-                        onPointerDown={() => isCurrent && onWayClick(node.id)}
-                        aria-label={`Way ${node.wayNumber}: ${node.title}`}
-                        className={`
-                          relative flex items-center justify-center rounded-full border-2 transition-all duration-200 font-bold touch-manipulation select-none focus-visible:ring-2 ring-violet-400/40
-                          ${isCurrent 
-                            ? 'w-16 h-16 sm:w-20 sm:h-20 bg-violet-50 border-violet-400 text-violet-700 animate-node-pulse text-lg sm:text-xl shadow-[0_0_16px_rgba(139,92,246,0.2)] z-10 cursor-pointer active:scale-95' 
-                            : 'w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 border-emerald-300 text-emerald-600 text-sm sm:text-base cursor-default'}
-                        `}
-                      >
-                        {isCompleted ? (
-                          <span className="animate-check-appear text-lg sm:text-xl">✓</span>
-                        ) : (
-                          node.wayNumber
-                        )}
-                      </button>
+                    <div className="flex flex-col items-center w-16 sm:w-20">
+                      {isCurrent ? (
+                        <button
+                          data-testid={`way-node-${node.id}`}
+                          data-state="current"
+                          onPointerDown={() => onWayClick(node.id)}
+                          aria-label={`${nodeLabel}. Ejercicio actual, toca para empezar`}
+                          aria-current="step"
+                          className="w-14 h-14 sm:w-16 sm:h-16 min-w-[44px] min-h-[44px] rounded-full border-2 border-violet-400 bg-violet-50 text-violet-700 text-lg font-bold flex items-center justify-center transition-all duration-150 active:scale-95 focus-visible:ring-2 ring-violet-400/40 ring-2 ring-violet-300"
+                        >
+                          {node.wayNumber}
+                        </button>
+                      ) : (
+                        <div
+                          data-testid={`way-node-${node.id}`}
+                          data-state="completed"
+                          className="w-11 h-11 sm:w-12 sm:h-12 min-w-[44px] min-h-[44px] rounded-full border-2 border-emerald-300 bg-emerald-50 text-emerald-600 text-sm font-bold flex items-center justify-center pointer-events-none"
+                          aria-label={`${nodeLabel}. Completado`}
+                        >
+                          ✓
+                        </div>
+                      )}
                       
-                      {/* Título debajo */}
-                      <span className={`
-                        absolute -bottom-8 text-[10px] sm:text-xs font-semibold text-center w-24 leading-tight
-                        ${isCurrent ? 'text-violet-600' : 'text-emerald-600'}
-                      `}>
-                        {node.title.length > 14 
-                          ? node.title.substring(0, 14) + '…' 
-                          : node.title}
+                      {/* Label debajo */}
+                      <span 
+                        className={`mt-1 text-[10px] font-semibold text-center w-full leading-normal px-0.5 ${isCurrent ? 'text-violet-600' : 'text-emerald-600'}`}
+                      >
+                        {nodeLabel}
                       </span>
                     </div>
                     
                     {/* Conector */}
                     {!isLast && (
-                      <div className="w-6 sm:w-8 h-1.5 mx-1 sm:mx-2 shrink-0">
-                        <div className={`
-                          h-full rounded-full
-                          ${isCompleted ? 'bg-emerald-300' : 'bg-slate-200'}
-                        `} />
-                      </div>
+                      <div className="w-3 sm:w-4 h-1 mx-1 rounded-full bg-slate-200" />
                     )}
                   </div>
                 );
               })}
-            </div>
-          </div>
+            </nav>
+          </article>
         );
       })}
     </div>

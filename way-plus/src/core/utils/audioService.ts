@@ -548,7 +548,7 @@ class AudioService {
       || null;
   }
 
-  speak(text: string, options?: { rate?: number; onWord?: (index: number) => void }) {
+  speak(text: string, options?: { rate?: number; onWord?: (index: number) => void; onStart?: () => void; onEnd?: () => void; onError?: (e: SpeechSynthesisErrorEvent) => void }) {
     if (!this.enabled) return;
     const synth = window.speechSynthesis;
     synth.cancel();
@@ -567,6 +567,10 @@ class AudioService {
         synth.onvoiceschanged = null;
       };
     }
+    
+    if (options?.onStart) utterance.onstart = options.onStart;
+    if (options?.onEnd) utterance.onend = options.onEnd;
+    if (options?.onError) utterance.onerror = options.onError;
 
     if (options?.onWord) {
       utterance.onboundary = (event) => {

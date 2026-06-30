@@ -22,6 +22,7 @@ export function HomeworkCelebration({ show, playerName, playerAvatar, onComplete
     <AnimatePresence>
       {show && (
         <motion.div
+          data-testid="celebration-overlay"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

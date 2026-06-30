@@ -5,12 +5,13 @@ import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
 
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      disable: mode === 'development',
       includeAssets: [
         'favicon.png', 
         'icons/*.png',
@@ -119,4 +120,4 @@ export default defineConfig({
     include: ['react', 'react-dom', 'zustand', 'framer-motion', '@supabase/supabase-js'],
     force: true,
   },
-})
+}))

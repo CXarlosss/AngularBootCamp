@@ -14,6 +14,7 @@ export function FamilyDashboardPage() {
   async function loadDashboard(patientId: string) {
     try {
       const dashboard = await getFamilyDashboard(patientId);
+      console.log("FAMILY DASHBOARD DATA:", dashboard);
       setData(dashboard);
       setLoading(false);
       

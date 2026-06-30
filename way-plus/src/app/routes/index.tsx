@@ -47,6 +47,7 @@ const PatientDetailView = lazy(() => import('@/features/therapist/pages/PatientD
 const PatientAnnexesView = lazy(() => import('@/features/therapist/pages/PatientAnnexesView').then(m => ({ default: m.PatientAnnexesView })));
 const SessionPlayerPage = lazy(() => import('@/features/player/pages/SessionPlayerPage').then(m => ({ default: m.SessionPlayerPage })));
 const SessionModePage = lazy(() => import('@/features/player/pages/SessionModePage').then(m => ({ default: m.SessionModePage })));
+const SessionEndPage = lazy(() => import('@/features/player/pages/SessionEndPage').then(m => ({ default: m.SessionEndPage })));
 
 const LandingPage = lazy(() => import('@/features/player/pages/LandingPage').then(m => ({ default: m.LandingPage })));
 const ProfilePickerPage = lazy(() => import('@/features/player/pages/ProfilePickerPage').then(m => ({ default: m.ProfilePickerPage })));
@@ -108,6 +109,10 @@ export const router = createBrowserRouter([
       { 
         path: 'session/:patientId', 
         element: Load(SessionPlayerPage) 
+      },
+      { 
+        path: 'session-end', 
+        element: Load(SessionEndPage) 
       },
 
 

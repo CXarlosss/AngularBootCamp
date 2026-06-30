@@ -96,11 +96,12 @@ const ItemCard = React.memo(function ItemCard({
       {/* Acción */}
       <div className="mt-3 w-full">
         {purchased ? (
-          <div className="py-1 text-[8px] font-black text-indigo-300 text-center uppercase tracking-widest bg-indigo-50/30 rounded-xl">
+          <div data-testid={`shop-item-purchased-${item.id}`} className="py-1 text-[8px] font-black text-indigo-300 text-center uppercase tracking-widest bg-indigo-50/30 rounded-xl">
             Adquirido
           </div>
         ) : (
           <m.button
+            data-testid={`shop-item-button-${item.id}`}
             whileTap={{ scale: 0.95 }}
             disabled={!canAfford}
             onClick={() => onPurchase(item)}
