@@ -95,7 +95,8 @@ export const WayRenderer: React.FC<Props> = ({
       clearTimeout(timeoutId);
       audioService.stopSpeak();
     };
-  }, [way?.id, speakFullQuestion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [way?.id]);
 
   const handleChoice = useCallback((optionId: string) => {
     if (isLocked) return;
