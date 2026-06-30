@@ -16,6 +16,7 @@ export const LevelSelectPage: React.FC = () => {
   const currentLevel = profile?.currentLevel || 'pregamer';
   const wayCoins = useRewardsStore(s => s.wayCoins);
   const [steps, setSteps] = useState<Step[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [homeworkIds, setHomeworkIds] = useState<Set<string>>(new Set());
   const [isOnline, setIsOnline] = useState(navigator.onLine);
