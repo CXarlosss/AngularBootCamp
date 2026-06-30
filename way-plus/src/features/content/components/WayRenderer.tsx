@@ -16,6 +16,14 @@ interface Props {
   sessionEnding?: boolean;
 }
 
+// Validación defensiva: WAY corrupto o incompleto
+function validateWay(way: Way): { valid: boolean; error?: string } {
+  if (!way) return { valid: false, error: 'way_missing' };
+  if (!way.options || way.options.length < 2) return { valid: false, error: 'options_insufficient' };
+  if (!way.stimulus?.text && !way.title) return { valid: false, error: 'text_missing' };
+  return { valid: true };
+}
+
 export const WayRenderer: React.FC<Props> = ({
   way,
   onComplete,
@@ -27,31 +35,33 @@ export const WayRenderer: React.FC<Props> = ({
   const [attemptState, setAttemptState] = useState<AttemptState>('idle');
   const [highlightedChoice, setHighlightedChoice] = useState<string | null>(null);
   const [localSpeaking, setLocalSpeaking] = useState(false);
+  const [imageError, setImageError] = useState(false);
   
   const { src: situationImg, loaded: imgLoaded } = useWayImage(
-    way.stepNumber || 1, 
-    way.wayNumber || 1,
-    way.theme || 'default'
+    way?.stepNumber || 1, 
+    way?.wayNumber || 1,
+    way?.theme || 'default'
   );
 
   const isLocked = localSpeaking || parentSpeaking || attemptState === 'error';
 
+  // Guard + timeout defensivo
   const speakFullQuestion = useCallback(() => {
     if (localSpeaking) return;
     
-    const questionText = way.stimulus?.text || way.title || '';
+    const questionText = way?.stimulus?.text || way?.title || '';
     if (!questionText.trim()) {
-      // WAY sin texto: liberar inmediatamente
       setLocalSpeaking(false);
       onSpeakStart?.();
       onSpeakEnd?.();
       return;
     }
-    const optionsText = way.options?.map((o, idx) => 
-      `Opción ${String.fromCharCode(65 + idx)}: ${o.label}`
-    ).join('. ');
     
-    const text = `${questionText}. ${optionsText}.`;
+    const optionsText = way?.options?.map((o, idx) => 
+      `Opción ${String.fromCharCode(65 + idx)}: ${o.label}`
+    ).join('. ') || '';
+    
+    const text = `${questionText}. ${optionsText}.`.trim();
     
     setLocalSpeaking(true);
     onSpeakStart?.();
@@ -73,40 +83,36 @@ export const WayRenderer: React.FC<Props> = ({
     });
   }, [way, localSpeaking, onSpeakStart, onSpeakEnd]);
 
-  // Audio inicial automático — con timeout de seguridad
+  // Audio inicial con timeout de seguridad
   useEffect(() => {
     const timeoutId = setTimeout(() => {
-      // Fallback: si tras 5s sigue "speaking", forzar liberación
       setLocalSpeaking(false);
       onSpeakEnd?.();
     }, 5000);
 
     speakFullQuestion();
-
     return () => {
       clearTimeout(timeoutId);
       audioService.stopSpeak();
     };
-  }, [way.id]); // ← SOLO way.id, NUNCA speakFullQuestion
+  }, [way?.id, speakFullQuestion]);
 
   const handleChoice = useCallback((optionId: string) => {
     if (isLocked) return;
     
-    const option = way.options.find(o => o.id === optionId);
+    const option = way?.options?.find(o => o.id === optionId);
     if (!option) return;
     
     if (option.isCorrect) {
-      // Éxito
       setAttemptState('idle');
       setHighlightedChoice(null);
       audioService.playSFX('success');
       onComplete(true);
     } else {
-      // Error (HF2)
       setAttemptState('error');
       audioService.playSFX('error');
       
-      const correctOption = way.options.find(o => o.isCorrect);
+      const correctOption = way?.options?.find(o => o.isCorrect);
       if (correctOption) setHighlightedChoice(correctOption.id);
       
       setTimeout(() => {
@@ -118,31 +124,52 @@ export const WayRenderer: React.FC<Props> = ({
     }
   }, [way, isLocked, onComplete, speakFullQuestion]);
 
+  // WAY corrupto: pantalla de error amigable
+  const validation = validateWay(way);
+  if (!validation.valid) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 py-8 px-4 text-center" data-testid="way-error">
+        <span className="text-lg">🛠️</span>
+        <h2 className="text-sm font-bold text-slate-700 leading-normal">Este reto necesita una revisión</h2>
+        <p className="text-xs text-slate-500">Pide ayuda a Maite</p>
+        <button
+          onClick={() => onComplete(false)}
+          className="mt-2 px-4 py-2 min-h-[44px] rounded-xl bg-violet-500 text-white font-bold text-xs active:scale-95 transition-transform duration-150"
+          data-testid="way-error-skip"
+        >
+          Saltar reto
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
-      {/* Imagen */}
+      {/* Imagen con skeleton + fallback */}
       <div className="relative w-full max-h-[35vh] min-h-[160px] rounded-xl overflow-hidden bg-white border border-slate-200 shadow-sm flex items-center justify-center">
-        <img data-testid="way-image"
-          src={situationImg || '/images/situations/default.png'}
-          alt=""
-          loading="lazy"
-          className={cn(
-            "max-h-[35vh] w-auto h-auto max-w-full object-contain p-2 transition-opacity duration-500",
-            imgLoaded ? "opacity-100" : "opacity-0"
-          )}
-          draggable={false}
-        />
-        {!imgLoaded && (
+        {!imgLoaded && !imageError && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-100">
             <div className="w-6 h-6 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
           </div>
         )}
+        
+        <img 
+          src={imageError || !situationImg ? '/images/situations/default.png' : situationImg}
+          alt=""
+          loading="lazy"
+          onError={() => setImageError(true)}
+          className={cn(
+            "max-h-[35vh] w-auto h-auto max-w-full object-contain p-2 transition-opacity duration-500",
+            imgLoaded && !imageError ? "opacity-100" : "opacity-0"
+          )}
+          draggable={false}
+        />
       </div>
       
       {/* Pregunta */}
       <div className="text-center px-2">
-        <h2 data-testid="way-question" className="text-sm font-bold text-slate-800 leading-normal" style={{ fontFamily: 'Verdana, sans-serif' }}>
-          {way.stimulus?.text || way.title}
+        <h2 className="text-sm font-bold text-slate-800 leading-normal" data-testid="way-question">
+          {way?.stimulus?.text || way?.title}
         </h2>
       </div>
       
@@ -163,7 +190,7 @@ export const WayRenderer: React.FC<Props> = ({
       
       {/* Opciones */}
       <div className="flex gap-2 px-1">
-        {way.options.map((option, idx) => {
+        {way?.options?.map((option, idx) => {
           const isHighlighted = highlightedChoice === option.id;
           const isCorrect = option.isCorrect;
           const isError = attemptState === 'error' && !isCorrect && !isHighlighted;
@@ -193,16 +220,17 @@ export const WayRenderer: React.FC<Props> = ({
                 <div className="absolute inset-0 bg-amber-400/10 animate-pulse rounded-xl" />
               )}
               
+              {/* Micro-animación acierto */}
               <AnimatePresence>
                 {attemptState === 'idle' && highlightedChoice === option.id && isCorrect && (
-                   <motion.div
-                     initial={{ scale: 1.2, opacity: 0 }}
-                     animate={{ scale: 1, opacity: 1 }}
-                     transition={{ duration: 0.15 }}
-                     className="absolute top-2 right-2 text-emerald-500 font-bold"
-                   >
-                     ✓
-                   </motion.div>
+                  <motion.div
+                    initial={{ scale: 1.2, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute top-2 right-2 text-emerald-500 font-bold text-xs"
+                  >
+                    ✓
+                  </motion.div>
                 )}
               </AnimatePresence>
               
@@ -212,6 +240,7 @@ export const WayRenderer: React.FC<Props> = ({
                   alt="" 
                   className="w-12 h-12 sm:w-14 sm:h-14 object-contain"
                   loading="lazy"
+                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                   draggable={false}
                 />
               ) : (
@@ -230,7 +259,6 @@ export const WayRenderer: React.FC<Props> = ({
       <AnimatePresence>
         {attemptState === 'error' && (
           <motion.div
-            data-testid="retry-feedback"
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
@@ -245,16 +273,16 @@ export const WayRenderer: React.FC<Props> = ({
       {/* Controles */}
       <div className="flex justify-center gap-2 pt-1">
         <button
-          data-testid="speak-button"
           onClick={speakFullQuestion}
           disabled={localSpeaking}
           className="flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg bg-white border border-slate-200 text-slate-600 font-bold text-xs active:scale-95 transition-transform duration-150 disabled:opacity-50 shadow-sm"
+          data-testid="speak-button"
         >
           <span>🔊</span>
           Escuchar
         </button>
         
-        {(way as any).hint && (
+        {(way as any)?.hint && (
           <button
             onClick={() => audioService.speak((way as any).hint, { rate: 0.9 })}
             className="flex items-center gap-2 px-3 py-2 min-h-[44px] rounded-lg bg-white border border-slate-200 text-slate-500 font-bold text-xs active:scale-95 transition-transform duration-150 shadow-sm"

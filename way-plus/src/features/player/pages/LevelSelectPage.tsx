@@ -19,6 +19,18 @@ export const LevelSelectPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [showConfetti, setShowConfetti] = useState(false);
   const [homeworkIds, setHomeworkIds] = useState<Set<string>>(new Set());
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
   
   const completedWays = useMemo(() => {
     return Array.isArray(profile?.completedWays) ? profile.completedWays : [];

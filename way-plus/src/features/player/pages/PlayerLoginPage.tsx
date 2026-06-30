@@ -15,6 +15,18 @@ const PIN_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'DEL', '0', 'OK']
 
 export function PlayerLoginPage() {
   const navigate = useNavigate();
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
   const [patient, setPatient] = useState<PatientInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [pin, setPin] = useState('');
@@ -115,7 +127,27 @@ export function PlayerLoginPage() {
   if (loading) {
     return (
       <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
+        <div className="w-8 h-8 rounded-full border-4 border-violet-200 border-t-violet-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isSupabaseAvailable || !isOnline) {
+    return (
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 gap-4 bg-slate-50 text-center" style={{ fontFamily: 'Verdana, sans-serif' }}>
+        <span className="text-lg">📡</span>
+        <h2 className="text-base font-bold text-slate-800 leading-normal">No hay internet</h2>
+        <p className="text-sm text-slate-500 leading-normal">Puedes jugar con los ejercicios guardados.</p>
+        <button
+          onClick={() => {
+            sessionStorage.setItem('way-active-patient', 'offline-pedro');
+            sessionStorage.setItem('way-active-pin', '1234');
+            window.location.href = '/player/home';
+          }}
+          className="px-6 py-3 min-h-[44px] rounded-xl bg-violet-500 text-white font-bold text-sm active:scale-95 transition-transform duration-150"
+        >
+          Jugar sin conexión
+        </button>
       </div>
     );
   }
