@@ -96,7 +96,7 @@ test.describe('WCAG 2.1 AA + TEA Accessibility Audits', () => {
       window.sessionStorage.setItem('way-active-patient', '048cc2eb-a861-4ad4-ac1a-2fdf916e430b');
       window.sessionStorage.setItem('way-active-pin', '1234');
     });
-    await page.goto('/play/pregamer/step-test/way-test');
+    await page.goto('/play/pregamer/step-relaxation-1/s1-w1');
     await page.waitForLoadState('networkidle');
 
     const results = await new AxeBuilder({ page })
