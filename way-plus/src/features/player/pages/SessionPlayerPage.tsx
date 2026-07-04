@@ -20,6 +20,7 @@ import { HomeworkCelebration } from '@/features/player/components/HomeworkCelebr
 import { homeworkService } from '@/core/services/homeworkService';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { preloadWayImages } from '@/core/services/wayImageService';
+import { globalAnalytics } from '@/core/services/globalAnalytics';
 
 // ─── Tokens ───────────────────────────────────────────────────────────────────
 const C = {
@@ -142,6 +143,7 @@ export function SessionPlayerPage() {
     if (patientId && currentWay) {
       const isHw = await homeworkService.isHomework(patientId, currentWay.way.id);
       setIsHomework(isHw);
+      globalAnalytics.trackWayStarted(currentWay.way.id, currentWay.stepTitle);
     }
     setPageState('playing');
   }, [currentIndex, ways, patientId]);
@@ -157,6 +159,9 @@ export function SessionPlayerPage() {
 
     completedIds.current.push(currentWay.way.id);
     perWayMetrics.current[currentWay.way.id] = data;
+
+    // PostHog global metrics
+    globalAnalytics.trackWayCompleted(currentWay.way.id, currentWay.stepTitle, Math.round(timeSpentMs / 1000), data.attempts);
 
     // FIX CRÍTICO: Usamos syncEngine.logActivity (con buffer) en lugar del servicio directo
     syncEngine.logActivity({

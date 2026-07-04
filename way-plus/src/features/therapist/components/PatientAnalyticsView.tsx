@@ -59,13 +59,24 @@ export function PatientAnalyticsView({ patientId }: { patientId: string }) {
         const thisWeekLogs = logs.filter(l => new Date(l.created_at).getTime() >= oneWeekAgo.getTime());
         const completedThisWeek = thisWeekLogs.filter(l => l.action === 'way_completed');
         
-        // Calcular evolución (mock o real si hay suficientes logs)
-        const evolution = [
-          { week: 'Hace 3 sem', ways: Math.floor(Math.random() * 5) + 2 },
-          { week: 'Hace 2 sem', ways: Math.floor(Math.random() * 8) + 4 },
-          { week: 'Semana pasada', ways: Math.floor(Math.random() * 10) + 5 },
-          { week: 'Esta semana', ways: completedThisWeek.length }
-        ];
+        // Calcular evolución basada en logs reales
+        const evolution = [];
+        for (let i = 3; i >= 0; i--) {
+          const start = new Date(now.getTime() - (i + 1) * 7 * 24 * 60 * 60 * 1000);
+          const end = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+          
+          const waysInWeek = logs.filter(l => {
+            const time = new Date(l.created_at).getTime();
+            return time >= start.getTime() && time < end.getTime() && l.action === 'way_completed';
+          }).length;
+          
+          let weekLabel = '';
+          if (i === 0) weekLabel = 'Esta semana';
+          else if (i === 1) weekLabel = 'Semana pasada';
+          else weekLabel = `Hace ${i} sem`;
+
+          evolution.push({ week: weekLabel, ways: waysInWeek });
+        }
 
         // Generar alertas inteligentes
         const alerts: string[] = [];

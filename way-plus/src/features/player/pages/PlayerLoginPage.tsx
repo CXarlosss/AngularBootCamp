@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase, isSupabaseAvailable } from '@/core/services/supabaseClient';
 import { audioService } from '@/core/utils/audioService';
+import { Button } from '@/shared/components/Button';
+import { T, Emoji } from '@/shared/components/TypographyScale';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 
 interface PatientInfo {
   id: string;
@@ -15,18 +18,6 @@ const PIN_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', 'DEL', '0', 'OK']
 
 export function PlayerLoginPage() {
   const navigate = useNavigate();
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-  
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
   const [patient, setPatient] = useState<PatientInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [pin, setPin] = useState('');
@@ -55,6 +46,9 @@ export function PlayerLoginPage() {
         .single();
       if (!err && data) {
         setPatient(data);
+        // Guardar en localStorage para modo offline
+        localStorage.setItem('way-last-patient-id', data.id);
+        localStorage.setItem('way-last-patient-name', data.name);
       }
       setLoading(false);
     }
@@ -124,36 +118,32 @@ export function PlayerLoginPage() {
     }
   }, [success, locked, pin, patient, validatePin]);
 
-  if (loading) {
-    return (
-      <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50">
-        <div className="w-8 h-8 rounded-full border-4 border-violet-200 border-t-violet-600 animate-spin" />
-      </div>
-    );
-  }
-
-  if (!isSupabaseAvailable || !isOnline) {
+  // MODO OFFLINE
+  if (!isSupabaseAvailable || !navigator.onLine) {
     const lastPatientId = localStorage.getItem('way-last-patient-id') || 'offline-pedro';
     const lastPatientName = localStorage.getItem('way-last-patient-name') || 'Pedro';
     
     return (
-      <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 gap-3 bg-slate-50 text-center" style={{ fontFamily: 'Verdana, sans-serif' }}>
-        <span className="text-lg">📡</span>
-        <h2 className="text-base font-bold text-slate-800 leading-normal">No hay internet</h2>
-        <p className="text-sm text-slate-500 leading-normal">
+      <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 gap-3 bg-slate-50 text-center">
+        <Emoji>📡</Emoji>
+        <T size="base" bold>No hay internet</T>
+        <T size="sm" color="muted">
           Última sesión: <span className="font-bold text-slate-700">{lastPatientName}</span>
-        </p>
-        <button
+        </T>
+        <Button
+          variant="primary"
+          size="md"
           onClick={() => {
             sessionStorage.setItem('way-active-patient', lastPatientId);
             sessionStorage.setItem('way-active-pin', '1234');
             window.location.href = '/player/home';
           }}
-          className="px-6 py-3 min-h-[44px] rounded-xl bg-violet-500 text-white font-bold text-sm active:scale-95 transition-transform duration-150 w-full max-w-[250px]"
         >
           Jugar como {lastPatientName}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant="secondary"
+          size="sm"
           onClick={() => {
             const newId = `offline-${Date.now()}`;
             const name = prompt('¿Cómo te llamas?') || 'Invitado';
@@ -163,10 +153,17 @@ export function PlayerLoginPage() {
             sessionStorage.setItem('way-active-pin', '1234');
             window.location.href = '/player/home';
           }}
-          className="px-4 py-3 min-h-[44px] rounded-xl bg-white border-2 border-slate-200 text-slate-600 font-bold text-xs active:scale-95 transition-transform duration-150 w-full max-w-[250px]"
         >
           Nuevo jugador
-        </button>
+        </Button>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-[100dvh] flex items-center justify-center bg-slate-50">
+        <LoadingSpinner size="lg" label="Cargando..." />
       </div>
     );
   }
@@ -174,28 +171,28 @@ export function PlayerLoginPage() {
   if (!patient) {
     return (
       <div className="min-h-[100dvh] flex flex-col items-center justify-center p-6 text-center gap-3 bg-slate-50">
-        <span className="text-lg">⚙️</span>
-        <h2 className="text-base font-bold text-slate-800 leading-normal">Tablet no configurada</h2>
-        <p className="text-sm text-slate-500 font-medium max-w-sm leading-normal">
-          Maite necesita configurar esta tablet desde el panel del terapeuta.
-        </p>
+        <Emoji>⚙️</Emoji>
+        <T size="base" bold>Tablet no configurada</T>
+        <T size="sm" color="muted">Maite necesita configurar esta tablet desde el panel del terapeuta.</T>
       </div>
     );
   }
 
+  const bgClass = error 
+    ? 'bg-rose-50' 
+    : success 
+    ? 'bg-emerald-50' 
+    : 'bg-slate-50';
+
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center p-4 sm:p-6 gap-4 sm:gap-6 bg-slate-50">
+    <div className={`min-h-[100dvh] flex flex-col items-center justify-center p-4 sm:p-6 gap-4 sm:gap-6 ${bgClass} transition-colors duration-500`}>
       {/* Avatar + Título */}
       <div className="text-center">
         <div className="text-lg mb-1 leading-none">
           {patient.equipped_avatar_id}
         </div>
-        <h1 className="text-base font-bold text-slate-800 leading-normal">
-          ¡Hola, {patient.name}!
-        </h1>
-        <p className="text-sm text-slate-500 font-bold mt-1 leading-normal">
-          Introduce tu PIN para jugar
-        </p>
+        <T size="base" bold>¡Hola, {patient.name}!</T>
+        <T size="sm" color="muted" className="mt-1">Introduce tu PIN para jugar</T>
       </div>
 
       {/* Dots PIN */}
@@ -212,8 +209,8 @@ export function PlayerLoginPage() {
 
           return (
             <div
-              data-testid={`pin-dot-${i}`}
               key={i}
+              data-testid={`pin-dot-${i}`}
               className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full border-2 transition-all duration-300 ${dotClasses}`}
             />
           );
@@ -225,22 +222,22 @@ export function PlayerLoginPage() {
         <AnimatePresence>
           {error && !locked && (
             <motion.div 
-              data-testid="login-error"
               initial={{ opacity: 0, y: -4 }} 
               animate={{ opacity: 1, y: 0 }} 
               exit={{ opacity: 0 }} 
               className="px-4 py-1.5 rounded-full bg-rose-100 text-rose-600 font-bold text-xs"
+              data-testid="login-error"
             >
               PIN incorrecto ({3 - attempts} intentos)
             </motion.div>
           )}
           {locked && (
             <motion.div 
-              data-testid="login-locked"
               initial={{ opacity: 0, y: -4 }} 
               animate={{ opacity: 1, y: 0 }} 
               exit={{ opacity: 0 }} 
               className="px-4 py-1.5 rounded-full bg-rose-100 text-rose-600 font-bold text-xs text-center"
+              data-testid="login-locked"
             >
               🔒 Demasiados intentos. Avisa a Maite.
             </motion.div>
@@ -256,23 +253,18 @@ export function PlayerLoginPage() {
           const isDel = key === 'DEL';
           
           return (
-            <button
-              data-testid={`pin-key-${key}`}
+            <Button
               key={key}
+              data-testid={`pin-key-${key}`}
+              variant={isOk ? 'success' : isDel ? 'danger' : 'secondary'}
+              size="lg"
               onPointerDown={() => handleKeyPress(key)}
               disabled={locked}
-              className={`
-                relative flex items-center justify-center h-16 sm:h-[72px] rounded-2xl font-bold text-lg
-                transition-all duration-150 active:scale-95 select-none focus-visible:ring-2 ring-violet-400/40
-                ${isNumber ? 'bg-white text-slate-800 border-2 border-slate-200 hover:bg-slate-50' : ''}
-                ${isOk ? 'bg-emerald-100 text-emerald-700 border-2 border-emerald-200 hover:bg-emerald-200' : ''}
-                ${isDel ? 'bg-rose-100 text-rose-700 border-2 border-rose-200 hover:bg-rose-200' : ''}
-                ${locked ? 'opacity-50 cursor-not-allowed' : ''}
-              `}
+              className="h-16 sm:h-[72px] text-lg rounded-2xl"
               aria-label={isDel ? 'Borrar' : isOk ? 'Confirmar' : `Número ${key}`}
             >
               {isDel ? '⌫' : isOk ? '✓' : key}
-            </button>
+            </Button>
           );
         })}
       </div>

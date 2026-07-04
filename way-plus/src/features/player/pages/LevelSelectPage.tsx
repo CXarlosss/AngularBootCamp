@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { usePlayerStore } from '../store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { registry } from '@/content/registry';
@@ -9,6 +9,9 @@ import type { Step, Way } from '@/core/engine/types';
 import { patientService } from '@/core/services/patientService';
 import { normalizeWayText } from '@/shared/lib/way-text-utils';
 import { WayPath } from '../components/WayPath';
+import { Button } from '@/shared/components/Button';
+import { T, Emoji } from '@/shared/components/TypographyScale';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 
 export const LevelSelectPage: React.FC = () => {
   const navigate = useNavigate();
@@ -21,6 +24,15 @@ export const LevelSelectPage: React.FC = () => {
   const [homeworkIds, setHomeworkIds] = useState<Set<string>>(new Set());
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showOfflineBanner, setShowOfflineBanner] = useState(true);
+  
+  const completedWays = useMemo(() => {
+    return Array.isArray(profile?.completedWays) ? profile.completedWays : [];
+  }, [profile?.completedWays]);
+
+  const handleLogout = useCallback(() => {
+    sessionStorage.removeItem('way-active-patient');
+    window.location.href = '/player';
+  }, []);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -31,23 +43,6 @@ export const LevelSelectPage: React.FC = () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, []);
-
-  useEffect(() => {
-    const patientId = sessionStorage.getItem('way-active-patient');
-    if (patientId && profile?.name) {
-      localStorage.setItem('way-last-patient-id', patientId);
-      localStorage.setItem('way-last-patient-name', profile.name);
-    }
-  }, [profile]);
-  
-  const completedWays = useMemo(() => {
-    return Array.isArray(profile?.completedWays) ? profile.completedWays : [];
-  }, [profile?.completedWays]);
-
-  const handleLogout = useCallback(() => {
-    sessionStorage.removeItem('way-active-patient');
-    window.location.href = '/player';
   }, []);
 
   useEffect(() => {
@@ -140,7 +135,25 @@ export const LevelSelectPage: React.FC = () => {
   }), [steps, completedWays, currentWayId]);
 
   return (
-    <div data-testid="level-select-page" className="min-h-screen bg-slate-50 pb-20 relative font-[Verdana,sans-serif]">
+    <div className="min-h-screen bg-slate-50 pb-20 relative font-[Verdana,sans-serif]" data-testid="level-select-page">
+      
+      {/* Offline Banner */}
+      {!isOnline && showOfflineBanner && (
+        <div className="sticky top-0 z-[55] bg-amber-50 border-b border-amber-200 px-3 py-1.5 flex items-center justify-between">
+          <T size="micro" bold color="warning" className="flex items-center gap-1">
+            <Emoji>📡</Emoji>
+            Sin internet. Puedes seguir jugando.
+          </T>
+          <button
+            onClick={() => setShowOfflineBanner(false)}
+            className="w-6 h-6 flex items-center justify-center text-amber-600 text-xs active:scale-95 transition-transform"
+            aria-label="Ocultar aviso"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
       {/* Logout */}
       <button
         onClick={handleLogout}
@@ -158,19 +171,19 @@ export const LevelSelectPage: React.FC = () => {
         </div>
         
         <div className="text-center">
-          <h1 className="text-base font-bold text-slate-800 leading-normal">
+          <T size="base" bold as="h1">
             {profile?.name ? `¡Hola, ${profile.name}!` : '¡Hola!'}
-          </h1>
-          <p className="text-sm text-slate-500 font-semibold mt-0.5">
+          </T>
+          <T size="sm" color="muted" className="mt-0.5">
             ¿Qué aprendemos hoy?
-          </p>
+          </T>
         </div>
         
-        <div data-testid="coin-display" className="bg-white rounded-xl px-3 py-1.5 flex items-center gap-2 border border-amber-200 shadow-sm cursor-pointer active:scale-95 transition-transform duration-150">
-          <span className="text-lg">🪙</span>
-          <span className="text-base font-bold text-amber-600">
+        <div className="bg-white rounded-xl px-3 py-1.5 flex items-center gap-2 border border-amber-200 shadow-sm cursor-pointer active:scale-95 transition-transform duration-150">
+          <Emoji>🪙</Emoji>
+          <T size="base" bold color="warning" data-testid="coin-display">
             {wayCoins ?? 0}
-          </span>
+          </T>
         </div>
       </div>
 
@@ -178,8 +191,8 @@ export const LevelSelectPage: React.FC = () => {
       {activeHomeworks.length > 0 && (
         <div className="px-4 sm:px-6 mb-6 max-w-xl mx-auto relative z-10">
           <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg">🏠</span>
-            <h2 className="text-sm font-bold text-slate-700">Tu camino de hoy</h2>
+            <Emoji>🏠</Emoji>
+            <T size="sm" bold>Tu camino de hoy</T>
           </div>
           
           <div className="flex flex-col gap-2">
@@ -202,18 +215,16 @@ export const LevelSelectPage: React.FC = () => {
                   </div>
                   
                   <div className="flex-1 min-w-0">
-                    <h3 className={`text-sm font-bold leading-normal ${isDone ? 'text-slate-400' : 'text-slate-800'}`}>
+                    <T size="sm" bold className={isDone ? 'text-slate-400' : 'text-slate-800'}>
                       {normalizeWayText(way.title)}
-                    </h3>
-                    <p className={`text-xs font-semibold mt-0.5 ${isDone ? 'text-slate-400' : 'text-violet-500'}`}>
+                    </T>
+                    <T size="xs" className={`mt-0.5 ${isDone ? 'text-slate-400' : 'text-violet-500'}`}>
                       {isDone ? '✓ Completado' : 'Ejercicio especial'}
-                    </p>
+                    </T>
                   </div>
                   
                   {!isDone && (
-                    <span className="text-lg text-violet-400 font-bold shrink-0">
-                      ›
-                    </span>
+                    <span className="text-lg text-violet-400 font-bold shrink-0">›</span>
                   )}
                 </button>
               );
@@ -226,7 +237,7 @@ export const LevelSelectPage: React.FC = () => {
       <div className="px-4 sm:px-6 max-w-2xl mx-auto w-full relative z-10">
         {loading ? (
           <div className="flex justify-center py-6">
-            <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
+            <LoadingSpinner size="md" />
           </div>
         ) : (
           <WayPath
@@ -239,24 +250,21 @@ export const LevelSelectPage: React.FC = () => {
       {/* Confetti */}
       <AnimatePresence>
         {showConfetti && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 pointer-events-none flex items-center justify-center z-[999]"
-          >
+          <div className="fixed inset-0 pointer-events-none flex items-center justify-center z-[999]">
             {['🎉', '⭐', '🌟', '🎊', '✨'].map((emoji, i) => (
-              <motion.div
+              <div
                 key={i}
-                initial={{ y: "100vh", x: `${50 + (i - 2) * 15}vw` }}
-                animate={{ y: "-10vh", x: `${50 + (i - 2) * 20}vw` }}
-                transition={{ duration: 2, delay: i * 0.1, type: "spring" }}
                 className="absolute text-lg"
+                style={{
+                  animation: `confetti-fall 2s ${i * 0.1}s ease-out forwards`,
+                  left: `${50 + (i - 2) * 15}%`,
+                  top: '-10%'
+                }}
               >
                 {emoji}
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

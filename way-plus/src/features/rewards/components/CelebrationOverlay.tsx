@@ -3,6 +3,7 @@ import { audioService } from '@/core/utils/audioService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useConfigStore } from '@/core/stores/configStore';
 import { usePlayerStore } from '@/features/player/store/playerStore';
+import { T, Emoji } from '@/shared/components/TypographyScale';
 
 interface CelebrationOverlayProps {
   show: boolean;
@@ -99,13 +100,13 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
   return (
     <AnimatePresence mode="wait">
       <motion.div
-        data-testid="celebration-overlay"
         key="overlay"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
         className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/20"
+        data-testid="celebration-overlay"
       >
         {/* Partículas suaves */}
         {!reduceMotion && type !== 'sad' && (
@@ -129,9 +130,9 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
                     delay: i * 0.1,
                     ease: "easeOut"
                   }}
-                  className="absolute left-1/2 top-1/2 text-xs"
+                  className="absolute left-1/2 top-1/2"
                 >
-                  {PARTICLE_EMOJIS[i % PARTICLE_EMOJIS.length]}
+                  <Emoji>{PARTICLE_EMOJIS[i % PARTICLE_EMOJIS.length]}</Emoji>
                 </motion.div>
               );
             })}
@@ -148,24 +149,22 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
           style={{ fontFamily: 'Verdana, sans-serif' }}
         >
           {/* Emoji */}
-          <div className="w-12 h-12 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center text-2xl mx-auto mb-3">
-            {getEmoji()}
+          <div className="w-12 h-12 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center mx-auto mb-3">
+            <Emoji className="text-2xl">{getEmoji()}</Emoji>
           </div>
 
           {/* Título */}
-          <h2 data-testid="celebration-title" className={`text-base font-bold ${titleColor} leading-normal mb-1`}>
+          <T size="base" bold className={`mb-1 ${titleColor}`} data-testid="celebration-title">
             {getTitle()}
-          </h2>
+          </T>
 
           {/* Subtítulo */}
-          <p className="text-sm font-bold text-slate-700 leading-normal">
-            {getSubtitle()}
-          </p>
+          <T size="sm" bold>{getSubtitle()}</T>
 
           {/* Badge */}
           {type !== 'sad' && (
-            <div className={`inline-block mt-2 px-3 py-1 rounded-full border text-xs font-bold ${badgeColor}`}>
-              Super atleta WAY+
+            <div className={`inline-block mt-2 px-3 py-1 rounded-full border ${badgeColor}`}>
+              <T size="micro" bold>Super atleta WAY+</T>
             </div>
           )}
 
@@ -179,12 +178,10 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
                 transition={{ duration: 0.2 }}
                 className="mt-4 flex items-center justify-center gap-2"
               >
-                <span className="text-sm">🪙</span>
+                <Emoji>🪙</Emoji>
                 <div className="text-left">
-                  <div className="text-[10px] font-bold text-amber-600">Medallas</div>
-                  <div data-testid="celebration-coins" className="text-lg font-bold text-slate-800 leading-none">
-                    +{displayCoins}
-                  </div>
+                  <T size="micro" bold color="warning">Medallas</T>
+                  <T size="lg" bold data-testid="celebration-coins">+{displayCoins}</T>
                 </div>
               </motion.div>
             )}

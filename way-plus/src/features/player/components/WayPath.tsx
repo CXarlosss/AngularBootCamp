@@ -1,5 +1,6 @@
 import React from 'react';
 import { normalizeWayText } from '@/shared/lib/way-text-utils';
+import { T } from '@/shared/components/TypographyScale';
 
 export interface WayNode {
   id: string;
@@ -37,15 +38,15 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
         
         return (
           <article 
-            data-testid={`step-card-${step.step}`}
             key={step.step} 
             className="bg-white rounded-xl p-3 shadow-sm border border-slate-200"
+            data-testid={`step-card-${step.step}`}
           >
             {/* Header compacto */}
             <div className="flex items-center justify-between gap-3 mb-2">
-              <h2 className="text-sm font-bold text-slate-700 leading-normal flex-1 min-w-0">
+              <T size="sm" bold className="flex-1 min-w-0">
                 {stepTitle}
-              </h2>
+              </T>
               <div className="text-xs font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-full shrink-0">
                 {step.completedCount}/{step.totalWays}
                 {step.completedCount === step.totalWays && (
@@ -94,11 +95,12 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
                       )}
                       
                       {/* Label debajo */}
-                      <span 
-                        className={`mt-1 text-[10px] font-semibold text-center w-full leading-normal px-0.5 ${isCurrent ? 'text-violet-600' : 'text-emerald-600'}`}
+                      <T 
+                        size="micro" 
+                        className={`mt-1 text-center w-full px-0.5 ${isCurrent ? 'text-violet-600' : 'text-emerald-600'}`}
                       >
                         {nodeLabel}
-                      </span>
+                      </T>
                     </div>
                     
                     {/* Conector */}

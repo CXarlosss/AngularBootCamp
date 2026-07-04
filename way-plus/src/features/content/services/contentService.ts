@@ -72,14 +72,12 @@ export const contentService = {
       id: way.id,
       step_id: stepId,
       type: way.type,
-      name: way.name,
       title: way.title,
       order_index: way.order,
       stimulus: way.stimulus,
       options: way.options,
       source: way.source,
       metadata: way.metadata,
-      is_published: true,
     });
 
     if (error) throw new Error(`[ContentService] publishWay failed: ${error.message}`);

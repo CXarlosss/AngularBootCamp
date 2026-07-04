@@ -2,7 +2,7 @@
 // relaxation.ts
 // GENERADO AUTOMÁTICAMENTE por wayGenerator.ts
 // NO EDITAR MANUALMENTE — Modificar ways-master-data.ts y regenerar
-// Fecha: 2026-06-23T15:01:36.875Z
+// Fecha: 2026-07-01T19:12:03.057Z
 // Ways incluidos: 6
 // ============================================
 

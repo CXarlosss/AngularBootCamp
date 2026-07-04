@@ -19,7 +19,9 @@
     "ways:export": "tsx scripts/exportMasterToJson.ts",
     "ways:generate": "npm run ways:export && tsx scripts/wayGenerator.ts",
     "ways:validate": "tsx scripts/validateWays.ts",
-    "images:process": "tsx scripts/process-images.ts"
+    "images:process": "tsx scripts/process-images.ts",
+    "db:validate": "tsx scripts/validateContent.ts",
+    "db:seed:ways": "tsx scripts/seedSupabase.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.104.0",
@@ -38,6 +40,7 @@
     "jspdf-autotable": "^5.0.7",
     "lucide-react": "^1.8.0",
     "postcss": "^8.5.10",
+    "posthog-js": "^1.396.5",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-i18next": "^17.0.4",
@@ -57,6 +60,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/ui": "^3.2.4",
+    "dotenv": "^17.4.2",
     "eslint": "^9.39.4",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.1.1",

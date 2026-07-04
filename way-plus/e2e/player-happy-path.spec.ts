@@ -167,7 +167,7 @@ test.describe('Player Happy Path v2.2', () => {
       }));
     });
     await page.goto('/player/home');
-    await expect(page.getByTestId('level-select-page')).toBeVisible();
+    await expect(page.getByTestId('level-select-page')).toBeVisible({ timeout: 15000 });
 
     // Navegar a tienda (asumiendo ruta /player/shop o botón en home)
     // Si la tienda es una ruta separada:

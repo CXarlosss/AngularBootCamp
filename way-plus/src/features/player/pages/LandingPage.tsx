@@ -1,6 +1,8 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { audioService } from '@/core/utils/audioService';
+import { Button } from '@/shared/components/Button';
+import { T, Emoji } from '@/shared/components/TypographyScale';
 
 export function LandingPage() {
   const navigate = useNavigate();
@@ -23,54 +25,52 @@ export function LandingPage() {
         {/* Header */}
         <header className="text-center space-y-3">
           <div className="inline-flex items-center justify-center px-6 py-3 bg-white rounded-2xl border border-slate-200 shadow-sm">
-            <span className="text-lg font-bold text-violet-600">
-              WAY+
-            </span>
+            <T size="lg" bold color="primary">WAY+</T>
           </div>
           
-          <h1 className="text-base font-bold text-slate-800 leading-normal">
-            Tu camino comienza aquí
-          </h1>
+          <T size="base" bold as="h1">Tu camino comienza aquí</T>
           
-          <p className="text-sm text-slate-500 font-medium max-w-md mx-auto leading-normal">
+          <T size="sm" color="muted" className="max-w-md mx-auto">
             Plataforma clínica de estimulación cognitiva y funciones ejecutivas.
-          </p>
+          </T>
         </header>
 
         {/* Cards */}
         <nav className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
           {/* Opción NIÑO */}
-          <button
+          <Button
+            variant="secondary"
+            size="lg"
             onClick={() => handleSelect('/')}
-            className="group flex flex-col items-center p-6 bg-white rounded-2xl border-2 border-slate-200 hover:border-teal-300 transition-all duration-150 focus-visible:ring-2 ring-violet-400/40 active:scale-95 min-h-[44px]"
+            className="flex-col py-6 h-auto min-h-[160px] gap-3 border-2 hover:border-teal-300"
             aria-label="Entrar como niño a jugar"
           >
-            <span className="text-lg mb-3">🎮</span>
-            <h2 className="text-sm font-bold text-slate-800 mb-2">Soy niño</h2>
-            <div className="px-4 py-1.5 rounded-full bg-teal-100 text-teal-700 font-bold text-xs">
-              Entrar a jugar
+            <Emoji className="text-2xl">🎮</Emoji>
+            <T size="sm" bold>Soy niño</T>
+            <div className="px-4 py-1.5 rounded-full bg-teal-100">
+              <T size="xs" bold color="success">Entrar a jugar</T>
             </div>
-          </button>
+          </Button>
 
           {/* Opción TERAPEUTA */}
-          <button
+          <Button
+            variant="secondary"
+            size="lg"
             onClick={() => handleSelect('/auth')}
-            className="group flex flex-col items-center p-6 bg-white rounded-2xl border-2 border-slate-200 hover:border-violet-300 transition-all duration-150 focus-visible:ring-2 ring-violet-400/40 active:scale-95 min-h-[44px]"
+            className="flex-col py-6 h-auto min-h-[160px] gap-3 border-2 hover:border-violet-300"
             aria-label="Entrar como terapeuta para gestionar"
           >
-            <span className="text-lg mb-3">🩺</span>
-            <h2 className="text-sm font-bold text-slate-800 mb-2">Soy terapeuta</h2>
-            <div className="px-4 py-1.5 rounded-full bg-violet-100 text-violet-700 font-bold text-xs">
-              Gestionar clínica
+            <Emoji className="text-2xl">🩺</Emoji>
+            <T size="sm" bold>Soy terapeuta</T>
+            <div className="px-4 py-1.5 rounded-full bg-violet-100">
+              <T size="xs" bold color="primary">Gestionar clínica</T>
             </div>
-          </button>
+          </Button>
         </nav>
 
         {/* Footer */}
         <footer className="mt-2">
-          <p className="text-[10px] font-bold text-slate-400">
-            WAY+ v2.2
-          </p>
+          <T size="micro" color="muted" bold>WAY+ v2.2</T>
         </footer>
       </div>
     </div>

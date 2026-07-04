@@ -13,6 +13,9 @@ import { homeworkService } from '@/core/services/homeworkService';
 import { syncService } from '@/core/services/syncService';
 import type { Step, Way } from '@/core/engine/types';
 import { cn } from '@/shared/lib/utils';
+import { T, Emoji } from '@/shared/components/TypographyScale';
+import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { Button } from '@/shared/components/Button';
 
 const SESSION_DURATION = 15 * 60;
 const WARNING_THRESHOLD = 3 * 60;
@@ -52,14 +55,6 @@ export function WayPlayerPage() {
   const [showTimeWarning, setShowTimeWarning] = useState(false);
   const sessionEndedRef = useRef(false);
   const wayStartTime = useRef<number>(Date.now());
-
-  useEffect(() => {
-    const patientId = sessionStorage.getItem('way-active-patient');
-    if (patientId && profile?.name) {
-      localStorage.setItem('way-last-patient-id', patientId);
-      localStorage.setItem('way-last-patient-name', profile.name);
-    }
-  }, [profile]);
 
   // Timer global
   useEffect(() => {
@@ -202,16 +197,15 @@ export function WayPlayerPage() {
   if (!step || !currentWay) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-3 px-6">
-        <span className="text-lg">🤷</span>
-        <h1 className="text-base font-bold text-slate-700 text-center leading-normal">
-          ¡Ups! Este reto se ha escondido
-        </h1>
-        <button
+        <Emoji>🤷</Emoji>
+        <T size="base" bold>¡Ups! Este reto se ha escondido</T>
+        <Button
+          variant="primary"
+          size="sm"
           onClick={() => navigate(`/play/${levelId}/${stepId}`)}
-          className="px-5 py-3 min-h-[44px] rounded-xl bg-violet-600 text-white font-bold text-sm active:scale-95 transition-transform duration-150"
         >
           Volver al módulo
-        </button>
+        </Button>
       </div>
     );
   }
@@ -219,26 +213,26 @@ export function WayPlayerPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col" style={{ fontFamily: 'Verdana, sans-serif' }}>
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/95 border-b border-slate-200 px-4 py-2">
+      <header className="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-2">
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <button
             onClick={handleBack}
-            className="w-11 h-11 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-sm active:scale-95 transition-transform duration-150"
+            className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-sm active:scale-95 transition-transform duration-150"
             aria-label="Volver"
           >
             ←
           </button>
           
-          <div data-testid="timer-display" className={cn(
+          <div className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs",
             isWarning ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
-          )}>
+          )} data-testid="timer-display">
             <span className={isWarning ? 'animate-pulse' : ''}>⏱️</span>
             <span>{minutes}:{seconds.toString().padStart(2, '0')}</span>
           </div>
           
-          <div data-testid="coin-display" className="flex items-center gap-1 text-amber-600 font-bold text-xs">
-            <span>⭐</span>
+          <div className="flex items-center gap-1 text-amber-600 font-bold text-xs" data-testid="coin-display">
+            <Emoji>⭐</Emoji>
             <span>{profile?.coins ?? 0}</span>
           </div>
         </div>
@@ -252,6 +246,7 @@ export function WayPlayerPage() {
               transition={{ duration: 1 }}
             />
           </div>
+          
           {/* Way Progress */}
           <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
             <motion.div 
@@ -271,9 +266,9 @@ export function WayPlayerPage() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden max-w-2xl mx-auto"
             >
-              <p className="text-center text-[10px] font-bold text-amber-600 py-0.5 animate-pulse">
+              <T size="micro" bold color="warning" className="text-center py-0.5 animate-pulse">
                 ⏱️ Últimos WAYs, ¡vamos a terminar!
-              </p>
+              </T>
             </motion.div>
           )}
         </AnimatePresence>
@@ -295,12 +290,12 @@ export function WayPlayerPage() {
       </div>
 
       {/* Main */}
-      <main data-testid="way-player-main" className="flex-1 px-4 pb-4 max-w-2xl mx-auto w-full">
+      <main className="flex-1 px-4 pb-4 max-w-2xl mx-auto w-full" data-testid="way-player-main">
         <AnimatePresence mode="wait">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-8 gap-3">
-              <div className="w-8 h-8 rounded-full border-2 border-violet-200 border-t-violet-500 animate-spin" />
-              <span className="text-xs font-bold text-slate-400">Cargando...</span>
+              <LoadingSpinner size="md" />
+              <T size="xs" color="muted" bold>Cargando...</T>
             </div>
           ) : (
             <motion.div

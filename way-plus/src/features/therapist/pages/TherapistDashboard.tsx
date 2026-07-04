@@ -9,6 +9,8 @@ import { patientService } from '@/core/services/patientService';
 import { seedClinicalData } from '@/core/utils/seedData';
 import { flushOfflineAnnexes } from '@/services/clinicalAnnexService';
 
+import { analyticsService } from '@/core/services/analyticsService';
+import { supabase } from '@/core/services/supabaseClient';
 
 const C = {
   indigo:      '#4F46E5',
@@ -17,6 +19,7 @@ const C = {
   border:  '#E8E9FF',
   bg:      '#F8FAFF',
   white:   '#ffffff',
+  emerald: '#10B981',
 };
 
 export function TherapistDashboard() {
@@ -29,10 +32,23 @@ export function TherapistDashboard() {
   const [isCreating, setIsCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  const [globalKPIs, setGlobalKPIs] = useState({ activePatientsThisWeek: 0, totalWaysCompleted: 0 });
+
   useEffect(() => {
     if (isAuthorized) {
       loadPatients();
       flushOfflineAnnexes().catch(console.error);
+
+      // Fetch global KPIs
+      if (supabase) {
+        supabase.auth.getUser().then(({ data: { user } }) => {
+          if (user) {
+            analyticsService.getGlobalTherapistKPIs(user.id).then(kpis => {
+              setGlobalKPIs(kpis);
+            });
+          }
+        });
+      }
     }
   }, [isAuthorized, loadPatients]);
 
@@ -110,12 +126,43 @@ export function TherapistDashboard() {
           >
             🌱 Seed Demo
           </button>
+          
+          <button
+            onClick={() => navigate('/editor')}
+            style={{
+              background: 'linear-gradient(135deg, #4F46E5, #9333EA)', color: 'white', border: 'none',
+              padding: '6px 16px', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer',
+              boxShadow: '0 4px 10px rgba(79,70,229,0.3)', display: 'flex', alignItems: 'center', gap: 6
+            }}
+          >
+            <span>🎨</span> Editor de Ways
+          </button>
+          
           <SoundToggle />
           <SyncStatus />
         </div>
       </header>
 
       <main style={{ maxWidth: 900, margin: '0 auto', padding: '32px 16px' }}>
+        
+        {/* Global KPIs */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 16, marginBottom: 32 }}>
+          <div style={{ background: C.white, borderRadius: 20, padding: 24, border: `1.5px solid ${C.indigo}20`, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ fontSize: 32 }}>👥</div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.muted }}>Pacientes Activos (Últ. Semana)</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: C.text }}>{globalKPIs.activePatientsThisWeek} <span style={{fontSize: 14, color: C.emerald}}>+</span></div>
+            </div>
+          </div>
+          <div style={{ background: C.white, borderRadius: 20, padding: 24, border: `1.5px solid ${C.emerald}20`, display: 'flex', alignItems: 'center', gap: 16 }}>
+            <div style={{ fontSize: 32 }}>🏆</div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 700, color: C.muted }}>Ways Completados (Últ. Semana)</div>
+              <div style={{ fontSize: 24, fontWeight: 900, color: C.text }}>{globalKPIs.totalWaysCompleted}</div>
+            </div>
+          </div>
+        </div>
+
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
           <h2 style={{ fontWeight: 900, color: C.text, margin: 0 }}>Lista de Pacientes</h2>
           <button 

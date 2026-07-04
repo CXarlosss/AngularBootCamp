@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { router } from './app/routes';
 import { SyncManager } from './core/components/SyncManager';
 import { AuthProvider } from '@/app/providers/AuthContext';
+import { PostHogProvider } from '@/core/providers/PostHogProvider';
 import './index.css';
 
 const queryClient = new QueryClient({
@@ -38,11 +39,13 @@ export default function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Suspense fallback={<div className="flex items-center justify-center h-screen font-bold text-indigo-600">Cargando WAY+...</div>}>
-          <RouterProvider router={router} />
-        </Suspense>
-      </AuthProvider>
+      <PostHogProvider>
+        <AuthProvider>
+          <Suspense fallback={<div className="flex items-center justify-center h-screen font-bold text-indigo-600">Cargando WAY+...</div>}>
+            <RouterProvider router={router} />
+          </Suspense>
+        </AuthProvider>
+      </PostHogProvider>
     </QueryClientProvider>
   );
 }

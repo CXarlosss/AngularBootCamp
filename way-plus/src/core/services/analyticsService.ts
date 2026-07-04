@@ -182,5 +182,41 @@ export const analyticsService = {
         logs: s.logs.filter((l: any) => l.action === 'way_completed') // Solo mostrar completados para simplificar
       };
     });
+  },
+
+  /**
+   * Obtiene KPIs globales de todos los pacientes para el Dashboard del Terapeuta.
+   */
+  async getGlobalTherapistKPIs(therapistId: string) {
+    if (!supabase) return { activePatientsThisWeek: 0, totalWaysCompleted: 0 };
+
+    // 1. Obtener los IDs de los pacientes del terapeuta
+    const { data: patients } = await supabase
+      .from('patient_profiles')
+      .select('id')
+      .eq('therapist_id', therapistId);
+
+    if (!patients || patients.length === 0) return { activePatientsThisWeek: 0, totalWaysCompleted: 0 };
+
+    const patientIds = patients.map(p => p.id);
+    const oneWeekAgo = new Date();
+    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+
+    // 2. Obtener actividad de todos estos pacientes en la última semana
+    const { data: recentActivity } = await supabase
+      .from('activity_logs')
+      .select('patient_id, action')
+      .in('patient_id', patientIds)
+      .gte('created_at', oneWeekAgo.toISOString());
+
+    if (!recentActivity) return { activePatientsThisWeek: 0, totalWaysCompleted: 0 };
+
+    const activePatients = new Set(recentActivity.map(log => log.patient_id));
+    const completedWays = recentActivity.filter(log => log.action === 'way_completed').length;
+
+    return {
+      activePatientsThisWeek: activePatients.size,
+      totalWaysCompleted: completedWays
+    };
   }
 };
