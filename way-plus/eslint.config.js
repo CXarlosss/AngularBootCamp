@@ -21,6 +21,24 @@ export default defineConfig([
     ],
     rules: {
       ...jsxA11y.flatConfigs.recommended.rules,
+      'no-restricted-imports': ['warn', {
+        paths: [
+          {
+            name: '@/features/therapist',
+            message: 'Zona terapeuta sin refactor. Usar con precaución.'
+          },
+          {
+            name: '@/features/annexes',
+            message: 'Zona anexos sin refactor. Usar con precaución.'
+          }
+        ],
+        patterns: [
+          {
+            group: ['*/features/kiosk/*'],
+            message: 'Zona kiosk sin refactor. Usar con precaución.'
+          }
+        ]
+      }],
     },
     languageOptions: {
       ecmaVersion: 2020,

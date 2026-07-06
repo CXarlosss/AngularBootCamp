@@ -1,113 +1,93 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRewardsStore } from '../store/rewardsStore';
-import type { ShopItem } from '../data/shopCatalog';
+import { Button } from '@/shared/components/Button';
+import { T, Emoji } from '@/shared/components/TypographyScale';
 
 interface PurchaseModalProps {
-  item: ShopItem | null;
-  isOpen: boolean;
-  onClose: () => void;
+  show: boolean;
+  itemName: string;
+  itemIcon: string;
+  price: number;
+  userCoins: number;
   onConfirm: () => void;
+  onCancel: () => void;
 }
 
-export const PurchaseModal: React.FC<PurchaseModalProps> = ({ item, isOpen, onClose, onConfirm }) => {
-  const { wayCoins } = useRewardsStore();
-  const [status, setStatus] = useState<'confirm' | 'success' | 'error'>('confirm');
-  
-  if (!item) return null;
-
-  const canAfford = wayCoins >= item.price;
-  
-  const handlePurchase = () => {
-    if (!canAfford) {
-      setStatus('error');
-      return;
-    }
-    onConfirm();
-    setStatus('success');
-    setTimeout(() => {
-      setStatus('confirm');
-      onClose();
-    }, 2000);
-  };
+export const PurchaseModal: React.FC<PurchaseModalProps> = ({
+  show,
+  itemName,
+  itemIcon,
+  price,
+  userCoins,
+  onConfirm,
+  onCancel
+}) => {
+  const canAfford = userCoins >= price;
 
   return (
     <AnimatePresence>
-      {isOpen && (
+      {show && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-md"
-          onClick={onClose}
+          className="fixed inset-0 z-[300] flex items-center justify-center bg-slate-900/80"
+          onClick={onCancel}
         >
           <motion.div
-            initial={{ scale: 0.8, y: 50, rotate: -5 }}
-            animate={{ scale: 1, y: 0, rotate: 0 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-[3.5rem] p-12 max-w-sm w-full shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] text-center border-8 border-white"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 w-[280px] sm:w-[320px] text-center mx-4"
+            onClick={e => e.stopPropagation()}
           >
-            {status === 'confirm' && (
-              <>
-                <div className="relative mb-8">
-                  <div className="text-9xl filter drop-shadow-xl">{item.icon}</div>
-                  <motion.div 
-                    animate={{ scale: [1, 1.2, 1] }} 
-                    transition={{ repeat: Infinity, duration: 2 }}
-                    className="absolute -top-4 -right-4 bg-amber-400 text-white rounded-full p-4 shadow-xl border-4 border-white font-black"
-                  >
-                    NUEVO
-                  </motion.div>
-                </div>
-                
-                <h2 className="text-3xl font-black text-slate-800 mb-2 tracking-tight">{item.name}</h2>
-                <p className="text-slate-500 font-bold uppercase tracking-widest text-sm mb-8">¿Lo quieres comprar?</p>
-                
-                <div className="flex items-center justify-center gap-3 bg-amber-50 rounded-[2rem] px-8 py-5 mb-10 border-4 border-amber-100">
-                  <span className="text-4xl">🪙</span>
-                  <span className="text-4xl font-black text-amber-600">{item.price}</span>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <motion.button
-                    whileTap={{ scale: 0.95 }}
-                    onClick={onClose}
-                    className="py-5 rounded-3xl bg-slate-100 text-slate-500 font-black text-xl border-b-4 border-slate-200"
-                  >
-                    NO
-                  </motion.button>
-                  <motion.button
-                    whileTap={canAfford ? { scale: 0.95 } : {}}
-                    onClick={handlePurchase}
-                    disabled={!canAfford}
-                    className={`py-5 rounded-3xl font-black text-xl text-white border-b-4
-                      ${canAfford 
-                        ? 'bg-emerald-500 border-emerald-600 shadow-xl shadow-emerald-100' 
-                        : 'bg-slate-200 border-slate-300 cursor-not-allowed text-slate-400'
-                      }
-                    `}
-                  >
-                    {canAfford ? '¡SÍ!' : 'FALTAN'}
-                  </motion.button>
-                </div>
-              </>
-            )}
-            
-            {status === 'success' && (
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="space-y-6">
-                <div className="text-9xl animate-bounce">🎁</div>
-                <h2 className="text-4xl font-black text-emerald-600 tracking-tighter">¡YA ES TUYO!</h2>
-                <p className="text-slate-500 font-bold uppercase tracking-widest">Lo hemos guardado en tu mochila</p>
-              </motion.div>
-            )}
-            
-            {status === 'error' && (
-              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="space-y-6">
-                <div className="text-9xl">💡</div>
-                <h2 className="text-3xl font-black text-rose-500 tracking-tighter">¡NECESITAS MONEDAS!</h2>
-                <p className="text-slate-500 font-bold uppercase tracking-widest">Sigue superando retos para ganar más</p>
-              </motion.div>
+            <div className="w-12 h-12 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center mx-auto mb-3">
+              <Emoji className="text-2xl">{itemIcon}</Emoji>
+            </div>
+
+            <T size="base" bold as="h2" className="mb-1">
+              ¿Quieres comprar?
+            </T>
+
+            <T size="sm" color="muted" className="mb-4">
+              {itemName}
+            </T>
+
+            <div className="flex items-center justify-center gap-2 mb-6 p-3 rounded-xl bg-amber-50 border border-amber-200">
+              <Emoji>⭐</Emoji>
+              <T size="base" bold color="warning">
+                {price}
+              </T>
+              <T size="xs" color="muted">
+                (tienes {userCoins})
+              </T>
+            </div>
+
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                size="md"
+                className="flex-1"
+                onClick={onCancel}
+              >
+                No
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                className="flex-1"
+                onClick={onConfirm}
+                disabled={!canAfford}
+              >
+                Sí
+              </Button>
+            </div>
+
+            {!canAfford && (
+              <T size="micro" color="danger" bold className="mt-3 block">
+                No tienes suficientes monedas
+              </T>
             )}
           </motion.div>
         </motion.div>
