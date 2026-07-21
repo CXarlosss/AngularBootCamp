@@ -56,6 +56,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           isLoading && 'relative text-transparent',
           className
         )}
+        aria-disabled={isDisabled ? 'true' : undefined}
+        aria-busy={isLoading ? 'true' : undefined}
         {...props}
       >
         {isLoading && (

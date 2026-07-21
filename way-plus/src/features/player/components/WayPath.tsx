@@ -56,7 +56,8 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
             </div>
             
             {/* Sendero */}
-            <nav 
+            <ol 
+              aria-label={`Camino de ejercicios para ${stepTitle}`}
               className="flex items-center overflow-x-auto pt-1 px-1 pb-2"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
@@ -69,7 +70,7 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
                   : `Ejercicio ${node.wayNumber}`;
                 
                 return (
-                  <div key={node.id} className="flex items-center shrink-0">
+                  <li key={node.id} className="flex items-center shrink-0">
                     {/* Nodo */}
                     <div className="flex flex-col items-center w-16 sm:w-20">
                       {isCurrent ? (
@@ -107,10 +108,10 @@ export const WayPath: React.FC<WayPathProps> = ({ steps, onWayClick }) => {
                     {!isLast && (
                       <div className="w-3 sm:w-4 h-1 mx-1 rounded-full bg-slate-200" />
                     )}
-                  </div>
+                  </li>
                 );
               })}
-            </nav>
+            </ol>
           </article>
         );
       })}

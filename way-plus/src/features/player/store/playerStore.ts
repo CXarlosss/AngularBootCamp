@@ -3,6 +3,7 @@ import { immer } from 'zustand/middleware/immer';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import type { PlayerProfile } from '@/core/engine/types';
 import { eventBus } from '@/core/utils/eventBus';
+import { posthogTracker } from '@/core/services/posthogService';
 
 export interface RelaxationEntry {
   completed: boolean;
@@ -138,6 +139,13 @@ export const usePlayerStore = create<PlayerState>()(
         if (data.completedWays) state.profile.completedWays = data.completedWays;
         if (data.currentLevel) state.profile.currentLevel = data.currentLevel;
         if (data.sessionQueue) state.profile.sessionQueue = data.sessionQueue ?? [];
+
+        if (state.profile.id && state.profile.id !== '1') {
+          posthogTracker.identifyPlayer(state.profile.id, {
+            avatar: state.profile.avatar,
+            currentLevel: state.profile.currentLevel
+          });
+        }
       }),
     })),
     {

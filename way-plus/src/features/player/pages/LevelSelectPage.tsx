@@ -12,6 +12,7 @@ import { WayPath } from '../components/WayPath';
 import { Button } from '@/shared/components/Button';
 import { T, Emoji } from '@/shared/components/TypographyScale';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
+import { AccessibilityModal } from '../components/AccessibilityModal';
 
 export const LevelSelectPage: React.FC = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ export const LevelSelectPage: React.FC = () => {
   const [homeworkIds, setHomeworkIds] = useState<Set<string>>(new Set());
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [showOfflineBanner, setShowOfflineBanner] = useState(true);
+  const [showA11y, setShowA11y] = useState(false);
   
   const completedWays = useMemo(() => {
     return Array.isArray(profile?.completedWays) ? profile.completedWays : [];
@@ -154,6 +156,15 @@ export const LevelSelectPage: React.FC = () => {
         </div>
       )}
 
+      {/* Accessibility / Settings */}
+      <button
+        onClick={() => setShowA11y(true)}
+        aria-label="Ajustes de accesibilidad"
+        className="absolute top-3 right-16 w-11 h-11 min-w-[44px] min-h-[44px] rounded-xl bg-white text-slate-500 text-base flex items-center justify-center cursor-pointer hover:bg-slate-100 active:scale-95 transition-transform duration-150 z-50 border border-slate-200 shadow-sm focus-visible:ring-2 ring-violet-400/40"
+      >
+        ♿
+      </button>
+
       {/* Logout */}
       <button
         onClick={handleLogout}
@@ -267,6 +278,8 @@ export const LevelSelectPage: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+      
+      <AccessibilityModal isOpen={showA11y} onClose={() => setShowA11y(false)} />
     </div>
   );
 };

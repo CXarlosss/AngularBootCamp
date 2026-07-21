@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRewardsStore } from '../store/rewardsStore';
 import { MISSIONS_CATALOG } from '../data/missions';
 import './MissionBoard.css';
+import { RESPONSIVE } from '@/shared/lib/wayResponsive';
 
 interface Props {
   onClose: () => void;
@@ -89,14 +90,14 @@ export const MissionBoard: React.FC<Props> = ({ onClose }) => {
         <div className="mission-sections">
           <section>
             <h3>📅 Misiones Diarias</h3>
-            <div className="mission-list">
+            <div className={`mission-list ${RESPONSIVE.gridAlbum}`}>
               {dailyMissions.map(renderMission)}
             </div>
           </section>
 
           <section>
             <h3>📅 Misiones Semanales</h3>
-            <div className="mission-list">
+            <div className={`mission-list ${RESPONSIVE.gridAlbum}`}>
               {weeklyMissions.map(renderMission)}
             </div>
           </section>

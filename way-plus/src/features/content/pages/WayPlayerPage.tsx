@@ -11,11 +11,13 @@ import { audioService } from '@/core/utils/audioService';
 import { HomeworkCelebration } from '@/features/player/components/HomeworkCelebration';
 import { homeworkService } from '@/core/services/homeworkService';
 import { syncService } from '@/core/services/syncService';
+import { posthogTracker } from '@/core/services/posthogService';
 import type { Step, Way } from '@/core/engine/types';
 import { cn } from '@/shared/lib/utils';
 import { T, Emoji } from '@/shared/components/TypographyScale';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { Button } from '@/shared/components/Button';
+import { rw } from '@/shared/lib/wayResponsive';
 
 const SESSION_DURATION = 15 * 60;
 const WARNING_THRESHOLD = 3 * 60;
@@ -104,10 +106,13 @@ export function WayPlayerPage() {
   // Check homework
   useEffect(() => {
     const patientId = sessionStorage.getItem('way-active-patient');
-    if (patientId && wayId) {
-      homeworkService.isHomework(patientId, wayId).then(setIsHomework);
+    if (patientId && wayId && levelId && stepId) {
+      homeworkService.isHomework(patientId, wayId).then(isHw => {
+        setIsHomework(isHw);
+        posthogTracker.trackWayStarted(levelId, stepId, wayId, isHw);
+      });
     }
-  }, [wayId]);
+  }, [wayId, levelId, stepId]);
 
   // Reset timer on new way
   useEffect(() => {
@@ -129,7 +134,10 @@ export function WayPlayerPage() {
   const handleSpeakEnd = useCallback(() => setIsSpeaking(false), []);
 
   const handleWayComplete = useCallback((success: boolean) => {
-    if (!currentWay || !wayId) return;
+    if (!currentWay || !wayId || !levelId || !stepId) return;
+    
+    const durationSecs = Math.floor((Date.now() - wayStartTime.current) / 1000);
+    posthogTracker.trackWayCompleted(levelId, stepId, wayId, durationSecs, isHomework, success);
     
     if (success) {
       completeWay(currentWay.id, 1);
@@ -213,7 +221,7 @@ export function WayPlayerPage() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col" style={{ fontFamily: 'Verdana, sans-serif' }}>
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white border-b border-slate-200 px-4 py-2">
+      <header className={rw("headerCompact", "sticky top-0 z-50 bg-white border-b border-slate-200 px-4")}>
         <div className="max-w-2xl mx-auto flex items-center justify-between">
           <button
             onClick={handleBack}

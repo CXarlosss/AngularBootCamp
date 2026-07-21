@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import type { FamilyDashboardData } from '@/types/familyHub';
 import { validateFamilyToken, getFamilyDashboard, subscribeToHomeworkCompletions } from '@/services/familyHubService';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePushNotifications } from '@/features/notifications/hooks/usePushNotifications';
+import { rw } from '@/shared/lib/wayResponsive';
 
 export function FamilyDashboardPage() {
   const { token } = useParams<{ token: string }>();
@@ -10,6 +12,7 @@ export function FamilyDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [toast, setToast] = useState<{message: string, isVisible: boolean}>({ message: '', isVisible: false });
+  const { isSupported, permission, subscribe } = usePushNotifications();
 
   async function loadDashboard(patientId: string) {
     try {
@@ -110,7 +113,7 @@ export function FamilyDashboardPage() {
           <motion.div 
             animate={{ y: [-5, 5, -5] }}
             transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-            className="text-7xl mb-4 drop-shadow-md relative z-10"
+            className={rw("avatarHero", "mb-4 drop-shadow-md relative z-10")}
           >
             {data.avatar_emoji}
           </motion.div>
@@ -121,6 +124,27 @@ export function FamilyDashboardPage() {
             Así va el progreso de {data.patient_name}
           </p>
         </motion.div>
+
+        {/* Banner de Notificaciones Push */}
+        {isSupported && permission === 'default' && (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-indigo-600 text-white rounded-[24px] p-6 shadow-lg relative overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 p-4 opacity-20 text-6xl">🔔</div>
+            <h3 className="font-black text-xl mb-2 relative z-10">¡Activa las notificaciones!</h3>
+            <p className="text-indigo-100 mb-4 text-sm font-medium relative z-10">
+              Recibe avisos cuando {data.patient_name} tenga nuevas misiones o cofres listos.
+            </p>
+            <button
+              onClick={subscribe}
+              className="bg-white text-indigo-700 font-bold py-3 px-6 rounded-xl shadow-md w-full relative z-10 active:scale-95 transition-transform"
+            >
+              Activar ahora
+            </button>
+          </motion.div>
+        )}
 
         {/* Celebración de Semana (Simple y positiva) */}
         <motion.div 

@@ -7,6 +7,7 @@ import { SHOP_CATALOG } from '../data/shopCatalog';
 import { BOOSTS_CATALOG } from '../data/boosts';
 import type { ShopItem } from '../data/shopCatalog';
 import { cn } from '@/shared/lib/utils';
+import { RESPONSIVE } from '@/shared/lib/wayResponsive';
 
 export function RewardsShopPage() {
   const navigate = useNavigate();
@@ -94,7 +95,7 @@ export function RewardsShopPage() {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-2 gap-3">
+        <div className={RESPONSIVE.gridShop}>
           {displayed.map(item => {
             const isBoost = (item as any).effect !== undefined;
             const owned = isBoost ? (ownedBoosts[item.id] > 0) : (purchaseHistory.includes(item.id) || item.price === 0);

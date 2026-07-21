@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/core/hooks/useAudio';
 import type { AmbientZone } from '@/core/utils/audioService';
 import { ArrowLeft, Wind, Droplets, TreePine, Waves } from 'lucide-react';
+import { RESPONSIVE } from '@/shared/lib/wayResponsive';
 
 const ZEN_OPTIONS = [
   { id: 'zen',        label: 'Lluvia',    icon: <Droplets size={32} />,  color: '#60A5FA' },
@@ -86,10 +87,7 @@ export function ZenModePage() {
           </div>
         </div>
 
-        <div style={{ 
-          display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', 
-          gap: 16, width: '100%', maxWidth: 320 
-        }}>
+        <div className={RESPONSIVE.gridZen}>
           {ZEN_OPTIONS.map(opt => (
             <motion.button
               key={opt.id}

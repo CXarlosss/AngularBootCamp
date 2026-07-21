@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWayEngine } from '@/core/engine/useWayEngine';
+import { useConfigStore } from '@/core/stores/configStore';
+import { VoiceButton } from '@/shared/components/VoiceButton';
 
 interface Card {
   id: string;
@@ -24,6 +26,7 @@ export const MemoryWay: React.FC<Props> = ({ way, onComplete }) => {
   const [cards, setCards] = useState<Card[]>([]);
   const [flippedCards, setFlippedCards] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
+  const { reduceMotion } = useConfigStore((s) => s.accessibility);
 
   useEffect(() => {
     const duplicated = way.options.flatMap(opt => [
@@ -75,7 +78,10 @@ export const MemoryWay: React.FC<Props> = ({ way, onComplete }) => {
   return (
     <div className="flex flex-col items-center w-full max-w-xl mx-auto p-4">
       <div className="text-center mb-8">
-        <h2 className="text-3xl font-black text-slate-800 tracking-tight">{way.stimulus.text}</h2>
+        <div className="flex items-center justify-center gap-4">
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight">{way.stimulus.text}</h2>
+          <VoiceButton text={way.stimulus.text} />
+        </div>
         <div className="mt-4 flex justify-center gap-4">
           <div className="bg-indigo-600 text-white px-6 py-2 rounded-full font-black text-sm uppercase tracking-widest shadow-lg">
             Movimientos: {moves}
@@ -87,11 +93,12 @@ export const MemoryWay: React.FC<Props> = ({ way, onComplete }) => {
         {cards.map((card) => (
           <motion.button
             key={card.id}
-            whileHover={{ scale: card.isFlipped || card.isMatched ? 1 : 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={reduceMotion ? {} : { scale: card.isFlipped || card.isMatched ? 1 : 1.05 }}
+            whileTap={reduceMotion ? {} : { scale: 0.95 }}
             onClick={() => handleCardClick(card.id)}
             disabled={card.isMatched || card.isFlipped || state === 'answered'}
-            className={`aspect-square rounded-3xl shadow-xl border-b-8 flex items-center justify-center relative transition-all duration-300
+            aria-label={`Carta. ${card.isFlipped ? 'Volteada' : 'Boca abajo'}`}
+            className={`aspect-square rounded-3xl shadow-xl border-b-8 flex items-center justify-center relative transition-all duration-300 focus-visible:ring-4 focus-visible:ring-indigo-500 outline-none
               ${card.isMatched ? 'bg-emerald-100 border-emerald-200' : ''}
               ${card.isFlipped ? 'bg-white border-indigo-100 rotate-y-180' : 'bg-indigo-500 border-indigo-700'}
             `}
@@ -100,16 +107,17 @@ export const MemoryWay: React.FC<Props> = ({ way, onComplete }) => {
               {(card.isFlipped || card.isMatched) ? (
                 <motion.img 
                   key="front"
-                  initial={{ opacity: 0, rotateY: 90 }}
-                  animate={{ opacity: 1, rotateY: 0 }}
+                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0, rotateY: 90 }}
+                  animate={reduceMotion ? { opacity: 1 } : { opacity: 1, rotateY: 0 }}
                   src={card.image} 
                   className="w-full h-full object-contain p-4" 
+                  alt=""
                 />
               ) : (
                 <motion.span 
                   key="back"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
+                  initial={reduceMotion ? { opacity: 1 } : { opacity: 0 }}
+                  animate={reduceMotion ? { opacity: 1 } : { opacity: 1 }}
                   className="text-white text-5xl font-black"
                 >
                   ?

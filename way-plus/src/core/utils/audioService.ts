@@ -16,6 +16,10 @@ class AudioService {
   private enabled = true;
   private queuedAmbient: AmbientZone | null = null;
 
+  private activeOscillators = new Map<SoundType, Set<OscillatorNode>>();
+  private lastPlayTime = new Map<SoundType, number>();
+  private readonly MIN_INTERVAL = 150;
+
   private constructor() {}
 
   static getInstance() {
@@ -92,38 +96,61 @@ class AudioService {
 
   playSFX(type: SoundType) {
     if (!this.enabled) return;
+    
+    const now = Date.now();
+    const lastTime = this.lastPlayTime.get(type) || 0;
+    if (now - lastTime < this.MIN_INTERVAL) return;
+    this.lastPlayTime.set(type, now);
+
+    // Detener osciladores anteriores del mismo tipo
+    const prevOscillators = this.activeOscillators.get(type);
+    if (prevOscillators) {
+      prevOscillators.forEach(osc => {
+        try { osc.stop(); } catch(e) {}
+      });
+      prevOscillators.clear();
+    } else {
+      this.activeOscillators.set(type, new Set());
+    }
+
     const { ctx, master } = this.initContext();
     if (!ctx || !master) return;
 
+    const registerOsc = (osc: OscillatorNode) => {
+      const set = this.activeOscillators.get(type)!;
+      set.add(osc);
+      osc.onended = () => set.delete(osc);
+    };
+
     switch (type) {
       case 'click':
-        this.synthPop(ctx, master);
+        this.synthPop(ctx, master, registerOsc);
         break;
       case 'hover':
-        this.synthSparkle(ctx, master);
+        this.synthSparkle(ctx, master, registerOsc);
         break;
       case 'success':
-        this.synthFanfare(ctx, master);
+        this.synthFanfare(ctx, master, registerOsc);
         break;
       case 'success_homework':
-        this.synthHomeworkFanfare(ctx, master);
+        this.synthHomeworkFanfare(ctx, master, registerOsc);
         break;
       case 'error':
-        this.synthBloop(ctx, master);
+        this.synthBloop(ctx, master, registerOsc);
         break;
       case 'coins':
-        this.synthCoin(ctx, master);
+        this.synthCoin(ctx, master, registerOsc);
         break;
       case 'chest':
-        this.synthMagic(ctx, master);
+        this.synthMagic(ctx, master, registerOsc);
         break;
       case 'milestone':
-        this.synthEpic(ctx, master);
+        this.synthEpic(ctx, master, registerOsc);
         break;
     }
   }
 
-  private synthHomeworkFanfare(ctx: AudioContext, dest: AudioNode) {
+  private synthHomeworkFanfare(ctx: AudioContext, dest: AudioNode, register: (osc: OscillatorNode) => void) {
     const t = ctx.currentTime;
     // Restauración de frecuencias originales G4-B4-D5-F5-G5-C6 (G Major Dominant 느낌)
     [392.00, 493.88, 587.33, 698.46, 783.99, 1046.50].forEach((freq, i) => {
@@ -140,10 +167,11 @@ class AudioService {
       gain.connect(dest);
       osc.start(t + i * 0.04);
       osc.stop(t + i * 0.04 + 1.0);
+      register(osc);
     });
   }
 
-  private synthPop(ctx: AudioContext, dest: AudioNode) {
+  private synthPop(ctx: AudioContext, dest: AudioNode, register: (osc: OscillatorNode) => void) {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -155,9 +183,10 @@ class AudioService {
     gain.connect(dest);
     osc.start();
     osc.stop(ctx.currentTime + 0.1);
+    register(osc);
   }
 
-  private synthSparkle(ctx: AudioContext, dest: AudioNode) {
+  private synthSparkle(ctx: AudioContext, dest: AudioNode, register: (osc: OscillatorNode) => void) {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.type = 'sine';
@@ -168,9 +197,10 @@ class AudioService {
     gain.connect(dest);
     osc.start();
     osc.stop(ctx.currentTime + 0.05);
+    register(osc);
   }
 
-  private synthCoin(ctx: AudioContext, dest: AudioNode) {
+  private synthCoin(ctx: AudioContext, dest: AudioNode, register: (osc: OscillatorNode) => void) {
     const t = ctx.currentTime;
     const osc1 = ctx.createOscillator();
     const osc2 = ctx.createOscillator();
@@ -190,9 +220,11 @@ class AudioService {
     osc2.start(t);
     osc1.stop(t + 0.2);
     osc2.stop(t + 0.2);
+    register(osc1);
+    register(osc2);
   }
 
-  private synthFanfare(ctx: AudioContext, dest: AudioNode) {
+  private synthFanfare(ctx: AudioContext, dest: AudioNode, register: (osc: OscillatorNode) => void) {
     const t = ctx.currentTime;
     [440, 554, 659, 880].forEach((freq, i) => {
       const osc = ctx.createOscillator();
@@ -206,10 +238,11 @@ class AudioService {
       gain.connect(dest);
       osc.start(t + i * 0.1);
       osc.stop(t + i * 0.1 + 0.4);
+      register(osc);
     });
   }
 
-  private synthBloop(ctx: AudioContext, dest: AudioNode) {
+  private synthBloop(ctx: AudioContext, dest: AudioNode, register: (osc: OscillatorNode) => void) {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.frequency.setValueAtTime(150, ctx.currentTime);
@@ -220,9 +253,10 @@ class AudioService {
     gain.connect(dest);
     osc.start();
     osc.stop(ctx.currentTime + 0.2);
+    register(osc);
   }
 
-  private synthMagic(ctx: AudioContext, dest: AudioNode) {
+  private synthMagic(ctx: AudioContext, dest: AudioNode, register: (osc: OscillatorNode) => void) {
     const t = ctx.currentTime;
     for(let i=0; i<10; i++) {
       const osc = ctx.createOscillator();
@@ -234,10 +268,11 @@ class AudioService {
       gain.connect(dest);
       osc.start(t + i * 0.05);
       osc.stop(t + i * 0.05 + 0.2);
+      register(osc);
     }
   }
 
-  private synthEpic(ctx: AudioContext, dest: AudioNode) {
+  private synthEpic(ctx: AudioContext, dest: AudioNode, register: (osc: OscillatorNode) => void) {
     const t = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
@@ -255,6 +290,7 @@ class AudioService {
     gain.connect(dest);
     osc.start(t);
     osc.stop(t + 2.0);
+    register(osc);
   }
 
   // --- AMBIENT SYNTHESIS ---

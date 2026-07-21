@@ -1,5 +1,3 @@
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { format } from 'date-fns';
 
 interface PatientData {
@@ -14,7 +12,9 @@ interface PatientData {
 /**
  * Genera un informe clínico en PDF para un paciente.
  */
-export const generatePatientReport = (patient: PatientData, logs: any[]) => {
+export const generatePatientReport = async (patient: PatientData, logs: any[]) => {
+  const { default: jsPDF } = await import('jspdf');
+  const { default: autoTable } = await import('jspdf-autotable');
   const doc = new jsPDF();
   const dateStr = format(new Date(), 'dd/MM/yyyy HH:mm');
 

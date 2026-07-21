@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWayEngine } from '@/core/engine/useWayEngine';
 import { useConfigStore } from '@/core/stores/configStore';
+import { VoiceButton } from '@/shared/components/VoiceButton';
 
 interface TracingWayProps {
   way: {
@@ -83,11 +84,30 @@ export const TracingWay: React.FC<TracingWayProps> = ({ way, onComplete }) => {
   };
 
 
+  const handleKeyboardSelect = (opt: any) => {
+    if (state === 'answered') return;
+    const isCorrect = opt.isCorrect;
+    setResult(isCorrect ? 'correct' : 'incorrect');
+    
+    if (isCorrect) {
+      submitAnswer('correct');
+      const delay = reduceMotion ? 2000 : 3500;
+      setTimeout(onComplete, delay);
+    } else {
+      setTimeout(() => {
+        setResult(null);
+      }, 1500);
+    }
+  };
+
   return (
     <div className="flex flex-col items-center w-full max-w-2xl mx-auto p-4">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-black text-slate-800 tracking-tight">{way.stimulus.text}</h2>
-        <p className="text-slate-400 font-bold mt-2 uppercase tracking-widest text-sm">✍️ Traza el camino correcto</p>
+      <div className="mb-8 flex flex-col items-center gap-2 text-center">
+        <div className="flex items-center justify-center gap-4">
+          <h2 className="text-3xl font-black text-slate-800 tracking-tight">{way.stimulus.text}</h2>
+          <VoiceButton text={way.stimulus.text} />
+        </div>
+        <p className="text-slate-400 font-bold mt-2 uppercase tracking-widest text-sm">✍️ Traza el camino correcto o usa Tab/Enter</p>
       </div>
 
       <div
@@ -129,9 +149,19 @@ export const TracingWay: React.FC<TracingWayProps> = ({ way, onComplete }) => {
             key={opt.id}
             className={`absolute w-24 h-24 -ml-12 -mt-12 rounded-[2rem] flex flex-col items-center justify-center shadow-xl border-4 bg-white transition-all
               ${state === 'answered' && opt.isCorrect ? 'border-emerald-400 scale-110' : 'border-slate-50'}
+              focus-visible:ring-4 focus-visible:ring-indigo-500 cursor-pointer hover:border-indigo-200
             `}
             style={{ left: `${opt.position.x}%`, top: `${opt.position.y}%` }}
             animate={state === 'answered' && !opt.isCorrect ? { opacity: 0.3, scale: 0.9 } : {}}
+            tabIndex={0}
+            role="button"
+            aria-label={`Opción: ${opt.label}`}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                handleKeyboardSelect(opt);
+              }
+            }}
           >
             <img src={opt.image} alt="" className="w-14 h-14 object-contain" />
             <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter mt-1">{opt.label}</span>

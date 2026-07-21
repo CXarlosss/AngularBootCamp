@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { useWayImage } from '@/core/services/wayImageService';
 import { audioService } from '@/core/utils/audioService';
+import { VoiceButton } from '@/shared/components/VoiceButton';
 
 interface Props {
   way: {
@@ -64,9 +65,12 @@ export const RoleplayWay: React.FC<Props> = ({ way, onComplete }) => {
         <p className="text-slate-500 font-bold uppercase tracking-widest text-sm mb-4" style={{ fontFamily: 'Verdana, sans-serif' }}>
           Misión: Cambio de Papel
         </p>
-        <h3 className="text-2xl font-black text-slate-800 leading-tight mb-8" style={{ fontFamily: 'Verdana, sans-serif' }}>
-          {way.stimulus.text || 'Tú haces de profe/papá y ellos hacen de ti.'}
-        </h3>
+        <div className="flex items-center justify-center gap-4 mb-8">
+          <h3 className="text-2xl font-black text-slate-800 leading-tight" style={{ fontFamily: 'Verdana, sans-serif' }}>
+            {way.stimulus.text || 'Tú haces de profe/papá y ellos hacen de ti.'}
+          </h3>
+          <VoiceButton text={way.stimulus.text || 'Tú haces de profe/papá y ellos hacen de ti.'} />
+        </div>
 
         <motion.button
           whileHover={{ scale: 1.05, y: -4 }}

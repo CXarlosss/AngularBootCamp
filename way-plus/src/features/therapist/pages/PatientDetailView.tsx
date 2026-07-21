@@ -6,7 +6,6 @@ import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { ClinicalRadar } from '../components/ClinicalRadar';
 import { RecommendationManager } from '../components/RecommendationManager';
-import { EvolutionCharts } from '../components/EvolutionCharts';
 import { TherapistNotes } from '../components/TherapistNotes';
 import { ObjectivesTab } from '../components/ObjectivesTab';
 import { ReportGenerator } from '../components/ReportGenerator';
@@ -17,7 +16,6 @@ import { PinConfig } from '../components/PinConfig';
 import { SyncStatus } from '../components/SyncStatus';
 import { SoundToggle } from '@/core/components/SoundToggle';
 import { useConfigStore } from '@/core/stores/configStore';
-import { PatientAnalyticsView } from '../components/PatientAnalyticsView';
 import { HomeworkPlanner } from '../components/HomeworkPlanner';
 import { patientService } from '@/core/services/patientService';
 
@@ -34,6 +32,9 @@ const C = {
   bg:      '#F8FAFF',
   white:   '#ffffff',
 };
+
+const EvolutionCharts = React.lazy(() => import('../components/EvolutionCharts').then(m => ({ default: m.EvolutionCharts })));
+const PatientAnalyticsView = React.lazy(() => import('../components/PatientAnalyticsView').then(m => ({ default: m.PatientAnalyticsView })));
 
 function SettingToggle({ label, description, active, onToggle }: { label: string, description: string, active: boolean, onToggle: () => void }) {
   return (
@@ -245,8 +246,16 @@ export function PatientDetailView() {
           )}
 
           {activeTab === 'homework' && <HomeworkPlanner patientId={patient.id} />}
-          {activeTab === 'analytics' && <PatientAnalyticsView patientId={patient.id} />}
-          {activeTab === 'evolution' && <EvolutionCharts />}
+          {activeTab === 'analytics' && (
+            <React.Suspense fallback={<div className="p-10 text-center font-bold text-slate-400">Cargando telemetría...</div>}>
+              <PatientAnalyticsView patientId={patient.id} />
+            </React.Suspense>
+          )}
+          {activeTab === 'evolution' && (
+            <React.Suspense fallback={<div className="p-10 text-center font-bold text-slate-400">Cargando gráficos de evolución...</div>}>
+              <EvolutionCharts />
+            </React.Suspense>
+          )}
           {activeTab === 'objectives' && <ObjectivesTab patient={patient} />}
           {activeTab === 'notes' && <TherapistNotes patientId={patient.id} />}
           {activeTab === 'recommendations' && <RecommendationManager patientId={patient.id} />}

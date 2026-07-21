@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, Reorder, AnimatePresence } from 'framer-motion';
 import { useWayEngine } from '@/core/engine/useWayEngine';
+import { VoiceButton } from '@/shared/components/VoiceButton';
 
 interface SequencingOption {
   id: string;
@@ -24,6 +25,43 @@ export const SequencingWay: React.FC<Props> = ({ way, onComplete }) => {
     [...way.options].sort(() => Math.random() - 0.5)
   );
   const [attempts, setAttempts] = useState(0);
+  const [selectedForSwap, setSelectedForSwap] = useState<string | null>(null);
+
+  const handleKeyDown = (e: React.KeyboardEvent, index: number, item: SequencingOption) => {
+    if (isLocked) return;
+    
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (selectedForSwap === null) {
+        setSelectedForSwap(item.id);
+      } else {
+        const idx1 = items.findIndex(i => i.id === selectedForSwap);
+        const idx2 = index;
+        if (idx1 !== -1 && idx1 !== idx2) {
+          const newItems = [...items];
+          [newItems[idx1], newItems[idx2]] = [newItems[idx2], newItems[idx1]];
+          setItems(newItems);
+        }
+        setSelectedForSwap(null);
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (index > 0) {
+        const newItems = [...items];
+        [newItems[index], newItems[index - 1]] = [newItems[index - 1], newItems[index]];
+        setItems(newItems);
+      }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (index < items.length - 1) {
+        const newItems = [...items];
+        [newItems[index], newItems[index + 1]] = [newItems[index + 1], newItems[index]];
+        setItems(newItems);
+      }
+    } else if (e.key === 'Escape') {
+      setSelectedForSwap(null);
+    }
+  };
 
   const checkOrder = () => {
     const isCorrect = items.every((item, index) => item.order === index);
@@ -45,8 +83,13 @@ export const SequencingWay: React.FC<Props> = ({ way, onComplete }) => {
         {way.stimulus.image && (
           <img src={way.stimulus.image} alt="" className="w-32 h-32 object-contain mx-auto mb-6" />
         )}
-        <h2 className="text-3xl font-black text-slate-800 leading-tight">{way.stimulus.text}</h2>
-        <p className="text-slate-400 font-bold mt-3 uppercase tracking-widest text-sm">👆 Arrastra para ordenar</p>
+        <div className="flex items-center justify-center gap-4">
+          <h2 className="text-3xl font-black text-slate-800 leading-tight">{way.stimulus.text}</h2>
+          <VoiceButton text={way.stimulus.text} />
+        </div>
+        <p className="text-slate-400 font-bold mt-3 uppercase tracking-widest text-sm">
+          👆 Arrastra o usa Flechas / Enter para ordenar
+        </p>
       </div>
 
       <Reorder.Group 
@@ -56,14 +99,19 @@ export const SequencingWay: React.FC<Props> = ({ way, onComplete }) => {
         className="w-full space-y-4 mb-10"
       >
         <AnimatePresence>
-          {items.map((item) => (
+          {items.map((item, index) => (
             <Reorder.Item
               key={item.id}
               value={item}
               drag={!isLocked}
               whileDrag={{ scale: 1.05, rotate: 1 }}
-              className={`bg-white rounded-3xl p-5 shadow-lg border-b-8 flex items-center gap-6 cursor-grab active:cursor-grabbing transition-all
+              tabIndex={0}
+              role="button"
+              aria-label={`Posición ${index + 1}: ${item.label}. ${selectedForSwap === item.id ? 'Seleccionado para mover' : 'Pulsa Enter para seleccionar'}`}
+              onKeyDown={(e) => handleKeyDown(e, index, item)}
+              className={`bg-white rounded-3xl p-5 shadow-lg border-b-8 flex items-center gap-6 cursor-grab active:cursor-grabbing transition-all focus-visible:ring-4 focus-visible:ring-indigo-500
                 ${isLocked ? 'border-emerald-200 opacity-90' : 'border-slate-100 hover:border-indigo-200'}
+                ${selectedForSwap === item.id ? 'ring-4 ring-indigo-500 bg-indigo-50' : ''}
               `}
             >
               <div className="bg-indigo-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner">

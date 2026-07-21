@@ -6,6 +6,7 @@ import { BOOSTS_CATALOG } from "../data/boosts";
 import { MISSIONS_CATALOG, getTodayKey } from "../data/missions";
 import { STICKERS_CATALOG } from "../data/collections";
 import { eventBus } from "@/core/utils/eventBus";
+import { posthogTracker } from "@/core/services/posthogService";
 
 // ─── Tipos ───────────────────────────────────────────────────────────────────
 export type AvatarPart = string;
@@ -95,11 +96,13 @@ export const useRewardsStore = create<RewardsState>()(
       unlockedSecrets: [],
       newSecretAwarded: null,
 
-      addCoins: (amount, source) =>
+      addCoins: (amount, source) => {
         set((state) => {
           state.wayCoins += amount;
           state.totalXp += Math.floor(amount / 2);
-        }),
+        });
+        posthogTracker.trackRewardEarned(amount, source);
+      },
 
       spendCoins: (amount) => {
         if (get().wayCoins < amount) return false;
@@ -130,6 +133,7 @@ export const useRewardsStore = create<RewardsState>()(
           draft.purchaseHistory.push(itemId);
           draft.inventory.push({ id: item.id, name: item.name, icon: item.icon, category: item.category, rarity: item.rarity, unlockedAt: new Date().toISOString(), equipped: false });
         });
+        posthogTracker.trackItemPurchased(itemId, item.price);
         return { success: true, message: "Ok" };
       },
 
@@ -207,6 +211,7 @@ export const useRewardsStore = create<RewardsState>()(
             state.wayCoins -= boost.price;
             state.ownedBoosts[boostId] = (state.ownedBoosts[boostId] || 0) + 1;
           });
+          posthogTracker.trackItemPurchased(boostId, boost.price);
         }
       },
       consumeBoost: (boostId) => set((state) => {
