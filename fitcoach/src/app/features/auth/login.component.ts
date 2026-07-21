@@ -5,12 +5,13 @@ import {
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { FcButtonDirective } from '../../shared/components/button/fc-button.directive';
 
 @Component({
   selector: 'fc-login',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, FcButtonDirective],
   template: `
     <div class="auth-screen">
       <div class="auth-card">
@@ -51,7 +52,7 @@ import { AuthService } from '../../core/auth/auth.service';
 
           <button
             type="submit"
-            class="btn-auth"
+            fcButton fullWidth
             [disabled]="loading() || !loginForm.form.valid"
           >
             {{ loading() ? 'Entrando...' : 'Entrar' }}
@@ -60,10 +61,10 @@ import { AuthService } from '../../core/auth/auth.service';
 
         <div class="auth-divider">¿Primera vez aquí?</div>
 
-        <a routerLink="/auth/register-coach" class="btn-secondary-auth">
+        <a routerLink="/auth/register-coach" fcButton variant="ghost" fullWidth>
           Soy entrenador — crear cuenta
         </a>
-        <a routerLink="/auth/register-client" class="btn-secondary-auth">
+        <a routerLink="/auth/register-client" fcButton variant="ghost" fullWidth>
           Soy cliente — tengo un código
         </a>
 

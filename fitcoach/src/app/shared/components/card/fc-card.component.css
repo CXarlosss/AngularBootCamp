@@ -1,0 +1,35 @@
+:host {
+  display: block;
+  background: var(--c-surface);
+  border: 0.5px solid var(--c-border);
+  border-radius: 16px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.fc-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.fc-card-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--c-text-3);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+  margin: 0;
+}
+
+.fc-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Variante compacta para KPIs si es necesaria (opcional) */
+:host(.is-compact) {
+  padding: 12px 14px;
+}

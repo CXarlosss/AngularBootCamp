@@ -1,6 +1,7 @@
 /* styles.css */
 @import './styles/client-theme.css';
 @import './app/features/client/profile/frames.css';
+@import './app/shared/components/button/fc-button.css';
 
 * {
   box-sizing: border-box;
@@ -102,26 +103,6 @@ input[type=number] {
   box-shadow: 0 -10px 30px #00000080;
 }
 
-.nav-btn {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: var(--c-text-4);
-  font-size: 11px;
-  font-weight: 600;
-  text-align: center;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: all .2s;
-}
-
-.nav-btn:hover { color: var(--c-text-2); }
-.nav-btn.active { color: var(--c-green); }
-.nav-btn svg { transition: transform .2s; }
-.nav-btn.active svg { transform: translateY(-2px); }
 
 .workout-screen,
 .client-content {

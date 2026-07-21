@@ -74,23 +74,24 @@ export class SetLoggerComponent {
   exerciseId  = input.required<string>();
   exerciseName = input.required<string>();
   previousSet = input<SetLog | null>(null);
+  targetReps  = input<number | null>(null);
 
   setLogged = output<Omit<SetLog, 'id'>>();
 
   private haptic = inject(HapticService);
 
   weight = signal(0);
-  reps   = signal(10);
+  reps   = signal(0);
   notes  = signal('');
 
   constructor() {
-    // Al recibir un set anterior, actualizamos los valores por defecto
+    // Al recibir un set anterior o el objetivo, actualizamos los valores por defecto
     effect(() => {
       const prev = this.previousSet();
       if (prev) {
         this.weight.set(prev.weightKg);
-        this.reps.set(prev.repsDone);
       }
+      this.reps.set(this.targetReps() ?? prev?.repsDone ?? 0);
     }, { allowSignalWrites: true });
   }
 

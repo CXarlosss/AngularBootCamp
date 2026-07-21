@@ -7,12 +7,13 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatStore, ChatMessage } from '../../../state/chat.store';
 import { AuthService } from '../../../core/auth/auth.service';
+import { FcButtonDirective } from '../../shared/components/button/fc-button.directive';
 
 @Component({
   selector: 'fc-chat-window',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, DatePipe],
+  imports: [CommonModule, FormsModule, DatePipe, FcButtonDirective],
   template: `
     <div class="chat-window">
 
@@ -110,9 +111,11 @@ import { AuthService } from '../../../core/auth/auth.service';
           maxlength="1000"
         />
         <button
-          class="send-btn"
+          fcButton variant="primary" size="icon" elevated
+          aria-label="Enviar mensaje"
           [disabled]="!draft.trim() || store.sending()"
           (click)="send()"
+          (pointerdown)="$event.preventDefault()"
         >
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2"

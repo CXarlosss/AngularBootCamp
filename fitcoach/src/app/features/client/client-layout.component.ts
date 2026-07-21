@@ -9,6 +9,7 @@ import { NotificationToastComponent } from '../../core/components/notification-t
 import { ToastContainerComponent } from '../../shared/components/toast-container/toast-container.component';
 import { UnlockCelebrationComponent } from '../../shared/components/unlock-celebration/unlock-celebration.component';
 import { RankChangeDetectorService } from '../../core/services/rank-change-detector.service';
+import { FcButtonDirective } from '../../shared/components/button/fc-button.directive';
 
 @Component({
   selector: 'fc-client-layout',
@@ -19,7 +20,8 @@ import { RankChangeDetectorService } from '../../core/services/rank-change-detec
     RouterModule, 
     NotificationToastComponent,
     ToastContainerComponent,
-    UnlockCelebrationComponent
+    UnlockCelebrationComponent,
+    FcButtonDirective
   ],
   template: `
     <!-- Capas de feedback (Z-Index alto pero no bloqueantes) -->
@@ -32,37 +34,37 @@ import { RankChangeDetectorService } from '../../core/services/rank-change-detec
     </main>
 
     <nav class="bottom-nav">
-      <button 
-        class="nav-btn" 
-        [class.active]="isActive('/client/dashboard')"
-        (click)="navigate('/client/dashboard')"
+      <a 
+        fcButton variant="nav" 
+        routerLink="/client/dashboard"
+        routerLinkActive="active"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
         <span>Inicio</span>
-      </button>
+      </a>
 
-      <button 
-        class="nav-btn" 
-        [class.active]="isActive('/client/workout')"
-        (click)="navigate('/client/workout')"
+      <a 
+        fcButton variant="nav" 
+        routerLink="/client/workout"
+        routerLinkActive="active"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 5v14M18 5v14M2 9h4M18 9h4M2 15h4M18 15h4"/></svg>
         <span>Entreno</span>
-      </button>
+      </a>
 
-      <button 
-        class="nav-btn" 
-        [class.active]="isActive('/client/progress')"
-        (click)="navigate('/client/progress')"
+      <a 
+        fcButton variant="nav" 
+        routerLink="/client/progress"
+        routerLinkActive="active"
       >
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
         <span>Progreso</span>
-      </button>
+      </a>
 
-      <button 
-        class="nav-btn" 
-        [class.active]="isActive('/client/chat')"
-        (click)="navigate('/client/chat')"
+      <a 
+        fcButton variant="nav" 
+        routerLink="/client/chat"
+        routerLinkActive="active"
       >
         <div class="icon-wrap">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -71,11 +73,11 @@ import { RankChangeDetectorService } from '../../core/services/rank-change-detec
           }
         </div>
         <span>Chat</span>
-      </button>
-      <button 
-        class="nav-btn" 
-        [class.active]="isActive('/client/profile')"
-        (click)="navigate('/client/profile')"
+      </a>
+      <a 
+        fcButton variant="nav" 
+        routerLink="/client/profile"
+        routerLinkActive="active"
       >
         <div class="icon-wrap">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -84,12 +86,13 @@ import { RankChangeDetectorService } from '../../core/services/rank-change-detec
           }
         </div>
         <span>Perfil</span>
-      </button>
+      </a>
     </nav>
   `,
   styles: [`
     :host {
-      height: 100%;
+      height: 100vh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
       background: var(--c-bg);
@@ -103,20 +106,6 @@ import { RankChangeDetectorService } from '../../core/services/rank-change-detec
       scroll-behavior: smooth;
       display: flex;
       flex-direction: column;
-    }
-
-    /* Estilos extra para los botones activos */
-    .nav-btn {
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    
-    .nav-btn span {
-      margin-top: 4px;
-      transition: opacity 0.3s;
-    }
-
-    .nav-btn.active span {
-      color: var(--c-green);
     }
 
     .icon-wrap { position: relative; display: flex; align-items: center; justify-content: center; }
@@ -167,13 +156,5 @@ export class ClientLayoutComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.unreadSvc.unsubscribe();
     this.notifSvc.unsubscribe();
-  }
-
-  isActive(route: string): boolean {
-    return this.router.url.includes(route);
-  }
-
-  navigate(route: string) {
-    this.router.navigate([route]);
   }
 }

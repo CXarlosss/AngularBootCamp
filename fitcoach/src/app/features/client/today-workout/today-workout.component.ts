@@ -244,6 +244,7 @@ interface ExerciseState {
                     [exerciseId]="state.exercise.id"
                     [exerciseName]="state.exercise.name"
                     [previousSet]="lastSet(state)"
+                    [targetReps]="state.exercise.reps"
                     (setLogged)="onSetLogged($event, state.exercise)"
                   />
                 </div>

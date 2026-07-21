@@ -5,12 +5,13 @@ import {
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { FcButtonDirective } from '../../shared/components/button/fc-button.directive';
 
 @Component({
   selector: 'fc-register-coach',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, FcButtonDirective],
   template: `
     <div class="auth-screen">
       <div class="auth-card">
@@ -45,7 +46,7 @@ import { AuthService } from '../../core/auth/auth.service';
         </div>
 
         <button
-          class="btn-auth"
+          fcButton fullWidth
           [disabled]="loading() || !isValid()"
           (click)="onRegister()"
         >

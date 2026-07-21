@@ -12,10 +12,6 @@
 }
 
 .kpi-card {
-  background: var(--c-surface);
-  border: 0.5px solid var(--c-border);
-  border-radius: 16px;
-  padding: 12px 14px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -57,22 +53,7 @@
   max-width: 100%;
 }
 
-.section-card {
-  background: var(--c-surface);
-  border: 0.5px solid var(--c-border);
-  border-radius: 16px;
-  padding: 14px;
-  margin-bottom: 12px;
-}
 
-.section-title {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--c-text-3);
-  text-transform: uppercase;
-  letter-spacing: .05em;
-  margin: 0 0 12px;
-}
 
 /* Barras semanales */
 .weekly-bars {
@@ -118,22 +99,7 @@
 .bar-pct   { font-size: 9px;  color: var(--c-text-5); }
 
 /* Peso y Ejercicios Header */
-.weight-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
 
-.add-weight-btn {
-  font-size: 12px;
-  color: var(--c-green);
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-family: inherit;
-  padding: 4px 0;
-}
 
 .custom-select-container {
   position: relative;

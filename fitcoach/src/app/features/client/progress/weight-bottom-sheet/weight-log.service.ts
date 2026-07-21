@@ -14,6 +14,15 @@ export class WeightLogService {
   private sb   = supabase;
   private auth = inject(AuthService);
 
+  // Draft state para mantener el formulario si cambias de pestaña
+  draftWeight: number | null = null;
+  draftNote: string = '';
+
+  clearDraft() {
+    this.draftWeight = null;
+    this.draftNote = '';
+  }
+
   async logWeight(weight_kg: number, notes?: string): Promise<void> {
     const userId = this.auth.profile()?.id;
     if (!userId) throw new Error('No autenticado');

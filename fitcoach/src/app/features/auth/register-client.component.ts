@@ -5,6 +5,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
+import { FcButtonDirective } from '../../shared/components/button/fc-button.directive';
 
 type CodeStatus = 'idle' | 'checking' | 'valid' | 'invalid';
 
@@ -12,7 +13,7 @@ type CodeStatus = 'idle' | 'checking' | 'valid' | 'invalid';
   selector: 'fc-register-client',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, FcButtonDirective],
   template: `
     <div class="auth-screen">
       <div class="auth-card">
@@ -79,7 +80,7 @@ type CodeStatus = 'idle' | 'checking' | 'valid' | 'invalid';
           </div>
 
           <button
-            class="btn-auth"
+            fcButton fullWidth
             [disabled]="loading() || !isValid()"
             (click)="onRegister()"
           >

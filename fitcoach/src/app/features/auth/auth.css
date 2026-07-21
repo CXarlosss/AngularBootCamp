@@ -129,28 +129,6 @@
   color: #2C2C2A !important;
 }
 
-/* Botón principal */
-.btn-auth {
-  width: 100%;
-  height: 50px;
-  background: #0F6E56;
-  color: #9FE1CB;
-  border: none;
-  border-radius: 12px;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  margin-top: 8px;
-  transition: background .15s, transform .1s;
-  letter-spacing: -.01em;
-}
-
-.btn-auth:hover:not(:disabled)  { background: #1D9E75; }
-.btn-auth:active:not(:disabled) { transform: scale(0.99); }
-.btn-auth:disabled {
-  opacity: .4;
-  cursor: not-allowed;
-}
 
 /* Divider */
 .auth-divider {
@@ -174,28 +152,6 @@
 .auth-divider::before { left: 0; }
 .auth-divider::after  { right: 0; }
 
-/* Botones secundarios */
-.btn-secondary-auth {
-  display: block;
-  width: 100%;
-  height: 44px;
-  text-align: center;
-  line-height: 44px;
-  border: 0.5px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
-  font-size: 13px;
-  color: #888780;
-  text-decoration: none;
-  margin-bottom: 8px;
-  transition: all .15s;
-  background: transparent;
-}
-
-.btn-secondary-auth:hover {
-  background: rgba(255,255,255,0.04);
-  color: #e8e6df;
-  border-color: rgba(255,255,255,0.14);
-}
 
 /* Back link */
 .back-link {

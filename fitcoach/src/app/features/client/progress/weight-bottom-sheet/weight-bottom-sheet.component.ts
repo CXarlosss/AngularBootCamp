@@ -1,6 +1,6 @@
 import {
   Component, Output, EventEmitter, inject,
-  signal, computed, OnInit
+  signal, computed, OnInit, OnDestroy
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +12,7 @@ import { WeightLogService, WeightEntry } from './weight-log.service';
   imports: [CommonModule, FormsModule],
   template: `
     <!-- Backdrop -->
-    <div class="backdrop" (click)="close.emit()"></div>
+    <div class="backdrop" (click)="discardAndClose()"></div>
 
     <!-- Sheet -->
     <div class="sheet" role="dialog" aria-label="Registrar peso">
@@ -70,7 +70,7 @@ import { WeightLogService, WeightEntry } from './weight-log.service';
   `,
   styleUrl: './weight-bottom-sheet.component.scss',
 })
-export class WeightBottomSheetComponent implements OnInit {
+export class WeightBottomSheetComponent implements OnInit, OnDestroy {
   @Output() close   = new EventEmitter<void>();
   @Output() saved$  = new EventEmitter<number>(); // emite el peso guardado
 
@@ -80,6 +80,7 @@ export class WeightBottomSheetComponent implements OnInit {
   note     = '';
   saving   = signal(false);
   saved    = signal(false);
+  isDiscarding = false;
   lastEntry = signal<WeightEntry | null>(null);
 
   todayLabel = this.buildTodayLabel();
@@ -97,8 +98,29 @@ export class WeightBottomSheetComponent implements OnInit {
   async ngOnInit() {
     const last = await this.svc.getLastEntry();
     this.lastEntry.set(last);
-    // Partir del último peso registrado como valor inicial
-    if (last) this.weight.set(last.weight_kg);
+    
+    // Restaurar el borrador si el usuario cambió de pestaña
+    if (this.svc.draftWeight !== null) {
+      this.weight.set(this.svc.draftWeight);
+      this.note = this.svc.draftNote;
+    } else if (last) {
+      // Partir del último peso registrado como valor inicial
+      this.weight.set(last.weight_kg);
+    }
+  }
+
+  ngOnDestroy() {
+    // Si no se guardó el peso y no se cerró explícitamente, guardar el borrador temporal
+    if (!this.saved() && !this.isDiscarding) {
+      this.svc.draftWeight = this.weight();
+      this.svc.draftNote = this.note;
+    }
+  }
+
+  discardAndClose() {
+    this.isDiscarding = true;
+    this.svc.clearDraft();
+    this.close.emit();
   }
 
   adjust(delta: number) {
@@ -113,6 +135,7 @@ export class WeightBottomSheetComponent implements OnInit {
     try {
       await this.svc.logWeight(this.weight(), this.note.trim() || undefined);
       this.saved.set(true);
+      this.svc.clearDraft(); // Limpiar el borrador porque ya se guardó
       this.saved$.emit(this.weight());
       // Cerrar tras feedback visual
       setTimeout(() => this.close.emit(), 1200);

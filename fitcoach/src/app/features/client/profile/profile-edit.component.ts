@@ -10,11 +10,12 @@ import { RankService }          from '../../../core/services/rank.service';
 import { AuthService }          from '../../../core/auth/auth.service';
 import { ProfileBannerComponent } from './profile-banner/profile-banner.component';
 import { ThemeService, ThemePreference } from '../../../core/services/theme.service';
+import { FcCardComponent } from '../../../shared/components/card/fc-card.component';
 
 @Component({
   selector: 'app-profile-edit',
   standalone: true,
-  imports: [CommonModule, InitialsPipe, RouterModule, ProfileBannerComponent],
+  imports: [CommonModule, InitialsPipe, RouterModule, ProfileBannerComponent, FcCardComponent],
   providers: [ProfileService],
   template: `
     <div class="client-dash">
@@ -44,7 +45,7 @@ import { ThemeService, ThemePreference } from '../../../core/services/theme.serv
         }
 
         <!-- Card de Rango Detallada -->
-        <div class="dash-card" style="margin: 0 20px 24px;">
+        <fc-card style="margin: 0 20px 24px;">
           <div class="xp-container">
             <div class="xp-header">
               <span>Nivel {{ rankSvc.fullRank()?.rank?.level }}</span>
@@ -55,10 +56,9 @@ import { ThemeService, ThemePreference } from '../../../core/services/theme.serv
             </div>
             <p class="xp-next">Faltan {{ rankSvc.fullRank()?.xpToNext | number }} XP para el siguiente rango</p>
           </div>
-        </div>
+        </fc-card>
 
-        <p class="section-lbl" style="margin-left: 24px;">Ajustes de App</p>
-        <div class="dash-card" style="margin: 0 20px 24px;">
+        <fc-card title="Ajustes de App" style="margin: 0 20px 24px;">
           <div class="theme-toggle">
             <span class="theme-icon">🌓</span>
             <div class="theme-info">
@@ -70,7 +70,7 @@ import { ThemeService, ThemePreference } from '../../../core/services/theme.serv
               <option value="light">Claro</option>
             </select>
           </div>
-        </div>
+        </fc-card>
 
         <!-- Opciones de Personalización -->
         <p class="section-lbl" style="margin-left: 24px;">Personalización</p>

@@ -7,6 +7,8 @@ import { WeightChartComponent } from '../../../shared/components/weight-chart/we
 import { ProgressStore } from '../../../state/progress.store';
 import { ProgressChartComponent } from '../../../shared/components/progress-chart/progress-chart.component';
 import { AuthService } from '../../../core/auth/auth.service';
+import { FcCardComponent, FcCardActionsDirective } from '../../../shared/components/card/fc-card.component';
+import { FcButtonDirective } from '../../../shared/components/button/fc-button.directive';
 
 @Component({
   selector: 'fc-client-progress',
@@ -16,7 +18,10 @@ import { AuthService } from '../../../core/auth/auth.service';
     DecimalPipe, 
     WeightBottomSheetComponent, 
     WeightChartComponent,
-    ProgressChartComponent
+    ProgressChartComponent,
+    FcCardComponent,
+    FcCardActionsDirective,
+    FcButtonDirective
   ],
   templateUrl: './client-progress.component.html',
   styleUrl: './client-progress.component.css'

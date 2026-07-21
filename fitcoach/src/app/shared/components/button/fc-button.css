@@ -1,0 +1,113 @@
+.fc-btn {
+  /* Reset y base */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-weight: 500;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: all 0.15s ease;
+  letter-spacing: -0.01em;
+}
+
+/* Estado Disabled unificado */
+.fc-btn:disabled,
+.fc-btn[aria-disabled="true"],
+.fc-btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none !important;
+}
+
+/* --- TAMAÑOS --- */
+.fc-btn-md {
+  height: 50px;
+  padding: 0 16px;
+  border-radius: 12px;
+  font-size: 15px;
+}
+
+.fc-btn-sm {
+  height: 44px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 44px;
+}
+
+.fc-btn-icon {
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 14px;
+}
+
+/* Utilidad para expandir */
+.fc-btn-full {
+  width: 100%;
+}
+
+/* --- VARIANTES --- */
+.fc-btn-primary {
+  background: var(--c-green, #0F6E56);
+  color: #fff;
+}
+.fc-btn-primary:hover:not(:disabled) {
+  background: #1D9E75; /* Hover verde un poco más brillante */
+}
+.fc-btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.fc-btn-ghost {
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
+  color: #888780;
+  background: transparent;
+}
+.fc-btn-ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.04);
+  color: #e8e6df;
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.fc-btn-nav {
+  flex-direction: column;
+  flex: 1;
+  color: var(--c-text-4);
+  font-size: 11px;
+  font-weight: 600;
+  height: auto;
+  border-radius: 0;
+  width: auto;
+}
+.fc-btn-nav:hover:not(:disabled) {
+  color: var(--c-text-2);
+}
+.fc-btn-nav.active {
+  color: var(--c-green);
+}
+.fc-btn-nav svg {
+  transition: transform 0.2s;
+}
+.fc-btn-nav.active svg {
+  transform: translateY(-2px);
+}
+.fc-btn-nav span {
+  transition: opacity 0.3s;
+  margin-top: 4px;
+}
+.fc-btn-nav.active span {
+  color: var(--c-green);
+}
+
+/* --- MODIFICADORES --- */
+.fc-btn-elevated {
+  box-shadow: 0 4px 12px var(--c-green-glow, rgba(15, 110, 86, 0.4));
+}
