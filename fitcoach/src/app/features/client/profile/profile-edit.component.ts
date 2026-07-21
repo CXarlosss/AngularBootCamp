@@ -45,7 +45,7 @@ import { FcCardComponent } from '../../../shared/components/card/fc-card.compone
         }
 
         <!-- Card de Rango Detallada -->
-        <fc-card style="margin: 0 20px 24px;">
+        <fc-card class="profile-card">
           <div class="xp-container">
             <div class="xp-header">
               <span>Nivel {{ rankSvc.fullRank()?.rank?.level }}</span>
@@ -58,7 +58,7 @@ import { FcCardComponent } from '../../../shared/components/card/fc-card.compone
           </div>
         </fc-card>
 
-        <fc-card title="Ajustes de App" style="margin: 0 20px 24px;">
+        <fc-card title="Ajustes de App" class="profile-card">
           <div class="theme-toggle">
             <span class="theme-icon">🌓</span>
             <div class="theme-info">
