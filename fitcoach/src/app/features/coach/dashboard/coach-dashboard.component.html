@@ -11,7 +11,7 @@
     </p>
   </div>
   <div class="dash-date">
-    <button class="invite-btn" (click)="showInviteModal.set(true)">
+    <button fcButton variant="primary" size="sm" (click)="showInviteModal.set(true)">
       + Invitar cliente
     </button>
     {{ today | date:'dd MMM, yyyy' : '' : 'es' }}
@@ -49,10 +49,9 @@
 <!-- Clientes con estado -->
 <div class="content-grid">
   <div class="left-col">
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">Mis clientes</span>
-        <button class="panel-action" (click)="goTo('/coach/clients')">ver todos →</button>
+    <fc-card title="Mis clientes">
+      <div fcCardActions>
+        <button fcButton variant="ghost" size="sm" (click)="goTo('/coach/clients')">ver todos →</button>
       </div>
 
       <div class="client-list">
@@ -64,18 +63,15 @@
       @if (clients().length === 0) {
         <div class="empty-panel">
           <p>Aún no tienes clientes vinculados</p>
-          <button class="btn-primary-dark" (click)="goTo('/coach/invite-codes')">
+          <button fcButton variant="primary" (click)="goTo('/coach/invite-codes')">
             Invitar cliente
           </button>
         </div>
       }
-    </div>
+    </fc-card>
 
     <!-- Feed de actividad -->
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">Actividad reciente</span>
-      </div>
+    <fc-card title="Actividad reciente">
 
       @if (recentActivity().length === 0) {
         <div class="empty-activity">
@@ -92,7 +88,7 @@
           </div>
         </div>
       }
-    </div>
+    </fc-card>
 
   </div>
 
@@ -103,16 +99,13 @@
       <div class="invite-code">{{ inviteCode() }}</div>
       <p class="invite-sub">Compártelo para vincular nuevos clientes a tu cuenta.</p>
       <div class="invite-actions">
-        <button class="ibtn-copy" (click)="copyCode()">Copiar</button>
-        <button class="ibtn-share" (click)="shareCode()">Compartir</button>
+        <button fcButton variant="primary" size="sm" (click)="copyCode()">Copiar</button>
+        <button fcButton variant="ghost" size="sm" (click)="shareCode()">Compartir</button>
       </div>
     </div>
 
     <!-- Acciones rápidas -->
-    <div class="panel">
-      <div class="panel-header">
-        <span class="panel-title">Acciones</span>
-      </div>
+    <fc-card title="Acciones">
 
       <button class="quick-action" (click)="goTo('/coach/routine-builder')">
         <div class="qa-icon qa-green">
@@ -167,6 +160,6 @@
         </div>
         <span class="qa-arrow">›</span>
       </button>
-    </div>
+    </fc-card>
   </div>
 </div>

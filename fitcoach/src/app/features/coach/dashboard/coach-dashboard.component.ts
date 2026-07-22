@@ -7,11 +7,13 @@ import { CoachDashboardService } from './coach-dashboard.service';
 import { ClientCardComponent } from './components/client-card/client-card.component';
 import { supabase } from '../../../core/supabase.client';
 import { InviteModalComponent } from './invite-modal/invite-modal.component';
+import { FcCardComponent, FcCardActionsDirective } from '../../../shared/components/card/fc-card.component';
+import { FcButtonDirective } from '../../../shared/components/button/fc-button.directive';
 
 @Component({
   selector: 'fc-coach-dashboard',
   standalone: true,
-  imports: [CommonModule, ClientCardComponent, InviteModalComponent],
+  imports: [CommonModule, ClientCardComponent, InviteModalComponent, FcCardComponent, FcCardActionsDirective, FcButtonDirective],
   templateUrl: './coach-dashboard.component.html',
   styleUrl: './coach-dashboard.component.css',
 })
