@@ -24,26 +24,26 @@
 
 <!-- KPIs actualizados -->
 <div class="kpi-grid">
-  <div class="kpi-card">
+  <fc-card variant="kpi">
     <div class="kpi-label">Clientes activos</div>
     <div class="kpi-value kpi-alert">{{ clients().length }}</div>
     <div class="kpi-hint">total vinculados</div>
-  </div>
-  <div class="kpi-card">
+  </fc-card>
+  <fc-card variant="kpi">
     <div class="kpi-label">Sesiones semana</div>
     <div class="kpi-value">{{ sessionsThisWeek() }}</div>
     <div class="kpi-hint">últimos 7 días</div>
-  </div>
-  <div class="kpi-card">
+  </fc-card>
+  <fc-card variant="kpi">
     <div class="kpi-label">Mensajes sin leer</div>
     <div class="kpi-value kpi-alert">{{ unreadSvc.totalUnread() }}</div>
     <div class="kpi-hint">pendientes</div>
-  </div>
-  <div class="kpi-card invite-kpi" (click)="copyCode()">
+  </fc-card>
+  <fc-card variant="kpi" class="invite-kpi" (click)="copyCode()">
     <div class="kpi-label" style="color:#1D9E75">Código activo</div>
     <div class="kpi-code">{{ inviteCode() }}</div>
     <div class="kpi-hint">clic para copiar</div>
-  </div>
+  </fc-card>
 </div>
 
 <!-- Clientes con estado -->

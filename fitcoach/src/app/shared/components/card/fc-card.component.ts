@@ -12,6 +12,9 @@ export class FcCardActionsDirective {}
   standalone: true,
   imports: [CommonModule],
   styleUrl: './fc-card.component.css',
+  host: {
+    '[class.fc-card--kpi]': 'variant === "kpi"'
+  },
   template: `
     @if (title || hasActions()) {
       <div class="fc-card-header">
@@ -31,5 +34,6 @@ export class FcCardActionsDirective {}
 })
 export class FcCardComponent {
   @Input() title?: string;
+  @Input() variant: 'default' | 'kpi' = 'default';
   hasActions = contentChild(FcCardActionsDirective);
 }

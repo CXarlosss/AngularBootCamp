@@ -33,3 +33,21 @@
 :host(.is-compact) {
   padding: 12px 14px;
 }
+
+:host(.fc-card--kpi) {
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color .15s;
+}
+
+:host(.fc-card--kpi):hover {
+  border-color: rgba(255,255,255,0.14);
+}
+
+:host(.fc-card--kpi) .fc-card-content {
+  display: contents; /* Permitir que el grid flex de host ordene el contenido hijo directamente si no hay cabecera */
+}

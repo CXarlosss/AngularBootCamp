@@ -11,11 +11,7 @@
   margin-bottom: 16px;
 }
 
-.kpi-card {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
+
 
 .kpi-label {
   font-size: 11px;

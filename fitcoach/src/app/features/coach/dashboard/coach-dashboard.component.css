@@ -145,18 +145,7 @@
   margin-bottom: 18px;
 }
 
-.kpi-card {
-  background: #13151e;
-  border: 0.5px solid rgba(255,255,255,0.07);
-  border-radius: 12px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  transition: border-color .15s;
-}
 
-.kpi-card:hover { border-color: rgba(255,255,255,0.14); }
 
 .invite-kpi {
   cursor: pointer;

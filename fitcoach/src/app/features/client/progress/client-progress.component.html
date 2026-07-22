@@ -15,7 +15,7 @@
     <!-- KPIs principales -->
     <div class="kpi-grid">
 
-      <fc-card class="is-compact kpi-card">
+      <fc-card variant="kpi">
         <span class="kpi-label">Adherencia</span>
         <span class="kpi-value">{{ stats()?.adherencePercent ?? 0 }}%</span>
         <div class="kpi-bar">
@@ -25,19 +25,19 @@
         </div>
       </fc-card>
 
-      <fc-card class="is-compact kpi-card">
+      <fc-card variant="kpi">
         <span class="kpi-label">Racha actual</span>
         <span class="kpi-value">{{ stats()?.currentStreak ?? 0 }}d</span>
         <span class="kpi-sub">días seguidos</span>
       </fc-card>
 
-      <fc-card class="is-compact kpi-card">
+      <fc-card variant="kpi">
         <span class="kpi-label">Días completados</span>
         <span class="kpi-value">{{ stats()?.totalDaysCompleted ?? 0 }}</span>
         <span class="kpi-sub">últimas 6 semanas</span>
       </fc-card>
 
-      <fc-card class="is-compact kpi-card">
+      <fc-card variant="kpi">
         <span class="kpi-label">Mejor progreso</span>
         <span class="kpi-value">
           @if (store.improvement() > 0) {
