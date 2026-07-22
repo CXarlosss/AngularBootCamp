@@ -1,4 +1,4 @@
-import { Component, Input, ContentChild, Directive } from '@angular/core';
+import { Component, Input, Directive, contentChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Directive({
@@ -13,12 +13,12 @@ export class FcCardActionsDirective {}
   imports: [CommonModule],
   styleUrl: './fc-card.component.css',
   template: `
-    @if (title || hasActions) {
+    @if (title || hasActions()) {
       <div class="fc-card-header">
         @if (title) {
           <h3 class="fc-card-title">{{ title }}</h3>
         }
-        <div class="fc-card-actions" [style.display]="hasActions ? 'flex' : 'none'">
+        <div class="fc-card-actions" [style.display]="hasActions() ? 'flex' : 'none'">
           <ng-content select="[fcCardActions]"></ng-content>
         </div>
       </div>
@@ -31,5 +31,5 @@ export class FcCardActionsDirective {}
 })
 export class FcCardComponent {
   @Input() title?: string;
-  @ContentChild(FcCardActionsDirective, { static: true }) hasActions?: FcCardActionsDirective;
+  hasActions = contentChild(FcCardActionsDirective);
 }
