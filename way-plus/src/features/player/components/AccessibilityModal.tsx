@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function AccessibilityModal({ isOpen, onClose }: Props) {
-  const { accessibility, setReduceMotion, setContrastMode, setShowTextLabels } = useConfigStore();
+  const { accessibility, setReduceMotion, setContrastMode, setShowTextLabels, setHapticFeedback } = useConfigStore();
 
   // Sync with body class for reduce-motion and contrast-mode
   useEffect(() => {
@@ -95,6 +95,20 @@ export function AccessibilityModal({ isOpen, onClose }: Props) {
                 onChange={(e) => setShowTextLabels(e.target.checked)}
                 className="w-6 h-6 rounded text-indigo-600 focus:ring-indigo-500"
                 aria-label="Mostrar etiquetas de texto en iconos"
+              />
+            </label>
+
+            <label className="flex items-center justify-between p-4 rounded-2xl border-2 border-slate-100 hover:border-indigo-200 cursor-pointer transition-colors">
+              <div>
+                <T size="base" bold className="text-slate-800">Vibración Táctil</T>
+                <T size="xs" color="muted">Retroalimentación física al interactuar</T>
+              </div>
+              <input 
+                type="checkbox" 
+                checked={accessibility.hapticFeedback ?? true}
+                onChange={(e) => setHapticFeedback(e.target.checked)}
+                className="w-6 h-6 rounded text-indigo-600 focus:ring-indigo-500"
+                aria-label="Activar vibración táctil"
               />
             </label>
           </div>

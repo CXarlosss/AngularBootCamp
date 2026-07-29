@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useConfigStore } from '@/core/stores/configStore';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { T, Emoji } from '@/shared/components/TypographyScale';
+import { hapticService } from '@/core/services/hapticService';
 
 interface CelebrationOverlayProps {
   show: boolean;
@@ -33,6 +34,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
     
     if (type !== 'sad') {
       audioService.playSFX('success');
+      hapticService.celebration();
     }
     
     const timer1 = setTimeout(() => {

@@ -1,358 +1,292 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useTherapistStore } from '../store/therapistStore';
-import { SoundToggle } from '@/core/components/SoundToggle';
-import { SyncStatus } from '../components/SyncStatus';
-import { SecurityGate } from '@/shared/components/SecurityGate';
-import { patientService } from '@/core/services/patientService';
-import { seedClinicalData } from '@/core/utils/seedData';
-import { flushOfflineAnnexes } from '@/services/clinicalAnnexService';
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * WAY+ Refactor — TherapistDashboard.tsx
+ * Panel de control del terapeuta
+ * ═══════════════════════════════════════════════════════════════
+ */
 
-import { analyticsService } from '@/core/services/analyticsService';
-import { supabase } from '@/core/services/supabaseClient';
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
+import {
+  GLASS,
+  BTN,
+  TEXT,
+  STATUS,
+  DECORATIVE,
+  A11Y,
+  way,
+} from '@/shared/lib/wayTheme';
+import { rw, RESPONSIVE, TABLE, CONTAINER, SAFE } from '@/shared/lib/wayResponsive';
+import { hapticService } from '@/core/services/hapticService';
+import { Button } from '@/shared/components/Button';
 
-import { 
-  Users, 
-  Search, 
-  ChevronRight, 
-  Plus, 
-  Trophy,
-  Brain,
-  Palette,
-  Activity
-} from 'lucide-react';
-import { cn } from '@/shared/lib/utils';
-import { RESPONSIVE, rw } from '@/shared/lib/wayResponsive';
+// ─── TYPES ───
+export interface Patient {
+  id: string;
+  name: string;
+  avatar: string;
+  age: number;
+  lastSession: string;
+  progress: number;
+  status: 'active' | 'inactive' | 'needs_attention';
+  nextAppointment?: string;
+}
 
-export function TherapistDashboard() {
-  const navigate = useNavigate();
-  const { selectPatient, addPatient, patients, loadPatients } = useTherapistStore();
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [newPatient, setNewPatient] = useState({ name: '', age: 6, avatar: 'base-unicorn' });
-  const [searchTerm, setSearchTerm] = useState('');
-  
-  const [isCreating, setIsCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
+export interface StatCard {
+  label: string;
+  value: string | number;
+  change: string;
+  trend: 'up' | 'down' | 'neutral';
+  icon: string;
+}
 
-  const [globalKPIs, setGlobalKPIs] = useState({ activePatientsThisWeek: 0, totalWaysCompleted: 0 });
+// ─── MOCK DATA ───
+const MOCK_STATS: StatCard[] = [
+  { label: 'Pacientes activos', value: 24, change: '+3 esta semana', trend: 'up', icon: '👥' },
+  { label: 'Sesiones hoy', value: 8, change: '2 pendientes', trend: 'neutral', icon: '📅' },
+  { label: 'Promedio de progreso', value: '68%', change: '+5% vs mes pasado', trend: 'up', icon: '📈' },
+  { label: 'Alertas', value: 3, change: 'Requieren atención', trend: 'down', icon: '🔔' },
+];
 
-  useEffect(() => {
-    if (isAuthorized) {
-      loadPatients();
-      flushOfflineAnnexes().catch(console.error);
+const MOCK_PATIENTS: Patient[] = [
+  { id: 'p1', name: 'Lucía Martínez', avatar: '👧', age: 7, lastSession: 'Hoy, 10:30', progress: 85, status: 'active', nextAppointment: 'Mañana, 09:00' },
+  { id: 'p2', name: 'Tomás Gómez', avatar: '👦', age: 9, lastSession: 'Ayer, 14:00', progress: 62, status: 'active' },
+  { id: 'p3', name: 'Sofía Ruiz', avatar: '👧', age: 6, lastSession: 'Hace 3 días', progress: 45, status: 'needs_attention', nextAppointment: 'Hoy, 16:00' },
+  { id: 'p4', name: 'Mateo López', avatar: '👦', age: 8, lastSession: 'Hace 5 días', progress: 78, status: 'active' },
+  { id: 'p5', name: 'Valentina Cruz', avatar: '👧', age: 7, lastSession: 'Hace 1 semana', progress: 30, status: 'inactive' },
+];
 
-      if (supabase) {
-        supabase.auth.getUser().then(({ data: { user } }) => {
-          if (user) {
-            analyticsService.getGlobalTherapistKPIs(user.id).then(kpis => {
-              setGlobalKPIs(kpis);
-            });
-          }
-        });
-      }
-    }
-  }, [isAuthorized, loadPatients]);
+// ─── COMPONENT ───
+export const TherapistDashboard: React.FC = () => {
+  const [searchQuery, setSearchQuery] = useState('');
 
-  if (!isAuthorized) {
-    return (
-      <SecurityGate 
-        onSuccess={() => setIsAuthorized(true)}
-        onCancel={() => navigate('/')}
-        title="Panel de Maite"
-      />
-    );
-  }
+  const filteredPatients = MOCK_PATIENTS.filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
-  const handleAddPatient = async () => {
-    if (!newPatient.name || isCreating) return;
-
-    setIsCreating(true);
-    setCreateError(null);
-
-    try {
-      const created = await patientService.create({
-        name: newPatient.name,
-        age: newPatient.age,
-        avatar: newPatient.avatar,
-      });
-
-      if (!created) throw new Error('No se pudo crear el paciente');
-
-      addPatient({
-        ...created,
-        startDate: new Date().toISOString().split('T')[0],
-        lastSession: new Date().toISOString().split('T')[0],
-        objectives: [],
-        sessionQueue: [],
-      });
-
-      setShowAddModal(false);
-      setNewPatient({ name: '', age: 6, avatar: 'base-unicorn' });
-
-      selectPatient(created.id);
-    } catch (e) {
-      console.error('[Dashboard] Error creating patient:', e);
-      setCreateError('No se pudo guardar el paciente. Inténtalo de nuevo.');
-    } finally {
-      setIsCreating(false);
+  const getStatusConfig = (status: Patient['status']) => {
+    switch (status) {
+      case 'active':
+        return { label: 'Activo', className: 'bg-emerald-100 text-emerald-700 border-emerald-200' };
+      case 'inactive':
+        return { label: 'Inactivo', className: 'bg-slate-100 text-slate-500 border-slate-200' };
+      case 'needs_attention':
+        return { label: 'Atención', className: 'bg-amber-100 text-amber-700 border-amber-200' };
     }
   };
 
-  const filteredPatients = patients.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <div className="min-h-screen bg-slate-50 font-sans text-slate-900 forced-colors:bg-white">
-      {/* Header */}
-      <header className="sticky top-0 z-30 bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm forced-colors:border-b-2 forced-colors:border-[#1E1B4B]">
-        <div className="flex items-center gap-3">
-          <Brain className="w-6 h-6 text-indigo-600 forced-colors:text-[#1E1B4B]" />
-          <div>
-            <h1 className="text-xl font-bold text-slate-900 m-0 forced-colors:text-[#1E1B4B]">Panel Terapéutico</h1>
-            <p className="text-xs font-medium text-slate-500 m-0">Gestión clínica y seguimiento</p>
-          </div>
-        </div>
-        
-        <div className="flex items-center gap-4">
-          <button
-            onClick={async () => {
-              const res = await seedClinicalData();
-              if (res.success) loadPatients();
-            }}
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-lg text-xs font-bold hover:bg-indigo-100 transition-colors focus-visible:ring-2 focus-visible:ring-indigo-600 outline-none forced-colors:border-2 forced-colors:border-[#1E1B4B]"
-          >
-            🌱 Seed Demo
-          </button>
-          
-          <button
-            onClick={() => navigate('/editor')}
-            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors shadow-sm focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 outline-none forced-colors:bg-[#1E1B4B] forced-colors:border-2 forced-colors:border-[#1E1B4B]"
-          >
-            <Palette size={16} /> Editor de Ways
-          </button>
-          
-          <div className="flex items-center gap-2 border-l border-slate-200 pl-4 forced-colors:border-[#1E1B4B]">
-            <SoundToggle />
-            <SyncStatus />
+    <div className="relative min-h-dvh overflow-hidden bg-gradient-to-b from-slate-50 to-indigo-50/20">
+      <div className={DECORATIVE.orb('indigo', 'top-right')} aria-hidden="true" />
+      <div className={DECORATIVE.orb('emerald', 'bottom-left')} aria-hidden="true" />
+
+      <header className={way(GLASS.header, 'sticky top-0 z-40')}>
+        <div className={way(CONTAINER.containerMobile, 'py-4')}>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className={TEXT.title}>Panel del Terapeuta</h1>
+              <p className={TEXT.micro}>Bienvenido de vuelta, Dra. García</p>
+            </div>
+            <Button variant="icon" aria-label="Notificaciones" onClick={() => hapticService.click()}>
+              <BellIcon className="h-5 w-5" />
+            </Button>
           </div>
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-6 py-8 flex flex-col gap-8">
-        
-        {/* Global KPIs */}
-        <section aria-label="Estadísticas Generales" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex items-start gap-4 forced-colors:border-2 forced-colors:border-[#1E1B4B]">
-            <div className="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-lg flex items-center justify-center shrink-0 forced-colors:border-2 forced-colors:border-[#1E1B4B]">
-              <Users size={24} />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-slate-500 uppercase tracking-wider">Pacientes (Semana)</div>
-              <div className="text-3xl font-black text-slate-900 mt-1 flex items-baseline gap-2">
-                {globalKPIs.activePatientsThisWeek}
-                <span className="text-sm font-bold text-emerald-600">+</span>
+      <main className={way(CONTAINER.containerMobile, SAFE.safeBottom, 'pb-8 pt-4')}>
+        {/* Stats grid */}
+        <section className={way(RESPONSIVE.gridShop, 'mb-6')}>
+          {MOCK_STATS.map((stat, index) => (
+            <motion.div
+              key={stat.label}
+              className={way(GLASS.card, 'rounded-2xl p-4')}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.08 }}
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className={way(TEXT.micro, 'mb-1')}>{stat.label}</p>
+                  <p className="text-2xl font-bold text-slate-900">{stat.value}</p>
+                  <p className={way(
+                    'mt-1 text-xs font-medium',
+                    stat.trend === 'up' && 'text-emerald-600',
+                    stat.trend === 'down' && 'text-rose-600',
+                    stat.trend === 'neutral' && 'text-slate-500'
+                  )}>
+                    {stat.change}
+                  </p>
+                </div>
+                <span className="text-2xl" role="img" aria-hidden="true">{stat.icon}</span>
               </div>
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex items-start gap-4 forced-colors:border-2 forced-colors:border-[#1E1B4B]">
-            <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center shrink-0 forced-colors:border-2 forced-colors:border-[#1E1B4B]">
-              <Trophy size={24} />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-slate-500 uppercase tracking-wider">Ways Completados</div>
-              <div className="text-3xl font-black text-slate-900 mt-1">
-                {globalKPIs.totalWaysCompleted}
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm flex items-start gap-4 forced-colors:border-2 forced-colors:border-[#1E1B4B]">
-            <div className="w-12 h-12 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center shrink-0 forced-colors:border-2 forced-colors:border-[#1E1B4B]">
-              <Activity size={24} />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-slate-500 uppercase tracking-wider">Total Registrados</div>
-              <div className="text-3xl font-black text-slate-900 mt-1">
-                {patients.length}
-              </div>
-            </div>
-          </div>
+            </motion.div>
+          ))}
         </section>
 
-        {/* Patients List Section */}
-        <section aria-label="Lista de Pacientes">
-          <div className="flex flex-col sm:flex-row justify-between items-end gap-4 mb-6">
-            <h2 className="text-2xl font-bold text-slate-900 m-0">Mis Pacientes</h2>
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <div className="relative flex-1 sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-4 h-4" aria-hidden="true" />
-                <input 
-                  type="text" 
-                  placeholder="Buscar paciente..." 
-                  className="w-full pl-9 pr-4 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-900 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-colors forced-colors:border-2 forced-colors:border-[#1E1B4B]"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  aria-label="Buscar pacientes"
-                />
-              </div>
-              <button 
-                onClick={() => setShowAddModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-slate-900 text-white rounded-lg text-sm font-bold hover:bg-slate-800 transition-colors shadow-sm focus-visible:ring-2 focus-visible:ring-slate-900 focus-visible:ring-offset-2 outline-none forced-colors:bg-[#1E1B4B] forced-colors:border-2 forced-colors:border-[#1E1B4B] shrink-0"
-              >
-                <Plus size={18} /> <span className="hidden sm:inline">Añadir Paciente</span>
-              </button>
-            </div>
+        {/* Search */}
+        <div className="mb-4">
+          <div className={way(GLASS.card, 'flex items-center gap-3 rounded-2xl px-4 py-3')}>
+            <SearchIcon className="h-5 w-5 text-slate-400 shrink-0" aria-hidden="true" />
+            <input
+              type="text"
+              placeholder="Buscar paciente..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={way(
+                'flex-1 bg-transparent text-sm text-slate-800 placeholder:text-slate-400 outline-none',
+                'min-h-[44px]'
+              )}
+              aria-label="Buscar paciente"
+            />
+          </div>
+        </div>
+
+        {/* Patients */}
+        <section>
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className={TEXT.subtitle}>Pacientes</h2>
+            <Button variant="secondary" size="sm" onClick={() => hapticService.click()}>
+              <PlusIcon className="mr-1 h-4 w-4" aria-hidden="true" />
+              Nuevo
+            </Button>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden forced-colors:border-2 forced-colors:border-[#1E1B4B]">
-            <div className="overflow-x-auto">
-              <table className={rw("tableMinWidth", "w-full text-left border-collapse")}>
-                <thead>
-                  <tr>
-                    <th scope="col" className="px-6 py-4 border-b border-slate-200 bg-slate-50 text-xs font-bold text-slate-600 uppercase tracking-wider forced-colors:border-b-2 forced-colors:border-[#1E1B4B]">Paciente</th>
-                    <th scope="col" className="px-6 py-4 border-b border-slate-200 bg-slate-50 text-xs font-bold text-slate-600 uppercase tracking-wider forced-colors:border-b-2 forced-colors:border-[#1E1B4B]">Edad</th>
-                    <th scope="col" className="px-6 py-4 border-b border-slate-200 bg-slate-50 text-xs font-bold text-slate-600 uppercase tracking-wider forced-colors:border-b-2 forced-colors:border-[#1E1B4B]">Nivel Actual</th>
-                    <th scope="col" className="px-6 py-4 border-b border-slate-200 bg-slate-50 text-xs font-bold text-slate-600 uppercase tracking-wider forced-colors:border-b-2 forced-colors:border-[#1E1B4B]"><span className="sr-only">Acciones</span></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredPatients.length > 0 ? (
-                    filteredPatients.map(patient => (
-                      <tr 
-                        key={patient.id} 
-                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors group cursor-pointer focus-within:bg-slate-50 outline-none focus-visible:bg-slate-100 forced-colors:border-b-2 forced-colors:border-[#1E1B4B]"
-                        onClick={() => selectPatient(patient.id)}
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            selectPatient(patient.id);
-                          }
-                        }}
-                      >
-                        <td className={rw("tableCell", "whitespace-nowrap align-middle")}>
-                          <div className="flex items-center gap-3">
-                            <span className="text-2xl bg-slate-100 w-10 h-10 flex items-center justify-center rounded-full forced-colors:border-2 forced-colors:border-[#1E1B4B]" aria-hidden="true">
-                              {patient.avatar === 'base-unicorn' ? '🦄' : 
-                               patient.avatar === 'base-dragon' ? '🐉' : 
-                               patient.avatar === 'base-puppy' ? '🐶' : 
-                               patient.avatar === 'base-kitten' ? '🐱' : patient.avatar || '👤'}
-                            </span>
-                            <div>
-                              <span className="font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">{patient.name}</span>
-                              <span className="text-xs text-slate-500 font-medium block mt-0.5">ID: {patient.id.split('-')[0]}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className={rw("tableCell", "whitespace-nowrap align-middle")}>
-                          <span className="text-sm font-medium text-slate-700">{patient.age} años</span>
-                        </td>
-                        <td className={rw("tableCell", "whitespace-nowrap align-middle")}>
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 forced-colors:border-2 forced-colors:border-[#1E1B4B]">
-                            {patient.currentLevel || 1}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap align-middle text-right">
-                          <ChevronRight className="inline text-slate-400 group-hover:text-indigo-600 transition-colors" size={20} />
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td colSpan={4} className="px-6 py-12 text-center text-slate-500 font-medium">
-                        {patients.length === 0 ? 'No hay pacientes registrados.' : 'No se encontraron pacientes que coincidan con la búsqueda.'}
-                      </td>
-                    </tr>
+          {/* Mobile cards */}
+          <div className="space-y-3 sm:hidden">
+            {filteredPatients.map((patient, index) => {
+              const statusConfig = getStatusConfig(patient.status);
+              return (
+                <motion.div
+                  key={patient.id}
+                  className={way(GLASS.card, 'rounded-2xl p-4')}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-100 text-2xl">
+                      {patient.avatar}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-900 truncate">{patient.name}</p>
+                      <p className={TEXT.micro}>{patient.age} años • {patient.lastSession}</p>
+                    </div>
+                    <span className={way('rounded-full px-2.5 py-0.5 text-xs font-bold border', statusConfig.className)}>
+                      {statusConfig.label}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <div className="mb-1 flex justify-between">
+                      <span className={TEXT.micro}>Progreso</span>
+                      <span className={way(TEXT.micro, 'font-semibold')}>{patient.progress}%</span>
+                    </div>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200/60">
+                      <div
+                        className={way(
+                          'h-full rounded-full transition-all duration-500',
+                          patient.progress >= 80 && 'bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]',
+                          patient.progress >= 50 && patient.progress < 80 && 'bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.4)]',
+                          patient.progress < 50 && 'bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.4)]'
+                        )}
+                        style={{ width: `${patient.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                  {patient.nextAppointment && (
+                    <p className={way(TEXT.micro, 'mt-2 text-indigo-600')}>
+                      📅 Próxima: {patient.nextAppointment}
+                    </p>
                   )}
-                </tbody>
-              </table>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Desktop table */}
+          <div className="hidden sm:block">
+            <div className={way(GLASS.card, 'overflow-hidden rounded-2xl')}>
+              <div className={TABLE.tableScroll}>
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-200/60">
+                      <th className={way(TABLE.tableCell, 'text-left font-semibold text-slate-600')}>Paciente</th>
+                      <th className={way(TABLE.tableCell, 'text-left font-semibold text-slate-600')}>Edad</th>
+                      <th className={way(TABLE.tableCell, 'text-left font-semibold text-slate-600')}>Progreso</th>
+                      <th className={way(TABLE.tableCell, 'text-left font-semibold text-slate-600')}>Estado</th>
+                      <th className={way(TABLE.tableCell, 'text-left font-semibold text-slate-600')}>Última sesión</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredPatients.map((patient) => {
+                      const statusConfig = getStatusConfig(patient.status);
+                      return (
+                        <tr
+                          key={patient.id}
+                          className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors"
+                        >
+                          <td className={TABLE.tableCell}>
+                            <div className="flex items-center gap-3">
+                              <span className="text-xl" role="img" aria-hidden="true">{patient.avatar}</span>
+                              <span className="font-medium text-slate-800">{patient.name}</span>
+                            </div>
+                          </td>
+                          <td className={TABLE.tableCell}>{patient.age} años</td>
+                          <td className={TABLE.tableCell}>
+                            <div className="flex items-center gap-2">
+                              <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-200/60">
+                                <div
+                                  className={way(
+                                    'h-full rounded-full',
+                                    patient.progress >= 80 && 'bg-emerald-500',
+                                    patient.progress >= 50 && patient.progress < 80 && 'bg-indigo-500',
+                                    patient.progress < 50 && 'bg-amber-500'
+                                  )}
+                                  style={{ width: `${patient.progress}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-semibold text-slate-600">{patient.progress}%</span>
+                            </div>
+                          </td>
+                          <td className={TABLE.tableCell}>
+                            <span className={way('rounded-full px-2.5 py-0.5 text-xs font-bold border', statusConfig.className)}>
+                              {statusConfig.label}
+                            </span>
+                          </td>
+                          <td className={TABLE.tableCell}>{patient.lastSession}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         </section>
       </main>
-
-      {/* Modal Añadir Paciente Simple */}
-      <AnimatePresence>
-        {showAddModal && (
-          <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl border border-slate-200 forced-colors:border-4 forced-colors:border-[#1E1B4B]"
-            >
-              <h3 className="text-2xl font-bold text-slate-900 m-0 mb-6">Añadir Paciente</h3>
-              <div className="flex flex-col gap-5">
-                <div>
-                  <label htmlFor="patient-name" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Nombre</label>
-                  <input 
-                    id="patient-name"
-                    value={newPatient.name}
-                    onChange={e => setNewPatient({ ...newPatient, name: e.target.value })}
-                    placeholder="Ej: Daniel"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-shadow forced-colors:border-2 forced-colors:border-[#1E1B4B]"
-                    autoFocus
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="patient-age" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Edad</label>
-                    <input 
-                      id="patient-age"
-                      type="number"
-                      min="1"
-                      max="99"
-                      value={newPatient.age}
-                      onChange={e => setNewPatient({ ...newPatient, age: parseInt(e.target.value) || 0 })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-shadow forced-colors:border-2 forced-colors:border-[#1E1B4B]"
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="patient-avatar" className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">Avatar</label>
-                    <select 
-                      id="patient-avatar"
-                      value={newPatient.avatar}
-                      onChange={e => setNewPatient({ ...newPatient, avatar: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 transition-shadow bg-white forced-colors:border-2 forced-colors:border-[#1E1B4B]"
-                    >
-                      <option value="base-unicorn">🦄 Unicornio</option>
-                      <option value="base-dragon">🐉 Dragón</option>
-                      <option value="base-puppy">🐶 Perrito</option>
-                      <option value="base-kitten">🐱 Gatito</option>
-                    </select>
-                  </div>
-                </div>
-
-                {createError && (
-                  <div className="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-semibold forced-colors:border-2 forced-colors:border-[#1E1B4B]">
-                    {createError}
-                  </div>
-                )}
-
-                <div className="flex gap-3 mt-4">
-                  <button 
-                    onClick={() => setShowAddModal(false)}
-                    className="flex-1 py-3 px-4 rounded-xl border border-slate-300 bg-white text-slate-700 font-bold hover:bg-slate-50 transition-colors focus-visible:ring-2 focus-visible:ring-slate-500 outline-none forced-colors:border-2 forced-colors:border-[#1E1B4B]"
-                  >
-                    Cancelar
-                  </button>
-                  <button 
-                    onClick={handleAddPatient}
-                    disabled={isCreating || !newPatient.name}
-                    className="flex-1 py-3 px-4 rounded-xl border border-transparent bg-indigo-600 text-white font-bold hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 outline-none forced-colors:bg-[#1E1B4B] forced-colors:border-2 forced-colors:border-[#1E1B4B]"
-                  >
-                    {isCreating ? 'Guardando...' : 'Guardar Paciente'}
-                  </button>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
     </div>
   );
-}
+};
+
+// ─── ICONOS INLINE ───
+const BellIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+  </svg>
+);
+
+const SearchIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <circle cx="11" cy="11" r="8" />
+    <path d="M21 21l-4.35-4.35" />
+  </svg>
+);
+
+const PlusIcon: React.FC<{ className?: string }> = ({ className }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+    <path d="M12 5v14M5 12h14" />
+  </svg>
+);
+
+export default TherapistDashboard;

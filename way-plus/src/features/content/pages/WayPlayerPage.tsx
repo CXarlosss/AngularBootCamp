@@ -10,14 +10,15 @@ import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { audioService } from '@/core/utils/audioService';
 import { HomeworkCelebration } from '@/features/player/components/HomeworkCelebration';
 import { homeworkService } from '@/core/services/homeworkService';
-import { syncService } from '@/core/services/syncService';
 import { posthogTracker } from '@/core/services/posthogService';
 import type { Step, Way } from '@/core/engine/types';
 import { cn } from '@/shared/lib/utils';
 import { T, Emoji } from '@/shared/components/TypographyScale';
 import { LoadingSpinner } from '@/shared/components/LoadingSpinner';
 import { Button } from '@/shared/components/Button';
-import { rw } from '@/shared/lib/wayResponsive';
+import { rw, wayResponsive } from '@/shared/lib/wayResponsive';
+import { way, wayTheme } from '@/shared/lib/wayTheme';
+import { hapticService } from '@/core/services/hapticService';
 
 const SESSION_DURATION = 15 * 60;
 const WARNING_THRESHOLD = 3 * 60;
@@ -140,6 +141,7 @@ export function WayPlayerPage() {
     posthogTracker.trackWayCompleted(levelId, stepId, wayId, durationSecs, isHomework, success);
     
     if (success) {
+      hapticService.success();
       completeWay(currentWay.id, 1);
       const isDaily = currentWay.id === dailyChallenge.wayId && !dailyChallenge.completed;
       const bonus = isDaily ? 30 : 0;
@@ -161,6 +163,7 @@ export function WayPlayerPage() {
         setTimeout(() => {
           const nextWay = ways[currentIdx + 1];
           if (isLastWay) {
+            hapticService.milestone();
             celebrateCompletion('step');
             setShowMilestone(true);
           } else if (nextWay) {
@@ -170,6 +173,7 @@ export function WayPlayerPage() {
           }
         }, 3500);
       } else if (isLastWay) {
+        hapticService.milestone();
         celebrateCompletion('step');
         setShowMilestone(true);
       } else {
@@ -182,6 +186,8 @@ export function WayPlayerPage() {
           }, 3000);
         }
       }
+    } else {
+      hapticService.error();
     }
   }, [currentWay, wayId, timeLeft, completeWay, dailyChallenge, completeDailyChallenge, addCoins, isHomework, ways, currentIdx, isLastWay, levelId, stepId, navigate, celebrateCompletion]);
 
@@ -204,9 +210,9 @@ export function WayPlayerPage() {
 
   if (!step || !currentWay) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-3 px-6">
+      <div className={way("min-h-screen flex flex-col items-center justify-center gap-3 px-6", wayTheme.GLASS.main)}>
         <Emoji>🤷</Emoji>
-        <T size="base" bold>¡Ups! Este reto se ha escondido</T>
+        <T size="base" bold className={wayTheme.TEXT.title}>¡Ups! Este reto se ha escondido</T>
         <Button
           variant="primary"
           size="sm"
@@ -219,46 +225,47 @@ export function WayPlayerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col" style={{ fontFamily: 'Verdana, sans-serif' }}>
+    <div className={way("min-h-screen flex flex-col relative overflow-hidden bg-gradient-to-br from-[#f8fafc] to-[#e2e8f0]")}>
       {/* Header */}
-      <header className={rw("headerCompact", "sticky top-0 z-50 bg-white border-b border-slate-200 px-4")}>
-        <div className="max-w-2xl mx-auto flex items-center justify-between">
-          <button
+      <header className={way("sticky top-0 z-50 px-4", wayTheme.GLASS.header)}>
+        <div className={way(wayResponsive.HEADERS.headerCompact, wayResponsive.CONTAINERS.maxWidthTablet, "mx-auto")}>
+          <Button
+            variant="icon"
+            size="sm"
             onClick={handleBack}
-            className="w-11 h-11 min-w-[44px] min-h-[44px] rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center text-sm active:scale-95 transition-transform duration-150"
             aria-label="Volver"
           >
             ←
-          </button>
+          </Button>
           
           <div className={cn(
-            "flex items-center gap-1.5 px-2.5 py-1 rounded-full font-bold text-xs",
-            isWarning ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'
+            "flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-xs backdrop-blur-sm border shadow-sm",
+            isWarning ? wayTheme.STATUS.warning : 'bg-white/50 border-white/20 text-slate-700'
           )} data-testid="timer-display">
             <span className={isWarning ? 'animate-pulse' : ''}>⏱️</span>
             <span>{minutes}:{seconds.toString().padStart(2, '0')}</span>
           </div>
           
-          <div className="flex items-center gap-1 text-amber-600 font-bold text-xs" data-testid="coin-display">
+          <div className="flex items-center gap-1 text-amber-600 font-bold text-sm bg-amber-400/10 px-3 py-1.5 rounded-full border border-amber-400/20 shadow-sm" data-testid="coin-display">
             <Emoji>⭐</Emoji>
             <span>{profile?.coins ?? 0}</span>
           </div>
         </div>
         
-        <div className="max-w-2xl mx-auto mt-1 flex gap-2">
+        <div className={way("max-w-2xl mx-auto mt-2 flex gap-2 pb-2")}>
           {/* Timer Progress */}
-          <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+          <div className={wayTheme.PROGRESS.track}>
             <motion.div 
-              className={cn("h-full rounded-full", isWarning ? 'bg-amber-500' : 'bg-violet-500')}
+              className={isWarning ? wayTheme.PROGRESS.fill.amber : wayTheme.PROGRESS.fill.violet}
               style={{ width: `${progressPercent}%` }}
               transition={{ duration: 1 }}
             />
           </div>
           
           {/* Way Progress */}
-          <div className="flex-1 h-1 bg-slate-200 rounded-full overflow-hidden">
+          <div className={wayTheme.PROGRESS.track}>
             <motion.div 
-              className="h-full rounded-full bg-emerald-400"
+              className={wayTheme.PROGRESS.fill.emerald}
               initial={false}
               animate={{ width: `${((currentIdx + 1) / Math.max(1, ways.length)) * 100}%` }}
               transition={{ duration: 0.5 }}
@@ -274,44 +281,45 @@ export function WayPlayerPage() {
               exit={{ height: 0, opacity: 0 }}
               className="overflow-hidden max-w-2xl mx-auto"
             >
-              <T size="micro" bold color="warning" className="text-center py-0.5 animate-pulse">
+              <div className={way(wayTheme.TEXT.micro, "text-center py-1 font-bold text-amber-600 animate-pulse")}>
                 ⏱️ Últimos WAYs, ¡vamos a terminar!
-              </T>
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </header>
 
       {/* Progress dots */}
-      <div className="flex justify-center gap-1.5 py-2 px-4">
+      <div className="flex justify-center gap-1.5 py-4 px-4 relative z-10">
         {ways.map((w, i) => (
           <div 
             key={w.id} 
             className={cn(
               "h-1.5 rounded-full transition-all duration-300",
-              i < currentIdx ? "bg-emerald-400 w-6" : 
-              i === currentIdx ? "bg-violet-500 w-8" : 
-              "bg-slate-200 w-4"
+              i < currentIdx ? "bg-emerald-400 w-6 shadow-[0_0_8px_rgba(52,211,153,0.6)]" : 
+              i === currentIdx ? "bg-violet-500 w-8 shadow-[0_0_8px_rgba(139,92,246,0.6)]" : 
+              "bg-slate-300/50 w-4"
             )}
           />
         ))}
       </div>
 
       {/* Main */}
-      <main className="flex-1 px-4 pb-4 max-w-2xl mx-auto w-full" data-testid="way-player-main">
+      <main className={way("flex-1 px-4 pb-8 w-full relative z-10", wayResponsive.CONTAINERS.maxWidthTablet)} data-testid="way-player-main">
         <AnimatePresence mode="wait">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-8 gap-3">
+            <div className="flex flex-col items-center justify-center py-12 gap-4">
               <LoadingSpinner size="md" />
-              <T size="xs" color="muted" bold>Cargando...</T>
+              <div className={way(wayTheme.TEXT.label, 'animate-pulse')}>Cargando...</div>
             </div>
           ) : (
             <motion.div
               key={currentWay.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              initial={{ opacity: 0, y: 10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.98 }}
+              transition={{ duration: 0.3, ease: 'easeOut' }}
+              className={way(wayTheme.GLASS.cardSolid, 'rounded-3xl overflow-hidden')}
             >
               <WayRenderer
                 way={currentWay}

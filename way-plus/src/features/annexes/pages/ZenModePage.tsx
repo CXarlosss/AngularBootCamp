@@ -3,14 +3,18 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { useAudio } from '@/core/hooks/useAudio';
 import type { AmbientZone } from '@/core/utils/audioService';
-import { ArrowLeft, Wind, Droplets, TreePine, Waves } from 'lucide-react';
-import { RESPONSIVE } from '@/shared/lib/wayResponsive';
+import { ArrowLeft, Droplets, TreePine, Waves } from 'lucide-react';
+import { rw, wayResponsive } from '@/shared/lib/wayResponsive';
+import { way, wayTheme } from '@/shared/lib/wayTheme';
+import { hapticService } from '@/core/services/hapticService';
+import { Button } from '@/shared/components/Button';
+import { cn } from '@/shared/lib/utils';
 
 const ZEN_OPTIONS = [
-  { id: 'zen',        label: 'Lluvia',    icon: <Droplets size={32} />,  color: '#60A5FA' },
-  { id: 'zen-forest', label: 'Bosque',    icon: <TreePine size={32} />,  color: '#34D399' },
-  { id: 'zen-waves',  label: 'Mar',       icon: <Waves size={32} />,     color: '#2DD4BF' },
-  { id: 'zen-stream', label: 'Arroyo',    icon: <Waves size={32} />,     color: '#94A3B8' },
+  { id: 'zen',        label: 'Lluvia',    icon: <Droplets size={32} />,  color: 'text-blue-400',  bg: 'bg-blue-400' },
+  { id: 'zen-forest', label: 'Bosque',    icon: <TreePine size={32} />,  color: 'text-emerald-400', bg: 'bg-emerald-400' },
+  { id: 'zen-waves',  label: 'Mar',       icon: <Waves size={32} />,     color: 'text-teal-400',   bg: 'bg-teal-400' },
+  { id: 'zen-stream', label: 'Arroyo',    icon: <Waves size={32} />,     color: 'text-slate-400',  bg: 'bg-slate-400' },
 ] as const;
 
 export function ZenModePage() {
@@ -20,6 +24,7 @@ export function ZenModePage() {
 
   const handleSelect = (id: AmbientZone) => {
     playSFX('click');
+    hapticService.click();
     if (activeZone === id) {
       setActiveZone('none');
       playAmbient('none');
@@ -29,88 +34,73 @@ export function ZenModePage() {
     }
   };
 
+  const activeOption = ZEN_OPTIONS.find(o => o.id === activeZone);
+
   return (
-    <div style={{ 
-      minHeight: '100dvh', 
-      background: '#0F172A', 
-      padding: '24px 16px 100px',
-      color: '#F8FAFC',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 32,
-      fontFamily: 'Verdana, sans-serif'
-    }}>
-      <header style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <motion.button
-          whileTap={{ scale: 0.9 }}
+    <div className={way("min-h-screen bg-slate-900 text-slate-50 flex flex-col p-4 sm:p-6 pb-24", "dark")}>
+      <header className={way("flex items-center gap-4 mb-8 max-w-2xl mx-auto w-full")}>
+        <Button
+          variant="icon"
           onClick={() => { playSFX('click'); navigate(-1); }}
-          style={{
-            width: 44, height: 44, borderRadius: 14, backgroundColor: 'rgba(255,255,255,0.05)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94A3B8',
-            border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer'
-          }}
+          className={wayTheme.GLASS.dark}
         >
           <ArrowLeft size={20} />
-        </motion.button>
+        </Button>
         <div>
-          <h1 style={{ fontSize: 24, fontWeight: 900, margin: 0 }}>Modo Zen</h1>
-          <p style={{ fontSize: 13, color: '#94A3B8', margin: 0 }}>Encuentra tu momento de calma</p>
+          <h1 className={way(wayTheme.TEXT.title, "text-white m-0 leading-tight")}>Modo Zen</h1>
+          <p className={way(wayTheme.TEXT.subtitle, "text-slate-400 m-0")}>Encuentra tu momento de calma</p>
         </div>
       </header>
 
-      <div style={{ 
-        flex: 1, display: 'flex', flexDirection: 'column', 
-        justifyContent: 'center', alignItems: 'center', gap: 40 
-      }}>
-        <div style={{ position: 'relative', width: 200, height: 200 }}>
+      <div className={way("flex-1 flex flex-col justify-center items-center gap-10 max-w-2xl mx-auto w-full")}>
+        <div className="relative w-48 h-48 sm:w-56 sm:h-56">
           <AnimatePresence>
-            {activeZone !== 'none' && (
+            {activeZone !== 'none' && activeOption && (
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
-                animate={{ scale: 1.5, opacity: 0.1 }}
+                animate={{ scale: 1.5, opacity: 0.15 }}
                 exit={{ scale: 2, opacity: 0 }}
                 transition={{ duration: 3, repeat: Infinity }}
-                style={{
-                  position: 'absolute', inset: 0, borderRadius: '50%',
-                  background: ZEN_OPTIONS.find(o => o.id === activeZone)?.color || 'white'
-                }}
+                className={cn("absolute inset-0 rounded-full", activeOption.bg)}
               />
             )}
           </AnimatePresence>
-          <div style={{
-            position: 'absolute', inset: 0, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.05)', border: '2px solid rgba(255,255,255,0.1)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 64
-          }}>
-            {activeZone === 'none' ? '🧘' : ZEN_OPTIONS.find(o => o.id === activeZone)?.icon}
+          <div className={way(
+            "absolute inset-0 rounded-full flex items-center justify-center text-6xl shadow-2xl",
+            wayTheme.GLASS.dark,
+            activeZone !== 'none' ? 'border-transparent' : 'border-slate-700'
+          )}>
+            {activeZone === 'none' ? '🧘' : <div className={activeOption?.color}>{activeOption?.icon}</div>}
           </div>
         </div>
 
-        <div className={RESPONSIVE.gridZen}>
-          {ZEN_OPTIONS.map(opt => (
-            <motion.button
-              key={opt.id}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleSelect(opt.id)}
-              style={{
-                padding: 24, borderRadius: 24, border: '2px solid',
-                borderColor: activeZone === opt.id ? opt.color : 'rgba(255,255,255,0.05)',
-                background: activeZone === opt.id ? `${opt.color}15` : 'rgba(255,255,255,0.02)',
-                color: activeZone === opt.id ? opt.color : '#F8FAFC',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-                cursor: 'pointer', transition: 'all 0.3s'
-              }}
-            >
-              <div style={{ opacity: activeZone === opt.id ? 1 : 0.5 }}>{opt.icon}</div>
-              <span style={{ fontSize: 13, fontWeight: 800, textTransform: 'uppercase' }}>{opt.label}</span>
-            </motion.button>
-          ))}
+        <div className={way(wayResponsive.GRIDS.gridZen, "w-full")}>
+          {ZEN_OPTIONS.map(opt => {
+            const isActive = activeZone === opt.id;
+            return (
+              <motion.button
+                key={opt.id}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => handleSelect(opt.id as AmbientZone)}
+                className={way(
+                  wayTheme.GLASS.dark,
+                  "p-6 rounded-3xl flex flex-col items-center gap-3 cursor-pointer transition-all duration-300",
+                  isActive ? "border-transparent bg-white/10 ring-2 ring-white/20" : "hover:bg-white/5",
+                  isActive ? opt.color : "text-slate-400"
+                )}
+              >
+                <div className={cn("transition-opacity duration-300", isActive ? "opacity-100" : "opacity-50")}>
+                  {opt.icon}
+                </div>
+                <span className="text-sm font-black uppercase tracking-widest">{opt.label}</span>
+              </motion.button>
+            )
+          })}
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', padding: 20 }}>
-        <p style={{ fontSize: 14, color: '#64748B', fontWeight: 500 }}>
+      <div className="text-center p-5 mt-auto">
+        <p className={way(wayTheme.TEXT.label, "text-slate-400 normal-case font-medium")}>
           Cierra los ojos y respira profundamente...
         </p>
       </div>

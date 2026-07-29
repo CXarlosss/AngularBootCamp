@@ -7,6 +7,7 @@ interface ConfigState {
     highAccessibility: boolean; // Simpler icons, larger hitboxes
     contrastMode: boolean;
     showTextLabels: boolean;
+    hapticFeedback: boolean;
   };
   performance: {
     lowResAssets: boolean;
@@ -18,6 +19,7 @@ interface ConfigState {
   setHighAccessibility: (value: boolean) => void;
   setContrastMode: (value: boolean) => void;
   setShowTextLabels: (value: boolean) => void;
+  setHapticFeedback: (value: boolean) => void;
   setPerformanceMode: (value: boolean) => void;
 }
 
@@ -29,6 +31,7 @@ export const useConfigStore = create<ConfigState>()(
         highAccessibility: false,
         contrastMode: false,
         showTextLabels: true,
+        hapticFeedback: true,
       },
       performance: {
         lowResAssets: false,
@@ -43,6 +46,8 @@ export const useConfigStore = create<ConfigState>()(
         set((state) => ({ accessibility: { ...state.accessibility, contrastMode: value } })),
       setShowTextLabels: (value) => 
         set((state) => ({ accessibility: { ...state.accessibility, showTextLabels: value } })),
+      setHapticFeedback: (value) => 
+        set((state) => ({ accessibility: { ...state.accessibility, hapticFeedback: value } })),
       setPerformanceMode: (value) => 
         set((state) => ({ performance: { ...state.performance, disableFilters: value } })),
     }),
