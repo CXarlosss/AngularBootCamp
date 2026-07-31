@@ -58,39 +58,76 @@ registerRoute(
   })
 );
 
-// PUSH NOTIFICATIONS
+// ─── PUSH NOTIFICATIONS ───
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'WAY+ Notificación';
-  const options = {
-    body: data.body || 'Tienes una nueva actualización.',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-192x192.png',
-    data: data.url || '/'
-  };
-
-  event.waitUntil(self.registration.showNotification(title, options));
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const urlToOpen = new URL(event.notification.data || '/', self.location.origin).href;
-
+  if (!event.data) return;
+  
+  const data = event.data.json();
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
-      let matchingClient = null;
-      for (let i = 0; i < windowClients.length; i++) {
-        const windowClient = windowClients[i];
-        if (windowClient.url === urlToOpen) {
-          matchingClient = windowClient;
-          break;
-        }
-      }
-      if (matchingClient) {
-        return matchingClient.focus();
-      } else {
-        return self.clients.openWindow(urlToOpen);
-      }
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: data.icon || '/icon-192.png',
+      badge: data.badge || '/icon-96.png',
+      tag: data.tag || 'way-notification',
+      requireInteraction: data.requireInteraction ?? false,
+      actions: data.actions || [],
+      data: data.data || {},
     })
   );
+});
+
+// ─── CLICK EN NOTIFICACIÓN ───
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  
+  const action = event.action;
+  const data = event.notification.data || {};
+  
+  let url = '/';
+  
+  if (action === 'play' || data.type === 'streak_at_risk' || data.type === 'reminder') {
+    url = '/map';
+  } else if (action === 'claim' || data.type === 'reward_ready') {
+    url = '/daily-chest';
+  } else if (action === 'view' || data.type === 'therapist_message') {
+    url = '/messages';
+  } else if (data.type === 'new_level') {
+    url = `/step/${data.levelId || '1'}`;
+  }
+  
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // Si hay una ventana abierta, enfocarla y navegar
+      for (const client of clientList) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.focus();
+          client.postMessage({ type: 'NOTIFICATION_CLICK', action, url, data });
+          return;
+        }
+      }
+      // Si no, abrir nueva
+      self.clients.openWindow(url);
+    })
+  );
+});
+
+// ─── MENSAJES DESDE LA APP (foreground) ───
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SHOW_NOTIFICATION') {
+    const payload = event.data.payload;
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: payload.icon,
+      badge: payload.badge,
+      tag: payload.tag,
+      renotify: payload.renotify,
+      requireInteraction: payload.requireInteraction,
+      actions: payload.actions,
+      data: payload.data,
+    });
+  }
+  
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

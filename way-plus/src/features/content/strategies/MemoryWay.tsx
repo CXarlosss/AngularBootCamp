@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWayEngine } from '@/core/engine/useWayEngine';
-import { useConfigStore } from '@/core/stores/configStore';
+import { useReduceMotion } from '@/core/stores/configStore';
 import { VoiceButton } from '@/shared/components/VoiceButton';
 
 interface Card {
@@ -26,7 +26,7 @@ export const MemoryWay: React.FC<Props> = ({ way, onComplete }) => {
   const [cards, setCards] = useState<Card[]>([]);
   const [flippedCards, setFlippedCards] = useState<string[]>([]);
   const [moves, setMoves] = useState(0);
-  const { reduceMotion } = useConfigStore((s) => s.accessibility);
+  const reduceMotion = useReduceMotion();
 
   useEffect(() => {
     const duplicated = way.options.flatMap(opt => [

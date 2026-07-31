@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { audioService } from '@/core/utils/audioService';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useConfigStore } from '@/core/stores/configStore';
+import { useReduceMotion } from '@/core/stores/configStore';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { T, Emoji } from '@/shared/components/TypographyScale';
 import { hapticService } from '@/core/services/hapticService';
@@ -20,7 +20,7 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
 }) => {
   const [phase, setPhase] = useState<'enter' | 'coins' | 'exit'>('enter');
   const [displayCoins, setDisplayCoins] = useState(0);
-  const { reduceMotion } = useConfigStore((s) => s.accessibility);
+  const reduceMotion = useReduceMotion();
   const profile = usePlayerStore(s => s.profile);
   const isFemale = profile?.gender === 'female';
   const labelCampeon = isFemale ? '¡Eres una campeona!' : '¡Eres un campeón!';

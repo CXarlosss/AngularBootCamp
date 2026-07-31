@@ -3,11 +3,20 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 import path from 'path'
+import { visualizer } from 'rollup-plugin-visualizer'
+import { splitVendorChunkPlugin } from 'vite'
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
+    splitVendorChunkPlugin(),
+    mode === 'analyze' && visualizer({
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+      filename: 'dist/stats.html',
+    }),
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
@@ -61,30 +70,26 @@ export default defineConfig(({ mode }) => ({
     strictPort: true,
   },
   build: {
-    sourcemap: false,
+    target: 'es2020',
+    cssCodeSplit: true,
+    sourcemap: mode !== 'production',
     reportCompressedSize: false,
     rollupOptions: {
       output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('react') || id.includes('react-dom') || id.includes('scheduler')) {
-              return 'react-vendor';
-            }
-            if (id.includes('zustand')) {
-              return 'state';
-            }
-            if (id.includes('framer-motion')) {
-              return 'framer';
-            }
-            if (id.includes('@supabase')) {
-              return 'supabase';
-            }
-            if (id.includes('jspdf')) {
-              return 'pdf';
-            }
-            return 'vendor';
-          }
-        }
+        manualChunks: {
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'animation-vendor': ['framer-motion'],
+          'state-vendor': ['zustand', '@tanstack/react-query'],
+        },
+        entryFileNames: 'assets/[name]-[hash].js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const info = assetInfo.name || '';
+          if (/\.css$/.test(info)) return 'assets/css/[name]-[hash][extname]';
+          if (/\.(png|jpe?g|gif|svg|webp|avif)$/.test(info))
+            return 'assets/img/[name]-[hash][extname]';
+          return 'assets/[name]-[hash][extname]';
+        },
       }
     },
     chunkSizeWarningLimit: 500,
@@ -97,7 +102,15 @@ export default defineConfig(({ mode }) => ({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom', 'zustand', 'framer-motion', '@supabase/supabase-js'],
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom',
+      'zustand', 
+      'framer-motion', 
+      '@tanstack/react-query',
+      '@supabase/supabase-js'
+    ],
     force: true,
   },
 }))

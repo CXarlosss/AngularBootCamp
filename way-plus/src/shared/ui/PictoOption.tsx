@@ -2,7 +2,7 @@ import React from 'react';
 import { motion, type Variants } from 'framer-motion';
 import type { Option } from '@/core/engine/types';
 import { cn } from '@/shared/lib/utils';
-import { useConfigStore } from '@/core/stores/configStore';
+import { useAccessibilityConfig } from '@/core/stores/configStore';
 
 interface Props {
   option: Option;
@@ -12,7 +12,7 @@ interface Props {
 }
 
 export const PictoOption: React.FC<Props> = React.memo(({ option, onSelect, disabled, className }) => {
-  const { reduceMotion, highAccessibility, showTextLabels } = useConfigStore((s) => s.accessibility);
+  const { reduceMotion, highAccessibility, showTextLabels } = useAccessibilityConfig();
 
   const buttonVariants: Variants = {
     tap: reduceMotion ? {} : { scale: 0.96, y: 2, transition: { type: 'spring', stiffness: 400, damping: 15 } },

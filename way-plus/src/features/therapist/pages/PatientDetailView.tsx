@@ -15,7 +15,11 @@ import { SessionSummaryTab } from '../components/SessionSummaryTab';
 import { PinConfig } from '../components/PinConfig';
 import { SyncStatus } from '../components/SyncStatus';
 import { SoundToggle } from '@/core/components/SoundToggle';
-import { useConfigStore } from '@/core/stores/configStore';
+import { 
+  useConfigActions, 
+  useAccessibilityConfig, 
+  usePerformanceConfig 
+} from '@/core/stores/configStore';
 import { HomeworkPlanner } from '../components/HomeworkPlanner';
 import { patientService } from '@/core/services/patientService';
 
@@ -112,14 +116,9 @@ export function PatientDetailView() {
     }
   }, [searchParams]);
 
-  const { 
-    accessibility, 
-    performance, 
-    setReduceMotion, 
-    setHighAccessibility, 
-    setPerformanceMode, 
-    setShowTextLabels 
-  } = useConfigStore();
+  const accessibility = useAccessibilityConfig();
+  const performance = usePerformanceConfig();
+  const { setAccessibility, setPerformance } = useConfigActions();
 
   const relaxationLog = usePlayerStore(s => s.relaxationLog) ?? {};
   const roleplayLog = usePlayerStore(s => s.roleplayLog) ?? {};
@@ -321,25 +320,25 @@ export function PatientDetailView() {
                     label="Modo TEA Alto" 
                     description="Iconos simplificados y elementos táctiles más grandes."
                     active={accessibility.highAccessibility}
-                    onToggle={() => setHighAccessibility(!accessibility.highAccessibility)}
+                    onToggle={() => setAccessibility({ highAccessibility: !accessibility.highAccessibility })}
                   />
                   <SettingToggle 
                     label="Reducir Movimiento" 
                     description="Desactiva animaciones intensas para niños sensibles."
                     active={accessibility.reduceMotion}
-                    onToggle={() => setReduceMotion(!accessibility.reduceMotion)}
+                    onToggle={() => setAccessibility({ reduceMotion: !accessibility.reduceMotion })}
                   />
                   <SettingToggle 
                     label="Modo Rendimiento" 
                     description="Desactiva efectos visuales para mayor velocidad de carga."
                     active={performance.disableFilters}
-                    onToggle={() => setPerformanceMode(!performance.disableFilters)}
+                    onToggle={() => setPerformance({ disableFilters: !performance.disableFilters })}
                   />
                   <SettingToggle 
                     label="Etiquetas de Texto" 
                     description="Muestra u oculta los nombres bajo los pictogramas."
                     active={accessibility.showTextLabels}
-                    onToggle={() => setShowTextLabels(!accessibility.showTextLabels)}
+                    onToggle={() => setAccessibility({ showTextLabels: !accessibility.showTextLabels })}
                   />
                 </div>
               </Card>

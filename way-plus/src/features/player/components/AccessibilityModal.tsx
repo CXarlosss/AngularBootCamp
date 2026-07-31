@@ -1,5 +1,8 @@
 import React, { useEffect } from 'react';
-import { useConfigStore } from '@/core/stores/configStore';
+import { 
+  useConfigActions, 
+  useAccessibilityConfig 
+} from '@/core/stores/configStore';
 import { Button } from '@/shared/components/Button';
 import { T } from '@/shared/components/TypographyScale';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -10,7 +13,8 @@ interface Props {
 }
 
 export function AccessibilityModal({ isOpen, onClose }: Props) {
-  const { accessibility, setReduceMotion, setContrastMode, setShowTextLabels, setHapticFeedback } = useConfigStore();
+  const accessibility = useAccessibilityConfig();
+  const { setAccessibility } = useConfigActions();
 
   // Sync with body class for reduce-motion and contrast-mode
   useEffect(() => {
@@ -20,12 +24,12 @@ export function AccessibilityModal({ isOpen, onClose }: Props) {
       document.body.classList.remove('reduce-motion');
     }
     
-    if (accessibility.contrastMode) {
+    if (accessibility.highContrast) {
       document.body.classList.add('high-contrast');
     } else {
       document.body.classList.remove('high-contrast');
     }
-  }, [accessibility.reduceMotion, accessibility.contrastMode]);
+  }, [accessibility.reduceMotion, accessibility.highContrast]);
 
   if (!isOpen) return null;
 
@@ -63,8 +67,8 @@ export function AccessibilityModal({ isOpen, onClose }: Props) {
               </div>
               <input 
                 type="checkbox" 
-                checked={accessibility.contrastMode}
-                onChange={(e) => setContrastMode(e.target.checked)}
+                checked={accessibility.highContrast}
+                onChange={(e) => setAccessibility({ highContrast: e.target.checked })}
                 className="w-6 h-6 rounded text-indigo-600 focus:ring-indigo-500"
                 aria-label="Activar Alto Contraste"
               />
@@ -78,7 +82,7 @@ export function AccessibilityModal({ isOpen, onClose }: Props) {
               <input 
                 type="checkbox" 
                 checked={accessibility.reduceMotion}
-                onChange={(e) => setReduceMotion(e.target.checked)}
+                onChange={(e) => setAccessibility({ reduceMotion: e.target.checked })}
                 className="w-6 h-6 rounded text-indigo-600 focus:ring-indigo-500"
                 aria-label="Desactivar Animaciones"
               />
@@ -92,7 +96,7 @@ export function AccessibilityModal({ isOpen, onClose }: Props) {
               <input 
                 type="checkbox" 
                 checked={accessibility.showTextLabels}
-                onChange={(e) => setShowTextLabels(e.target.checked)}
+                onChange={(e) => setAccessibility({ showTextLabels: e.target.checked })}
                 className="w-6 h-6 rounded text-indigo-600 focus:ring-indigo-500"
                 aria-label="Mostrar etiquetas de texto en iconos"
               />
@@ -106,7 +110,7 @@ export function AccessibilityModal({ isOpen, onClose }: Props) {
               <input 
                 type="checkbox" 
                 checked={accessibility.hapticFeedback ?? true}
-                onChange={(e) => setHapticFeedback(e.target.checked)}
+                onChange={(e) => setAccessibility({ hapticFeedback: e.target.checked })}
                 className="w-6 h-6 rounded text-indigo-600 focus:ring-indigo-500"
                 aria-label="Activar vibración táctil"
               />

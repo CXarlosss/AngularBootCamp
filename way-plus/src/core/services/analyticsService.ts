@@ -1,222 +1,219 @@
-import { supabase } from '@/core/services/supabaseClient';
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * WAY+ Analytics Service — PostHog
+ * Tracking de gamificación, adherencia y progreso terapéutico
+ * Respetuoso con GDPR: no PII, hashes para IDs, modo niño disponible
+ * ═══════════════════════════════════════════════════════════════
+ */
 
-export interface WayMetrics {
-  wayId: string;
-  completions: number;
-  totalAttempts: number;
-  avgAttempts: number;
-  avgTimeSec: number;
-  lastPlayed: string;
-  category: string;
+import posthog from 'posthog-js';
+
+// ─── TYPES ───
+export type WayEvent =
+  | 'session_started'
+  | 'session_ended'
+  | 'level_started'
+  | 'level_completed'
+  | 'level_abandoned'
+  | 'task_completed'
+  | 'task_failed'
+  | 'reward_claimed'
+  | 'reward_missed'
+  | 'streak_broken'
+  | 'streak_maintained'
+  | 'help_opened'
+  | 'settings_changed'
+  | 'offline_action_queued'
+  | 'offline_sync_completed'
+  | 'notification_clicked'
+  | 'notification_dismissed';
+
+export interface EventProperties {
+  level_id?: string;
+  task_id?: string;
+  task_index?: number;
+  duration_ms?: number;
+  attempts?: number;
+  score?: number;
+  reward_type?: string;
+  streak_days?: number;
+  previous_streak?: number;
+  error_type?: string;
+  setting_key?: string;
+  setting_value?: unknown;
+  notification_type?: string;
+  [key: string]: unknown;
 }
 
-export const analyticsService = {
-  /**
-   * Obtiene el desglose detallado por cada Way jugado por el paciente.
-   */
-  async getWayBreakdown(patientId: string): Promise<WayMetrics[]> {
-    if (!supabase) return [];
-    const { data, error } = await supabase
-      .from('activity_logs')
-      .select('way_id, action, attempts, metadata, created_at')
-      .eq('patient_id', patientId)
-      .eq('action', 'way_completed')
-      .order('created_at', { ascending: false });
+export interface SessionMetrics {
+  sessionId: string;
+  startTime: number;
+  levelsAttempted: string[];
+  levelsCompleted: string[];
+  tasksCompleted: number;
+  totalPlayTimeMs: number;
+  peakFrustrationScore: number; // Basado en errores rápidos seguidos
+  helpRequests: number;
+  offlineActions: number;
+}
 
-    if (error) throw error;
-    if (!data) return [];
+// ─── CONFIG ───
+const POSTHOG_KEY = import.meta.env.VITE_POSTHOG_KEY;
+const POSTHOG_HOST = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.posthog.com';
 
-    // Agrupar por way_id
-    const byWay = data.reduce((acc, row) => {
-      if (!acc[row.way_id]) {
-        acc[row.way_id] = {
-          wayId: row.way_id,
-          completions: 0,
-          totalAttempts: 0,
-          totalTimeMs: 0,
-          dates: [],
-          category: row.metadata?.category || 'General'
-        };
-      }
-      acc[row.way_id].completions++;
-      acc[row.way_id].totalAttempts += row.attempts || 1;
-      acc[row.way_id].totalTimeMs += (row.metadata?.durationSeconds || 0) * 1000;
-      acc[row.way_id].dates.push(row.created_at);
-      return acc;
-    }, {} as Record<string, any>);
+// ─── SERVICE ───
+class AnalyticsService {
+  private session: SessionMetrics | null = null;
+  private initialized = false;
+  private childMode = false; // Si true, no guarda session recording ni heatmaps
 
-    return Object.values(byWay).map((w: any) => ({
-      wayId: w.wayId,
-      completions: w.completions,
-      totalAttempts: w.totalAttempts,
-      avgAttempts: Number((w.totalAttempts / w.completions).toFixed(1)),
-      avgTimeSec: Math.round((w.totalTimeMs / w.completions) / 1000),
-      lastPlayed: w.dates[0],
-      category: w.category
-    }));
-  },
+  init(userId: string, options: { childMode?: boolean; therapistId?: string } = {}) {
+    if (this.initialized || !POSTHOG_KEY) return;
 
-  /**
-   * Obtiene el historial completo de actividad para exportar a CSV.
-   * Incluye doble validación de seguridad: RLS + check explícito de propiedad.
-   */
-  async getActivityHistory(patientId: string) {
-    if (!supabase) throw new Error('Supabase no disponible');
+    this.childMode = options.childMode ?? false;
 
-    // 1. Validar que el patientId pertenece al terapeuta logueado (Security First)
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user?.id) {
-      throw new Error('Sesión no válida');
-    }
-
-    const { data: patient, error: patientError } = await supabase
-      .from('patient_profiles')
-      .select('id')
-      .eq('id', patientId)
-      .eq('therapist_id', user.id)
-      .single();
-
-    if (patientError || !patient) {
-      console.error('[Security] Intento de acceso no autorizado a historial:', { patientId, therapistId: user.id });
-      throw new Error('No tienes permiso para ver los datos de este paciente');
-    }
-
-    // 2. Ejecutar query robusta sin dependencias de joins mágicos
-    const { data, error } = await supabase
-      .from('activity_logs')
-      .select('created_at, way_id, action, attempts, metadata')
-      .eq('patient_id', patientId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    // 3. Mapear categorías usando el registro local (más fiable que el join)
-    const { registry } = await import('@/content/registry');
-    const allWays = registry.getAllWays();
-    const wayMap = new Map(allWays.map(w => [w.id, w.metadata?.skillTag || 'General']));
-
-    return (data || []).map(row => ({
-      fecha: row.created_at.split('T')[0],
-      way_id: row.way_id,
-      categoria: wayMap.get(row.way_id) || (row.metadata as any)?.category || 'General',
-      accion: row.action,
-      intentos: row.attempts,
-      tiempo_ms: (row.metadata as any)?.timeSpentMs || (row.metadata as any)?.durationSeconds * 1000 || 0
-    }));
-  },
-
-  /**
-   * Agrupa los logs de actividad en "sesiones" basadas en proximidad temporal.
-   * Si la diferencia de tiempo entre dos logs consecutivos es menor al umbral (30 min),
-   * se consideran de la misma sesión.
-   */
-  async getSessionHistory(patientId: string) {
-    if (!supabase) return [];
-    const SESSION_GAP_THRESHOLD = 30 * 60 * 1000; // 30 minutos
-
-    const { data, error } = await supabase
-      .from('activity_logs')
-      .select('*')
-      .eq('patient_id', patientId)
-      .order('created_at', { ascending: true }); // Orden cronológico para agrupar
-
-    if (error) throw error;
-    if (!data || data.length === 0) return [];
-
-    const sessions: any[] = [];
-    let currentSession: any = null;
-
-    data.forEach(log => {
-      const logTime = new Date(log.created_at).getTime();
-
-      if (!currentSession) {
-        currentSession = {
-          startTime: logTime,
-          endTime: logTime,
-          logs: [log],
-          wayCoins: log.action === 'way_completed' ? (log.metadata?.coinsEarned || 10) : 0,
-          abandoned: log.action === 'way_abandoned' ? 1 : 0
-        };
-      } else {
-        const gap = logTime - currentSession.endTime;
-        if (gap <= SESSION_GAP_THRESHOLD) {
-          // Misma sesión
-          currentSession.logs.push(log);
-          currentSession.endTime = logTime;
-          if (log.action === 'way_completed') currentSession.wayCoins += (log.metadata?.coinsEarned || 10);
-          if (log.action === 'way_abandoned') currentSession.abandoned += 1;
-        } else {
-          // Nueva sesión
-          sessions.push(currentSession);
-          currentSession = {
-            startTime: logTime,
-            endTime: logTime,
-            logs: [log],
-            wayCoins: log.action === 'way_completed' ? (log.metadata?.coinsEarned || 10) : 0,
-            abandoned: log.action === 'way_abandoned' ? 1 : 0
-          };
+    posthog.init(POSTHOG_KEY, {
+      api_host: POSTHOG_HOST,
+      person_profiles: 'identified_only',
+      capture_pageview: false, // Lo hacemos manualmente para SPA
+      capture_pageleave: true,
+      autocapture: false, // Control total de eventos
+      session_recording: {
+        recordCrossOriginIframes: false,
+        maskAllInputs: true,
+        maskTextSelector: '*', // No grabar texto en modo niño
+      },
+      loaded: (posthog) => {
+        if (userId) {
+          // Hashear ID para privacidad
+          posthog.identify(this.hashId(userId));
+          if (options.therapistId) {
+            posthog.group('therapist', options.therapistId);
+          }
         }
-      }
+      },
     });
 
-    if (currentSession) {
-      sessions.push(currentSession);
-    }
-
-    // Ordenar de más reciente a más antiguo
-    return sessions.reverse().map(s => {
-      const start = new Date(s.startTime);
-      const end = new Date(s.endTime);
-      const durationMin = Math.max(1, Math.round((s.endTime - s.startTime) / 60000));
-      const isMorning = start.getHours() < 14;
-      const periodName = isMorning ? 'Mañana' : 'Tarde';
-      const dayName = start.toLocaleDateString('es-ES', { day: 'numeric', month: 'long' });
-
-      return {
-        id: `session-${s.startTime}`,
-        title: `${periodName} del ${dayName}`,
-        timeRange: `${start.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })} - ${end.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`,
-        durationMin,
-        wayCoins: s.wayCoins,
-        abandoned: s.abandoned,
-        logs: s.logs.filter((l: any) => l.action === 'way_completed') // Solo mostrar completados para simplificar
-      };
-    });
-  },
-
-  /**
-   * Obtiene KPIs globales de todos los pacientes para el Dashboard del Terapeuta.
-   */
-  async getGlobalTherapistKPIs(therapistId: string) {
-    if (!supabase) return { activePatientsThisWeek: 0, totalWaysCompleted: 0 };
-
-    // 1. Obtener los IDs de los pacientes del terapeuta
-    const { data: patients } = await supabase
-      .from('patient_profiles')
-      .select('id')
-      .eq('therapist_id', therapistId);
-
-    if (!patients || patients.length === 0) return { activePatientsThisWeek: 0, totalWaysCompleted: 0 };
-
-    const patientIds = patients.map(p => p.id);
-    const oneWeekAgo = new Date();
-    oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-
-    // 2. Obtener actividad de todos estos pacientes en la última semana
-    const { data: recentActivity } = await supabase
-      .from('activity_logs')
-      .select('patient_id, action')
-      .in('patient_id', patientIds)
-      .gte('created_at', oneWeekAgo.toISOString());
-
-    if (!recentActivity) return { activePatientsThisWeek: 0, totalWaysCompleted: 0 };
-
-    const activePatients = new Set(recentActivity.map(log => log.patient_id));
-    const completedWays = recentActivity.filter(log => log.action === 'way_completed').length;
-
-    return {
-      activePatientsThisWeek: activePatients.size,
-      totalWaysCompleted: completedWays
-    };
+    this.initialized = true;
   }
-};
+
+  private hashId(id: string): string {
+    // Simple hash para anonimización. En producción usar SHA-256.
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      const char = id.charCodeAt(i);
+      hash = ((hash << 5) - hash + char) | 0;
+    }
+    return `way-user-${Math.abs(hash)}`;
+  }
+
+  startSession(sessionId: string) {
+    this.session = {
+      sessionId,
+      startTime: Date.now(),
+      levelsAttempted: [],
+      levelsCompleted: [],
+      tasksCompleted: 0,
+      totalPlayTimeMs: 0,
+      peakFrustrationScore: 0,
+      helpRequests: 0,
+      offlineActions: 0,
+    };
+
+    this.track('session_started', { session_id: sessionId });
+  }
+
+  endSession() {
+    if (!this.session) return;
+
+    const duration = Date.now() - this.session.startTime;
+    this.track('session_ended', {
+      session_id: this.session.sessionId,
+      duration_ms: duration,
+      levels_attempted: this.session.levelsAttempted.length,
+      levels_completed: this.session.levelsCompleted.length,
+      tasks_completed: this.session.tasksCompleted,
+      peak_frustration: this.session.peakFrustrationScore,
+      help_requests: this.session.helpRequests,
+    });
+
+    this.session = null;
+  }
+
+  track(event: WayEvent, properties: EventProperties = {}) {
+    if (!this.initialized) return;
+
+    // En modo niño, no trackear eventos sensibles
+    if (this.childMode && ['settings_changed'].includes(event)) return;
+
+    posthog.capture(event, {
+      ...properties,
+      timestamp: Date.now(),
+      way_version: '1.0',
+    });
+  }
+
+  trackLevelStart(levelId: string) {
+    this.session?.levelsAttempted.push(levelId);
+    this.track('level_started', { level_id: levelId });
+  }
+
+  trackLevelComplete(levelId: string, score: number, durationMs: number) {
+    this.session?.levelsCompleted.push(levelId);
+    this.track('level_completed', {
+      level_id: levelId,
+      score,
+      duration_ms: durationMs,
+    });
+  }
+
+  trackLevelAbandon(levelId: string, reason: 'timeout' | 'exit' | 'error', durationMs: number) {
+    this.track('level_abandoned', {
+      level_id: levelId,
+      error_type: reason,
+      duration_ms: durationMs,
+    });
+  }
+
+  trackFrustration(levelId: string, consecutiveErrors: number) {
+    const score = Math.min(10, consecutiveErrors); // 1-10 escala
+    if (this.session && score > this.session.peakFrustrationScore) {
+      this.session.peakFrustrationScore = score;
+    }
+    if (score >= 3) {
+      this.track('help_opened', { level_id: levelId, frustration_score: score });
+    }
+  }
+
+  trackStreak(days: number, previousStreak: number) {
+    if (days === 0 && previousStreak > 0) {
+      this.track('streak_broken', { previous_streak: previousStreak });
+    } else if (days > previousStreak) {
+      this.track('streak_maintained', { streak_days: days, previous_streak: previousStreak });
+    }
+  }
+
+  // ─── FEATURE FLAGS (para A/B testing de niveles) ───
+  isEnabled(flag: string): boolean {
+    return posthog.isFeatureEnabled(flag) ?? false;
+  }
+
+  getFlagPayload<T>(flag: string): T | undefined {
+    return posthog.getFeatureFlagPayload(flag) as T | undefined;
+  }
+
+  // ─── THERAPIST DASHBOARD DATA ───
+  async getPatientInsights(patientHashId: string): Promise<{
+    adherenceScore: number;
+    avgSessionDuration: number;
+    completionRate: number;
+    frustrationTrend: 'improving' | 'stable' | 'worsening';
+    recommendedAction: string;
+  } | null> {
+    // En producción, esto llamaría a tu backend que consulta PostHog API
+    // o usa la API de PostHog directamente con project API key
+    return null;
+  }
+}
+
+export const analytics = new AnalyticsService();

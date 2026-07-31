@@ -1,7 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWayEngine } from '@/core/engine/useWayEngine';
-import { useConfigStore } from '@/core/stores/configStore';
+import { useAccessibilityConfig } from '@/core/stores/configStore';
 import { VoiceButton } from '@/shared/components/VoiceButton';
 
 interface TracingWayProps {
@@ -54,7 +54,7 @@ export const TracingWay: React.FC<TracingWayProps> = ({ way, onComplete }) => {
     setPath(prev => [...prev, pos]);
   };
 
-  const { reduceMotion, highAccessibility } = useConfigStore((s) => s.accessibility);
+  const { reduceMotion, highAccessibility } = useAccessibilityConfig();
 
   const handleEnd = () => {
     if (!isDrawing) return;

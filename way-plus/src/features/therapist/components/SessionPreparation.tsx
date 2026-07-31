@@ -8,7 +8,7 @@ import { syncService } from '@/core/services/syncService';
 import { sessionService, type PlannedSession } from '@/core/services/sessionService';
 import { usePlayerStore } from '@/features/player/store/playerStore';
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
-import { useConfigStore } from '@/core/stores/configStore';
+
 
 const C = {
   indigo: '#4F46E5',

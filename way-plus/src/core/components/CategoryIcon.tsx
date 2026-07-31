@@ -1,5 +1,5 @@
 import React from 'react';
-import { useConfigStore } from '@/core/stores/configStore';
+import { useAccessibilityConfig } from '@/core/stores/configStore';
 
 export type Category = 
   | 'autonomy' 
@@ -123,7 +123,7 @@ export const CategoryIcon: React.FC<CategoryIconProps> = ({
   category, 
   size = 48 
 }) => {
-  const isHighAccessibility = useConfigStore((s) => s.accessibility.highAccessibility);
+  const { highAccessibility: isHighAccessibility } = useAccessibilityConfig();
   
   const iconSet = isHighAccessibility ? simpleIcons : standardIcons;
   const Icon = iconSet[category] || iconSet.regulation;

@@ -1,0 +1,158 @@
+# ═══════════════════════════════════════════════════════════════
+# WAY+ CI/CD — GitHub Actions
+# Ejecuta tests E2E (Playwright) + Lint + TypeCheck en cada PR
+# ═══════════════════════════════════════════════════════════════
+
+name: WAY+ CI — E2E & Quality
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+# Cancelar runs anteriores del mismo PR/branch para ahorrar minutos
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── Job 1: Lint + TypeCheck + Build (rápido) ───
+  quality:
+    name: 🔍 Lint & TypeCheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint --if-present
+
+      - name: Run TypeScript check
+        run: npx tsc --noEmit
+
+      - name: Build app
+        run: npm run build
+
+  # ─── Job 2: Tests E2E con Playwright ───
+  e2e:
+    name: 🎭 E2E Tests (Playwright)
+    needs: quality # Solo corre si quality pasa
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: npx playwright test
+        env:
+          CI: true
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+      - name: Upload screenshots/videos on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failures-${{ github.run_id }}
+          path: test-results/
+          retention-days: 14
+
+  # ─── Job 3: Accesibilidad (axe-core) ───
+  accessibility:
+    name: ♿ A11y Tests
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run accessibility tests
+        run: npx playwright test tests/e2e/accessibility.spec.ts
+        env:
+          CI: true
+
+      - name: Upload a11y report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a11y-report-${{ github.run_id }}
+          path: playwright-report/
+          retention-days: 7
+
+  # ─── Job 4: Bundle size check ───
+  bundle-size:
+    name: 📦 Bundle Size
+    needs: quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build and analyze
+        run: npm run build
+
+      - name: Check bundle size
+        run: |
+          echo "=== Bundle Analysis ==="
+          du -sh dist/
+          echo "=== JS Chunks ==="
+          ls -lh dist/assets/*.js | awk '{print $5, $9}'
+          echo "=== Warning if > 200KB initial ==="
+          INITIAL=$(find dist/assets -name "index-*.js" -exec du -k {} + | awk '{sum+=$1} END {print sum}')
+          if [ "$INITIAL" -gt 200 ]; then
+            echo "::warning::Initial JS chunk is ${INITIAL}KB (target: <200KB)"
+          else
+            echo "✅ Initial JS chunk is ${INITIAL}KB (OK)"
+          fi
