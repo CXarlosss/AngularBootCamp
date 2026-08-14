@@ -172,7 +172,7 @@ export default class ClientProgressPage {
     // Telemetry - Detail viewed
     effect(() => {
       if (!this.store.loading() && this.store.snapshot()) {
-        this.telemetry.logEvent('coach_client_detail_viewed', { 
+        this.telemetry.track('coach_client_detail_viewed', { 
           client_id: clientId,
           is_at_risk: this.store.isAtRisk() 
         });
@@ -189,7 +189,7 @@ export default class ClientProgressPage {
     const clientId = this.store.clientId();
     if (!clientId) return;
 
-    this.telemetry.logEvent('coach_intervention_sent', { client_id: clientId, type: action });
+    this.telemetry.track('coach_intervention_sent', { client_id: clientId, type: action });
 
     if (action === 'chat' || action === 'send-reminder') {
       this.router.navigate(['/coach/inbox', clientId], { state: { returnUrl: this.router.url } });
@@ -201,7 +201,7 @@ export default class ClientProgressPage {
 
   onSectionToggled(sectionId: string, isOpen: boolean) {
     if (isOpen) {
-      this.telemetry.logEvent('coach_section_toggled', { client_id: this.store.clientId(), section: sectionId });
+      this.telemetry.track('coach_section_toggled', { client_id: this.store.clientId(), section: sectionId });
     }
   }
 
@@ -213,7 +213,7 @@ export default class ClientProgressPage {
     const photos = this.selectedPhotosForComparison();
     if (photos.length !== 2) return;
 
-    this.telemetry.logEvent('coach_photo_compared', { client_id: this.store.clientId() });
+    this.telemetry.track('coach_photo_compared', { client_id: this.store.clientId() });
 
     try {
       const urls = await this.photoService.getComparisonUrls({

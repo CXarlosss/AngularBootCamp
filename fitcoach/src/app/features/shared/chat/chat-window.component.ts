@@ -7,7 +7,7 @@ import { CommonModule, DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ChatStore, ChatMessage } from '../../../state/chat.store';
 import { AuthService } from '../../../core/auth/auth.service';
-import { FcButtonDirective } from '../../shared/components/button/fc-button.directive';
+import { FcButtonDirective } from '../../../shared/components/button/fc-button.directive';
 
 @Component({
   selector: 'fc-chat-window',

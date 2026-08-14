@@ -140,6 +140,7 @@ export class ProgressChartComponent implements AfterViewInit, OnDestroy {
           date:      p.date instanceof Date ? p.date.toISOString() : p.date,
           maxWeight: p.maxWeight,
           totalVol:  p.totalVol,
+          estimated1RM: p.estimated1RM || 0
         })),
         metric: this.metric(),
         locale: 'es-ES',

@@ -28,7 +28,7 @@ export const workoutDayGuard: CanActivateFn = (route: ActivatedRouteSnapshot) =>
         const r = assigned.routine;
         const jsDay  = new Date().getDay();
         const isoDay = jsDay === 0 ? 7 : jsDay;
-        const todayDay = r.days.find(d => d.dayNumber === isoDay) ?? r.days[0];
+        const todayDay = r?.days.find(d => d.dayNumber === isoDay) ?? r?.days[0];
         
         if (!todayDay) return of(true);
         

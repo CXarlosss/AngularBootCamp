@@ -1,4 +1,4 @@
-import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit, OnDestroy, effect } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy, OnInit, OnDestroy, effect, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -17,7 +17,11 @@ import { SetLog } from '../../../core/models/workout-log.model';
 import { FormsModule } from '@angular/forms';
 import { TelemetryService } from '../../../core/services/telemetry.service';
 import { SyncQueueService } from '../../../core/services/sync-queue.service';
-
+import { ExerciseHistoryService } from '../../../core/services/exercise-history.service';
+import { WeightComparisonComponent } from '../../../shared/ui/weight-comparison/weight-comparison.component';
+import { WeightSuggestionComponent } from '../../../shared/ui/weight-suggestion/weight-suggestion.component';
+import { PRPredictionComponent } from '../../../shared/ui/pr-prediction/pr-prediction.component';
+import { WeightSuggestionService, WeightSuggestion, PRPrediction } from '../../../core/services/weight-suggestion.service';
 
 interface ExerciseState {
   exercise:      Exercise;
@@ -30,7 +34,7 @@ interface ExerciseState {
   selector: 'fc-today-workout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, FormsModule, SetLoggerComponent, SkeletonComponent],
+  imports: [CommonModule, FormsModule, SetLoggerComponent, SkeletonComponent, WeightComparisonComponent, WeightSuggestionComponent, PRPredictionComponent],
   template: `
     <div class="workout-screen">
 
@@ -239,6 +243,11 @@ interface ExerciseState {
 
               @if (state.isActive && !state.isDone && !workoutStore.activeLog()?.completed) {
                 <div class="set-logger-wrap">
+                  <fc-weight-suggestion 
+                    [suggestion]="activeSuggestion()"
+                    (useSuggestion)="applySuggestion($event)"
+                  />
+                  <fc-pr-prediction [prediction]="activePrediction()" />
                   <fc-set-logger
                     [setNumber]="state.completedSets.length + 1"
                     [exerciseId]="state.exercise.id"
@@ -249,33 +258,9 @@ interface ExerciseState {
                   />
                 </div>
 
-                <div class="load-history-section">
-                  <h4 class="load-history-title">📈 Histórico de Carga</h4>
-                  <div class="load-history-cards">
-                    @for (item of getLoadHistory(state.exercise.id); track item.date.getTime()) {
-                      <div class="load-history-card">
-                        <div class="lh-date">
-                          <span class="lh-day">{{ item.date | date:'dd' }}</span>
-                          <span class="lh-month">{{ item.date | date:'MMM' }}</span>
-                        </div>
-                        <div class="lh-metric">
-                          <span class="lh-val">{{ item.maxWeight }}kg</span>
-                          <span class="lh-lbl">Carga máx</span>
-                        </div>
-                        <div class="lh-metric">
-                          <span class="lh-val">{{ item.setsCount }}</span>
-                          <span class="lh-lbl">Series</span>
-                        </div>
-                        <div class="lh-metric">
-                          <span class="lh-val">{{ item.volume }}</span>
-                          <span class="lh-lbl">Volumen</span>
-                        </div>
-                      </div>
-                    } @empty {
-                      <p class="lh-empty">Sin entrenamientos anteriores de este ejercicio</p>
-                    }
-                  </div>
-                </div>
+                <fc-weight-comparison 
+                  [history]="exerciseHistorySvc.getExerciseHistory(state.exercise.id, state.exercise.name)" 
+                />
               }
 
               @if (state.exercise.notes) {
@@ -380,6 +365,7 @@ interface ExerciseState {
 export class TodayWorkoutComponent implements OnInit, OnDestroy {
   private sb = supabase;
   workoutStore = inject(WorkoutStore);
+  exerciseHistorySvc = inject(ExerciseHistoryService);
   clientRoutineSvc = inject(ClientRoutineService);
   auth         = inject(AuthService);
   timer        = inject(RestTimerService);
@@ -388,6 +374,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   syncQueue    = inject(SyncQueueService);
   private telemetry    = inject(TelemetryService);
   private route = inject(ActivatedRoute);
+  private suggestionSvc = inject(WeightSuggestionService);
 
 
   isLoading = signal(true);
@@ -405,6 +392,21 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
   // Señales auxiliares para el formulario de edición
   editWeight    = signal(0);
   editReps      = signal(10);
+  
+  // Computed para las sugerencias del ejercicio activo
+  activeSuggestion = computed(() => {
+    const states = this.exerciseStates();
+    const i = this.activeExerciseIndex();
+    const ex = states[i]?.exercise;
+    return ex ? this.suggestionSvc.getSuggestion(ex.id, ex.reps) : null;
+  });
+
+  activePrediction = computed(() => {
+    const states = this.exerciseStates();
+    const i = this.activeExerciseIndex();
+    const ex = states[i]?.exercise;
+    return ex ? this.suggestionSvc.predictPR(ex.id) : null;
+  });
 
   // Map de notas por exerciseId (en memoria durante el workout)
   exerciseNotes = signal<Record<string, string | undefined>>({});
@@ -649,8 +651,17 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     return result.sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 6);
   }
 
+  @ViewChild(SetLoggerComponent) setLogger?: SetLoggerComponent;
+
   setActiveExercise(index: number): void {
     this.activeExerciseIndex.set(index);
+  }
+
+  applySuggestion(suggestion: WeightSuggestion) {
+    if (this.setLogger) {
+      this.setLogger.applyValues(suggestion.suggestedWeight, suggestion.suggestedReps);
+    }
+    this.haptic.trigger('success');
   }
 
   setsForExercise(exerciseId: string) {

@@ -117,4 +117,10 @@ export class SetLoggerComponent {
     });
     this.notes.set('');
   }
+
+  applyValues(weight: number, reps: number): void {
+    this.weight.set(weight);
+    this.reps.set(reps);
+    this.haptic.trigger('success');
+  }
 }

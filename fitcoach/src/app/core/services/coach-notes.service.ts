@@ -44,8 +44,7 @@ export class CoachNotesService {
     };
     
     if (!navigator.onLine) {
-      this.syncQueue.enqueue({
-        type: 'data',
+      this.syncQueue.enqueue('data', {
         table: 'coach_notes',
         payload: note,
         priority: 1 // Misma prioridad que workout logs
@@ -56,7 +55,7 @@ export class CoachNotesService {
     const { error } = await this.sb.from('coach_notes').insert(note);
     if (error) {
       // Fallback a cola si Supabase falla (rate limit, etc.)
-      this.syncQueue.enqueue({ type: 'data', table: 'coach_notes', payload: note, priority: 1 });
+      this.syncQueue.enqueue('data', { table: 'coach_notes', payload: note, priority: 1 });
       throw error;
     }
   }

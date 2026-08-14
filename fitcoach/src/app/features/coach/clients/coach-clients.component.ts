@@ -67,7 +67,7 @@ import { Profile }      from '../../../core/models/profile.model';
     .loading { color: #5F5E5A; padding: 24px; }
   `],
 })
-export class CoachClientsComponent implements OnInit {
+export class CoachClientsComponent {
   router     = inject(Router);
   private auth      = inject(AuthService);
   private coachSvc  = inject(CoachService);

@@ -55,7 +55,7 @@ export class CollapsibleSectionComponent {
         return;
       }
 
-      const key = \`fitcoach_accordion_\${this.clientId()}_\${this.sectionId()}\`;
+      const key = `fitcoach_accordion_${this.clientId()}_${this.sectionId()}`;
       const saved = sessionStorage.getItem(key);
       if (saved) {
         this.isOpen.set(saved === 'true');
@@ -67,7 +67,7 @@ export class CollapsibleSectionComponent {
     const newState = !this.isOpen();
     this.isOpen.set(newState);
     
-    const key = \`fitcoach_accordion_\${this.clientId()}_\${this.sectionId()}\`;
+    const key = `fitcoach_accordion_${this.clientId()}_${this.sectionId()}`;
     sessionStorage.setItem(key, String(newState));
     
     this.toggled.emit(newState);

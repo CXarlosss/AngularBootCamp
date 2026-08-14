@@ -14,6 +14,7 @@ import { BANNER_COLORS, BANNER_PATTERNS } from './banner.types';
       class="profile-banner" 
       [class]="sizeClass()"
       [style.background]="bannerGradient()"
+      [style.--banner-glow]="glowColor()"
     >
       <!-- Capa de brillo premium animada -->
       <div class="banner-shine"></div>
@@ -88,8 +89,9 @@ import { BANNER_COLORS, BANNER_PATTERNS } from './banner.types';
       align-items: center;
       padding: 16px 20px;
       min-height: 100px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 20px var(--banner-glow, transparent);
+      backdrop-filter: blur(10px);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
@@ -352,6 +354,7 @@ export class ProfileBannerComponent {
   equippedFrameInput = input<string | null>(null, { alias: 'equippedFrame' });
   bannerColorInput   = input<string | null>(null, { alias: 'bannerColor' });
   bannerPatternInput = input<string | null>(null, { alias: 'bannerPattern' });
+  glowColor          = input<string>('rgba(29,158,117,0.15)');
 
   resolvedProfile = computed(() => {
     if (this.useCurrentUser()) return this.profileSvc.profile();

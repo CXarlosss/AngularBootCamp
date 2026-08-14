@@ -297,9 +297,9 @@
   }
 
   &:hover:not(.on) {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px) scale(1.05);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
   }
 }
 
@@ -347,8 +347,9 @@
   }
 
   &:hover:not(.on) {
-    border-color: var(--color-border-secondary);
-    transform: translateY(-2px);
+    border-color: rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
   }
 }
 

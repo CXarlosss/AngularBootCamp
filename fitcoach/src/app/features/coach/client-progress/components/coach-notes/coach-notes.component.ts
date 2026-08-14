@@ -96,7 +96,7 @@ export class CoachNotesComponent {
   notes = signal<CoachNote[]>([]);
   
   // Draft local persistence
-  private storageKey = computed(() => \`fitcoach_note_draft_\${this.clientId()}\`);
+  private storageKey = computed(() => `fitcoach_note_draft_${this.clientId()}`);
   
   categories = [
     { value: 'general', label: '📝 General' },
@@ -229,7 +229,7 @@ export class CoachNotesComponent {
       case 'saved': return 'Guardado';
       case 'offline': return 'Sin conexión. Se sincronizará.';
       case 'error': return 'Error al guardar';
-      default: return \`\${this.draftText().length}/2000\`;
+      default: return `${this.draftText().length}/2000`;
     }
   });
   
@@ -246,7 +246,7 @@ export class CoachNotesComponent {
       motivation: 'bg-blue-100 text-blue-700',
       technique: 'bg-purple-100 text-purple-700'
     };
-    return map[cat] ?? map.general;
+    return map[cat] ?? map['general'];
   }
   
   categoryLabel(cat: string) {

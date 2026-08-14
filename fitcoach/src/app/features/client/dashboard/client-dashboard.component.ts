@@ -18,14 +18,14 @@ import { RankService }          from '../../../core/services/rank.service';
 import { RouterModule }         from '@angular/router';
 import { BANNER_COLORS, BANNER_PATTERNS } from '../profile/profile-banner/banner.types';
 import { ProfileBannerComponent } from '../profile/profile-banner/profile-banner.component';
-import { PushPermissionBannerComponent } from '../../../shared/components/push-permission-banner/push-permission-banner.component';
+
 import { FcmService } from '../../../core/services/fcm.service';
 
 @Component({
   selector: 'fc-client-dashboard',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RankCardComponent, AvatarFrameComponent, InitialsPipe, RouterModule, ProfileBannerComponent, PushPermissionBannerComponent],
+  imports: [CommonModule, RankCardComponent, RouterModule, ProfileBannerComponent],
   template: `
     <div class="client-dash">
 
@@ -51,37 +51,58 @@ import { FcmService } from '../../../core/services/fcm.service';
         <div class="routine-card">
           <div class="rc-header">
             <div class="rc-badge">Rutina activa</div>
-            <span class="rc-total">{{ pendingDaysCount() }} / {{ r.routine?.days?.length }} pendientes</span>
+
+            <div class="rc-progress" [style.--pct]="progressPercent()">
+              <svg viewBox="0 0 40 40" class="rc-progress-ring">
+                <circle class="ring-track" cx="20" cy="20" r="16" />
+                <circle class="ring-fill" cx="20" cy="20" r="16" />
+              </svg>
+              <span class="rc-progress-label">{{ pendingDaysCount() === 0 ? '✓' : (r.routine?.days?.length ?? 0) - pendingDaysCount() + '/' + r.routine?.days?.length }}</span>
+            </div>
           </div>
+
           <h2 class="rc-name">{{ r.routine?.name }}</h2>
           <p class="rc-meta">
             {{ r.routine?.goal ? goalLabel(r.routine!.goal!) : '' }}
           </p>
-          
+
           <div class="rc-days">
-            @for (day of routineDaysStatus(); track day.id) {
-              <div 
-                class="day-chip interactive" 
+            @for (day of routineDaysStatus(); track day.id; let isFirst = $first) {
+              <div
+                class="day-chip"
+                [class.interactive]="!day.isCompleted"
                 [class.done]="day.isCompleted"
+                [class.next]="!day.isCompleted && isNextPending(day)"
                 (click)="!day.isCompleted && startWorkout(day.id)"
               >
-                <span class="day-label">{{ day.label }}</span>
+                <div class="day-chip-left">
+                  @if (day.isCompleted) {
+                    <span class="day-check">
+                      <svg viewBox="0 0 16 16" width="12" height="12">
+                        <path d="M2 8.5L6 12.5L14 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </span>
+                  }
+                  <span class="day-label">{{ day.label }}</span>
+                </div>
+
                 @if (day.isCompleted) {
-                  <span class="day-count">✓ Completado</span>
+                  <span class="day-count">Completado</span>
                 } @else {
                   <span class="day-count">{{ day.exercises.length }} ejercicios</span>
                 }
               </div>
             }
-
-            @if (pendingDaysCount() === 0) {
-              <div class="all-done-msg">
-                ¡Semana completada! Tu coach te asignará una nueva rutina pronto.
-              </div>
-            }
           </div>
 
-          @if (pendingDaysCount() > 0) {
+          @if (pendingDaysCount() === 0) {
+            <div class="all-done-msg">
+              ¡Semana completada! Tu coach te asignará una nueva rutina pronto.
+            </div>
+            <button class="btn-start btn-done" disabled>
+              Semana completada 🎉
+            </button>
+          } @else {
             <button class="btn-start" (click)="startFirstPendingWorkout()">
               Continuar entrenamiento
             </button>
@@ -100,7 +121,6 @@ import { FcmService } from '../../../core/services/fcm.service';
         </div>
       }
       
-      <app-push-permission-banner />
     </div>
   `,
   styleUrl: './client-dashboard.component.css',
@@ -163,6 +183,18 @@ export class ClientDashboardComponent implements OnInit {
   pendingDaysCount = computed(() => {
     return this.routineDaysStatus().filter(d => !d.isCompleted).length;
   });
+
+  progressPercent = computed(() => {
+    const total = this.routine()?.routine?.days?.length ?? 0;
+    if (total === 0) return 0;
+    const done = total - this.pendingDaysCount();
+    return Math.round((done / total) * 100);
+  });
+
+  isNextPending(day: { id: string; isCompleted: boolean }): boolean {
+    const firstPending = this.routineDaysStatus().find(d => !d.isCompleted);
+    return firstPending?.id === day.id;
+  }
 
   greeting = () => {
     const h = new Date().getHours();

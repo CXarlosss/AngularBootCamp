@@ -253,7 +253,7 @@ export class SyncQueueService {
     }
   }
 
-  async enqueue(type: 'workout_session', payload: any) {
+  async enqueue(type: 'workout_session' | 'telemetry_batch' | 'data', payload: any) {
     await this.storage.addItem('sync_queue', {
       type,
       payload,

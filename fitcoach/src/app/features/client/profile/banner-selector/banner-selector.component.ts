@@ -51,6 +51,7 @@ import {
             [xpTotal]="rankSvc.athleteRank()?.xpTotal ?? 0"
             [bannerColor]="selectedColor()"
             [bannerPattern]="selectedPattern()"
+            [glowColor]="previewGlow()"
             [equippedFrame]="auth.profile()?.equippedFrame ?? null" />
 
           @if (isDirty() && !isColorLocked() && !isPatternLocked()) {
@@ -221,8 +222,10 @@ export class BannerSelectorComponent implements OnInit {
 
   profileName = signal('');
   initials    = signal('');
-  unlockedIds = signal<string[]>(['c0','c1','c2','c8','c12','c13','p0','p1','p2','p6','p7']);
-
+  unlockedIds = signal<string[]>([
+    ...BANNER_COLORS.filter(c => c.reqType === 'free').map(c => c.id),
+    ...BANNER_PATTERNS.filter(p => p.reqType === 'free').map(p => p.id)
+  ]);
   // Estado actual guardado en BD
   savedColor   = signal('c0');
   savedPattern = signal('p0');
@@ -286,6 +289,18 @@ export class BannerSelectorComponent implements OnInit {
   previewBg = computed(() => {
     const color = BANNER_COLORS.find(c => c.id === this.selectedColor());
     return color?.gradient ?? '';
+  });
+
+  previewGlow = computed(() => {
+    const bg = this.previewBg();
+    // Extraemos el primer color del gradiente para usarlo como glow
+    const match = bg.match(/(#[0-9a-fA-F]{3,6}|rgba?\([^)]+\))/);
+    if (match) {
+      // Si es hex, lo convertimos visualmente usando box-shadow, pero para simplificar
+      // pasaremos el color crudo y dejaremos que CSS haga el glow.
+      return match[1];
+    }
+    return 'rgba(29,158,117,0.15)';
   });
 
   filteredColors = computed(() => {

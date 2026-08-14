@@ -183,6 +183,21 @@ export const BANNER_COLORS: BannerColor[] = [
     gradient: 'linear-gradient(135deg, #3b82f6 0%, #d946ef 100%)',
     locked: true, req: 'Zeus', reqType: 'rank', reqValue: 5
   },
+  {
+    id: 'c_galaxy', label: 'Galaxia',
+    gradient: 'linear-gradient(135deg, #1e1b4b 0%, #4c1d95 30%, #e11d48 70%, #0f172a 100%)',
+    locked: true, req: '60.000 XP', reqType: 'xp', reqValue: 60000
+  },
+  {
+    id: 'c_deepocean', label: 'Océano Profundo',
+    gradient: 'linear-gradient(135deg, #082f49 0%, #0369a1 40%, #0f172a 100%)',
+    locked: false, req: '', reqType: 'free', reqValue: 0
+  },
+  {
+    id: 'c_sunset', label: 'Atardecer',
+    gradient: 'linear-gradient(135deg, #fce7f3 0%, #f43f5e 30%, #be123c 70%, #4c0519 100%)',
+    locked: false, req: '', reqType: 'free', reqValue: 0
+  },
 ];
 
 export const BANNER_PATTERNS: BannerPattern[] = [
@@ -193,10 +208,12 @@ export const BANNER_PATTERNS: BannerPattern[] = [
   { id: 'p2',  label: 'Piedra',           cssClass: 'pat-stone',    locked: false, req: '',            reqType: 'free', reqValue: 0 },
   { id: 'p6',  label: 'Olas',             cssClass: 'pat-waves',    locked: false, req: '',            reqType: 'free', reqValue: 0 },
   { id: 'p7',  label: 'Puntos',           cssClass: 'pat-dots',     locked: false, req: '',            reqType: 'free', reqValue: 0 },
+  { id: 'p_mesh', label: 'Malla',         cssClass: 'pat-mesh',     locked: false, req: '',            reqType: 'free', reqValue: 0 },
 
   // ── NIVEL 1 — Legionario ──────────────────────────────────────────────────
   { id: 'p3',  label: 'Estrellas',        cssClass: 'pat-stars',    locked: true,  req: 'Legionario',  reqType: 'rank', reqValue: 1 },
   { id: 'p12', label: 'Líneas Diag.',     cssClass: 'pat-diag',     locked: true,  req: 'Legionario',  reqType: 'rank', reqValue: 1 },
+  { id: 'p_zigzag', label: 'ZigZag',      cssClass: 'pat-zigzag',   locked: true,  req: 'Legionario',  reqType: 'rank', reqValue: 1 },
 
   // ── NIVEL 2 — Centurión ───────────────────────────────────────────────────
   { id: 'p13', label: 'Puntos Grandes',   cssClass: 'pat-bigdots',  locked: true,  req: 'Centurión',   reqType: 'rank', reqValue: 2 },
@@ -206,9 +223,12 @@ export const BANNER_PATTERNS: BannerPattern[] = [
   { id: 'p4',  label: 'Fuego',            cssClass: 'pat-fire',     locked: true,  req: 'Tribuno',     reqType: 'rank', reqValue: 3 },
   { id: 'p10', label: 'Hexágonos',        cssClass: 'pat-hex',      locked: true,  req: 'Tribuno',     reqType: 'rank', reqValue: 3 },
   { id: 'p14', label: 'Ondas Sinuosas',   cssClass: 'pat-sinewave', locked: true,  req: 'Tribuno',     reqType: 'rank', reqValue: 3 },
+  { id: 'p_cube', label: 'Cubo 3D',       cssClass: 'pat-cube',     locked: true,  req: 'Tribuno',     reqType: 'rank', reqValue: 3 },
 
   // ── XP / RANK ALTO ────────────────────────────────────────────────────────
   { id: 'p11', label: 'Cruz Táctica',     cssClass: 'pat-cross',    locked: true,  req: '15.000 XP',   reqType: 'xp',   reqValue: 15000 },
   { id: 'p9',  label: 'Circuito',         cssClass: 'pat-circuit',  locked: true,  req: 'Zeus',        reqType: 'rank', reqValue: 5 },
   { id: 'p5',  label: 'Olimpo',           cssClass: 'pat-olympus',  locked: true,  req: 'Zeus',        reqType: 'rank', reqValue: 5 },
+  { id: 'p_topo', label: 'Topografía',    cssClass: 'pat-topo',     locked: true,  req: '30.000 XP',   reqType: 'xp',   reqValue: 30000 },
+  { id: 'p_matrix_digital', label: 'Código', cssClass: 'pat-matrix-digital', locked: true, req: '50.000 XP', reqType: 'xp', reqValue: 50000 },
 ];

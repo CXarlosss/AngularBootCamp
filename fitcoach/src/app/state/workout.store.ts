@@ -344,6 +344,37 @@ export const WorkoutStore = signalStore(
 
     clearActiveLog(): void {
       patchState(store, { activeLog: null });
+    },
+
+    allLogsForExercise(exerciseId: string, exerciseName?: string): { date: Date, sets: SetLog[] }[] {
+      const name = exerciseName?.trim().toLowerCase();
+      const results: { date: Date, sets: SetLog[] }[] = [];
+      
+      // Include active workout
+      const active = store.activeLog();
+      if (active) {
+         const activeSets = active.sets.filter(s => 
+           s.exerciseId === exerciseId || (name && s.exerciseName.trim().toLowerCase() === name)
+         );
+         if (activeSets.length > 0) {
+            results.push({ date: active.loggedDate instanceof Date ? active.loggedDate : new Date(active.loggedDate), sets: activeSets });
+         }
+      }
+
+      // Include history
+      for (const log of store.history()) {
+        const found = log.sets.filter(s => 
+          s.exerciseId === exerciseId || (name && s.exerciseName.trim().toLowerCase() === name)
+        );
+        if (found.length > 0) {
+          results.push({
+             date: log.loggedDate instanceof Date ? log.loggedDate : new Date(log.loggedDate),
+             sets: found
+          });
+        }
+      }
+      
+      return results.sort((a, b) => b.date.getTime() - a.date.getTime());
     }
   }))
 );

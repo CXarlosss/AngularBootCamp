@@ -6,7 +6,7 @@ export interface ClientHeaderInputs {
     id: string;
     full_name: string;
     avatar_url?: string | null;
-    rank: string;
+    rank: string | number;
     xp: number;
   };
   isAtRisk: boolean;
@@ -122,8 +122,8 @@ export class ClientHeaderComponent {
 
   alertMessage = computed(() => {
     const state = this.alertState();
-    if (state === 'red') return \`Sin entreno desde hace \${this.daysSince()} días\`;
-    if (state === 'yellow') return \`Último entreno hace \${this.daysSince()} días\`;
+    if (state === 'red') return `Sin entreno desde hace ${this.daysSince()} días`;
+    if (state === 'yellow') return `Último entreno hace ${this.daysSince()} días`;
     return 'Activo • Último entreno hoy/ayer';
   });
 

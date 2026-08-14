@@ -1,0 +1,257 @@
+.weight-comparison-container {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 16px;
+  margin-top: 16px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  color: #fff;
+  font-family: 'Inter', system-ui, sans-serif;
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sparkline-section {
+  height: 40px;
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.sparkline-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.sparkline-path {
+  fill: none;
+  stroke: #1D9E75;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 4px 6px rgba(29, 158, 117, 0.3));
+}
+
+.sparkline-area {
+  fill: url(#sparkline-gradient);
+  opacity: 0.15;
+}
+
+.progression-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  z-index: 2;
+}
+
+.progression-badge.positive {
+  background: rgba(29, 158, 117, 0.2);
+  color: #2EE5A8;
+  border: 1px solid rgba(46, 229, 168, 0.3);
+  box-shadow: 0 0 12px rgba(46, 229, 168, 0.2);
+}
+
+.progression-badge.negative {
+  background: rgba(239, 68, 68, 0.2);
+  color: #FCA5A5;
+  border: 1px solid rgba(252, 165, 165, 0.3);
+}
+
+.progression-badge.neutral {
+  background: rgba(255, 255, 255, 0.1);
+  color: #D1D5DB;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.comparison-grid {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.comparison-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.comparison-col.dimmed {
+  opacity: 0.6;
+}
+
+.comparison-divider {
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.col-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #9CA3AF;
+  margin: 0 0 2px 0;
+}
+
+.col-title.highlight {
+  color: #F3F4F6;
+  font-weight: 600;
+}
+
+.col-date {
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.sets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.set-row {
+  display: flex;
+  align-items: center;
+  font-size: 0.85rem;
+  padding: 4px 0;
+}
+
+.set-row.empty {
+  color: #4B5563;
+  font-style: italic;
+  justify-content: center;
+}
+
+.set-num {
+  color: #6B7280;
+  width: 28px;
+}
+
+.set-val {
+  color: #E5E7EB;
+  font-variant-numeric: tabular-nums;
+}
+
+.set-row.is-pr .set-val {
+  color: #FBBF24;
+  font-weight: 600;
+}
+
+.pr-star {
+  margin-left: 6px;
+  font-size: 0.8rem;
+  animation: pulseStar 2s infinite;
+}
+
+@keyframes pulseStar {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.2); opacity: 0.7; }
+}
+
+.col-footer {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.col-footer.highlight {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.footer-metric {
+  font-size: 0.8rem;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.col-footer.highlight .footer-metric {
+  color: #D1D5DB;
+}
+
+.pr-badge {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.15) 0%, rgba(245, 158, 11, 0.05) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.pr-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.crown {
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.5));
+}
+
+.pr-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.pr-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #FCD34D;
+  font-weight: 600;
+}
+
+.pr-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #FFF;
+}
+
+.pr-date {
+  font-size: 0.8rem;
+  color: #FDE68A;
+  font-weight: 400;
+}
+
+.feedback-banner {
+  background: rgba(29, 158, 117, 0.15);
+  border-radius: 8px;
+  padding: 10px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #2EE5A8;
+  font-weight: 500;
+  border: 1px dashed rgba(46, 229, 168, 0.3);
+}
+
+@media (max-width: 480px) {
+  .comparison-grid {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .comparison-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
+  }
+}

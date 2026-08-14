@@ -1,14 +1,14 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getMessaging, getToken, onMessage, deleteToken, Messaging } from 'firebase/messaging';
-import { SupabaseClient } from '@supabase/supabase-js';
-import { environment } from '@environments/environment';
+import { supabase } from '../supabase.client';
+import { environment } from '../../../environments/environment';
 
 export type FcmPermissionState = 'unknown' | 'granted' | 'denied' | 'unsupported';
 
 @Injectable({ providedIn: 'root' })
 export class FcmService {
-  private supabase = inject(SupabaseClient);
+  private supabase = supabase;
   private messaging: Messaging | null = null;
   private app: FirebaseApp | null = null;
   
@@ -20,7 +20,7 @@ export class FcmService {
   // Computed: ¿debería mostrarse el banner?
   shouldShowBanner = computed(() => {
     const perm = this.permission();
-    return perm === 'unknown' || perm === 'default';
+    return (perm as string) === 'unknown' || (perm as string) === 'default';
   });
   
   async initialize(): Promise<void> {
@@ -40,7 +40,7 @@ export class FcmService {
     }
     
     // 3. Inicializar Firebase App
-    this.app = initializeApp(environment.firebase);
+    this.app = initializeApp((environment as any).firebase);
     this.messaging = getMessaging(this.app);
     
     // 4. Si ya tiene permiso, registrar token silenciosamente
@@ -78,7 +78,7 @@ export class FcmService {
     
     try {
       const currentToken = await getToken(this.messaging, {
-        vapidKey: environment.firebase.vapidKey,
+        vapidKey: (environment as any).firebase.vapidKey,
         serviceWorkerRegistration: await navigator.serviceWorker.ready
       });
       
