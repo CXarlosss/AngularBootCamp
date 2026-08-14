@@ -1,7 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const targetPath = path.join(__dirname, './src/environments/environment.prod.ts');
+const targetPathProd = path.join(__dirname, './src/environments/environment.prod.ts');
+const targetPathDev = path.join(__dirname, './src/environments/environment.ts');
 const envDirectory = path.join(__dirname, './src/environments');
 
 const envConfigFile = `
@@ -16,5 +17,6 @@ if (!fs.existsSync(envDirectory)) {
   fs.mkdirSync(envDirectory, { recursive: true });
 }
 
-fs.writeFileSync(targetPath, envConfigFile);
-console.log(`Environment file generated at ${targetPath}`);
+fs.writeFileSync(targetPathProd, envConfigFile);
+fs.writeFileSync(targetPathDev, envConfigFile);
+console.log(`Environment files generated at ${envDirectory}`);
