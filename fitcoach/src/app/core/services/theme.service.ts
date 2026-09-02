@@ -28,6 +28,12 @@ export class ThemeService {
   }
 
   async loadPreference(): Promise<void> {
+    // 1. Instant load from localStorage
+    const localPref = localStorage.getItem('theme_preference') as ThemePreference | null;
+    if (localPref && ['system', 'light', 'dark'].includes(localPref)) {
+      this.currentPreference.set(localPref);
+    }
+
     const user = this.auth.user();
     if (!user) return;
 
@@ -40,14 +46,16 @@ export class ThemeService {
 
       if (data?.theme_preference) {
         this.currentPreference.set(data.theme_preference as ThemePreference);
+        localStorage.setItem('theme_preference', data.theme_preference);
       }
     } catch (e) {
-      console.warn('Could not load theme preference', e);
+      console.warn('Could not load theme preference from DB', e);
     }
   }
 
   async setPreference(pref: ThemePreference): Promise<void> {
     this.currentPreference.set(pref);
+    localStorage.setItem('theme_preference', pref);
     
     const user = this.auth.user();
     if (!user) return;
@@ -58,7 +66,7 @@ export class ThemeService {
         .update({ theme_preference: pref })
         .eq('id', user.id);
     } catch (e) {
-      console.error('Error saving theme preference', e);
+      console.error('Error saving theme preference to DB', e);
     }
   }
 
@@ -71,10 +79,20 @@ export class ThemeService {
       activeMode = pref;
     }
 
-    if (activeMode === 'light') {
-      document.body.setAttribute('data-theme', 'light');
+    const updateDOM = () => {
+      if (activeMode === 'light') {
+        document.body.setAttribute('data-theme', 'light');
+      } else {
+        document.body.removeAttribute('data-theme');
+      }
+    };
+
+    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+      document.startViewTransition(() => {
+        updateDOM();
+      });
     } else {
-      document.body.removeAttribute('data-theme');
+      updateDOM();
     }
   }
 }

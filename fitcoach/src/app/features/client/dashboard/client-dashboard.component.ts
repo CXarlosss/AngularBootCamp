@@ -33,92 +33,126 @@ import { FcmService } from '../../../core/services/fcm.service';
         <div class="header-logo">Fit<span>Coach</span></div>
       </header>
 
-      <div class="dashboard-banner-wrapper">
-        <app-profile-banner [useCurrentUser]="true" size="lg" />
-        <a class="cd-edit-btn banner-edit-btn" routerLink="/client/profile/banner">
-          🎨 Personalizar
-        </a>
-      </div>
+      @if (isLoading()) {
+        <!-- SKELETONS -->
+        <div class="dashboard-banner-wrapper">
+          <div class="skeleton-box" style="height: 120px; width: 100%; border-radius: 12px; margin-bottom: 20px;"></div>
+        </div>
 
-      <!-- SISTEMA DE RANGOS -->
-      <div class="dash-rank-section" style="margin: 0 16px 20px;">
-        <app-rank-card />
-      </div>
+        <div class="dash-rank-section" style="margin: 0 16px 20px;">
+          <div class="skeleton-box" style="height: 80px; width: 100%; border-radius: 12px;"></div>
+        </div>
 
+        <div style="margin: 0 16px 20px;">
+          <div class="skeleton-box" style="height: 60px; width: 100%; border-radius: 12px;"></div>
+        </div>
 
-
-      @if (routine(); as r) {
-        <div class="routine-card">
-          <div class="rc-header">
-            <div class="rc-badge">Rutina activa</div>
-
-            <div class="rc-progress" [style.--pct]="progressPercent()">
-              <svg viewBox="0 0 40 40" class="rc-progress-ring">
-                <circle class="ring-track" cx="20" cy="20" r="16" />
-                <circle class="ring-fill" cx="20" cy="20" r="16" />
-              </svg>
-              <span class="rc-progress-label">{{ pendingDaysCount() === 0 ? '✓' : (r.routine?.days?.length ?? 0) - pendingDaysCount() + '/' + r.routine?.days?.length }}</span>
-            </div>
-          </div>
-
-          <h2 class="rc-name">{{ r.routine?.name }}</h2>
-          <p class="rc-meta">
-            {{ r.routine?.goal ? goalLabel(r.routine!.goal!) : '' }}
-          </p>
-
-          <div class="rc-days">
-            @for (day of routineDaysStatus(); track day.id; let isFirst = $first) {
-              <div
-                class="day-chip"
-                [class.interactive]="!day.isCompleted"
-                [class.done]="day.isCompleted"
-                [class.next]="!day.isCompleted && isNextPending(day)"
-                (click)="!day.isCompleted && startWorkout(day.id)"
-              >
-                <div class="day-chip-left">
-                  @if (day.isCompleted) {
-                    <span class="day-check">
-                      <svg viewBox="0 0 16 16" width="12" height="12">
-                        <path d="M2 8.5L6 12.5L14 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </span>
-                  }
-                  <span class="day-label">{{ day.label }}</span>
-                </div>
-
-                @if (day.isCompleted) {
-                  <span class="day-count">Completado</span>
-                } @else {
-                  <span class="day-count">{{ day.exercises.length }} ejercicios</span>
-                }
-              </div>
-            }
-          </div>
-
-          @if (pendingDaysCount() === 0) {
-            <div class="all-done-msg">
-              ¡Semana completada! Tu coach te asignará una nueva rutina pronto.
-            </div>
-            <button class="btn-start btn-done" disabled>
-              Semana completada 🎉
-            </button>
-          } @else {
-            <button class="btn-start" (click)="startFirstPendingWorkout()">
-              Continuar entrenamiento
-            </button>
-          }
+        <div style="margin: 0 16px 20px;">
+          <div class="skeleton-box" style="height: 200px; width: 100%; border-radius: 16px;"></div>
         </div>
       } @else {
-        <div class="empty-card">
-          <div class="empty-icon">
-            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
-              stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round">
-              <path d="M18 20V10M12 20V4M6 20v-6"/>
-            </svg>
-          </div>
-          <p class="empty-title">Sin rutina asignada</p>
-          <p class="empty-sub">Tu entrenador te enviará una rutina pronto</p>
+        <!-- CONTENIDO REAL -->
+        <div class="dashboard-banner-wrapper">
+          <app-profile-banner [useCurrentUser]="true" size="lg" />
+          <a class="cd-edit-btn banner-edit-btn" routerLink="/client/profile/banner">
+            🎨 Personalizar
+          </a>
         </div>
+
+        <!-- SISTEMA DE RANGOS -->
+        <div class="dash-rank-section" style="margin: 0 16px 20px;">
+          <app-rank-card />
+        </div>
+
+        <!-- HISTORIAL CARD -->
+        <div style="margin: 0 16px 20px;">
+          <div class="hc-card" routerLink="/client/history" style="padding: 16px; margin-bottom: 0;">
+            <div class="hc-header" style="margin-bottom: 0;">
+              <div class="hc-icon-wrap" style="width: 36px; height: 36px;">
+                <span class="hc-icon" style="font-size: 16px;">📋</span>
+              </div>
+              <div class="hc-title-group">
+                <h3 class="hc-title">Historial de Entrenamientos</h3>
+                <span class="hc-subtitle">{{ workoutStore.history().length }} entrenamientos completados</span>
+              </div>
+              <span class="hc-arrow">→</span>
+            </div>
+          </div>
+        </div>
+
+        @if (routine(); as r) {
+          <div class="routine-card">
+            <div class="rc-header">
+              <div class="rc-badge">Rutina activa</div>
+
+              <div class="rc-progress" [style.--pct]="progressPercent()">
+                <svg viewBox="0 0 40 40" class="rc-progress-ring">
+                  <circle class="ring-track" cx="20" cy="20" r="16" />
+                  <circle class="ring-fill" cx="20" cy="20" r="16" />
+                </svg>
+                <span class="rc-progress-label">{{ pendingDaysCount() === 0 ? '✓' : (r.routine?.days?.length ?? 0) - pendingDaysCount() + '/' + r.routine?.days?.length }}</span>
+              </div>
+            </div>
+
+            <h2 class="rc-name">{{ r.routine?.name }}</h2>
+            <p class="rc-meta">
+              {{ r.routine?.goal ? goalLabel(r.routine!.goal!) : '' }}
+            </p>
+
+            <div class="rc-days">
+              @for (day of routineDaysStatus(); track day.id; let isFirst = $first) {
+                <div
+                  class="day-chip"
+                  [class.interactive]="true"
+                  [class.done]="day.isCompleted"
+                  [class.next]="!day.isCompleted && isNextPending(day)"
+                  (click)="startWorkout(day.id)"
+                >
+                  <div class="day-chip-left">
+                    @if (day.isCompleted) {
+                      <span class="day-check">
+                        <svg viewBox="0 0 16 16" width="12" height="12">
+                          <path d="M2 8.5L6 12.5L14 3.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </span>
+                    }
+                    <span class="day-label">{{ day.label }}</span>
+                  </div>
+
+                  @if (day.isCompleted) {
+                    <span class="day-count">Completado</span>
+                  } @else {
+                    <span class="day-count">{{ day.exercises.length }} ejercicios</span>
+                  }
+                </div>
+              }
+            </div>
+
+            @if (pendingDaysCount() === 0) {
+              <div class="all-done-msg">
+                ¡Semana completada! Tu coach te asignará una nueva rutina pronto.
+              </div>
+              <button class="btn-start btn-done" disabled>
+                Semana completada 🎉
+              </button>
+            } @else {
+              <button class="btn-start" (click)="startFirstPendingWorkout()">
+                Continuar entrenamiento
+              </button>
+            }
+          </div>
+        } @else {
+          <div class="empty-card">
+            <div class="empty-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                stroke="#1D9E75" stroke-width="1.5" stroke-linecap="round">
+                <path d="M18 20V10M12 20V4M6 20v-6"/>
+              </svg>
+            </div>
+            <p class="empty-title">Sin rutina asignada</p>
+            <p class="empty-sub">Tu entrenador te enviará una rutina pronto</p>
+          </div>
+        }
       }
       
     </div>
@@ -260,11 +294,9 @@ export class ClientDashboardComponent implements OnInit {
 
   startWorkout(dayId: string): void {
     console.log('[Dashboard] startWorkout click con dayId:', dayId);
-    const day = this.routineDaysStatus().find(d => d.id === dayId);
-    if (day?.isCompleted) {
-      console.warn('[Dashboard] El día ya está completado, abortando navegación');
-      return;
-    }
+    
+    // Ahora permitimos navegar aunque esté completado, para que el atleta vea la 
+    // pantalla de 'Entrenamiento completado' en lugar de que el botón no haga nada.
 
     this.router.navigate(['/client/workout'], { 
       queryParams: { dayId } 

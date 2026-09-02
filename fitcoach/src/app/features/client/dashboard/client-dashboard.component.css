@@ -9,9 +9,9 @@
   padding-bottom: 100px;
 }
 
-/* ── Header ── */
+/* â”€â”€ Header â”€â”€ */
 .client-header {
-  background: rgba(8, 10, 15, 0.8);
+  background: var(--c-surface-2);
   backdrop-filter: blur(12px);
   display: flex;
   align-items: center;
@@ -46,7 +46,7 @@
   box-shadow: 0 4px 12px var(--c-green-t);
 }
 
-/* ── Profile Banner ── */
+/* â”€â”€ Profile Banner â”€â”€ */
 .dashboard-banner-wrapper {
   padding: 16px 20px;
   margin-bottom: 8px;
@@ -60,16 +60,16 @@
   z-index: 10;
   box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   background: rgba(0,0,0,0.4);
-  border: 1px solid rgba(255,255,255,0.15);
+  border: 1px solid var(--c-overlay-15);
   font-size: 11px;
 }
 
 .banner-edit-btn:hover {
   background: rgba(0,0,0,0.6);
-  border-color: rgba(255,255,255,0.25);
+  border-color: var(--c-overlay-25);
 }
 
-/* ── Premium Identity Banner (Legacy) ── */
+/* â”€â”€ Premium Identity Banner (Legacy) â”€â”€ */
 .cd-banner {
   position: relative;
   padding: 32px 20px;
@@ -93,7 +93,7 @@
 .cd-banner-pattern.pat-marble {
   background-image: repeating-linear-gradient(
     45deg,
-    rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
+    var(--c-overlay-3) 0px, var(--c-overlay-3) 1px,
     transparent 1px, transparent 8px
   );
 }
@@ -105,7 +105,7 @@
 }
 
 .cd-banner-pattern.pat-stars {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--c-overlay-20) 1px, transparent 1px);
   background-size: 18px 18px;
 }
 
@@ -127,19 +127,19 @@
 .cd-banner-pattern.pat-waves {
   background-image: repeating-linear-gradient(
     -45deg, transparent, transparent 5px,
-    rgba(255,255,255,.08) 5px, rgba(255,255,255,.08) 6px
+    var(--c-overlay-8) 5px, var(--c-overlay-8) 6px
   );
 }
 
 .cd-banner-pattern.pat-dots {
-  background-image: radial-gradient(circle, rgba(255,255,255,.18) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(circle, var(--c-overlay-20) 1.5px, transparent 1.5px);
   background-size: 10px 10px;
 }
 
 .cd-banner-pattern.pat-diamond {
   background-image:
-    repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 14px),
-    repeating-linear-gradient(-45deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 14px);
+    repeating-linear-gradient(45deg, var(--c-overlay-5) 0px, var(--c-overlay-5) 1px, transparent 1px, transparent 14px),
+    repeating-linear-gradient(-45deg, var(--c-overlay-5) 0px, var(--c-overlay-5) 1px, transparent 1px, transparent 14px);
 }
 
 .cd-banner-pattern.pat-circuit {
@@ -150,8 +150,8 @@
 
 .cd-banner-pattern.pat-hex {
   background-image: 
-    linear-gradient(120deg, rgba(255,255,255,0.05) 25%, transparent 25%),
-    linear-gradient(60deg, rgba(255,255,255,0.05) 25%, transparent 25%);
+    linear-gradient(120deg, var(--c-overlay-5) 25%, transparent 25%),
+    linear-gradient(60deg, var(--c-overlay-5) 25%, transparent 25%);
   background-size: 15px 25px;
 }
 
@@ -159,28 +159,28 @@
   background: 
     radial-gradient(circle, transparent 20%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.2) 80%, transparent 80%, transparent),
     radial-gradient(circle, transparent 20%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.2) 80%, transparent 80%, transparent) 25px 25px,
-    linear-gradient(rgba(255,255,255,0.03) 2px, transparent 2px) 0 -1px,
-    linear-gradient(90deg, rgba(255,255,255,0.03) 2px, transparent 2px) -1px 0;
+    linear-gradient(var(--c-overlay-3) 2px, transparent 2px) 0 -1px,
+    linear-gradient(90deg, var(--c-overlay-3) 2px, transparent 2px) -1px 0;
   background-size: 50px 50px, 50px 50px, 25px 25px, 25px 25px;
 }
 
 .cd-banner-pattern.pat-diag {
   background-image: repeating-linear-gradient(
     45deg,
-    rgba(255,255,255,0.04) 0px, rgba(255,255,255,0.04) 2px,
+    var(--c-overlay-4) 0px, var(--c-overlay-4) 2px,
     transparent 2px, transparent 12px
   );
 }
 
 .cd-banner-pattern.pat-bigdots {
-  background-image: radial-gradient(circle, rgba(255,255,255,0.15) 3px, transparent 3px);
+  background-image: radial-gradient(circle, var(--c-overlay-15) 3px, transparent 3px);
   background-size: 24px 24px;
 }
 
 .cd-banner-pattern.pat-sinewave {
   background-image: 
-    radial-gradient(circle at 50% 0%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 60%, transparent 60%),
-    radial-gradient(circle at 50% 100%, transparent 50%, rgba(255,255,255,0.05) 50%, rgba(255,255,255,0.05) 60%, transparent 60%);
+    radial-gradient(circle at 50% 0%, transparent 50%, var(--c-overlay-5) 50%, var(--c-overlay-5) 60%, transparent 60%),
+    radial-gradient(circle at 50% 100%, transparent 50%, var(--c-overlay-5) 50%, var(--c-overlay-5) 60%, transparent 60%);
   background-size: 20px 20px;
   background-position: 0 0, 10px 10px;
 }
@@ -294,29 +294,29 @@
 .cd-xp {
   font-size: 12px;
   font-weight: 600;
-  color: rgba(255,255,255,0.75);
+  color: var(--c-text-2);
   font-variant-numeric: tabular-nums;
 }
 
 .cd-edit-btn {
   padding: 8px 14px;
   border-radius: 12px;
-  background: rgba(255,255,255,0.06);
+  background: var(--c-overlay-6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   color: white;
   font-size: 12px;
   font-weight: 700;
   text-decoration: none;
-  border: 0.5px solid rgba(255,255,255,0.12);
+  border: 0.5px solid var(--c-overlay-12);
   transition: all 0.2s;
   white-space: nowrap;
   cursor: pointer;
 }
 
 .cd-edit-btn:hover {
-  background: rgba(255,255,255,0.12);
-  border-color: rgba(255,255,255,0.2);
+  background: var(--c-overlay-12);
+  border-color: var(--c-overlay-20);
   transform: translateY(-1px);
 }
 
@@ -325,7 +325,7 @@
 }
 
 
-/* ── Greeting ── */
+/* â”€â”€ Greeting â”€â”€ */
 .greeting {
   padding: 32px 24px 8px;
 }
@@ -356,10 +356,10 @@
   box-shadow: 0 0 8px var(--c-green);
 }
 
-/* ── Routine card ── */
+/* â”€â”€ Routine card â”€â”€ */
 .routine-card {
   margin: 20px 20px 0;
-  background: linear-gradient(145deg, #151922 0%, #0d1117 100%);
+  background: var(--c-surface);
   border: 1px solid rgba(29, 158, 117, 0.3);
   border-radius: 28px;
   padding: 32px 24px 40px;
@@ -368,7 +368,8 @@
   flex-direction: column;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 12px 32px rgba(15, 110, 86, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
+  box-shadow: 0 12px 32px rgba(15, 110, 86, 0.15), inset 0 1px 0 var(--c-overlay-5);
   transition: transform .3s cubic-bezier(0.16, 1, 0.3, 1), border-color .3s, box-shadow .3s;
 }
 
@@ -383,7 +384,7 @@
 
 .routine-card:hover {
   border-color: rgba(29, 158, 117, 0.6);
-  box-shadow: 0 16px 40px rgba(15, 110, 86, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  box-shadow: 0 16px 40px rgba(15, 110, 86, 0.25), inset 0 1px 0 var(--c-overlay-8);
   transform: translateY(-2px);
 }
 
@@ -406,7 +407,7 @@
   align-self: flex-start;
 }
 
-/* ── Anillo de progreso (elemento protagonista) ── */
+/* â”€â”€ Anillo de progreso (elemento protagonista) â”€â”€ */
 .rc-progress {
   position: relative;
   width: 40px;
@@ -422,7 +423,7 @@
 
 .ring-track {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.08);
+  stroke: var(--c-overlay-8);
   stroke-width: 3;
 }
 
@@ -444,14 +445,14 @@
   justify-content: center;
   font-size: 10px;
   font-weight: 700;
-  color: #fff;
+  color: var(--c-text-1);
   letter-spacing: -0.02em;
 }
 
 .rc-name {
   font-size: 22px;
   font-weight: 700;
-  color: #fff;
+  color: var(--c-text-1);
   margin-bottom: 6px;
 }
 
@@ -464,12 +465,13 @@
   margin-bottom: 24px;
 }
 
-/* ── Días (Day Chips) ── */
+/* â”€â”€ DÃ­as (Day Chips) â”€â”€ */
 .rc-days {
   display: flex;
   flex-direction: column;
   gap: 10px;
   margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .day-chip {
@@ -479,8 +481,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 14px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--c-overlay-2);
+  border: 1px solid var(--c-overlay-6);
   border-radius: 12px;
   transition: all .25s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
@@ -492,8 +494,8 @@
   gap: 8px;
 }
 
-/* Solo el próximo día pendiente lleva el acento fuerte —
-   el resto de la lista queda tranquila para no diluir la jerarquía */
+/* Solo el prÃ³ximo dÃ­a pendiente lleva el acento fuerte â€”
+   el resto de la lista queda tranquila para no diluir la jerarquÃ­a */
 .day-chip.next {
   background: linear-gradient(90deg, rgba(29, 158, 117, 0.12), rgba(29, 158, 117, 0.02));
   border-color: rgba(29, 158, 117, 0.5);
@@ -533,11 +535,11 @@
   flex-shrink: 0;
 }
 
-.day-label { font-size: 13px; font-weight: 500; color: #fff; }
+.day-label { font-size: 13px; font-weight: 500; color: var(--c-text-1); }
 .day-count { font-size: 11px; color: var(--c-text-4); }
 .day-chip.next .day-count { color: var(--c-green); font-weight: 600; }
 
-/* ── Botón Inferior ── */
+/* â”€â”€ BotÃ³n Inferior â”€â”€ */
 .btn-start {
   width: 100%;
   margin-top: auto;
@@ -556,7 +558,7 @@
 .btn-start:active { transform: scale(0.97); }
 
 .btn-start.btn-done {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-overlay-6);
   color: var(--c-text-3);
   box-shadow: none;
   cursor: default;
@@ -573,10 +575,10 @@
   margin-bottom: 16px;
 }
 
-/* ── Empty state ── */
+/* â”€â”€ Empty state â”€â”€ */
 .empty-card {
   margin: 32px 24px;
-  background: rgba(255,255,255,0.02);
+  background: var(--c-overlay-2);
   border: 1px dashed var(--c-border);
   border-radius: 28px;
   padding: 60px 40px;
@@ -584,7 +586,7 @@
 }
 
 .empty-icon { font-size: 40px; margin-bottom: 20px; opacity: 0.3; }
-.empty-title { font-size: 18px; font-weight: 600; color: #fff; margin-bottom: 8px; }
+.empty-title { font-size: 18px; font-weight: 600; color: var(--c-text-1); margin-bottom: 8px; }
 .empty-sub { font-size: 14px; color: var(--c-text-4); line-height: 1.5; }
 
 
@@ -592,7 +594,7 @@
   width: 100%;
   margin-top: 8px;
   padding: 10px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-5);
   border: 0.5px solid var(--c-border);
   border-radius: 12px;
   color: var(--c-text-2);
@@ -603,6 +605,114 @@
 }
 
 .customize-btn:active {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--c-overlay-10);
   transform: scale(0.98);
 }
+
+/* -----------------------------------------------------------
+   HISTORY CARD — Estilos Premium
+   ----------------------------------------------------------- */
+
+.hc-card {
+  background: var(--glass-bg, var(--c-surface-2));
+  -webkit-backdrop-filter: var(--glass-blur, blur(12px));
+  backdrop-filter: var(--glass-blur, blur(12px));
+  border: 1px solid var(--c-border, var(--c-overlay-6));
+  border-radius: var(--radius-2xl, 20px);
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+  animation: fadeInUp 0.5s var(--anim-smooth, cubic-bezier(0.19,1,0.22,1)) forwards;
+}
+
+.hc-card:hover {
+  border-color: var(--c-border-hover, var(--c-overlay-12));
+  transform: translateY(-3px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.hc-card:active {
+  transform: scale(0.98);
+}
+
+.hc-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.hc-icon-wrap {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-lg, 12px);
+  background: rgba(29, 158, 117, 0.1);
+  border: 1px solid rgba(29, 158, 117, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hc-icon {
+  font-size: 20px;
+}
+
+.hc-title-group {
+  flex: 1;
+}
+
+.hc-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--c-text-1, #fff);
+  margin: 0 0 2px;
+  letter-spacing: -0.01em;
+}
+
+.hc-subtitle {
+  font-size: 12px;
+  color: var(--c-text-3, #5F5E5A);
+  font-weight: 500;
+}
+
+.hc-arrow {
+  font-size: 18px;
+  color: var(--c-text-3, #5F5E5A);
+  transition: all var(--anim-fast, 0.2s);
+}
+
+.hc-card:hover .hc-arrow {
+  color: var(--c-text-1, #fff);
+  transform: translateX(4px);
+}
+
+/* -----------------------------------------------------------
+   SKELETON LOADERS
+   ----------------------------------------------------------- */
+.skeleton-box {
+  background: var(--c-overlay-2);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-box::after {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--c-overlay-5) 50%,
+    transparent 100%
+  );
+  animation: shimmer 1.5s infinite;
+  transform: translateX(-100%);
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
