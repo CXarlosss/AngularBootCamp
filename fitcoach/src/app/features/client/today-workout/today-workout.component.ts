@@ -678,7 +678,7 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
       if (err instanceof WorkoutBlockedError) {
         this.isDayBlockedRemotely.set(true);
         // ✅ Limpieza controlada de UI y persistencia local
-        sessionStorage.removeItem('active_workout');
+        localStorage.removeItem('active_workout');
         this.workoutStore.clearActiveLog();
         return;
       }

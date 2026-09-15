@@ -49,13 +49,13 @@ export const WorkoutStore = signalStore(
       const isDone = localDone || await svc.isDayCompleted(clientId, dayId);
       if (isDone) {
         console.log('[WorkoutStore] El día ya está completado. Limpiando sesión...');
-        sessionStorage.removeItem('active_workout');
+        localStorage.removeItem('active_workout');
         patchState(store, { activeLog: null });
         return;
       }
 
       const todayStr = new Date().toISOString().split('T')[0];
-      const saved = sessionStorage.getItem('active_workout');
+      const saved = localStorage.getItem('active_workout');
       
       if (saved) {
         try {
@@ -69,11 +69,11 @@ export const WorkoutStore = signalStore(
             return;
           } else {
             console.log('[WorkoutStore] Descartando sesión antigua o de otro día');
-            sessionStorage.removeItem('active_workout');
+            localStorage.removeItem('active_workout');
           }
         } catch (e) {
           console.error('[WorkoutStore] Error al validar sesión guardada', e);
-          sessionStorage.removeItem('active_workout');
+          localStorage.removeItem('active_workout');
         }
       }
 
@@ -91,7 +91,7 @@ export const WorkoutStore = signalStore(
         exerciseNotes: {},
       };
       patchState(store, { activeLog: log });
-      sessionStorage.setItem('active_workout', JSON.stringify(log));
+      localStorage.setItem('active_workout', JSON.stringify(log));
     },
 
     // Registrar una serie
@@ -125,7 +125,7 @@ export const WorkoutStore = signalStore(
       const updated = { ...log, sets: [...updatedSets, newSet] };
       console.log('[WorkoutStore] Serie registrada. Total series:', updated.sets.length, updated);
       patchState(store, { activeLog: updated });
-      sessionStorage.setItem('active_workout', JSON.stringify(updated));
+      localStorage.setItem('active_workout', JSON.stringify(updated));
     },
 
     // Corregir el peso de una serie ya registrada
@@ -139,7 +139,7 @@ export const WorkoutStore = signalStore(
         ),
       };
       patchState(store, { activeLog: updated });
-      sessionStorage.setItem('active_workout', JSON.stringify(updated));
+      localStorage.setItem('active_workout', JSON.stringify(updated));
     },
 
     removeSet(setId: string): void {
@@ -154,7 +154,7 @@ export const WorkoutStore = signalStore(
       
       console.log('[WorkoutStore] Serie eliminada. Quedan:', updated.sets.length);
       patchState(store, { activeLog: updated });
-      sessionStorage.setItem('active_workout', JSON.stringify(updated));
+      localStorage.setItem('active_workout', JSON.stringify(updated));
     },
 
     updateExerciseNote(exerciseId: string, notes: string): void {
@@ -182,7 +182,7 @@ export const WorkoutStore = signalStore(
 
       const updated = { ...log, sets: updatedSets, exerciseNotes };
       patchState(store, { activeLog: updated });
-      sessionStorage.setItem('active_workout', JSON.stringify(updated));
+      localStorage.setItem('active_workout', JSON.stringify(updated));
     },
 
     // --- MÉTODOS PARA RUTINAS COMPLETADAS (HISTORIAL) ---
@@ -364,7 +364,7 @@ export const WorkoutStore = signalStore(
         history: [completed, ...store.history()],
         loading: false,
       });
-      sessionStorage.removeItem('active_workout');
+      localStorage.removeItem('active_workout');
     },
 
     async loadHistory(clientId: string): Promise<void> {

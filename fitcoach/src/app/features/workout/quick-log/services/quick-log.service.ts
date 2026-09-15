@@ -6,7 +6,7 @@ export class QuickLogService {
   // Estado reactivo con Signals (Angular 19)
   private state = signal<QuickLogState | null>(null);
   
-  // Persistencia en sessionStorage para warm reload
+  // Persistencia en localStorage para warm reload
   private readonly STORAGE_KEY = 'fitcoach_quicklog';
   
   // Incrementos estándar de gimnasio
@@ -25,8 +25,8 @@ export class QuickLogService {
   });
 
   constructor() {
-    // Recuperar de sessionStorage al iniciar
-    const stored = sessionStorage.getItem(this.STORAGE_KEY);
+    // Recuperar de localStorage al iniciar
+    const stored = localStorage.getItem(this.STORAGE_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -41,7 +41,7 @@ export class QuickLogService {
     effect(() => {
       const current = this.state();
       if (current) {
-        sessionStorage.setItem(this.STORAGE_KEY, JSON.stringify({
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify({
           ...current,
           timestamp: Date.now()
         }));
@@ -93,6 +93,6 @@ export class QuickLogService {
    */
   clear(): void {
     this.state.set(null);
-    sessionStorage.removeItem(this.STORAGE_KEY);
+    localStorage.removeItem(this.STORAGE_KEY);
   }
 }
