@@ -79,33 +79,28 @@ import { AuthService } from '../../../../core/auth/auth.service';
         </div>
       }
 
-      <!-- Resumen y finalización -->
+      <!-- Barra flotante de finalización -->
       @if (allSetsCompleted()) {
-        <div class="completion-section">
-          <div class="xp-summary">
-            <span class="xp-total">+{{ totalSessionXp() }} XP</span>
-            @if (xpBreakdown(); as breakdown) {
-              <div class="xp-details">
-                <span>Base: {{ breakdown.baseXp }}</span>
-                <span>Adherencia: +{{ breakdown.adherenceBonus }}</span>
-                @if (breakdown.prBonus > 0) {
-                  <span>PRs: +{{ breakdown.prBonus }}</span>
-                }
-                @if (breakdown.streakBonus > 0) {
-                  <span>Racha: +{{ breakdown.streakBonus }}</span>
-                }
-              </div>
-            }
+        <div class="sticky-completion-bar">
+          <div class="xp-preview-bar">
+            <span class="xp-icon-bar">⚡</span>
+            <div class="xp-text-bar">
+              <span class="xp-amount">+{{ totalSessionXp() }} XP</span>
+              <span class="xp-label">Rutina completada</span>
+            </div>
           </div>
-          <button class="finish-btn" (click)="finishWorkout()" [disabled]="isFinishing()">
-            {{ isFinishing() ? 'Guardando...' : 'Finalizar entrenamiento' }}
+          
+          <button class="sticky-finish-btn" 
+                  (click)="finishWorkout()" 
+                  [disabled]="isFinishing()">
+            {{ isFinishing() ? 'Guardando...' : 'Finalizar' }} 🏁
           </button>
         </div>
       }
     </div>
   `,
   styles: [`
-    .workout-page { padding: 16px; max-width: 600px; margin: 0 auto; }
+    .workout-page { padding: 16px; max-width: 600px; margin: 0 auto; padding-bottom: 100px; }
     
     .workout-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     .workout-header h1 { margin: 0; font-size: 20px; color: #fff; }
@@ -134,12 +129,50 @@ import { AuthService } from '../../../../core/auth/auth.service';
     .progress-text { font-size: 12px; color: #888; min-width: 60px; }
     .risk-warning { display: block; margin-top: 8px; color: #ff9800; font-size: 12px; }
     
-    /* XP Summary */
-    .xp-details { display: flex; gap: 12px; margin-top: 8px; flex-wrap: wrap; }
-    .xp-details span { font-size: 12px; color: #888; }
+    /* Barra flotante de finalización */
+    .sticky-completion-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(30, 30, 46, 0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(76, 175, 80, 0.3);
+      padding: 16px 24px;
+      padding-bottom: calc(16px + env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+      z-index: 100;
+      animation: slideUpBar 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
     
-    .finish-btn { width: 100%; padding: 16px; background: #4CAF50; color: #fff; border: none; border-radius: 14px; font-weight: 700; font-size: 16px; cursor: pointer; margin-top: 20px; }
-    .finish-btn:disabled { background: #2d2d44; color: #666; }
+    .xp-preview-bar { display: flex; align-items: center; gap: 12px; }
+    .xp-icon-bar { font-size: 24px; background: rgba(255, 193, 7, 0.15); padding: 8px; border-radius: 50%; }
+    .xp-text-bar { display: flex; flex-direction: column; }
+    .xp-amount { color: #ffc107; font-weight: 800; font-size: 18px; line-height: 1.1; }
+    .xp-label { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    
+    .sticky-finish-btn {
+      background: linear-gradient(135deg, #4CAF50, #45a049);
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      padding: 12px 24px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+      transition: all 0.2s;
+    }
+    .sticky-finish-btn:active:not(:disabled) { transform: scale(0.95); }
+    .sticky-finish-btn:disabled { background: #2d2d44; color: #888; box-shadow: none; cursor: not-allowed; }
+    
+    @keyframes slideUpBar {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
   `]
 })
 export class TodayWorkoutComponent {
@@ -181,6 +214,8 @@ export class TodayWorkoutComponent {
   protected activeMissions = this.missionEngine.activeMissions;
   protected streak = signal<any>(null);
   protected xpBreakdown = signal<any>(null);
+  
+  protected confirmingFinish = signal(false);
   
   // Feature flag check
   constructor() {
