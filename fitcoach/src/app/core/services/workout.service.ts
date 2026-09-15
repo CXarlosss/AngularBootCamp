@@ -129,6 +129,30 @@ export class WorkoutService {
     }
   }
 
+  async updateSetLog(setId: string, weightKg: number, repsDone: number): Promise<void> {
+    const { error } = await this.sb
+      .from('set_logs')
+      .update({ weight_kg: weightKg, reps_done: repsDone })
+      .eq('id', setId);
+      
+    if (error) {
+      console.error('[WorkoutService] updateSetLog error:', error.message);
+      throw error;
+    }
+  }
+
+  async deleteSetLog(setId: string): Promise<void> {
+    const { error } = await this.sb
+      .from('set_logs')
+      .delete()
+      .eq('id', setId);
+      
+    if (error) {
+      console.error('[WorkoutService] deleteSetLog error:', error.message);
+      throw error;
+    }
+  }
+
   async assignRoutineToClient(
     clientId: string,
     routineId: string,

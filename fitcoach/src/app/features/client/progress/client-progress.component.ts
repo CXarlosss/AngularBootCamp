@@ -9,6 +9,7 @@ import { ProgressChartComponent } from '../../../shared/components/progress-char
 import { AuthService } from '../../../core/auth/auth.service';
 import { FcCardComponent, FcCardActionsDirective } from '../../../shared/components/card/fc-card.component';
 import { FcButtonDirective } from '../../../shared/components/button/fc-button.directive';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'fc-client-progress',
@@ -21,7 +22,8 @@ import { FcButtonDirective } from '../../../shared/components/button/fc-button.d
     ProgressChartComponent,
     FcCardComponent,
     FcCardActionsDirective,
-    FcButtonDirective
+    FcButtonDirective,
+    RouterModule
   ],
   templateUrl: './client-progress.component.html',
   styleUrl: './client-progress.component.css'
@@ -39,8 +41,27 @@ export class ClientProgressComponent implements OnInit {
   daysAgo       = signal<number>(Infinity);
   sheetOpen     = signal(false);
   loading       = signal(true);
+  prAlert       = signal<PRAlert | null>(null);
 
   readonly Infinity = Infinity;
+
+  prCount = computed(() => {
+    const exercises = this.store.exercises();
+    return exercises.filter(ex => ex.dataPoints && ex.dataPoints.length > 0).length;
+  });
+
+  recentPrs = computed(() => {
+    const exercises = this.store.exercises();
+    const list = exercises
+      .map(ex => {
+        const max = ex.dataPoints && ex.dataPoints.length ? Math.max(...ex.dataPoints.map(p => p.maxWeight)) : 0;
+        return { name: ex.name, max };
+      })
+      .filter(ex => isFinite(ex.max) && ex.max > 0)
+      .sort((a, b) => b.max - a.max)
+      .slice(0, 3);
+    return list;
+  });
 
   async ngOnInit() {
     this.loading.set(true);
@@ -68,6 +89,7 @@ export class ClientProgressComponent implements OnInit {
     }
 
     this.loading.set(false);
+    this.detectNearPR();
   }
 
   async onWeightSaved(newWeight: number) {
@@ -99,4 +121,53 @@ export class ClientProgressComponent implements OnInit {
   toggleDropdown() {
     this.dropdownOpen.update(v => !v);
   }
+
+  async detectNearPR() {
+    const exercises = this.store.exercises();
+    if (!exercises.length) return;
+
+    let bestCandidate: PRAlert | null = null;
+    let bestProgress = 0;
+
+    for (const ex of exercises) {
+      if (!ex.dataPoints || ex.dataPoints.length < 3) continue;
+
+      const recent = ex.dataPoints.slice(-4);
+      const weights = recent.map((h: any) => h.maxWeight || h.weight);
+      if (weights.length < 2) continue;
+
+      const trend = weights[weights.length - 1] - weights[0];
+      const maxHistorical = Math.max(...ex.dataPoints.map((h: any) => h.maxWeight || h.weight));
+      const current = weights[weights.length - 1];
+      const gapToPR = maxHistorical - current;
+
+      if (trend > 0 && gapToPR <= 2.5 && gapToPR > 0) {
+        if (trend > bestProgress) {
+          bestProgress = trend;
+          bestCandidate = {
+            exercise: ex.name,
+            message: `A ${gapToPR.toFixed(1)}kg de tu récord (${maxHistorical}kg)`,
+            route: '/client/progress'
+          };
+        }
+      }
+    }
+
+    this.prAlert.set(bestCandidate);
+  }
+
+  getTrendForEntry(entries: any[], index: number): 'up' | 'down' | 'neutral' {
+    if (index === 0) return 'neutral';
+    const current = entries[index].maxWeight;
+    const previous = entries[index - 1].maxWeight;
+    if (current > previous) return 'up';
+    if (current < previous) return 'down';
+    return 'neutral';
+  }
+}
+
+interface PRAlert {
+  exercise: string;
+  message: string;
+  route: string;
 }

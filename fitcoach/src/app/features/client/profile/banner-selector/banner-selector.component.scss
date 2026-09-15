@@ -1,8 +1,8 @@
-:host {
+﻿:host {
   --color-background-secondary: #080a0f;
   --color-background-primary:   #0f131a;
-  --color-border-tertiary:      rgba(255, 255, 255, 0.05);
-  --color-border-secondary:     rgba(255, 255, 255, 0.1);
+  --color-border-tertiary:      var(--c-overlay-5);
+  --color-border-secondary:     var(--c-overlay-10);
   --color-text-primary:         #ffffff;
   --color-text-secondary:       #94a3b8;
   --border-radius-md:           12px;
@@ -18,7 +18,7 @@
   color: var(--color-text-primary);
 }
 
-// ─── Header ───────────────────────────────────────────────────────────────
+// â”€â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .sel-header {
   display: flex;
@@ -62,7 +62,7 @@
   height: 36px;
   border-radius: 50%;
   border: 1px solid var(--color-border-secondary);
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--c-overlay-3);
   font-size: 16px;
   cursor: pointer;
   color: var(--color-text-secondary);
@@ -72,7 +72,7 @@
   transition: all 0.2s;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.08);
+    background: var(--c-overlay-8);
     color: #fff;
     transform: translateX(-2px);
   }
@@ -96,8 +96,8 @@
   box-shadow: 0 4px 14px rgba(59, 130, 246, 0.3);
 
   &:disabled {
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    background: var(--c-overlay-4);
+    border: 1px solid var(--c-overlay-3);
     color: #475569;
     cursor: not-allowed;
     box-shadow: none;
@@ -108,7 +108,7 @@
   }
 }
 
-// ─── Preview full width ────────────────────────────────────────────────────
+// â”€â”€â”€ Preview full width â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .preview-wrap {
   width: 100%;
@@ -133,7 +133,7 @@
   align-items: center;
   gap: 6px;
   background: rgba(8, 10, 15, 0.85);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--c-overlay-10);
   backdrop-filter: blur(12px);
   border-radius: 20px;
   padding: 5px 12px;
@@ -166,7 +166,7 @@
   50%       { opacity: .5; transform: scale(0.7); }
 }
 
-// ─── Sección de Categorías y Listas ──────────────────────────────────────────
+// â”€â”€â”€ SecciÃ³n de CategorÃ­as y Listas â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .section-container {
   background: rgba(15, 19, 26, 0.4);
@@ -213,8 +213,8 @@
   }
 
   .tab-pill {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--c-overlay-3);
+    border: 1px solid var(--c-overlay-5);
     color: var(--color-text-secondary);
     padding: 6px 12px;
     border-radius: 12px;
@@ -225,7 +225,7 @@
     transition: all 0.2s;
 
     &:hover {
-      background: rgba(255, 255, 255, 0.06);
+      background: var(--c-overlay-6);
       color: #fff;
     }
 
@@ -258,7 +258,7 @@
   font-size: 11px;
 }
 
-// ─── Colores — Swatches ──────────────────────────────────────────
+// â”€â”€â”€ Colores â€” Swatches â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .color-row {
   display: grid;
@@ -270,7 +270,7 @@
   aspect-ratio: 1;
   border-radius: 12px;
   cursor: pointer;
-  border: 1.5px solid rgba(255, 255, 255, 0.06);
+  border: 1.5px solid var(--c-overlay-6);
   position: relative;
   display: flex;
   align-items: center;
@@ -282,13 +282,13 @@
   &.on {
     border-color: #fff;
     transform: scale(1.15);
-    box-shadow: 0 0 16px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 16px var(--c-overlay-30);
     z-index: 5;
   }
 
   &.locked {
     opacity: .6;
-    border-color: rgba(255, 255, 255, 0.02);
+    border-color: var(--c-overlay-2);
 
     &:hover {
       opacity: 0.85;
@@ -298,8 +298,8 @@
 
   &:hover:not(.on) {
     transform: translateY(-2px) scale(1.05);
-    border-color: rgba(255, 255, 255, 0.4);
-    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
+    border-color: var(--c-overlay-40);
+    box-shadow: 0 8px 20px var(--c-overlay-15);
   }
 }
 
@@ -316,7 +316,7 @@
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-// ─── Patrones — Cards ─────────────────────────────────────────────
+// â”€â”€â”€ Patrones â€” Cards â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .pattern-row {
   display: grid;
@@ -327,7 +327,7 @@
 .pattern-card {
   aspect-ratio: 1;
   border-radius: 12px;
-  border: 1.5px solid rgba(255, 255, 255, 0.06);
+  border: 1.5px solid var(--c-overlay-6);
   overflow: hidden;
   cursor: pointer;
   position: relative;
@@ -347,9 +347,9 @@
   }
 
   &:hover:not(.on) {
-    border-color: rgba(255, 255, 255, 0.4);
+    border-color: var(--c-overlay-40);
     transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
+    box-shadow: 0 8px 20px var(--c-overlay-15);
   }
 }
 
@@ -359,14 +359,14 @@
   background-size: auto;
 }
 
-// ─── Estilos de patrones ──────────────────────────────────────────────────
+// â”€â”€â”€ Estilos de patrones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .pat-solid   { }
 
 .pat-marble  {
   background-image: repeating-linear-gradient(
     45deg,
-    rgba(255,255,255,.07) 0px, rgba(255,255,255,.07) 1px,
+    var(--c-overlay-8) 0px, var(--c-overlay-8) 1px,
     transparent 1px, transparent 10px
   );
 }
@@ -380,37 +380,37 @@
 .pat-waves {
   background-image: repeating-linear-gradient(
     -45deg, transparent, transparent 5px,
-    rgba(255,255,255,.1) 5px, rgba(255,255,255,.1) 6px
+    var(--c-overlay-10) 5px, var(--c-overlay-10) 6px
   );
 }
 
 .pat-dots {
-  background-image: radial-gradient(circle, rgba(255,255,255,.2) 1.5px, transparent 1.5px);
+  background-image: radial-gradient(circle, var(--c-overlay-20) 1.5px, transparent 1.5px);
   background-size: 10px 10px;
 }
 
 .pat-stars {
-  background-image: radial-gradient(circle, rgba(255,255,255,.25) 1px, transparent 1px);
+  background-image: radial-gradient(circle, var(--c-overlay-25) 1px, transparent 1px);
   background-size: 16px 16px;
 }
 
 .pat-diag {
   background-image: repeating-linear-gradient(
     60deg,
-    rgba(255,255,255,.08) 0px, rgba(255,255,255,.08) 1px,
+    var(--c-overlay-8) 0px, var(--c-overlay-8) 1px,
     transparent 1px, transparent 12px
   );
 }
 
 .pat-bigdots {
-  background-image: radial-gradient(circle, rgba(255,255,255,.18) 3px, transparent 3px);
+  background-image: radial-gradient(circle, var(--c-overlay-20) 3px, transparent 3px);
   background-size: 18px 18px;
 }
 
 .pat-diamond {
   background-image:
-    repeating-linear-gradient(45deg,  rgba(255,255,255,.06) 0px, rgba(255,255,255,.06) 1px, transparent 1px, transparent 14px),
-    repeating-linear-gradient(-45deg, rgba(255,255,255,.06) 0px, rgba(255,255,255,.06) 1px, transparent 1px, transparent 14px);
+    repeating-linear-gradient(45deg,  var(--c-overlay-6) 0px, var(--c-overlay-6) 1px, transparent 1px, transparent 14px),
+    repeating-linear-gradient(-45deg, var(--c-overlay-6) 0px, var(--c-overlay-6) 1px, transparent 1px, transparent 14px);
 }
 
 .pat-fire {
@@ -422,8 +422,8 @@
 
 .pat-hex {
   background-image:
-    linear-gradient(120deg, rgba(255,255,255,.07) 25%, transparent 25%),
-    linear-gradient(60deg,  rgba(255,255,255,.07) 25%, transparent 25%);
+    linear-gradient(120deg, var(--c-overlay-8) 25%, transparent 25%),
+    linear-gradient(60deg,  var(--c-overlay-8) 25%, transparent 25%);
   background-size: 16px 27px;
 }
 
@@ -432,13 +432,13 @@
     repeating-linear-gradient(
       -30deg,
       transparent, transparent 8px,
-      rgba(255,255,255,.08) 8px, rgba(255,255,255,.08) 9px,
+      var(--c-overlay-8) 8px, var(--c-overlay-8) 9px,
       transparent 9px, transparent 18px
     ),
     repeating-linear-gradient(
       30deg,
       transparent, transparent 8px,
-      rgba(255,255,255,.05) 8px, rgba(255,255,255,.05) 9px,
+      var(--c-overlay-5) 8px, var(--c-overlay-5) 9px,
       transparent 9px, transparent 18px
     );
 }
@@ -447,8 +447,8 @@
   background:
     radial-gradient(circle, transparent 20%, rgba(0,0,0,.15) 20%, rgba(0,0,0,.15) 80%, transparent 80%, transparent),
     radial-gradient(circle, transparent 20%, rgba(0,0,0,.15) 20%, rgba(0,0,0,.15) 80%, transparent 80%, transparent) 25px 25px,
-    linear-gradient(rgba(255,255,255,.04) 2px, transparent 2px) 0 -1px,
-    linear-gradient(90deg, rgba(255,255,255,.04) 2px, transparent 2px) -1px 0;
+    linear-gradient(var(--c-overlay-4) 2px, transparent 2px) 0 -1px,
+    linear-gradient(90deg, var(--c-overlay-4) 2px, transparent 2px) -1px 0;
   background-size: 50px 50px, 50px 50px, 25px 25px, 25px 25px;
 }
 
@@ -466,7 +466,7 @@
   );
 }
 
-// ─── Overlays de patrón activo / bloqueado ────────────────────────────────
+// â”€â”€â”€ Overlays de patrÃ³n activo / bloqueado â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .lock-overlay,
 .active-overlay {
@@ -481,7 +481,7 @@
 .lock-overlay   { background: rgba(8, 10, 15, 0.6); }
 .active-overlay { background: rgba(59, 130, 246, 0.25); color: #fff; font-weight: 700; }
 
-// ─── Lock detail panel ─────────────────────────────────────────────────────
+// â”€â”€â”€ Lock detail panel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .lock-detail-panel {
   background: rgba(28, 20, 15, 0.85);
@@ -536,7 +536,7 @@
   background: rgba(0, 0, 0, 0.2);
   border-radius: 16px;
   padding: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--c-overlay-3);
 }
 
 .lock-item-info {
@@ -564,7 +564,7 @@
 .progress-bar-track {
   flex: 1;
   height: 6px;
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--c-overlay-8);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -583,7 +583,7 @@
   text-align: right;
 }
 
-// ─── Animaciones ──────────────────────────────────────────────────────────
+// â”€â”€â”€ Animaciones â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 .fade-in {
   animation: fadeIn .25s ease forwards;
@@ -593,3 +593,315 @@
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   FITCOACH BANNER SELECTOR â€” PREMIUM ADD-ONS v2.1
+   Pegar AL FINAL de banner-selector.component.scss
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/* â”€â”€ 1. PREVIEW 3D TILT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.preview-wrap {
+  perspective: 1200px;
+  transform-style: preserve-3d;
+}
+
+.preview-wrap:hover .profile-banner {
+  transform: rotateY(-3deg) rotateX(2deg) scale(1.02);
+}
+
+.preview-wrap .profile-banner {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), 
+              box-shadow 0.4s ease;
+  transform-style: preserve-3d;
+}
+
+/* Flash dorado al cambiar selecciÃ³n */
+@keyframes previewFlash {
+  0%   { filter: brightness(1); }
+  30%  { filter: brightness(1.4); }
+  100% { filter: brightness(1); }
+}
+
+.preview-wrap .profile-banner.flash-active {
+  animation: previewFlash 0.4s ease-out;
+}
+
+/* â”€â”€ 2. SWATCHES CON GLOW DINÃMICO POR COLOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.color-swatch {
+  position: relative;
+}
+
+.color-swatch::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 14px;
+  opacity: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: -1;
+  background: inherit;
+  filter: blur(8px);
+}
+
+.color-swatch:hover::before {
+  opacity: 0.6;
+  transform: scale(1.1);
+}
+
+.color-swatch.on {
+  border-color: #fff;
+  transform: scale(1.15);
+  box-shadow: 0 0 20px var(--swatch-glow, var(--c-overlay-30)),
+              0 4px 16px rgba(0,0,0,0.3);
+  z-index: 10;
+}
+
+.color-swatch.on::before {
+  opacity: 0.8;
+  filter: blur(12px);
+}
+
+/* Ripple effect al click */
+@keyframes swatchRipple {
+  0%   { transform: scale(0); opacity: 0.6; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+
+.color-swatch .ripple {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--c-overlay-50);
+  pointer-events: none;
+  animation: swatchRipple 0.5s ease-out forwards;
+}
+
+/* â”€â”€ 3. TABS PREMIUM CON GRADIENTE FITCOACH â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.category-tabs.mini .tab-pill {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.category-tabs.mini .tab-pill::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(29,158,117,0.9), rgba(16,185,129,0.9));
+  opacity: 0;
+  transition: opacity 0.25s ease;
+  border-radius: inherit;
+  z-index: -1;
+}
+
+.category-tabs.mini .tab-pill.active {
+  background: transparent;
+  border-color: rgba(29,158,117,0.5);
+  color: #fff;
+  box-shadow: 0 0 16px rgba(29,158,117,0.25),
+              0 2px 8px rgba(29,158,117,0.15);
+  transform: translateY(-1px);
+}
+
+.category-tabs.mini .tab-pill.active::before {
+  opacity: 1;
+}
+
+.category-tabs.mini .tab-pill:hover:not(.active) {
+  transform: translateY(-1px);
+  border-color: var(--c-overlay-15);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* â”€â”€ 4. PATTERN CARDS CON HOVER LIFT Y GLOW â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.pattern-card {
+  position: relative;
+}
+
+.pattern-card::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 13px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  background: linear-gradient(135deg, rgba(59,130,246,0.4), rgba(29,158,117,0.3));
+  filter: blur(6px);
+}
+
+.pattern-card:hover::after {
+  opacity: 0.5;
+}
+
+.pattern-card.on {
+  border-color: rgba(29,158,117,0.8);
+  box-shadow: 0 0 20px rgba(29,158,117,0.3),
+              0 4px 16px rgba(0,0,0,0.2);
+}
+
+.pattern-card.on::after {
+  opacity: 0.7;
+  background: linear-gradient(135deg, rgba(29,158,117,0.5), rgba(16,185,129,0.4));
+}
+
+/* â”€â”€ 5. BARRA DE PROGRESO DORADA CON SHINE INFINITO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.progress-bar-fill {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(90deg, #fbbf24, #f59e0b, #fbbf24);
+  background-size: 200% 100%;
+  animation: goldShine 2s linear infinite;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--c-overlay-40), transparent);
+  animation: progressShine 2s ease-in-out infinite;
+}
+
+@keyframes goldShine {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+@keyframes progressShine {
+  0%   { left: -100%; }
+  100% { left: 200%; }
+}
+
+/* â”€â”€ 6. BOTÃ“N GUARDAR CON ANIMACIÃ“N DE Ã‰XITO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.save-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.save-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--c-overlay-20), transparent);
+  transition: left 0.5s ease;
+}
+
+.save-btn:hover::before {
+  left: 100%;
+}
+
+.save-btn.saving {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  animation: savePulse 1.5s ease-in-out infinite;
+}
+
+.save-btn.saved {
+  background: linear-gradient(135deg, #10b981, #059669);
+  box-shadow: 0 0 20px rgba(16,185,129,0.4);
+  animation: successPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes savePulse {
+  0%, 100% { box-shadow: 0 4px 14px rgba(99,102,241,0.3); }
+  50%      { box-shadow: 0 4px 24px rgba(99,102,241,0.6); }
+}
+
+@keyframes successPop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+
+/* â”€â”€ 7. CONFETTI CSS AL GUARDAR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@keyframes confettiFall {
+  0%   { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(60px) rotate(720deg); opacity: 0; }
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+/* â”€â”€ 8. LOCKED SWATCHES CON PATRÃ“N DE RAYAS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.color-swatch.locked,
+.pattern-card.locked {
+  position: relative;
+  overflow: hidden;
+}
+
+.color-swatch.locked::after,
+.pattern-card.locked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0,0,0,0.3) 0px,
+    rgba(0,0,0,0.3) 4px,
+    transparent 4px,
+    transparent 8px
+  );
+  pointer-events: none;
+}
+
+/* Candado con animaciÃ³n de "shake" al intentar click */
+@keyframes lockShake {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-3px) rotate(-5deg); }
+  75%      { transform: translateX(3px) rotate(5deg); }
+}
+
+.color-swatch.locked:active .swatch-lock,
+.pattern-card.locked:active .lock-overlay {
+  animation: lockShake 0.3s ease;
+}
+
+/* â”€â”€ 9. ENTRADA ESCALONADA DE SWATCHES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.color-swatch,
+.pattern-card {
+  opacity: 0;
+  transform: translateY(12px) scale(0.9);
+  animation: swatchEnter 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Stagger delay se aplica inline vÃ­a style o con nth-child */
+@keyframes swatchEnter {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* â”€â”€ 10. SECTION CONTAINER CON HOVER LIFT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.section-container {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease;
+}
+
+.section-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25),
+              0 0 0 1px var(--c-overlay-3);
+}
+
+/* â”€â”€ 11. PREVIEW BADGE CON GLOW PULSANTE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.preview-badge.highlight {
+  animation: badgeGlow 2s ease-in-out infinite;
+}
+
+@keyframes badgeGlow {
+  0%, 100% { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+  50%      { box-shadow: 0 4px 20px rgba(251,191,36,0.15), 0 0 0 1px rgba(251,191,36,0.1); }
+}
+
+

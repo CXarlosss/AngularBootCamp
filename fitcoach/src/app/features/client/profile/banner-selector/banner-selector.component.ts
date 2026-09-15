@@ -32,7 +32,11 @@ import {
             <span class="coach-badge">👑 Coach (Desbloqueado)</span>
           }
         </h1>
-        <button class="save-btn" (click)="save()" [disabled]="!canSave()">
+        <button class="save-btn" 
+          [class.saving]="saving()"
+          [class.saved]="saveSuccess()"
+          (click)="saveWithCelebration()" 
+          [disabled]="!canSave()">
           {{ saving() ? 'Guardando...' : canSave() ? 'Guardar Cambios' : 'Guardado ✓' }}
         </button>
       </header>
@@ -42,6 +46,7 @@ import {
         <!-- Vista previa en tiempo real -->
         <div class="preview-wrap">
           <app-profile-banner
+            [class.equipping]="previewFlash()"
             [name]="profileName()"
             [initials]="initials()"
             [rankLevel]="rankSvc.fullRank()?.rank?.level ?? 0"
@@ -85,14 +90,16 @@ import {
           </div>
 
           <div class="color-row">
-            @for (c of filteredColors(); track c.id) {
+            @for (c of filteredColors(); track c.id; let idx = $index) {
               <button
                 class="color-swatch"
                 [class.on]="selectedColor() === c.id"
                 [class.locked]="!isUnlocked(c.id)"
                 [style.background]="c.gradient"
+                [style.--swatch-glow]="c.gradient"
+                [style.animation-delay]="getStaggerDelay(idx)"
                 [title]="c.label + (!isUnlocked(c.id) ? ' — 🔒 ' + c.req : '')"
-                (click)="selectColor(c.id)">
+                (click)="selectColorEnhanced(c.id, $event)">
 
                 @if (!isUnlocked(c.id)) {
                   <span class="swatch-lock">🔒</span>
@@ -129,13 +136,14 @@ import {
           </div>
 
           <div class="pattern-row">
-            @for (p of filteredPatterns(); track p.id) {
+            @for (p of filteredPatterns(); track p.id; let idx = $index) {
               <button
                 class="pattern-card"
                 [class.on]="selectedPattern() === p.id"
                 [class.locked]="!isUnlocked(p.id)"
+                [style.animation-delay]="getStaggerDelay(idx)"
                 [title]="p.label + (!isUnlocked(p.id) ? ' — 🔒 ' + p.req : '')"
-                (click)="selectPattern(p.id)">
+                (click)="selectPatternEnhanced(p.id, $event)">
 
                 <div class="pat-preview"
                   [class]="p.cssClass"
@@ -237,6 +245,9 @@ export class BannerSelectorComponent implements OnInit {
   saving      = signal(false);
   isLockedOpen = signal(false);
   isCoach     = signal(false);
+  previewFlash = signal(false);
+  saveSuccess = signal(false);
+  private confettiContainer: HTMLElement | null = null;
 
   // Categorías de filtro
   activeColorCategory = signal<string>('all');
@@ -414,10 +425,77 @@ export class BannerSelectorComponent implements OnInit {
   }
 
   async save() {
+    return this.saveWithCelebration();
+  }
+
+  flashPreview() {
+    this.previewFlash.set(true);
+    setTimeout(() => this.previewFlash.set(false), 400);
+  }
+
+  handleSwatchRipple(event: MouseEvent | TouchEvent, element: HTMLElement) {
+    const rect = element.getBoundingClientRect();
+    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
+
+    const ripple = document.createElement('span');
+    ripple.classList.add('ripple');
+    ripple.style.left = (clientX - rect.left - 5) + 'px';
+    ripple.style.top = (clientY - rect.top - 5) + 'px';
+    ripple.style.width = '10px';
+    ripple.style.height = '10px';
+
+    element.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 500);
+  }
+
+  spawnConfetti(originElement: HTMLElement) {
+    const colors = ['#fbbf24', '#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6'];
+    const rect = originElement.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    for (let i = 0; i < 20; i++) {
+      const piece = document.createElement('div');
+      piece.classList.add('confetti-piece');
+      piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+      piece.style.left = centerX + 'px';
+      piece.style.top = centerY + 'px';
+      piece.style.width = (4 + Math.random() * 4) + 'px';
+      piece.style.height = (4 + Math.random() * 4) + 'px';
+
+      const angle = (Math.PI * 2 * i) / 20;
+      const velocity = 40 + Math.random() * 60;
+      const tx = Math.cos(angle) * velocity;
+      const ty = Math.sin(angle) * velocity - 40;
+      const rot = Math.random() * 720;
+
+      piece.style.setProperty('--tx', tx + 'px');
+      piece.style.setProperty('--ty', ty + 'px');
+      piece.style.setProperty('--rot', rot + 'deg');
+      piece.style.animation = `confettiFall ${0.6 + Math.random() * 0.4}s ease-out forwards`;
+
+      piece.animate([
+        { transform: 'translate(0,0) rotate(0deg)', opacity: 1 },
+        { transform: `translate(${tx}px, ${ty}px) rotate(${rot}deg)`, opacity: 0.8 },
+        { transform: `translate(${tx * 1.2}px, ${ty + 80}px) rotate(${rot * 1.5}deg)`, opacity: 0 }
+      ], {
+        duration: 800 + Math.random() * 400,
+        easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+        fill: 'forwards'
+      });
+
+      document.body.appendChild(piece);
+      setTimeout(() => piece.remove(), 1200);
+    }
+  }
+
+  async saveWithCelebration() {
     const userId = this.auth.user()?.id;
     if (!userId || !this.canSave()) return;
 
     this.saving.set(true);
+    this.saveSuccess.set(false);
 
     await this.sb
       .from('profiles')
@@ -428,7 +506,6 @@ export class BannerSelectorComponent implements OnInit {
       })
       .eq('id', userId);
 
-    // Marcar como guardado
     this.savedColor.set(this.selectedColor());
     this.savedPattern.set(this.selectedPattern());
 
@@ -436,5 +513,41 @@ export class BannerSelectorComponent implements OnInit {
     await this.profileSvc.load();
 
     this.saving.set(false);
+    this.saveSuccess.set(true);
+
+    const saveBtn = document.querySelector('.save-btn') as HTMLElement;
+    if (saveBtn) this.spawnConfetti(saveBtn);
+
+    setTimeout(() => this.saveSuccess.set(false), 2000);
+  }
+
+  selectColorEnhanced(id: string, event?: MouseEvent | TouchEvent) {
+    const isUnlock = this.isUnlocked(id);
+    if (!isUnlock) return;
+
+    this.selectedColor.set(id);
+    this.flashPreview();
+
+    if (event) {
+      const target = event.currentTarget as HTMLElement;
+      if (target) this.handleSwatchRipple(event, target);
+    }
+  }
+
+  selectPatternEnhanced(id: string, event?: MouseEvent | TouchEvent) {
+    const isUnlock = this.isUnlocked(id);
+    if (!isUnlock) return;
+
+    this.selectedPattern.set(id);
+    this.flashPreview();
+
+    if (event) {
+      const target = event.currentTarget as HTMLElement;
+      if (target) this.handleSwatchRipple(event, target);
+    }
+  }
+
+  getStaggerDelay(index: number): string {
+    return `${index * 0.03}s`;
   }
 }

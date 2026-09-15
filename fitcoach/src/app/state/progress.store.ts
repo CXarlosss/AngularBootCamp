@@ -124,12 +124,12 @@ export const ProgressStore = signalStore(
       const weights = sets.map(s => s.weightKg ?? 0).filter(w => w > 0);
       if (weights.length < 2) return 0;
       
-      const firstThree = weights.slice(0, 3);
-      const lastThree = weights.slice(-3);
-      const avgFirst = firstThree.reduce((a, b) => a + b, 0) / firstThree.length;
-      const avgLast = lastThree.reduce((a, b) => a + b, 0) / lastThree.length;
+      // Progreso = (peso máximo levantado históricamente) - (primer peso registrado)
+      const firstWeight = weights[0];
+      const maxWeight = Math.max(...weights);
       
-      return Math.max(0, Math.round(avgLast - avgFirst));
+      const diff = maxWeight - firstWeight;
+      return Math.max(0, Math.round(diff * 10) / 10);
     }),
 
     totalSessions: computed(() => store.sessions()?.length ?? 0),
@@ -143,6 +143,36 @@ export const ProgressStore = signalStore(
     }),
 
     hasImprovement: computed(() => (store.weightImprovedKg() ?? 0) > 0),
+
+    closeToPr: computed(() => {
+      const exercises = store.exercises();
+      if (!exercises.length) return null;
+
+      let closest = null;
+      let minDiff = Infinity;
+
+      for (const ex of exercises) {
+        if (!ex.dataPoints || ex.dataPoints.length < 2) continue;
+
+        const sorted = [...ex.dataPoints].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const lastSession = sorted[0];
+        
+        const historicalMax = Math.max(...ex.dataPoints.map(dp => dp.maxWeight));
+        const diff = historicalMax - lastSession.maxWeight;
+        
+        if (diff > 0 && diff <= 5) {
+          if (diff < minDiff) {
+            minDiff = diff;
+            closest = {
+              exerciseName: ex.name,
+              diffKg: diff
+            };
+          }
+        }
+      }
+
+      return closest;
+    }),
   })),
 
   withMethods((store, svc = inject(ProgressService)) => ({

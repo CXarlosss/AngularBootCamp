@@ -126,17 +126,17 @@ export const BANNER_COLORS: BannerColor[] = [
   {
     id: 'c15', label: 'Abismo Índigo',
     gradient: 'linear-gradient(135deg, #6366f1 0%, #312e81 50%, #000000 100%)',
-    locked: true, req: '20.000 XP', reqType: 'xp', reqValue: 20000
+    locked: true, req: '12.000 XP', reqType: 'xp', reqValue: 12000
   },
   {
     id: 'c11', label: 'Nebulosa',
     gradient: 'linear-gradient(135deg, #a855f7 0%, #7c3aed 30%, #1e1b4b 70%, #000000 100%)',
-    locked: true, req: '30.000 XP', reqType: 'xp', reqValue: 30000
+    locked: true, req: '13.000 XP', reqType: 'xp', reqValue: 13000
   },
   {
     id: 'c_supernova', label: 'Supernova',
     gradient: 'linear-gradient(135deg, #a855f7 0%, #d946ef 50%, #1e1b4b 100%)',
-    locked: true, req: '40.000 XP', reqType: 'xp', reqValue: 40000
+    locked: true, req: 'Semidiós', reqType: 'rank', reqValue: 4
   },
   {
     id: 'c_cyberpunk', label: 'Neon Cyberpunk',
@@ -166,7 +166,7 @@ export const BANNER_COLORS: BannerColor[] = [
   {
     id: 'c16', label: 'Plasma',
     gradient: 'linear-gradient(135deg, #e11d48 0%, #7c3aed 100%)',
-    locked: true, req: '15.000 XP', reqType: 'xp', reqValue: 15000
+    locked: true, req: '11.000 XP', reqType: 'xp', reqValue: 11000
   },
   {
     id: 'c17', label: 'Fuego Fatuo',

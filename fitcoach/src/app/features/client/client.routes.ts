@@ -14,6 +14,12 @@ export const CLIENT_ROUTES: Routes = [
             .then(m => m.ClientDashboardComponent),
       },
       {
+        path: 'dev/streak',
+        loadComponent: () =>
+          import('../dev/streak-demo/streak-widget-demo.component')
+            .then(m => m.StreakWidgetDemoComponent),
+      },
+      {
         path: 'workout',
         canActivate: [workoutDayGuard],
         loadComponent: () =>
@@ -56,6 +62,12 @@ export const CLIENT_ROUTES: Routes = [
         loadComponent: () =>
           import('./profile/banner-selector/banner-selector.component')
             .then(m => m.BannerSelectorComponent),
+      },
+      {
+        path: 'history',
+        loadComponent: () =>
+          import('./history/workout-history.page')
+            .then(m => m.WorkoutHistoryPageComponent),
       },
       {
         path: 'profile',

@@ -556,13 +556,12 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
         const day = this.todayDay();
         if (day) {
           console.log('[TodayWorkout] Evaluando día:', day.id);
-          const isDone = await this.workoutStore.isDayCompleted(clientId, day.id);
+          const isDone = await this.workoutStore.isDayCompleted(clientId, day.id, assigned.id);
           
           if (isDone) {
             this.isDayDone.set(true);
             this.isLoading.set(false);
-            console.log('[TodayWorkout] El día ya consta como completado. Redirigiendo al dashboard.');
-            this.router.navigate(['/client/dashboard'], { replaceUrl: true });
+            console.log('[TodayWorkout] El día ya consta como completado. Mostrando pantalla de completado.');
             return; // Detener inicialización si ya está hecho
           } else {
             console.log('[TodayWorkout] Iniciando nueva sesión de entrenamiento...');

@@ -1,0 +1,34 @@
+<div class="streak-widget" [attr.data-status]="status()">
+  <div class="streak-widget__header">
+    <div class="streak-widget__flame" [class.streak-widget__flame--pulse]="status() === 'active'">
+      🔥
+    </div>
+    <div class="streak-widget__count">
+      <span class="streak-widget__number">{{ currentStreak() }}</span>
+      <span class="streak-widget__label">semanas</span>
+    </div>
+    @if (freezesAvailable() > 0) {
+      <div class="streak-widget__freeze">❄️ {{ freezesAvailable() }}</div>
+    }
+  </div>
+
+  <h3 class="streak-widget__headline">{{ headline() }}</h3>
+  <p class="streak-widget__subtext">{{ subtext() }}</p>
+
+  <div class="streak-widget__week">
+    @for (slot of weekSlots(); track $index) {
+      <div class="streak-widget__slot" [class.streak-widget__slot--filled]="slot.filled"></div>
+    }
+  </div>
+
+  @if (nextMilestone()) {
+    <div class="streak-widget__milestone">
+      <div class="streak-widget__milestone-track">
+        <div class="streak-widget__milestone-fill" [style.width.%]="progressToMilestone() * 100"></div>
+      </div>
+      <div class="streak-widget__milestone-text">
+        Próximo hito: {{ nextMilestone() }} semanas
+      </div>
+    </div>
+  }
+</div>

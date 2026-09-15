@@ -1,4 +1,4 @@
-.client-dash {
+﻿.client-dash {
   background: var(--c-bg-alt);
   min-height: 100vh;
   min-height: 100dvh;
@@ -32,7 +32,7 @@
 .header-logo span { color: var(--c-green); }
 
 .back-btn {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-5);
   border: 1px solid var(--c-border);
   width: 34px;
   height: 34px;
@@ -55,7 +55,7 @@ fc-card.profile-card {
 }
 
 
-/* ── XP Progress ── */
+/* â”€â”€ XP Progress â”€â”€ */
 .xp-container {
   display: flex;
   flex-direction: column;
@@ -72,7 +72,7 @@ fc-card.profile-card {
 
 .xp-bar-bg {
   height: 10px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-5);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -100,14 +100,14 @@ fc-card.profile-card {
   margin-bottom: 12px;
 }
 
-/* ── Menu Items ── */
+/* â”€â”€ Menu Items â”€â”€ */
 .menu-item {
   width: 100%;
   display: flex;
   align-items: center;
   gap: 16px;
   padding: 18px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--c-overlay-3);
   border: 1px solid var(--c-border);
   border-radius: 20px;
   margin-bottom: 12px;
@@ -118,13 +118,13 @@ fc-card.profile-card {
 
 .menu-item:active {
   transform: scale(0.98);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-overlay-6);
 }
 
 .menu-icon {
   width: 44px;
   height: 44px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-5);
   border-radius: 14px;
   display: flex;
   align-items: center;
@@ -173,49 +173,92 @@ fc-card.profile-card {
   background: rgba(220, 38, 38, 0.2);
 }
 
-/* ── Theme Toggle ── */
-.theme-toggle {
+/* â”€â”€ Settings Items (Glassmorphism) â”€â”€ */
+.glass-setting-item {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
+  background: var(--c-overlay-2);
+  border: 1px solid var(--c-overlay-5);
+  border-radius: 20px;
+  padding: 16px;
+  box-shadow: inset 0 0 20px var(--c-overlay-1);
+  backdrop-filter: blur(10px);
 }
 
-.theme-icon {
+.setting-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.setting-icon {
   width: 44px;
   height: 44px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-5);
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 20px;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-.theme-info {
-  flex: 1;
+.setting-icon.dark { transform: rotate(-30deg); }
+.setting-icon.light { transform: rotate(90deg); }
+.setting-icon.system { transform: scale(1.1); }
+
+.setting-text {
+  display: flex;
+  flex-direction: column;
 }
 
-.theme-title {
+.setting-title {
   font-size: 15px;
   font-weight: 600;
   color: var(--c-text-1);
 }
 
-.theme-select {
-  background: var(--c-bg);
-  color: var(--c-text-2);
-  border: 1px solid var(--c-border);
-  padding: 8px 12px;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 500;
-  outline: none;
-  cursor: pointer;
-  appearance: none;
-  min-width: 100px;
-  text-align: center;
+.setting-sub {
+  font-size: 12px;
+  color: var(--c-text-4);
 }
 
-.theme-select:focus {
-  border-color: var(--c-green);
+/* â”€â”€ Theme Switcher Segmented Control â”€â”€ */
+.theme-switcher {
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid var(--c-overlay-5);
 }
+
+.ts-btn {
+  background: transparent;
+  border: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0.5;
+  filter: grayscale(100%);
+}
+
+.ts-btn:active {
+  transform: scale(0.9);
+}
+
+.ts-btn.active {
+  background: var(--c-overlay-10);
+  opacity: 1;
+  filter: grayscale(0%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--c-overlay-5);
+}
+

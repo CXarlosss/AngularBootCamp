@@ -16,6 +16,26 @@
   --c-text-4:    #5F5E5A;
   --c-text-5:    #444441;
   --c-shadow:    0 8px 32px rgba(0,0,0,0.4);
+
+  --c-overlay-1:  rgba(255, 255, 255, 0.01);
+  --c-overlay-2:  rgba(255, 255, 255, 0.02);
+  --c-overlay-3:  rgba(255, 255, 255, 0.03);
+  --c-overlay-4:  rgba(255, 255, 255, 0.04);
+  --c-overlay-5:  rgba(255, 255, 255, 0.05);
+  --c-overlay-6:  rgba(255, 255, 255, 0.06);
+  --c-overlay-8:  rgba(255, 255, 255, 0.08);
+  --c-overlay-10: rgba(255, 255, 255, 0.10);
+  --c-overlay-12: rgba(255, 255, 255, 0.12);
+  --c-overlay-15: rgba(255, 255, 255, 0.15);
+  --c-overlay-20: rgba(255, 255, 255, 0.20);
+  --c-overlay-25: rgba(255, 255, 255, 0.25);
+  --c-overlay-30: rgba(255, 255, 255, 0.30);
+  --c-overlay-40: rgba(255, 255, 255, 0.40);
+  --c-overlay-50: rgba(255, 255, 255, 0.50);
+
+  --c-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --c-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --c-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.4);
 }
 
 [data-theme='light'] {
@@ -35,4 +55,24 @@
   --c-text-4:    #a0aec0;
   --c-text-5:    #cbd5e0;
   --c-shadow:    0 4px 16px rgba(0,0,0,0.06);
+
+  --c-overlay-1:  rgba(0, 0, 0, 0.01);
+  --c-overlay-2:  rgba(0, 0, 0, 0.02);
+  --c-overlay-3:  rgba(0, 0, 0, 0.03);
+  --c-overlay-4:  rgba(0, 0, 0, 0.04);
+  --c-overlay-5:  rgba(0, 0, 0, 0.05);
+  --c-overlay-6:  rgba(0, 0, 0, 0.06);
+  --c-overlay-8:  rgba(0, 0, 0, 0.08);
+  --c-overlay-10: rgba(0, 0, 0, 0.10);
+  --c-overlay-12: rgba(0, 0, 0, 0.12);
+  --c-overlay-15: rgba(0, 0, 0, 0.15);
+  --c-overlay-20: rgba(0, 0, 0, 0.20);
+  --c-overlay-25: rgba(0, 0, 0, 0.25);
+  --c-overlay-30: rgba(0, 0, 0, 0.30);
+  --c-overlay-40: rgba(0, 0, 0, 0.40);
+  --c-overlay-50: rgba(0, 0, 0, 0.50);
+
+  --c-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --c-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.10);
+  --c-shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
 }

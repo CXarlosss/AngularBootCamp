@@ -1,4 +1,4 @@
-.rank-page {
+﻿.rank-page {
   min-height: 100vh;
   background: #000;
   color: #fff;
@@ -14,7 +14,7 @@
   z-index: 10;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--c-overlay-5);
 
   h1 {
     font-size: 17px;
@@ -70,7 +70,7 @@
   align-items: center;
   justify-content: center;
   font-size: 36px;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-5);
 }
 
 .hero-text {
@@ -86,7 +86,7 @@
     margin: 0 0 6px;
     font-size: 12px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--c-overlay-40);
     text-transform: uppercase;
     letter-spacing: 1px;
   }
@@ -94,7 +94,7 @@
   .hero-quote {
     margin: 0;
     font-size: 13px;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--c-text-3);
     font-style: italic;
   }
 }
@@ -109,13 +109,13 @@
     justify-content: space-between;
     font-size: 11px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--c-overlay-50);
     margin-bottom: 8px;
   }
 
   .xp-track {
     height: 8px;
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--c-overlay-10);
     border-radius: 4px;
     overflow: hidden;
   }
@@ -136,7 +136,7 @@
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-5);
   border-radius: 16px;
   padding: 12px;
   text-align: center;
@@ -151,7 +151,7 @@
   .stat-lbl {
     font-size: 9px;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--c-overlay-40);
     text-transform: uppercase;
   }
 }
@@ -163,7 +163,7 @@
   h3 {
     font-size: 13px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--c-overlay-40);
     text-transform: uppercase;
     margin-bottom: 16px;
   }
@@ -179,14 +179,14 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-3);
+  border: 1px solid var(--c-overlay-5);
   padding: 16px;
   border-radius: 20px;
   transition: all 0.3s ease;
 
   &.active {
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--c-overlay-6);
     border-width: 1px;
   }
 
@@ -203,7 +203,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--c-overlay-3);
   border-radius: 12px;
 }
 
@@ -238,16 +238,16 @@
   text-transform: uppercase;
 
   &.done {
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.6);
+    background: var(--c-overlay-10);
+    color: var(--c-text-3);
   }
 
   &.current {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--c-overlay-10);
   }
 
   &.locked {
-    color: rgba(255, 255, 255, 0.3);
+    color: var(--c-overlay-30);
   }
 
   &.preview {
@@ -262,7 +262,7 @@
   h3 {
     font-size: 13px;
     font-weight: 700;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--c-overlay-40);
     text-transform: uppercase;
     margin-bottom: 16px;
   }
@@ -277,7 +277,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--c-overlay-3);
   padding: 16px;
   border-radius: 20px;
 }
@@ -295,6 +295,7 @@
 
   span {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.4);
+    color: var(--c-overlay-40);
   }
 }
+

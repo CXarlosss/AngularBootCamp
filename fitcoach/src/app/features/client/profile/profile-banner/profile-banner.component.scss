@@ -1,4 +1,4 @@
-.banner {
+﻿.banner {
   position: relative;
   height: 110px;
   border-radius: 16px;
@@ -12,12 +12,12 @@
   inset: 0;
   transition: all .3s;
 
-  &.pat-solid   { /* sin patrón */ }
+  &.pat-solid   { /* sin patrÃ³n */ }
 
   &.pat-marble  {
     background-image: repeating-linear-gradient(
       45deg,
-      rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 1px,
+      var(--c-overlay-3) 0px, var(--c-overlay-3) 1px,
       transparent 1px, transparent 8px
     );
   }
@@ -29,7 +29,7 @@
   }
 
   &.pat-stars   {
-    background-image: radial-gradient(circle, rgba(255,255,255,0.18) 1px, transparent 1px);
+    background-image: radial-gradient(circle, var(--c-overlay-20) 1px, transparent 1px);
     background-size: 18px 18px;
   }
 
@@ -49,28 +49,28 @@
   }
 
   &.pat-waves {
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q 25 0, 50 10 T 100 10' fill='none' stroke='rgba(255,255,255,0.1)' stroke-width='2'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='100' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q 25 0, 50 10 T 100 10' fill='none' stroke='var(--c-overlay-10)' stroke-width='2'/%3E%3C/svg%3E");
     background-size: 100px 20px;
   }
 
   &.pat-dots {
-    background-image: radial-gradient(circle, rgba(255,255,255,.18) 1.5px, transparent 1.5px);
+    background-image: radial-gradient(circle, var(--c-overlay-20) 1.5px, transparent 1.5px);
     background-size: 10px 10px;
   }
 
   &.pat-diamond {
     background-image:
-      repeating-linear-gradient(45deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 14px),
-      repeating-linear-gradient(-45deg, rgba(255,255,255,.05) 0px, rgba(255,255,255,.05) 1px, transparent 1px, transparent 14px);
+      repeating-linear-gradient(45deg, var(--c-overlay-5) 0px, var(--c-overlay-5) 1px, transparent 1px, transparent 14px),
+      repeating-linear-gradient(-45deg, var(--c-overlay-5) 0px, var(--c-overlay-5) 1px, transparent 1px, transparent 14px);
   }
 
   &.pat-circuit {
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30h15v15h15v15M30 0v15h15v15h15' fill='none' stroke='rgba(255,255,255,0.08)' stroke-width='2'/%3E%3Ccircle cx='15' cy='30' r='3' fill='rgba(255,255,255,0.15)'/%3E%3Ccircle cx='45' cy='30' r='3' fill='rgba(255,255,255,0.15)'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30h15v15h15v15M30 0v15h15v15h15' fill='none' stroke='var(--c-overlay-8)' stroke-width='2'/%3E%3Ccircle cx='15' cy='30' r='3' fill='var(--c-overlay-15)'/%3E%3Ccircle cx='45' cy='30' r='3' fill='var(--c-overlay-15)'/%3E%3C/svg%3E");
     background-size: 60px 60px;
   }
 
   &.pat-hex {
-    background-image: url("data:image/svg+xml,%3Csvg width='40' height='69' viewBox='0 0 40 69' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 11.5v23L20 46 0 34.5v-23L20 0zm0 69l20-11.5v-23L20 23 0 34.5v23L20 69z' fill='rgba(255,255,255,0.05)' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='69' viewBox='0 0 40 69' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 0L40 11.5v23L20 46 0 34.5v-23L20 0zm0 69l20-11.5v-23L20 23 0 34.5v23L20 69z' fill='var(--c-overlay-5)' fill-rule='evenodd'/%3E%3C/svg%3E");
     background-size: 40px 69px;
   }
 
@@ -78,35 +78,35 @@
     background: 
       radial-gradient(circle, transparent 20%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.2) 80%, transparent 80%, transparent),
       radial-gradient(circle, transparent 20%, rgba(0,0,0,0.2) 20%, rgba(0,0,0,0.2) 80%, transparent 80%, transparent) 25px 25px,
-      linear-gradient(rgba(255,255,255,0.03) 2px, transparent 2px) 0 -1px,
-      linear-gradient(90deg, rgba(255,255,255,0.03) 2px, transparent 2px) -1px 0;
+      linear-gradient(var(--c-overlay-3) 2px, transparent 2px) 0 -1px,
+      linear-gradient(90deg, var(--c-overlay-3) 2px, transparent 2px) -1px 0;
     background-size: 50px 50px, 50px 50px, 25px 25px, 25px 25px;
   }
 
   &.pat-mesh {
     background-image: 
-      linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%, rgba(255,255,255,0.05)),
-      linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.05) 75%, rgba(255,255,255,0.05));
+      linear-gradient(45deg, var(--c-overlay-5) 25%, transparent 25%, transparent 75%, var(--c-overlay-5) 75%, var(--c-overlay-5)),
+      linear-gradient(45deg, var(--c-overlay-5) 25%, transparent 25%, transparent 75%, var(--c-overlay-5) 75%, var(--c-overlay-5));
     background-size: 20px 20px;
     background-position: 0 0, 10px 10px;
   }
 
   &.pat-zigzag {
     background: 
-      linear-gradient(135deg, rgba(255,255,255,0.05) 25%, transparent 25%) -25px 0,
-      linear-gradient(225deg, rgba(255,255,255,0.05) 25%, transparent 25%) -25px 0,
-      linear-gradient(315deg, rgba(255,255,255,0.05) 25%, transparent 25%),
-      linear-gradient(45deg, rgba(255,255,255,0.05) 25%, transparent 25%);
+      linear-gradient(135deg, var(--c-overlay-5) 25%, transparent 25%) -25px 0,
+      linear-gradient(225deg, var(--c-overlay-5) 25%, transparent 25%) -25px 0,
+      linear-gradient(315deg, var(--c-overlay-5) 25%, transparent 25%),
+      linear-gradient(45deg, var(--c-overlay-5) 25%, transparent 25%);
     background-size: 50px 50px;
   }
 
   &.pat-cube {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M20 0l20 11.54v23.08l-20 11.54-20-11.54v-23.08zm0 2.3v23.1m0 0l-20-11.5m20 11.5l20-11.5' fill='none' stroke='rgba(255,255,255,0.05)' stroke-width='1'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'%3E%3Cpath d='M20 0l20 11.54v23.08l-20 11.54-20-11.54v-23.08zm0 2.3v23.1m0 0l-20-11.5m20 11.5l20-11.5' fill='none' stroke='var(--c-overlay-5)' stroke-width='1'/%3E%3C/svg%3E");
     background-size: 40px 40px;
   }
 
   &.pat-topo {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cg stroke='rgba(255,255,255,0.06)' stroke-width='0.5' fill='none'%3E%3Cpath d='M10 10q20 20 40 0t40 0'/%3E%3Cpath d='M15 15q25 25 45 0t40 0'/%3E%3Cpath d='M20 20q30 30 50 0t40 0'/%3E%3Cpath d='M25 25q35 35 55 0t40 0'/%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cg stroke='var(--c-overlay-6)' stroke-width='0.5' fill='none'%3E%3Cpath d='M10 10q20 20 40 0t40 0'/%3E%3Cpath d='M15 15q25 25 45 0t40 0'/%3E%3Cpath d='M20 20q30 30 50 0t40 0'/%3E%3Cpath d='M25 25q35 35 55 0t40 0'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 100px 100px;
   }
 
@@ -161,7 +161,7 @@
 }
 
 .div-label {
-  background: rgba(255,255,255,0.15);
+  background: var(--c-overlay-15);
   padding: 1px 6px;
   border-radius: 4px;
   font-size: 10px;
@@ -170,14 +170,14 @@
 
 .banner-goal {
   font-size: 11px;
-  color: rgba(255,255,255,0.5);
+  color: var(--c-overlay-50);
   margin: 3px 0 0;
 }
 
 .banner-xp {
   font-size: 11px;
   font-weight: 500;
-  color: rgba(255,255,255,0.8);
+  color: var(--c-text-2);
   background: rgba(0,0,0,0.35);
   padding: 4px 10px;
   border-radius: 20px;
@@ -186,3 +186,134 @@
   backdrop-filter: blur(4px);
   white-space: nowrap;
 }
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   FITCOACH PROFILE BANNER â€” PREMIUM ADD-ONS v2.1
+   Pegar AL FINAL de profile-banner.component.scss
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+/* â”€â”€ 1. GLOW EXTERNO PULSANTE DINÃMICO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.profile-banner {
+  position: relative;
+}
+
+.profile-banner::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 22px;
+  background: linear-gradient(135deg, var(--banner-glow, rgba(29,158,117,0.15)), transparent 60%);
+  z-index: -1;
+  opacity: 0.6;
+  filter: blur(12px);
+  transition: all 0.5s ease;
+  animation: bannerGlowPulse 3s ease-in-out infinite;
+}
+
+@keyframes bannerGlowPulse {
+  0%, 100% { opacity: 0.4; filter: blur(12px); }
+  50%      { opacity: 0.8; filter: blur(16px); }
+}
+
+/* Intensificar glow al hover */
+.profile-banner:hover::before {
+  opacity: 1;
+  filter: blur(18px);
+}
+
+/* â”€â”€ 2. PARALLAX 3D EN EL BANNER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.profile-banner {
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.profile-banner .banner-content {
+  transform: translateZ(20px);
+}
+
+.profile-banner .avatar-container {
+  transform: translateZ(40px);
+}
+
+.profile-banner .banner-shine {
+  transform: translateZ(10px);
+}
+
+/* â”€â”€ 3. ANIMACIÃ“N DE EQUIPAR (FLASH + BOUNCE) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@keyframes equipFlashBanner {
+  0%   { filter: brightness(1); transform: scale(1); }
+  25%  { filter: brightness(1.6); transform: scale(1.03); }
+  50%  { filter: brightness(1.2); transform: scale(0.98); }
+  100% { filter: brightness(1); transform: scale(1); }
+}
+
+.profile-banner.equipping {
+  animation: equipFlashBanner 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* â”€â”€ 4. MARCO DEL AVATAR CON GLOW ESPECÃFICO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.avatar-frame-wrapper {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              filter 0.3s ease;
+}
+
+.avatar-frame-wrapper:hover {
+  transform: scale(1.08);
+}
+
+/* Glow especÃ­fico para marcos legendarios/epicos */
+.avatar-frame-wrapper.frame-legendary,
+.avatar-frame-wrapper.frame-epic {
+  filter: drop-shadow(0 0 8px var(--frame-glow, rgba(251,191,36,0.4)));
+}
+
+/* â”€â”€ 5. RANK BADGE CON REFLEJO CRISTAL â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.rank-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.rank-badge::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(
+    to bottom right,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0) 40%,
+    var(--c-overlay-8) 50%,
+    rgba(255,255,255,0) 60%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: rotate(30deg) translateX(-100%);
+  animation: rankShine 4s ease-in-out infinite;
+}
+
+@keyframes rankShine {
+  0%, 100% { transform: rotate(30deg) translateX(-100%); }
+  50%      { transform: rotate(30deg) translateX(100%); }
+}
+
+/* â”€â”€ 6. XP BADGE CON EFECTO HOLOGRÃFICO â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.xp-badge {
+  position: relative;
+  overflow: hidden;
+}
+
+.xp-badge::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 40%, var(--c-overlay-6) 50%, transparent 60%);
+  animation: holographicShift 3s ease-in-out infinite;
+}
+
+@keyframes holographicShift {
+  0%, 100% { transform: translateX(-100%); }
+  50%      { transform: translateX(100%); }
+}
+
+

@@ -2,280 +2,332 @@ import {
   Component, input, effect,
   ElementRef, ViewChild,
   ChangeDetectionStrategy, AfterViewInit, OnDestroy,
-  NgZone,
+  NgZone, inject, signal
 } from '@angular/core';
 import { ExerciseProgress } from '../../../state/progress.store';
-import type {
-  ChartDataRequest,
-  ChartDataResponse,
-  WorkerError,
-} from './progress-chart.worker';
+import { ChartThemeService } from '../../../core/services/chart-theme.service';
 
-// Chart.js registrado globalmente en main.ts
 declare const Chart: any;
 
-// ─── Componente ───────────────────────────────────────────────────────────────
-
-/**
- * ProgressChartComponent (refactorizado)
- *
- * Cambios respecto a la versión original:
- *
- *  ANTES  → efecto Angular → map/fechas/gradientes → chart.update()  [todo en main thread]
- *  AHORA  → efecto Angular → postMessage al Worker → onmessage → chart.update()
- *                                                     ↑ solo esto en main thread
- *
- * El Worker hace el trabajo pesado (formateo de fechas, cálculo de valores,
- * gradient stops, detección de PRs). El main thread solo recibe datos listos
- * y se los pasa a Chart.js para renderizar.
- *
- * Compatibilidad: si el navegador no soporta Web Workers (muy raro en 2026)
- * el componente hace fallback automático al comportamiento original.
- */
 @Component({
   selector: 'fc-progress-chart',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="chart-wrap" style="position: relative; width: 100%; height: 280px; margin-top: 10px;">
+    <div class="chart-premium-wrap">
       <canvas #chartCanvas></canvas>
+      @if (prValue() > 0) {
+        <div class="chart-pr-badge">
+          <span class="pr-dot"></span>
+          <span>PR: {{ prValue() }}kg</span>
+        </div>
+      }
     </div>
   `,
+  styles: [`
+    .chart-premium-wrap {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      margin-top: 16px;
+    }
+
+    .chart-pr-badge {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      background: var(--pr-badge-bg, rgba(251,191,36,0.1));
+      border: 1px solid var(--pr-badge-border, rgba(251,191,36,0.2));
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--pr-badge-color, #fbbf24);
+      backdrop-filter: blur(8px);
+      animation: prBadgeEnter 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      animation-delay: 0.8s;
+      opacity: 0;
+    }
+
+    @keyframes prBadgeEnter {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .pr-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+  `]
 })
 export class ProgressChartComponent implements AfterViewInit, OnDestroy {
-
-  // ── Inputs (sin cambios) ────────────────────────────────────────────────
-
   exercise = input.required<ExerciseProgress | null>();
-  metric   = input<'maxWeight' | 'estimated1RM' | 'totalVol'>('estimated1RM');
+  metric = input<'maxWeight' | 'estimated1RM' | 'totalVol'>('estimated1RM');
 
   @ViewChild('chartCanvas') canvasRef!: ElementRef<HTMLCanvasElement>;
 
-  // ── Estado interno ──────────────────────────────────────────────────────
-
-  private chart:  any    = null;
-  private worker: Worker | null = null;
-
-  // Evita actualizaciones solapadas si llegan dos señales seguidas
-  private pendingUpdate = false;
+  private chart: any = null;
+  private themeSvc = inject(ChartThemeService);
+  prValue = signal(0);
 
   constructor(private ngZone: NgZone) {
     effect(() => {
       const ex = this.exercise();
-      if (ex && this.canvasRef) {
-        this._requestChartUpdate(ex);
+      if (ex && this.chart) {
+        this._updateChart(ex);
+      }
+    });
+
+    // Reaccionar a cambios de tema
+    effect(() => {
+      this.themeSvc.tokens();
+      if (this.chart) {
+        this._applyTheme();
       }
     });
   }
 
-  // ── Lifecycle ───────────────────────────────────────────────────────────
-
   ngAfterViewInit(): void {
-    this._initWorker();
-
-    // Si hay datos al montar el componente, lanzamos el primer render
     const ex = this.exercise();
-    if (ex) this._requestChartUpdate(ex);
+    if (ex) this._initChart(ex);
   }
 
   ngOnDestroy(): void {
     this.chart?.destroy();
-    this.worker?.terminate();
   }
 
-  // ── Worker: inicialización ──────────────────────────────────────────────
+  private _initChart(exercise: ExerciseProgress) {
+    const canvas = this.canvasRef.nativeElement;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-  private _initWorker(): void {
-    if (typeof Worker === 'undefined') {
-      // Fallback: navegador sin soporte de Workers (muy raro)
-      console.warn('[ProgressChart] Web Workers no disponibles. Usando fallback en main thread.');
-      return;
-    }
+    const tokens = this.themeSvc.tokens();
+    const data = this._prepareData(exercise);
+    const pr = this._calculatePR(data);
+    this.prValue.set(pr);
 
-    // Angular CLI empaqueta el worker si el archivo se importa con este patrón
-    this.worker = new Worker(
-      new URL('./progress-chart.worker', import.meta.url),
-      { type: 'module' }
-    );
-
-    // Escuchamos la respuesta del worker FUERA de NgZone para no disparar
-    // detección de cambios innecesaria — solo entramos a la zona para chart.update()
-    this.worker.onmessage = (event: MessageEvent<ChartDataResponse | WorkerError>) => {
-      if (event.data.type === 'CHART_DATA_READY') {
-        // Aplicar los datos procesados al gráfico en el main thread
-        this.ngZone.runOutsideAngular(() => {
-          this._applyChartData(event.data as ChartDataResponse);
-        });
-      } else if (event.data.type === 'WORKER_ERROR') {
-        console.error('[ProgressChart] Worker error:', (event.data as WorkerError).message);
-      }
-      this.pendingUpdate = false;
-    };
-
-    this.worker.onerror = (err) => {
-      console.error('[ProgressChart] Worker falló:', err);
-      this.pendingUpdate = false;
-    };
-  }
-
-  // ── Enviar datos al worker para procesamiento ───────────────────────────
-
-  private _requestChartUpdate(ex: ExerciseProgress): void {
-    if (this.pendingUpdate) return; // Evitar cola de mensajes acumulados
-    this.pendingUpdate = true;
-
-    if (!this.worker) {
-      // Fallback síncrono si no hay worker
-      this._fallbackUpdate(ex);
-      return;
-    }
-
-    const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-
-    const request: ChartDataRequest = {
-      type: 'PROCESS_CHART_DATA',
-      payload: {
-        // Convertimos Date a string ISO — los objetos Date no son transferibles
-        dataPoints: ex.dataPoints.map(p => ({
-          date:      p.date instanceof Date ? p.date.toISOString() : p.date,
-          maxWeight: p.maxWeight,
-          totalVol:  p.totalVol,
-          estimated1RM: p.estimated1RM || 0
-        })),
-        metric: this.metric(),
-        locale: 'es-ES',
-        isDark,
-      },
-    };
-
-    this.worker.postMessage(request);
-  }
-
-  // ── Aplicar datos procesados → Chart.js (main thread, mínimo trabajo) ──
-
-  private _applyChartData(response: ChartDataResponse): void {
-    const { labels, values, gradientStops, prIndices, min, max } = response.payload;
-
-    if (!this.chart) {
-      this._initChart(labels, values, gradientStops, prIndices);
-    } else {
-      // Actualizar datos existentes
-      this.chart.data.labels = labels;
-
-      const ctx = this.canvasRef.nativeElement.getContext('2d')!;
-      this.chart.data.datasets[0] = this._buildDataset(values, ctx, gradientStops, prIndices);
-
-      // 'none' desactiva animación en actualizaciones de datos para evitar janks
-      this.chart.update('none');
-    }
-  }
-
-  // ── Inicializar instancia Chart.js ──────────────────────────────────────
-
-  private _initChart(
-    labels:        string[],
-    values:        number[],
-    gradientStops: ChartDataResponse['payload']['gradientStops'],
-    prIndices:     number[],
-  ): void {
-    const ctx = this.canvasRef.nativeElement.getContext('2d')!;
-    const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-    const gridColor  = isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)';
-    const labelColor = isDark ? 'rgba(255,255,255,0.4)'  : '#666';
-
-    this.chart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels,
-        datasets: [this._buildDataset(values, ctx, gradientStops, prIndices)],
-      },
-      options: {
-        responsive:          true,
-        maintainAspectRatio: false,
-        layout: { padding: { top: 10, right: 10, bottom: 0, left: -5 } },
-        plugins: {
-          legend:  { display: false },
-          tooltip: {
-            callbacks: {
-              label: (ctx: any) => ` ${ctx.parsed.y} kg`,
+    this.ngZone.runOutsideAngular(() => {
+      this.chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: data.labels,
+          datasets: [{
+            label: this._metricLabel(),
+            data: data.values,
+            borderColor: tokens.lineColor,
+            borderWidth: tokens.lineWidth,
+            backgroundColor: (context: any) => {
+              const chart = context.chart;
+              const { ctx, chartArea } = chart;
+              if (!chartArea) return tokens.areaGradientStart;
+              return this.themeSvc.createAreaGradient(ctx, chartArea);
             },
-          },
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: tokens.pointColor,
+            pointBorderColor: 'transparent',
+            pointBorderWidth: 0,
+            pointRadius: 4,
+            pointHoverBackgroundColor: tokens.pointHoverColor,
+            pointHoverBorderColor: tokens.pointHoverBorderColor,
+            pointHoverBorderWidth: tokens.pointHoverBorderWidth,
+            pointHoverRadius: tokens.pointHoverRadius,
+          }]
         },
-        scales: {
-          x: {
-            ticks: { color: labelColor, maxTicksLimit: 6 },
-            grid:  { color: gridColor },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
           },
-          y: {
-            ticks: { color: labelColor },
-            grid:  { color: gridColor },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              backgroundColor: tokens.tooltipBg,
+              titleColor: tokens.tooltipTitle,
+              bodyColor: tokens.tooltipText,
+              borderColor: tokens.tooltipBorder,
+              borderWidth: 1,
+              cornerRadius: 12,
+              padding: 14,
+              titleFont: { size: 13, weight: '700', family: 'inherit' },
+              bodyFont: { size: 12, weight: '500', family: 'inherit' },
+              displayColors: false,
+              callbacks: {
+                title: (items: any[]) => {
+                  const date = new Date(items[0].label);
+                  return date.toLocaleDateString('es-ES', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric'
+                  });
+                },
+                label: (item: any) => {
+                  return `🏋️ ${item.raw} kg`;
+                },
+                afterLabel: (item: any) => {
+                  const idx = item.dataIndex;
+                  const entry = data.rawEntries[idx];
+                  if (entry?.reps) return `💪 ${entry.reps} reps`;
+                  return '';
+                }
+              }
+            },
+            annotation: {
+              annotations: pr > 0 ? {
+                prLine: {
+                  type: 'line',
+                  yMin: pr,
+                  yMax: pr,
+                  borderColor: tokens.prLineColor,
+                  borderWidth: 2,
+                  borderDash: [6, 6],
+                  label: {
+                    display: true,
+                    content: `PR ${pr}kg`,
+                    position: 'end',
+                    backgroundColor: tokens.prLabelBg,
+                    color: tokens.prLabelColor,
+                    font: { size: 10, weight: '700' },
+                    borderRadius: 8,
+                    padding: { x: 8, y: 4 }
+                  }
+                }
+              } : {}
+            }
           },
-        },
-      },
+          scales: {
+            x: {
+              grid: {
+                color: tokens.gridColor,
+                drawBorder: false,
+              },
+              ticks: {
+                color: tokens.tickColor,
+                font: { size: 10, family: 'inherit' },
+                maxRotation: 0,
+                autoSkip: true,
+                maxTicksLimit: 6
+              },
+              border: { display: false }
+            },
+            y: {
+              grid: {
+                color: tokens.gridColor,
+                drawBorder: false,
+              },
+              ticks: {
+                color: tokens.tickColor,
+                font: { size: 10, family: 'inherit' },
+                callback: (val: number) => val + 'kg'
+              },
+              border: { display: false },
+              beginAtZero: false
+            }
+          },
+          animation: {
+            duration: 800,
+            easing: 'easeOutQuart'
+          }
+        }
+      });
     });
   }
 
-  // ── Construir dataset con gradiente ────────────────────────────────────
+  private _updateChart(exercise: ExerciseProgress) {
+    const data = this._prepareData(exercise);
+    const pr = this._calculatePR(data);
+    this.prValue.set(pr);
 
-  private _buildDataset(
-    data:          number[],
-    ctx:           CanvasRenderingContext2D,
-    gradientStops: ChartDataResponse['payload']['gradientStops'],
-    prIndices:     number[],
-  ) {
-    // Gradiente de fondo calculado por el worker, aplicado aquí donde tenemos el ctx
-    const gradient = ctx.createLinearGradient(0, 0, 0, 280);
-    gradientStops.forEach(stop => gradient.addColorStop(stop.offset, stop.color));
+    this.chart.data.labels = data.labels;
+    this.chart.data.datasets[0].data = data.values;
+    this.chart.data.datasets[0].label = this._metricLabel();
 
-    // Puntos PR destacados con color diferente
-    const pointColors = data.map((_, i) =>
-      prIndices.includes(i) ? '#F6AD55' : 'rgba(99,179,237,0.8)'
-    );
-    const pointRadii = data.map((_, i) =>
-      prIndices.includes(i) ? 5 : 3
+    // Actualizar anotación PR
+    if (this.chart.options.plugins.annotation) {
+      this.chart.options.plugins.annotation.annotations = pr > 0 ? {
+        prLine: {
+          type: 'line',
+          yMin: pr,
+          yMax: pr,
+          borderColor: this.themeSvc.tokens().prLineColor,
+          borderWidth: 2,
+          borderDash: [6, 6],
+          label: {
+            display: true,
+            content: `PR ${pr}kg`,
+            position: 'end',
+            backgroundColor: this.themeSvc.tokens().prLabelBg,
+            color: this.themeSvc.tokens().prLabelColor,
+            font: { size: 10, weight: '700' },
+            borderRadius: 8,
+            padding: { x: 8, y: 4 }
+          }
+        }
+      } : {};
+    }
+
+    this.chart.update('active');
+  }
+
+  private _applyTheme() {
+    const tokens = this.themeSvc.tokens();
+    const ds = this.chart.data.datasets[0];
+    const opts = this.chart.options;
+
+    ds.borderColor = tokens.lineColor;
+    ds.pointBackgroundColor = tokens.pointColor;
+    ds.pointHoverBackgroundColor = tokens.pointHoverColor;
+    ds.pointHoverBorderColor = tokens.pointHoverBorderColor;
+
+    opts.plugins.tooltip.backgroundColor = tokens.tooltipBg;
+    opts.plugins.tooltip.titleColor = tokens.tooltipTitle;
+    opts.plugins.tooltip.bodyColor = tokens.tooltipText;
+    opts.plugins.tooltip.borderColor = tokens.tooltipBorder;
+    opts.scales.x.grid.color = tokens.gridColor;
+    opts.scales.x.ticks.color = tokens.tickColor;
+    opts.scales.y.grid.color = tokens.gridColor;
+    opts.scales.y.ticks.color = tokens.tickColor;
+
+    this.chart.update('none');
+  }
+
+  private _prepareData(ex: ExerciseProgress) {
+    const history = (ex as any).dataPoints || (ex as any).history || [];
+    const sorted = [...history].sort((a: any, b: any) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
     return {
-      data,
-      fill:            true,
-      backgroundColor: gradient,
-      borderColor:     'rgba(99,179,237,1)',
-      borderWidth:     2,
-      tension:         0.4,
-      pointBackgroundColor: pointColors,
-      pointRadius:          pointRadii,
-      pointHoverRadius:     6,
+      labels: sorted.map((h: any) => h.date),
+      values: sorted.map((h: any) => {
+        if (this.metric() === 'maxWeight') return h.maxWeight || h.weight || 0;
+        if (this.metric() === 'totalVol') return h.totalVol || 0;
+        return h.estimated1RM || h.maxWeight || h.weight || 0;
+      }),
+      rawEntries: sorted
     };
   }
 
-  // ── Fallback síncrono (sin worker) ──────────────────────────────────────
+  private _calculatePR(data: any): number {
+    if (!data.values.length) return 0;
+    return Math.max(...data.values);
+  }
 
-  private _fallbackUpdate(ex: ExerciseProgress): void {
-    // Comportamiento idéntico al original para navegadores sin Worker support
-    setTimeout(() => {
-      if (!this.chart) {
-        this._initChart([], [], [], []);
-      }
-
-      const pts    = ex.dataPoints;
-      const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
-      const labels = pts.map(p =>
-        p.date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })
-      );
-      const values = pts.map(p => {
-        if (this.metric() === 'maxWeight') return p.maxWeight;
-        if (this.metric() === 'estimated1RM') return p.estimated1RM;
-        return Math.round(p.totalVol);
-      });
-      const ctx = this.canvasRef.nativeElement.getContext('2d')!;
-      const defaultStops = isDark
-        ? [{ offset: 0, color: 'rgba(99,179,237,0.35)' }, { offset: 1, color: 'rgba(99,179,237,0)' }]
-        : [{ offset: 0, color: 'rgba(49,130,206,0.20)' }, { offset: 1, color: 'rgba(49,130,206,0)' }];
-
-      this.chart.data.labels        = labels;
-      this.chart.data.datasets[0]   = this._buildDataset(values, ctx, defaultStops, []);
-      this.chart.update('none');
-      this.pendingUpdate = false;
-    }, 0);
+  private _metricLabel(): string {
+    const map: Record<string, string> = {
+      maxWeight: 'Carga máxima',
+      estimated1RM: '1RM Estimado',
+      totalVol: 'Volumen total'
+    };
+    return map[this.metric()] || 'Progreso';
   }
 }

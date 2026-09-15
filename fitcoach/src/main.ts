@@ -2,6 +2,8 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import { appConfig } from './app/app.config';
 import { App } from './app/app';
 
+import annotationPlugin from 'chartjs-plugin-annotation';
+
 // Chart.js tree-shaking: solo registramos lo que usamos
 import {
   Chart,
@@ -13,7 +15,7 @@ import {
 Chart.register(
   LineElement, PointElement, LineController,
   CategoryScale, LinearScale,
-  Filler, Tooltip
+  Filler, Tooltip, annotationPlugin
 );
 
 bootstrapApplication(App, appConfig).catch((err) => console.error(err));

@@ -9,6 +9,7 @@ import {
   FRAME_CATALOG, Frame, RARITY_LABELS, RARITY_COLORS,
   getFrameById, isFrameUnlocked
 } from '../frame-catalog';
+import { FrameCelebrationService } from '../../../../core/services/frame-celebration.service';
 
 @Component({
   selector: 'app-frame-selector',
@@ -60,13 +61,17 @@ import {
       <div class="frames-grid">
         @for (frame of filteredFrames(); track frame.id) {
           <button 
-            class="frame-card"
+            class="frame-catalog-item frame-card"
             [class]="'rarity-' + frame.rarity"
             [class.equipped]="currentFrame() === frame.id"
             [class.locked]="!isUnlocked(frame)"
             [class.selected]="selectedFrame()?.id === frame.id"
+            [class.frame-new]="$any(frame).isNewlyUnlocked"
             (click)="selectFrame(frame)"
           >
+            @if ($any(frame).isNewlyUnlocked) {
+              <span class="frame-new-badge">NUEVO</span>
+            }
             <!-- Rarity accent line at top -->
             <div class="rarity-accent" [style.background]="getRarityColor(frame.rarity)"></div>
 
@@ -118,7 +123,7 @@ import {
         <div class="details-panel fade-in">
           <div class="details-content">
             <!-- Vista previa en tiempo real en tamaño grande -->
-            <div class="avatar-preview-container">
+            <div class="avatar-preview-container frame-preview-container">
               <div class="avatar-frame-wrapper frame-lg" [class]="'frame-' + frame.id">
                 @if (profileService.profile()?.avatar_url; as avatarUrl) {
                   <img [src]="avatarUrl" alt="Avatar" />
@@ -601,6 +606,7 @@ export class FrameSelectorComponent implements OnInit {
   profileService = inject(ProfileService);
   rankSvc = inject(RankService);
   private toastSvc = inject(ToastService);
+  private celebration = inject(FrameCelebrationService);
 
   categories = [
     { id: 'all', label: 'Todos' },
@@ -662,10 +668,27 @@ export class FrameSelectorComponent implements OnInit {
 
   async equipFrame(frame: Frame) {
     if (!isFrameUnlocked(frame, this.userXp(), this.userRank())) return;
+
+    // Añadir clase de animación
+    const avatarWrapper = document.querySelector('.avatar-frame-wrapper.frame-lg');
+    if (avatarWrapper) {
+      avatarWrapper.classList.add('equipping');
+      setTimeout(() => avatarWrapper.classList.remove('equipping'), 500);
+    }
+
     this.loading.set(true);
     try {
       await this.profileService.updateEquippedFrame(frame.id);
       this.toastSvc.success('¡Marco equipado!', `Has equipado el marco "${frame.name}" correctamente.`);
+      
+      // 🎉 CELEBRACIÓN
+      // We assume frame.rarity matches FrameRarity type
+      this.celebration.celebrateEquip(
+        frame.id,
+        frame.rarity as any,
+        (frame as any).isNewlyUnlocked || false
+      );
+
     } catch (err: any) {
       console.error(err);
       this.toastSvc.error('Error', 'No se pudo equipar el marco. Inténtalo de nuevo.');

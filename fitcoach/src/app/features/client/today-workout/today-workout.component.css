@@ -1,4 +1,4 @@
-.workout-screen {
+﻿.workout-screen {
   background: radial-gradient(circle at 50% 0%, #1a1f2b 0%, #080a0f 100%);
   min-height: 100dvh;
   color: #f1f5f9;
@@ -13,7 +13,7 @@
   background: rgba(8, 10, 15, 0.85);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid var(--c-overlay-8);
   display: flex;
   align-items: center;
   gap: 20px;
@@ -23,8 +23,8 @@
 }
 
 .btn-back {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--c-overlay-3);
+  border: 1px solid var(--c-overlay-8);
   color: #fff;
   width: 44px;
   height: 44px;
@@ -37,7 +37,7 @@
   transition: all 0.2s;
 }
 
-.btn-back:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.06); }
+.btn-back:active { transform: scale(0.9); background: var(--c-overlay-6); }
 
 .workout-meta { flex: 1; min-width: 0; }
 .workout-title { 
@@ -53,7 +53,7 @@
 }
 .workout-progress { 
   font-size: 13px; 
-  color: rgba(255, 255, 255, 0.35); 
+  color: var(--c-overlay-40); 
   margin-top: 4px; 
   font-weight: 600;
   text-transform: uppercase;
@@ -71,7 +71,7 @@
 }
 .ring-text.complete { font-size: 18px; }
 
-/* ── Timer Overlays (Immersive) ── */
+/* â”€â”€ Timer Overlays (Immersive) â”€â”€ */
 .rest-overlay {
   position: fixed !important;
   inset: 0 !important;
@@ -101,7 +101,7 @@
 }
 
 .rest-label { 
-  color: rgba(255, 255, 255, 0.4); 
+  color: var(--c-overlay-40); 
   text-transform: uppercase; 
   letter-spacing: .2em; 
   font-size: 12px; 
@@ -125,7 +125,7 @@
   color: #fff; 
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.05em;
-  text-shadow: 0 0 40px rgba(255,255,255,0.2);
+  text-shadow: 0 0 40px var(--c-overlay-20);
 }
 
 .btn-skip {
@@ -139,12 +139,12 @@
   padding: 18px !important;
   cursor: pointer !important;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 10px 30px rgba(255,255,255,0.1);
+  box-shadow: 0 10px 30px var(--c-overlay-10);
 }
 
 .btn-skip:active { transform: scale(0.95); opacity: 0.9; }
 
-/* ── Exercises List ── */
+/* â”€â”€ Exercises List â”€â”€ */
 .exercises-list {
   padding: 24px 20px;
   display: flex;
@@ -153,8 +153,8 @@
 }
 
 .exercise-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-2);
+  border: 1px solid var(--c-overlay-5);
   border-radius: 32px;
   overflow: hidden;
   transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -176,7 +176,7 @@
   opacity: 0.6;
   filter: grayscale(0.5);
   transform: scale(0.97);
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--c-overlay-1);
 }
 
 .exercise-card.future {
@@ -196,14 +196,14 @@
   width: 40px;
   height: 40px;
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--c-overlay-3);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--c-overlay-20);
   font-size: 14px;
   font-weight: 800;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--c-overlay-6);
 }
 
 .exercise-card.active .ex-done-indicator {
@@ -223,14 +223,14 @@
 .ex-card-name { font-size: 18px; font-weight: 700; margin: 0; color: #fff; letter-spacing: -0.01em; }
 .exercise-card.active .ex-card-name { color: #1D9E75; }
 
-.ex-card-target { font-size: 13px; color: rgba(255, 255, 255, 0.3); margin-top: 4px; font-weight: 500; }
-.exercise-card.active .ex-card-target { color: rgba(255, 255, 255, 0.5); }
+.ex-card-target { font-size: 13px; color: var(--c-overlay-30); margin-top: 4px; font-weight: 500; }
+.exercise-card.active .ex-card-target { color: var(--c-overlay-50); }
 
 .ex-sets-summary { font-size: 14px; font-weight: 800; padding-right: 4px; }
 .sets-done  { color: #1D9E75; }
-.sets-total { color: rgba(255, 255, 255, 0.2); }
+.sets-total { color: var(--c-overlay-20); }
 
-/* ── History chips ── */
+/* â”€â”€ History chips â”€â”€ */
 .sets-history {
   display: flex;
   flex-wrap: wrap;
@@ -239,12 +239,12 @@
 }
 
 .set-chip {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--c-overlay-3);
   padding: 8px 14px;
   border-radius: 14px;
   display: flex;
   gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--c-overlay-6);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -252,7 +252,7 @@
 }
 
 .set-chip:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--c-overlay-8);
   border-color: rgba(29, 158, 117, 0.3);
   transform: translateY(-1px);
 }
@@ -261,13 +261,13 @@
   transform: scale(0.95);
 }
 
-.set-chip-num { color: rgba(255, 255, 255, 0.3); }
+.set-chip-num { color: var(--c-overlay-30); }
 .set-chip-val { color: #1D9E75; }
 
-/* ── Set Logger Section ── */
+/* â”€â”€ Set Logger Section â”€â”€ */
 .set-logger-wrap {
   background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  border-top: 1px solid var(--c-overlay-3);
   padding: 24px;
 }
 
@@ -277,19 +277,19 @@
   background: rgba(29, 158, 117, 0.05);
   margin: 0;
   padding: 16px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  border-top: 1px solid var(--c-overlay-3);
   font-style: italic;
   font-weight: 500;
   line-height: 1.5;
 }
 
-/* ── Banner Final ── */
+/* â”€â”€ Banner Final â”€â”€ */
 .complete-banner {
   background: rgba(8, 10, 15, 0.8);
   backdrop-filter: blur(25px);
   -webkit-backdrop-filter: blur(25px);
   padding: 24px 20px 40px;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--c-overlay-5);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -306,7 +306,7 @@
   align-items: center;
   gap: 16px;
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--c-overlay-30);
   font-weight: 600;
 }
 
@@ -329,7 +329,7 @@
 .btn-complete:active { transform: scale(0.96); box-shadow: 0 6px 15px rgba(29, 158, 117, 0.2); }
 .btn-complete:disabled { opacity: 0.3; filter: grayscale(1); }
 
-/* ── Empty State ── */
+/* â”€â”€ Empty State â”€â”€ */
 .empty-state {
   text-align: center;
   padding: 100px 40px;
@@ -357,15 +357,15 @@
 
 .empty-sub {
   font-size: 14px;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--c-overlay-30);
   line-height: 1.6;
   margin-bottom: 32px;
   display: block;
 }
 
 .btn-back-dash {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--c-overlay-3);
+  border: 1px solid var(--c-overlay-8);
   color: #fff;
   padding: 16px 32px;
   border-radius: 18px;
@@ -377,10 +377,10 @@
 
 .btn-back-dash:active {
   transform: scale(0.95);
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--c-overlay-6);
 }
 
-/* ── Modal de Edición (Glassmorphism) ── */
+/* â”€â”€ Modal de EdiciÃ³n (Glassmorphism) â”€â”€ */
 .edit-overlay {
   position: fixed;
   inset: 0;
@@ -400,7 +400,7 @@
   width: 100%;
   max-width: 380px;
   border-radius: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--c-overlay-10);
   box-shadow: 0 50px 120px rgba(0,0,0,0.9);
   overflow: hidden;
   position: relative;
@@ -419,11 +419,11 @@
 .edit-header {
   padding: 24px;
   text-align: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid var(--c-overlay-3);
 }
 
 .edit-header h3 { margin: 0; font-size: 20px; font-weight: 800; color: #fff; }
-.edit-header p { margin: 4px 0 0; font-size: 14px; color: rgba(255, 255, 255, 0.3); font-weight: 500; }
+.edit-header p { margin: 4px 0 0; font-size: 14px; color: var(--c-overlay-30); font-weight: 500; }
 
 .edit-body {
   padding: 32px 24px;
@@ -453,7 +453,7 @@
   grid-template-columns: 54px 1fr 54px;
   align-items: center;
   background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--c-overlay-10);
   border-radius: 24px;
   padding: 4px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -470,7 +470,7 @@
   height: 46px;
   border-radius: 20px;
   border: none;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-5);
   color: #fff;
   font-size: 20px;
   cursor: pointer;
@@ -480,7 +480,7 @@
   transition: all 0.2s;
 }
 
-.edit-stepper button:hover { background: rgba(255, 255, 255, 0.1); color: var(--c-green); }
+.edit-stepper button:hover { background: var(--c-overlay-10); color: var(--c-green); }
 .edit-stepper button:active { transform: scale(0.9); }
 
 .edit-stepper input {
@@ -496,17 +496,17 @@
   padding: 0;
 }
 
-/* ── Edit Modal Footer — Botones mejorados ── */
+/* â”€â”€ Edit Modal Footer â€” Botones mejorados â”€â”€ */
 .edit-footer {
   padding: 20px 24px;
   display: flex;
   align-items: center;
   gap: 10px;
   background: rgba(0, 0, 0, 0.5);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid var(--c-overlay-5);
 }
 
-/* Eliminar — más presencia, icono integrado */
+/* Eliminar â€” mÃ¡s presencia, icono integrado */
 .btn-delete {
   width: 52px;
   height: 52px;
@@ -541,14 +541,14 @@
   gap: 8px;
 }
 
-/* Cancelar — texto claro, sin ruido */
+/* Cancelar â€” texto claro, sin ruido */
 .btn-cancel {
   flex: 1;
   height: 52px;
   border-radius: 16px;
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.07) !important;
+  background: var(--c-overlay-4);
+  color: var(--c-overlay-40);
+  border: 1px solid var(--c-overlay-8) !important;
   font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -557,15 +557,15 @@
 }
 
 .btn-cancel:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.6);
+  background: var(--c-overlay-8);
+  color: var(--c-text-3);
 }
 
 .btn-cancel:active {
   transform: scale(0.96);
 }
 
-/* Guardar — acción principal, peso máximo */
+/* Guardar â€” acciÃ³n principal, peso mÃ¡ximo */
 .btn-save {
   flex: 1.6;
   height: 52px;
@@ -578,7 +578,7 @@
   letter-spacing: 0.02em;
   box-shadow:
     0 8px 20px rgba(29, 158, 117, 0.35),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    inset 0 1px 0 var(--c-overlay-15);
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   padding: 0 !important;
 }
@@ -586,7 +586,7 @@
 .btn-save:hover {
   box-shadow:
     0 14px 28px rgba(29, 158, 117, 0.45),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    inset 0 1px 0 var(--c-overlay-20);
   transform: translateY(-1px);
   filter: brightness(1.08);
 }
@@ -599,7 +599,7 @@
 @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes modalSlideUp { from { transform: translateY(40px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-/* ── Remote Block Overlay (Grace Period) ── */
+/* â”€â”€ Remote Block Overlay (Grace Period) â”€â”€ */
 .remote-block-overlay {
   position: fixed;
   inset: 0;
@@ -620,7 +620,7 @@
   max-width: 400px;
   padding: 48px 32px;
   border-radius: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--c-overlay-10);
   box-shadow: 0 50px 100px rgba(0,0,0,0.8);
   text-align: center;
   animation: modalSlideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -642,20 +642,20 @@
 
 .remote-block-modal p {
   font-size: 15px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--c-overlay-50);
   line-height: 1.6;
   margin-bottom: 32px;
 }
 
 .sets-summary {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--c-overlay-3);
   padding: 24px;
   border-radius: 24px;
   display: flex;
   flex-direction: column;
   gap: 4px;
   margin-bottom: 40px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--c-overlay-6);
 }
 
 .sets-summary .count {
@@ -667,7 +667,7 @@
 .sets-summary .label {
   font-size: 13px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--c-overlay-30);
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -690,7 +690,7 @@
   transform: scale(0.96);
 }
 
-/* ── Exercise Notes (Sleek Glassmorphic Design) ── */
+/* â”€â”€ Exercise Notes (Sleek Glassmorphic Design) â”€â”€ */
 .exercise-note-container {
   margin: -12px 0 20px;
   display: flex;
@@ -715,16 +715,16 @@
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.5);
+  background: var(--c-overlay-2);
+  border: 1px solid var(--c-overlay-6);
+  color: var(--c-overlay-50);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   font-family: inherit;
 }
 
 .btn-feeling:hover {
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.8);
+  background: var(--c-overlay-4);
+  color: var(--c-text-2);
 }
 
 .btn-feeling:active {
@@ -753,9 +753,9 @@
   gap: 10px;
   margin: 0 24px;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.01);
+  background: var(--c-overlay-1);
   border-radius: 16px;
-  border: 1px dashed rgba(255, 255, 255, 0.06);
+  border: 1px dashed var(--c-overlay-6);
   opacity: 0.5;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -763,7 +763,7 @@
 .exercise-note:focus-within, 
 .exercise-note.has-note {
   opacity: 1;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--c-overlay-3);
   border-color: rgba(29, 158, 117, 0.3);
   border-style: solid;
   box-shadow: inset 0 0 12px rgba(29, 158, 117, 0.05);
@@ -775,7 +775,7 @@
   border: none;
   background: transparent;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--c-text-3);
   padding: 2px 0;
   line-height: 1.5;
   font-family: inherit;
@@ -787,7 +787,7 @@
 }
 
 .note-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--c-overlay-25);
   font-style: italic;
 }
 
@@ -796,13 +796,13 @@
 }
 
 .clear-note {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-3);
+  border: 1px solid var(--c-overlay-5);
   width: 22px;
   height: 22px;
   border-radius: 50%;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.35);
+  color: var(--c-overlay-40);
   font-size: 12px;
   display: flex;
   align-items: center;
@@ -822,7 +822,7 @@
   transform: scale(0.92);
 }
 
-/* ── Sync and Connectivity Indicator (Sprint 4) ── */
+/* â”€â”€ Sync and Connectivity Indicator (Sprint 4) â”€â”€ */
 .title-row {
   display: flex;
   align-items: center;
@@ -941,10 +941,10 @@
   line-height: 1;
 }
 
-/* ── Histórico de Carga ── */
+/* â”€â”€ HistÃ³rico de Carga â”€â”€ */
 .load-history-section {
   padding: 16px 24px 24px;
-  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  border-top: 1px solid var(--c-overlay-3);
   background: rgba(0, 0, 0, 0.1);
 }
 
@@ -973,8 +973,8 @@
 
 .load-history-card {
   flex: 0 0 auto;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: var(--c-overlay-2);
+  border: 1px solid var(--c-overlay-5);
   border-radius: 16px;
   padding: 12px 14px;
   display: flex;
@@ -1003,7 +1003,7 @@
   font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--c-overlay-30);
   letter-spacing: 0.05em;
 }
 
@@ -1023,7 +1023,7 @@
 .lh-lbl {
   font-size: 9px;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--c-overlay-25);
   text-transform: uppercase;
   letter-spacing: 0.03em;
   margin-top: 1px;
@@ -1031,10 +1031,11 @@
 
 .lh-empty {
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.25);
+  color: var(--c-overlay-25);
   font-style: italic;
   margin: 4px 0;
 }
+
 
 
 

@@ -8,6 +8,7 @@ import { WorkoutEventsService } from '../core/services/workout-events.service';
 import { RankService } from '../core/services/rank.service';
 import { WorkoutBlockedError } from '../core/models/errors.model';
 import { SyncQueueService } from '../core/services/sync-queue.service';
+import { ToastService } from '../shared/services/toast/toast.service';
 
 interface WorkoutState {
   activeLog: WorkoutLog | null;   // el entrenamiento en curso
@@ -37,13 +38,15 @@ export const WorkoutStore = signalStore(
     auth = inject(AuthService),
     events = inject(WorkoutEventsService),
     rankSvc = inject(RankService),
-    syncQueue = inject(SyncQueueService)
+    syncQueue = inject(SyncQueueService),
+    toastSvc = inject(ToastService)
   ) => ({
 
     async startWorkout(assignedRoutineId: string, routineId: string, clientId: string, dayId: string): Promise<void> {
-      // 1. Verificación de seguridad: ¿Ya se marcó este día como completado en la BD?
+      // 1. Verificación de seguridad: ¿Ya se marcó este día como completado en la BD o en memoria?
       // Esto evita que al refrescar o volver atrás se reabra un día terminado.
-      const isDone = await svc.isDayCompleted(clientId, dayId);
+      const localDone = store.history().some(h => h.dayId === dayId && h.assignedRoutineId === assignedRoutineId && h.completed);
+      const isDone = localDone || await svc.isDayCompleted(clientId, dayId);
       if (isDone) {
         console.log('[WorkoutStore] El día ya está completado. Limpiando sesión...');
         sessionStorage.removeItem('active_workout');
@@ -182,6 +185,60 @@ export const WorkoutStore = signalStore(
       sessionStorage.setItem('active_workout', JSON.stringify(updated));
     },
 
+    // --- MÉTODOS PARA RUTINAS COMPLETADAS (HISTORIAL) ---
+
+    async editCompletedSet(workoutId: string, setId: string, weightKg: number, repsDone: number): Promise<void> {
+      // 1. Estado Optimista
+      const currentHistory = store.history();
+      
+      const newHistory = currentHistory.map(log => {
+        if (log.id === workoutId) {
+          return {
+            ...log,
+            sets: log.sets.map(s => s.id === setId ? { ...s, weightKg, repsDone } : s)
+          };
+        }
+        return log;
+      });
+
+      patchState(store, { history: newHistory });
+
+      // 2. Llamada a backend
+      try {
+        await svc.updateSetLog(setId, weightKg, repsDone);
+      } catch (err) {
+        // Revertir
+        patchState(store, { history: currentHistory });
+        toastSvc.error('Error', 'No se pudo actualizar el set, intenta de nuevo.');
+      }
+    },
+
+    async deleteCompletedSet(workoutId: string, setId: string): Promise<void> {
+      // 1. Estado Optimista
+      const currentHistory = store.history();
+      
+      const newHistory = currentHistory.map(log => {
+        if (log.id === workoutId) {
+          return {
+            ...log,
+            sets: log.sets.filter(s => s.id !== setId)
+          };
+        }
+        return log;
+      });
+
+      patchState(store, { history: newHistory });
+
+      // 2. Llamada a backend
+      try {
+        await svc.deleteSetLog(setId);
+      } catch (err) {
+        // Revertir
+        patchState(store, { history: currentHistory });
+        toastSvc.error('Error', 'No se pudo borrar el set, intenta de nuevo.');
+      }
+    },
+
     // Guardar en Supabase y limpiar el estado activo de forma offline-friendly
     async completeWorkout(dayLabel: string): Promise<void> {
       console.log('[WorkoutStore] completeWorkout INICIO (Offline-friendly)');
@@ -316,7 +373,15 @@ export const WorkoutStore = signalStore(
       patchState(store, { history, loading: false });
     },
 
-    async isDayCompleted(clientId: string, dayId: string): Promise<boolean> {
+    async isDayCompleted(clientId: string, dayId: string, assignedRoutineId?: string): Promise<boolean> {
+      const localDone = store.history().some(h => 
+        h.dayId === dayId && 
+        h.clientId === clientId && 
+        h.completed &&
+        (!assignedRoutineId || h.assignedRoutineId === assignedRoutineId)
+      );
+      if (localDone) return true;
+
       return await svc.isDayCompleted(clientId, dayId);
     },
 

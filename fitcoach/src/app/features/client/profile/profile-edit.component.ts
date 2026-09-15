@@ -59,16 +59,28 @@ import { FcCardComponent } from '../../../shared/components/card/fc-card.compone
         </fc-card>
 
         <fc-card title="Ajustes de App" class="profile-card">
-          <div class="theme-toggle">
-            <span class="theme-icon">🌓</span>
-            <div class="theme-info">
-              <span class="theme-title">Apariencia</span>
+          <div class="glass-setting-item">
+            <div class="setting-info">
+              <span class="setting-icon" [ngClass]="themeService.preference()">
+                @if(themeService.preference() === 'dark') { 🌙 }
+                @else if(themeService.preference() === 'light') { ☀️ }
+                @else { 🌓 }
+              </span>
+              <div class="setting-text">
+                <span class="setting-title">Tema Visual</span>
+                <span class="setting-sub">
+                  @if(themeService.preference() === 'dark') { Modo Oscuro }
+                  @else if(themeService.preference() === 'light') { Modo Claro }
+                  @else { Sistema }
+                </span>
+              </div>
             </div>
-            <select [value]="themeService.preference()" (change)="onThemeChange($event)" class="theme-select">
-              <option value="system">Sistema</option>
-              <option value="dark">Oscuro</option>
-              <option value="light">Claro</option>
-            </select>
+            
+            <div class="theme-switcher">
+              <button class="ts-btn ts-light" [class.active]="themeService.preference() === 'light'" (click)="themeService.setPreference('light')">☀️</button>
+              <button class="ts-btn ts-system" [class.active]="themeService.preference() === 'system'" (click)="themeService.setPreference('system')">🌓</button>
+              <button class="ts-btn ts-dark" [class.active]="themeService.preference() === 'dark'" (click)="themeService.setPreference('dark')">🌙</button>
+            </div>
           </div>
         </fc-card>
 
