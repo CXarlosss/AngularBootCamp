@@ -88,8 +88,8 @@ export class SyncQueueService {
         .upsert(setsWithWorkoutId);
       
       if (setsError) {
-        console.error('[SyncQueue] Error upserting set_logs:', setsError);
-        return false;
+        console.error('[SyncQueue] Error al sincronizar set_logs:', setsError);
+        throw setsError;
       }
 
       // 3. Marcar el día como completado en completed_days

@@ -31,8 +31,10 @@ export class RoutineService {
       if (dErr) throw dErr;
 
       for (const ex of day.exercises) {
-        await this.sb.from('routine_exercises').upsert({
-          id:            ex.id,
+        const exerciseId = ex.id && ex.id.trim() !== '' ? ex.id : crypto.randomUUID();
+
+        const { error: exError } = await this.sb.from('routine_exercises').upsert({
+          id:            exerciseId,
           day_id:        day.id,
           exercise_name: ex.name,
           sets:          ex.sets,
@@ -41,6 +43,11 @@ export class RoutineService {
           rest_seconds:  ex.restSeconds,
           notes:         ex.notes ?? '',
         });
+
+        if (exError) {
+          console.error(`[RoutineService] Error al guardar el ejercicio ${ex.name}:`, exError);
+          throw new Error(`Fallo al guardar el ejercicio ${ex.name}: ${exError.message}`);
+        }
       }
     }
     return routine;
