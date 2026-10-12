@@ -5,8 +5,12 @@ import './index.css'
 import './styles/way-typography.css'
 import './styles/progress-fix.css'
 import './styles/legibility.css'
+import './shared/styles/RouteTransition.css'
 import './app/providers/i18n'
 import App from './App.tsx'
+import { enableMockMode } from '@/core/services/mockSupabase';
+
+if (import.meta.env.DEV) enableMockMode();
 
 createRoot(document.getElementById('root')!).render(
   <App />

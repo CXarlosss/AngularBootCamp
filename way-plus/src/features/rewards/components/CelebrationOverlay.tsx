@@ -1,9 +1,14 @@
-import React, { useEffect, useState } from 'react';
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * CelebrationOverlay v2 — Más impacto, más visible, más recompensa
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+import React, { useEffect, useState, useRef } from 'react';
 import { audioService } from '@/core/utils/audioService';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useReduceMotion } from '@/core/stores/configStore';
 import { usePlayerStore } from '@/features/player/store/playerStore';
-import { T, Emoji } from '@/shared/components/TypographyScale';
 import { hapticService } from '@/core/services/hapticService';
 
 interface CelebrationOverlayProps {
@@ -13,177 +18,162 @@ interface CelebrationOverlayProps {
   onComplete?: () => void;
 }
 
-const PARTICLE_EMOJIS = ['⭐', '✨', '🎉'];
+const PARTICLE_EMOJIS = ['⭐', '✨', '🎉', '🎊', '💫', '🌟', '🏆', '🎈'];
 
-export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({ 
-  show, type, coins = 0, onComplete 
+export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
+  show,
+  type,
+  coins = 0,
+  onComplete,
 }) => {
   const [phase, setPhase] = useState<'enter' | 'coins' | 'exit'>('enter');
   const [displayCoins, setDisplayCoins] = useState(0);
   const reduceMotion = useReduceMotion();
-  const profile = usePlayerStore(s => s.profile);
+  const profile = usePlayerStore((s) => s.profile);
   const isFemale = profile?.gender === 'female';
   const labelCampeon = isFemale ? '¡Eres una campeona!' : '¡Eres un campeón!';
-  
+  const timersRef = useRef<number[]>([]);
+
   useEffect(() => {
     if (!show) {
       setPhase('enter');
       setDisplayCoins(0);
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
       return;
     }
-    
+
     if (type !== 'sad') {
       audioService.playSFX('success');
       hapticService.celebration();
     }
-    
-    const timer1 = setTimeout(() => {
+
+    const t1 = window.setTimeout(() => {
       setPhase('coins');
       if (coins > 0) {
         let current = 0;
-        const interval = setInterval(() => {
-          current += Math.ceil(coins / 10);
+        const step = Math.max(1, Math.ceil(coins / 15));
+        const interval = window.setInterval(() => {
+          current += step;
           if (current >= coins) {
             setDisplayCoins(coins);
             clearInterval(interval);
           } else {
             setDisplayCoins(current);
           }
-        }, 50);
+        }, 40);
       }
-    }, 800);
-    
-    const timer2 = setTimeout(() => {
+    }, 600);
+    timersRef.current.push(t1);
+
+    const t2 = window.setTimeout(() => {
       setPhase('exit');
-      setTimeout(() => onComplete?.(), 500);
-    }, 3500);
-    
+      const t3 = window.setTimeout(() => onComplete?.(), 400);
+      timersRef.current.push(t3);
+    }, 2800);
+    timersRef.current.push(t2);
+
     return () => {
-      clearTimeout(timer1);
-      clearTimeout(timer2);
+      timersRef.current.forEach(clearTimeout);
+      timersRef.current = [];
     };
   }, [show, coins, onComplete, type]);
 
   if (!show) return null;
 
-  const getEmoji = () => {
-    switch (type) {
-      case 'happy': return '🏆';
-      case 'sad': return '😢';
-      case 'step-complete': return '👑';
-      case 'annex-complete': return '🧩';
-      default: return '⭐';
-    }
-  };
-
-  const getTitle = () => {
-    switch (type) {
-      case 'happy': return '¡Bravo!';
-      case 'sad': return '¡Casi!';
-      case 'step-complete': return '¡Increíble!';
-      case 'annex-complete': return '¡Completado!';
-      default: return '¡Bien!';
-    }
-  };
-
-  const getSubtitle = () => {
-    switch (type) {
-      case 'happy': return labelCampeon;
-      case 'sad': return 'Inténtalo de nuevo';
-      case 'step-complete': return 'Nivel superado';
-      case 'annex-complete': return 'Anexo completado';
-      default: return '';
-    }
-  };
-
-  const titleColor = type === 'sad' ? 'text-rose-500' : 'text-amber-600';
-  const badgeColor = type === 'sad' ? 'bg-rose-50 border-rose-200 text-rose-600' : 'bg-amber-50 border-amber-200 text-amber-600';
+  const config = {
+    happy: { emoji: '🏆', title: '¡Bravo!', subtitle: labelCampeon, color: 'text-amber-600', bg: 'bg-amber-50', border: 'border-amber-200' },
+    sad: { emoji: '😢', title: '¡Casi!', subtitle: 'Inténtalo de nuevo', color: 'text-rose-500', bg: 'bg-rose-50', border: 'border-rose-200' },
+    'step-complete': { emoji: '👑', title: '¡Increíble!', subtitle: 'Nivel superado', color: 'text-purple-600', bg: 'bg-purple-50', border: 'border-purple-200' },
+    'annex-complete': { emoji: '🧩', title: '¡Completado!', subtitle: 'Anexo completado', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  }[type];
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence>
       <motion.div
         key="overlay"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/20"
-        data-testid="celebration-overlay"
+        className="fixed inset-0 z-[200] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm"
       >
-        {/* Partículas suaves */}
+        {/* Partículas */}
         {!reduceMotion && type !== 'sad' && (
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {Array.from({ length: 6 }).map((_, i) => {
-              const angle = (i / 6) * Math.PI * 2;
-              const tx = Math.cos(angle) * 80;
-              const ty = Math.sin(angle) * 80 - 40;
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            {Array.from({ length: 12 }).map((_, i) => {
+              const angle = (i / 12) * Math.PI * 2;
+              const distance = 60 + Math.random() * 60;
+              const tx = Math.cos(angle) * distance;
+              const ty = Math.sin(angle) * distance - 40;
+              const size = 0.8 + Math.random() * 0.8;
               return (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
-                  animate={{ 
-                    opacity: [0, 1, 0], 
-                    scale: [0.5, 1, 0.5],
+                  animate={{
+                    opacity: [0, 1, 0],
+                    scale: [0.3, size, 0.3],
                     x: tx,
-                    y: ty
+                    y: ty,
+                    rotate: [0, 180, 360],
                   }}
-                  transition={{ 
-                    duration: 1.5, 
-                    delay: i * 0.1,
-                    ease: "easeOut"
+                  transition={{
+                    duration: 1.2 + Math.random() * 0.6,
+                    delay: i * 0.06,
+                    ease: 'easeOut',
                   }}
-                  className="absolute left-1/2 top-1/2"
+                  className="absolute left-1/2 top-1/2 text-2xl"
                 >
-                  <Emoji>{PARTICLE_EMOJIS[i % PARTICLE_EMOJIS.length]}</Emoji>
+                  {PARTICLE_EMOJIS[i % PARTICLE_EMOJIS.length]}
                 </motion.div>
               );
             })}
           </div>
         )}
 
-        {/* Card */}
+        {/* Card principal */}
         <motion.div
-          initial={reduceMotion ? { opacity: 0 } : { scale: 0.9, opacity: 0 }}
+          initial={reduceMotion ? { opacity: 0 } : { scale: 0.85, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
-          exit={{ scale: 0.95, opacity: 0 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="relative z-10 bg-white rounded-2xl border border-slate-200 shadow-sm p-6 w-[280px] sm:w-[320px] text-center"
-          style={{ fontFamily: 'Verdana, sans-serif' }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className="relative z-10 w-[300px] rounded-3xl border border-white/50 bg-white p-8 text-center shadow-2xl sm:w-[360px]"
         >
-          {/* Emoji */}
-          <div className="w-12 h-12 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center mx-auto mb-3">
-            <Emoji className="text-2xl">{getEmoji()}</Emoji>
-          </div>
+          {/* Emoji grande */}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
+            className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border-2 ${config.border} ${config.bg} text-3xl`}
+          >
+            {config.emoji}
+          </motion.div>
 
           {/* Título */}
-          <T size="base" bold className={`mb-1 ${titleColor}`} data-testid="celebration-title">
-            {getTitle()}
-          </T>
-
-          {/* Subtítulo */}
-          <T size="sm" bold>{getSubtitle()}</T>
+          <h2 className={`text-xl font-black ${config.color}`}>{config.title}</h2>
+          <p className="mt-1 text-sm font-bold text-slate-600">{config.subtitle}</p>
 
           {/* Badge */}
           {type !== 'sad' && (
-            <div className={`inline-block mt-2 px-3 py-1 rounded-full border ${badgeColor}`}>
-              <T size="micro" bold>Super atleta WAY+</T>
-            </div>
+            <span className="mt-3 inline-block rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              Super atleta WAY+
+            </span>
           )}
 
-          {/* Monedas */}
+          {/* Monedas animadas */}
           <AnimatePresence>
             {phase === 'coins' && coins > 0 && (
               <motion.div
-                initial={{ opacity: 0, y: 8 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-                className="mt-4 flex items-center justify-center gap-2"
+                className="mt-5 flex items-center justify-center gap-2"
               >
-                <Emoji>🪙</Emoji>
+                <span className="text-2xl">🪙</span>
                 <div className="text-left">
-                  <T size="micro" bold color="warning">Medallas</T>
-                  <T size="lg" bold data-testid="celebration-coins">+{displayCoins}</T>
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-amber-600">Medallas</p>
+                  <p className="text-2xl font-black text-slate-900 tabular-nums">+{displayCoins}</p>
                 </div>
               </motion.div>
             )}
@@ -193,3 +183,5 @@ export const CelebrationOverlay: React.FC<CelebrationOverlayProps> = ({
     </AnimatePresence>
   );
 };
+
+export default CelebrationOverlay;

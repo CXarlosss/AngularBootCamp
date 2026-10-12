@@ -50,6 +50,7 @@ const SessionModePage = lazy(() => import('@/features/player/pages/SessionModePa
 const SessionEndPage = lazy(() => import('@/features/player/pages/SessionEndPage').then(m => ({ default: m.SessionEndPage })));
 
 const LandingPage = lazy(() => import('@/features/player/pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const HomePage = lazy(() => import('@/features/player/pages/HomePage').then(m => ({ default: m.HomePage })));
 const ProfilePickerPage = lazy(() => import('@/features/player/pages/ProfilePickerPage').then(m => ({ default: m.ProfilePickerPage })));
 
 const Load = (Component: React.ComponentType) => (
@@ -65,14 +66,14 @@ export const router = createBrowserRouter([
     element: <RootLayout />,
     errorElement: <ErrorFallback error={{ message: 'Error crítico en el router' }} />,
     children: [
-      { index: true, element: Load(PlayerStartPage) },
+      { index: true, element: Load(HomePage) },
       { 
         path: 'inicio', 
-        element: Load(LandingPage) 
+        element: Load(HomePage) 
       },
       { 
         path: 'welcome', 
-        element: Load(LandingPage) 
+        element: Load(HomePage) 
       },
       { 
         path: 'player', 

@@ -12,6 +12,7 @@ import React from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { KioskGate } from '@/features/kiosk/components/KioskGate';
+import { PageTransition } from '@/shared/components/PageTransition';
 
 import { useRewardsStore } from '@/features/rewards/store/rewardsStore';
 import { CardUnlockOverlay } from '@/features/rewards/components/CardUnlockOverlay';
@@ -32,10 +33,10 @@ const NAV_ITEMS = [
   { path: '/backpack',  label: 'Mochila',   icon: '🎒' },
 ] as const;
 
-const THERAPIST_PREFIXES = ['/therapist', '/dashboard', '/editor', '/auth'];
+const HIDE_CHROME_PATHS = ['/therapist', '/dashboard', '/editor', '/auth', '/inicio', '/welcome'];
 
-function isTherapist(path: string) {
-  return THERAPIST_PREFIXES.some(p => path.startsWith(p));
+function hideChrome(path: string) {
+  return path === '/' || HIDE_CHROME_PATHS.some(p => path.startsWith(p));
 }
 
 /* ─── Header ─────────────────────────────────────────────────────── */
@@ -218,7 +219,7 @@ function BottomNav() {
 
 export function RootLayout() {
   const { pathname } = useLocation();
-  const therapist = isTherapist(pathname);
+  const standalone = hideChrome(pathname);
   
   // Audio Unlocker: Browsers block AudioContext until a user gesture
   React.useEffect(() => {
@@ -249,7 +250,7 @@ export function RootLayout() {
   const patientId = sessionStorage.getItem('way-active-patient');
 
   return (
-    <KioskGate enabled={!therapist}>
+    <KioskGate enabled={!standalone}>
       <SyncManager key={patientId || 'none'} />
       <div style={{
         display: 'flex',
@@ -262,23 +263,15 @@ export function RootLayout() {
           maxWidth: 480,
           background: '#F4F5FF',
           boxShadow: '0 0 40px rgba(79,70,229,.08)',
-          paddingBottom: therapist ? 0 : 72,
+          paddingBottom: standalone ? 0 : 72,
         }}>
-          {!therapist && <AppHeader />}
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.div
-              key={pathname}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.15 }}
-            >
-              <Outlet />
-            </motion.div>
-          </AnimatePresence>
+          {!standalone && <AppHeader />}
+          <PageTransition>
+            <Outlet />
+          </PageTransition>
         </div>
       </div>
-      {!therapist && <BottomNav />}
+      {!standalone && <BottomNav />}
       <CardUnlockOverlay />
       <SecretManager />
       <AchievementManager />

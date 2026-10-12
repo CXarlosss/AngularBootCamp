@@ -1,229 +1,234 @@
-import React, { useState, useEffect, useMemo } from 'react';
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * RewardsBackpack v2 — Responsive, sin inline styles, con wayTheme
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { motion as m, AnimatePresence } from 'framer-motion';
-import { useRewardsStore, type AvatarPart } from '../store/rewardsStore';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, ShoppingBag, Trophy, Book, Shirt, Sparkles } from 'lucide-react';
+import { useRewardsStore, type AvatarPart } from '../store/rewardsStore';
 import { AvatarColorable } from '../components/AvatarColorable';
 import { CollectibleCard } from '../components/CollectibleCard';
 import { COLLECTIONS, STICKERS_CATALOG, type Sticker } from '../data/collections';
 import { SECRET_CARDS } from '../data/secrets';
-import { ArrowLeft, ShoppingBag, Trophy, Book, Shirt, Sparkles, RefreshCw } from 'lucide-react';
 import { useAudio } from '@/core/hooks/useAudio';
+import { hapticService } from '@/core/services/hapticService';
+import { useReduceMotion } from '@/core/stores/configStore';
+import { way, GLASS, TEXT } from '@/shared/lib/wayTheme';
 
 export const RewardsBackpack: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = (searchParams.get('tab') as 'closet' | 'album') || 'closet';
-  
-  const { 
-    wayCoins, 
-    inventory, 
-    currentAvatar, 
-    equipPart, 
-    totalXp, 
+  const reduceMotion = useReduceMotion();
+
+  const {
+    wayCoins,
+    inventory,
+    currentAvatar,
+    equipPart,
+    totalXp,
     ownedStickers,
     unlockedSecrets = [],
-    exchangeDuplicates 
+    exchangeDuplicates,
   } = useRewardsStore();
   const { playSFX } = useAudio();
 
   const [activeTab, setActiveTab] = useState<'closet' | 'album'>(initialTab);
   const [selectedSticker, setSelectedSticker] = useState<Sticker | null>(null);
   const [showExchange, setShowExchange] = useState(false);
-  
+
   useEffect(() => {
     const tab = searchParams.get('tab');
     if (tab === 'closet' || tab === 'album') setActiveTab(tab);
   }, [searchParams]);
 
-  const handleTabChange = (tab: 'closet' | 'album') => {
-    playSFX('click');
-    setActiveTab(tab);
-    setSearchParams({ tab });
-  };
-  
-  const categories = [
-    { id: 'base', name: 'Amigos', icon: '👤' },
-    { id: 'hat', name: 'Gorros', icon: '🧢' },
-    { id: 'cape', name: 'Capas', icon: '🦸' },
-    { id: 'shoes', name: 'Zapatos', icon: '👟' },
-    { id: 'background', name: 'Casas', icon: '🏰' },
-    { id: 'pet', name: 'Mascotas', icon: '🐾' }
-  ] as const;
+  const handleTabChange = useCallback(
+    (tab: 'closet' | 'album') => {
+      playSFX('click');
+      hapticService.click();
+      setActiveTab(tab);
+      setSearchParams({ tab });
+    },
+    [playSFX, setSearchParams]
+  );
+
+  const categories = useMemo(
+    () => [
+      { id: 'base', name: 'Amigos', icon: '👤' },
+      { id: 'hat', name: 'Gorros', icon: '🧢' },
+      { id: 'cape', name: 'Capas', icon: '🦸' },
+      { id: 'shoes', name: 'Zapatos', icon: '👟' },
+      { id: 'background', name: 'Casas', icon: '🏰' },
+      { id: 'pet', name: 'Mascotas', icon: '🐾' },
+    ],
+    []
+  );
 
   const totalDuplicates = useMemo(() => {
     let count = 0;
-    Object.values(ownedStickers).forEach(s => {
-      if (s.normal > 1) count += (s.normal - 1);
-      if (s.shiny > 1) count += (s.shiny - 1);
+    Object.values(ownedStickers).forEach((s) => {
+      if (s.normal > 1) count += s.normal - 1;
+      if (s.shiny > 1) count += s.shiny - 1;
     });
     return count;
   }, [ownedStickers]);
 
-  const handleExchange = (count: number, type: 'random' | 'shiny') => {
-    const res = exchangeDuplicates(count, type);
-    if (res.success) {
-      playSFX('chest');
+  const handleExchange = useCallback(
+    (count: number, type: 'random' | 'shiny') => {
+      hapticService.success();
+      const res = exchangeDuplicates(count, type);
+      playSFX(res.success ? 'chest' : 'error');
       alert(res.message);
-    } else {
-      playSFX('error');
-      alert(res.message);
-    }
-  };
+    },
+    [exchangeDuplicates, playSFX]
+  );
+
+  const handleEquip = useCallback(
+    (catId: string, itemId: string) => {
+      playSFX('click');
+      hapticService.click();
+      equipPart(catId as AvatarPart, itemId as AvatarPart);
+    },
+    [playSFX, equipPart]
+  );
+
+  const handleBack = useCallback(() => {
+    hapticService.click();
+    navigate('/');
+  }, [navigate]);
+
+  const handleGoShop = useCallback(() => {
+    playSFX('click');
+    hapticService.click();
+    navigate('/shop');
+  }, [playSFX, navigate]);
+
+  /* ─── Animaciones ─── */
+  const tabAnim = reduceMotion
+    ? {}
+    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -10 } };
 
   return (
-    <div style={{
-      minHeight: '100vh',
-      background: 'linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%)',
-      padding: '24px 16px 120px',
-      overflowY: 'auto',
-      fontFamily: 'Verdana, sans-serif'
-    }}>
-      <div style={{ maxWidth: 600, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: 32 }}>
-        
-        <header style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+    <div className="min-h-screen bg-amber-50 px-4 pb-24 pt-4 sm:px-6">
+      <div className="mx-auto max-w-3xl">
+        {/* ─── Header ─── */}
+        <header className="mb-6 flex items-center gap-3">
           <m.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => navigate('/')}
-            style={{
-              width: 48, height: 48, borderRadius: 16, backgroundColor: 'white',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.05)', display: 'flex',
-              alignItems: 'center', justifyContent: 'center', color: '#B45309',
-              border: '2px solid #FDE68A', cursor: 'pointer'
-            }}
+            onClick={handleBack}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-2 border-amber-200 bg-white text-amber-700 shadow-sm transition-colors hover:bg-amber-50"
           >
-            <ArrowLeft size={24} />
+            <ArrowLeft size={20} />
           </m.button>
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 28, fontWeight: 900, color: '#78350F', margin: 0, letterSpacing: '-0.5px' }}>
-              Mis Tesoros
-            </h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#D97706', fontWeight: 800, fontSize: 13 }}>
-                <span>🪙</span> {wayCoins}
-              </div>
-              <div style={{ width: 1, height: 12, background: '#FDE68A' }} />
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, color: '#92400E', fontWeight: 800, fontSize: 13 }}>
-                <Trophy size={14} /> {totalXp} XP
-              </div>
+
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl font-black text-amber-900 sm:text-2xl">Mis Tesoros</h1>
+            <div className="mt-0.5 flex items-center gap-3">
+              <span className="flex items-center gap-1 text-xs font-bold text-amber-600">
+                🪙 {wayCoins}
+              </span>
+              <span className="h-3 w-px bg-amber-200" />
+              <span className="flex items-center gap-1 text-xs font-bold text-amber-700">
+                <Trophy size={12} /> {totalXp} XP
+              </span>
             </div>
           </div>
         </header>
 
-        <div style={{ 
-          display: 'flex', background: 'rgba(255,255,255,0.7)', padding: 6, borderRadius: 24, 
-          gap: 6, border: '2px solid #FDE68A', boxShadow: '0 8px 20px rgba(0,0,0,0.05)'
-        }}>
+        {/* ─── Tabs ─── */}
+        <div className="mb-6 flex rounded-2xl border border-amber-200 bg-white/70 p-1.5 shadow-sm backdrop-blur-sm">
           <button
             onClick={() => handleTabChange('closet')}
-            style={{
-              flex: 1, padding: '14px 0', borderRadius: 18, border: 'none',
-              background: activeTab === 'closet' ? '#F59E0B' : 'transparent',
-              color: activeTab === 'closet' ? 'white' : '#B45309',
-              fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              cursor: 'pointer', transition: 'all 0.2s', fontSize: 15
-            }}
+            className={way(
+              'flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all',
+              activeTab === 'closet'
+                ? 'bg-amber-500 text-white shadow-md'
+                : 'text-amber-700 hover:bg-amber-50'
+            )}
           >
-            <Shirt size={18} /> Vestidor
+            <Shirt size={16} /> Vestidor
           </button>
           <button
             onClick={() => handleTabChange('album')}
-            style={{
-              flex: 1, padding: '14px 0', borderRadius: 18, border: 'none',
-              background: activeTab === 'album' ? '#F59E0B' : 'transparent',
-              color: activeTab === 'album' ? 'white' : '#B45309',
-              fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              cursor: 'pointer', transition: 'all 0.2s', fontSize: 15
-            }}
+            className={way(
+              'flex flex-1 items-center justify-center gap-2 rounded-xl py-3 text-sm font-bold transition-all',
+              activeTab === 'album'
+                ? 'bg-amber-500 text-white shadow-md'
+                : 'text-amber-700 hover:bg-amber-50'
+            )}
           >
-            <Book size={18} /> Álbum
+            <Book size={16} /> Álbum
           </button>
         </div>
 
+        {/* ─── Contenido ─── */}
         <AnimatePresence mode="wait">
           {activeTab === 'closet' ? (
-            <m.div
-              key="closet"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: 32 }}
-            >
-              <div style={{
-                backgroundColor: 'white', borderRadius: 40, padding: 32, 
-                boxShadow: '0 20px 40px rgba(0,0,0,0.08)',
-                border: '2px solid #FDE68A', display: 'flex', flexDirection: 'column', alignItems: 'center'
-              }}>
+            <m.div key="closet" {...tabAnim} className="flex flex-col gap-6">
+              {/* Avatar preview */}
+              <div className="flex flex-col items-center rounded-3xl border border-amber-200 bg-white p-6 shadow-sm">
                 <AvatarColorable />
                 <m.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => { playSFX('click'); navigate('/shop'); }}
-                  style={{
-                    marginTop: 32, width: '100%', padding: '18px 0', borderRadius: 20, 
-                    backgroundColor: '#F59E0B', color: 'white', fontWeight: 900, 
-                    fontSize: 16, display: 'flex', alignItems: 'center', 
-                    justifyContent: 'center', gap: 12, cursor: 'pointer', border: 'none',
-                    boxShadow: '0 8px 20px rgba(245,158,11,0.3)'
-                  }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleGoShop}
+                  className="mt-6 flex w-full items-center justify-center gap-2 rounded-2xl bg-amber-500 py-3.5 text-sm font-black text-white shadow-md transition-colors hover:bg-amber-600"
                 >
-                  <ShoppingBag size={20} /> Ir a la Tienda
+                  <ShoppingBag size={18} /> Ir a la Tienda
                 </m.button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+              {/* Categorías */}
+              <div className="flex flex-col gap-6">
                 {categories.map((cat) => {
-                  const items = inventory.filter(item => item.category === cat.id);
+                  const items = inventory.filter((item) => item.category === cat.id);
                   const isBase = cat.id === 'base';
-                  
                   if (items.length === 0 && !isBase) return null;
-                  
+
                   return (
-                    <section key={cat.id} className="flex flex-col gap-4">
-                      <div className="flex items-center justify-between px-2">
-                        <h3 className="text-lg font-black text-slate-800 flex items-center gap-2">
-                          <span className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-lg shadow-sm">
+                    <section key={cat.id}>
+                      <div className="mb-3 flex items-center justify-between px-1">
+                        <h3 className="flex items-center gap-2 text-sm font-black text-slate-800">
+                          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-50 text-base shadow-sm">
                             {cat.icon}
                           </span>
                           {cat.name}
                         </h3>
-                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest bg-slate-50 px-2 py-0.5 rounded-full">
+                        <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-black uppercase tracking-wider text-slate-400">
                           {items.length} {items.length === 1 ? 'objeto' : 'objetos'}
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 bg-white/50 p-3 rounded-[2rem] border border-slate-50 shadow-sm">
+                      <div className="grid grid-cols-4 gap-2 rounded-2xl border border-slate-100 bg-white/60 p-3 shadow-sm sm:grid-cols-5 sm:gap-3 sm:p-4">
                         {items.length > 0 ? (
-                          items.map(item => {
+                          items.map((item) => {
                             const isEquipped = currentAvatar[cat.id] === item.id;
                             return (
                               <m.button
                                 key={item.id}
-                                whileHover={{ y: -2 }}
-                                whileTap={{ scale: 0.92 }}
-                                onClick={() => { 
-                                  playSFX('click'); 
-                                  equipPart(cat.id, item.id as AvatarPart); 
-                                }}
-                                className={`aspect-square rounded-2xl flex items-center justify-center text-2xl transition-all relative group
-                                  ${isEquipped 
-                                    ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-100 ring-2 ring-indigo-200' 
-                                    : 'bg-white text-slate-400 border border-slate-100 hover:border-indigo-100 hover:text-indigo-600'}`}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={() => handleEquip(cat.id, item.id)}
+                                className={way(
+                                  'relative flex aspect-square items-center justify-center rounded-xl text-xl transition-all sm:text-2xl',
+                                  isEquipped
+                                    ? 'bg-indigo-600 text-white shadow-md ring-2 ring-indigo-200'
+                                    : 'border border-slate-100 bg-white text-slate-400 hover:border-indigo-100 hover:text-indigo-600'
+                                )}
                               >
                                 {item.icon}
                                 {isEquipped && (
-                                  <m.div 
-                                    layoutId={`active-${cat.id}`}
-                                    className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white flex items-center justify-center text-[8px] text-white shadow-sm"
-                                  >
+                                  <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full border border-white bg-emerald-500 text-[8px] text-white shadow-sm">
                                     ✓
-                                  </m.div>
+                                  </span>
                                 )}
                               </m.button>
                             );
                           })
                         ) : (
-                          <div className="col-span-full py-6 text-center">
-                            <p className="text-xs font-bold text-slate-300 uppercase tracking-widest">
+                          <div className="col-span-full py-4 text-center">
+                            <p className="text-xs font-bold uppercase tracking-wider text-slate-300">
                               No tienes {cat.name.toLowerCase()} aún
                             </p>
                           </div>
@@ -235,86 +240,71 @@ export const RewardsBackpack: React.FC = () => {
               </div>
             </m.div>
           ) : (
-            <m.div
-              key="album"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 24 }}
-            >
-              <div style={{ 
-                background: 'linear-gradient(135deg, #4F46E5, #8B5CF6)', 
-                borderRadius: 32, padding: 24, color: 'white',
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                boxShadow: '0 15px 30px rgba(79,70,229,0.2)'
-              }}>
+            <m.div key="album" {...tabAnim} className="flex flex-col gap-6">
+              {/* Header álbum */}
+              <div className="flex items-center justify-between rounded-3xl bg-gradient-to-r from-indigo-600 to-purple-600 p-5 text-white shadow-lg">
                 <div>
-                  <h3 style={{ margin: 0, fontWeight: 900, fontSize: 20 }}>Álbum de Cromos</h3>
-                  <p style={{ margin: '4px 0 0', opacity: 0.9, fontSize: 14 }}>
+                  <h3 className="text-lg font-black">Álbum de Cromos</h3>
+                  <p className="mt-0.5 text-xs font-bold opacity-90">
                     {Object.keys(ownedStickers).length} de {STICKERS_CATALOG.length} encontrados
                   </p>
                 </div>
-                <div style={{ fontSize: 40, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.2))' }}>📔</div>
+                <span className="text-3xl">📔</span>
               </div>
 
+              {/* Duplicados */}
               {totalDuplicates > 0 && (
                 <m.div
-                  initial={{ scale: 0.9, opacity: 0 }}
+                  initial={reduceMotion ? {} : { scale: 0.95, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  style={{
-                    background: 'white', padding: '16px 20px', borderRadius: 24,
-                    border: '2px solid #E0E7FF', display: 'flex', alignItems: 'center',
-                    justifyContent: 'space-between', fontFamily: 'Verdana, sans-serif'
-                  }}
+                  className="flex items-center justify-between rounded-2xl border border-indigo-100 bg-white p-4 shadow-sm"
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <div style={{ fontSize: 24 }}>🔄</div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🔄</span>
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: '#1E1B4B' }}>Tienes {totalDuplicates} duplicados</div>
-                      <div style={{ fontSize: 11, color: '#64748B', fontWeight: 600 }}>¡Canjéalos por cromos nuevos!</div>
+                      <p className="text-sm font-bold text-slate-900">{totalDuplicates} duplicados</p>
+                      <p className="text-xs font-bold text-slate-500">¡Canjéalos por cromos nuevos!</p>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => { playSFX('click'); setShowExchange(true); }}
-                    style={{
-                      background: '#4F46E5', color: 'white', border: 'none',
-                      padding: '8px 16px', borderRadius: 12, fontWeight: 800,
-                      fontSize: 12, cursor: 'pointer'
-                    }}
+                  <button
+                    onClick={() => { playSFX('click'); hapticService.click(); setShowExchange(true); }}
+                    className="rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow-sm transition-colors hover:bg-indigo-700"
                   >
                     Canjear
                   </button>
                 </m.div>
               )}
 
-              {COLLECTIONS.map(set => {
-                const completedCount = set.stickerIds.filter(id => !!ownedStickers[id]).length;
+              {/* Colecciones */}
+              {COLLECTIONS.map((set) => {
+                const completedCount = set.stickerIds.filter((id) => !!ownedStickers[id]).length;
                 const isSetComplete = completedCount === set.stickerIds.length;
 
                 return (
-                  <section key={set.id} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <h3 style={{ fontSize: 18, fontWeight: 900, color: '#1E1B4B', margin: 0 }}>
-                        {set.name}
-                      </h3>
-                      <div style={{ 
-                        fontSize: 12, fontWeight: 800, color: isSetComplete ? '#10B981' : '#64748B',
-                        background: isSetComplete ? '#ECFDF5' : '#F1F5F9',
-                        padding: '4px 10px', borderRadius: 10
-                      }}>
+                  <section key={set.id}>
+                    <div className="mb-3 flex items-center justify-between">
+                      <h3 className="text-base font-black text-slate-900">{set.name}</h3>
+                      <span
+                        className={way(
+                          'rounded-full px-2.5 py-0.5 text-xs font-bold',
+                          isSetComplete
+                            ? 'bg-emerald-50 text-emerald-600'
+                            : 'bg-slate-100 text-slate-500'
+                        )}
+                      >
                         {completedCount}/{set.stickerIds.length}
-                      </div>
+                      </span>
                     </div>
-                    
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-                      {set.stickerIds.map(id => {
-                        const sticker = STICKERS_CATALOG.find(s => s.id === id)!;
+
+                    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                      {set.stickerIds.map((id) => {
+                        const sticker = STICKERS_CATALOG.find((s) => s.id === id)!;
                         const owned = ownedStickers[id];
                         const isLocked = !owned;
                         const count = (owned?.normal || 0) + (owned?.shiny || 0);
 
                         return (
-                          <CollectibleCard 
+                          <CollectibleCard
                             key={id}
                             sticker={sticker}
                             isLocked={isLocked}
@@ -323,6 +313,7 @@ export const RewardsBackpack: React.FC = () => {
                             onClick={() => {
                               if (!isLocked) {
                                 playSFX('milestone');
+                                hapticService.success();
                                 setSelectedSticker(sticker);
                               }
                             }}
@@ -332,46 +323,44 @@ export const RewardsBackpack: React.FC = () => {
                     </div>
 
                     {isSetComplete && (
-                      <div style={{
-                        background: 'linear-gradient(90deg, #10B98111, #34D39911)',
-                        padding: 12, borderRadius: 16, border: '1.5px dashed #10B981',
-                        fontSize: 12, fontWeight: 700, color: '#065F46', textAlign: 'center'
-                      }}>
-                        🎉 Bonus: {set.bonus.description} activo
+                      <div className="mt-3 rounded-xl border border-dashed border-emerald-300 bg-emerald-50/50 p-3 text-center">
+                        <p className="text-xs font-bold text-emerald-700">
+                          🎉 Bonus: {set.bonus.description} activo
+                        </p>
                       </div>
                     )}
                   </section>
                 );
               })}
 
-              {/* Secret Cards Section */}
-              <section style={{ marginTop: 40, borderTop: '2px dashed #E0E7FF', paddingTop: 32 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                  <h3 style={{ fontSize: 18, fontWeight: 900, color: '#4F46E5', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Sparkles size={20} /> Secretos Ocultos
+              {/* Secretos */}
+              <section className="border-t-2 border-dashed border-indigo-100 pt-8">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="flex items-center gap-2 text-base font-black text-indigo-700">
+                    <Sparkles size={18} /> Secretos Ocultos
                   </h3>
-                  <div style={{ fontSize: 12, fontWeight: 800, color: '#6366F1' }}>
+                  <span className="text-xs font-bold text-indigo-600">
                     {unlockedSecrets.length}/{SECRET_CARDS.length}
-                  </div>
+                  </span>
                 </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-                  {SECRET_CARDS.map(secret => {
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                  {SECRET_CARDS.map((secret) => {
                     const isUnlocked = unlockedSecrets.includes(secret.id);
-                    const sticker = STICKERS_CATALOG.find(s => s.id === secret.stickerId)!;
+                    const sticker = STICKERS_CATALOG.find((s) => s.id === secret.stickerId)!;
 
                     return (
-                      <div key={secret.id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                        <CollectibleCard 
+                      <div key={secret.id} className="flex flex-col gap-2">
+                        <CollectibleCard
                           sticker={sticker}
                           isLocked={!isUnlocked}
                           isShiny={true}
                           count={isUnlocked ? 1 : 0}
                           onClick={() => isUnlocked && setSelectedSticker(sticker)}
                         />
-                        <div style={{ fontSize: 9, fontWeight: 700, color: '#64748B', textAlign: 'center', minHeight: 24 }}>
+                        <p className="text-center text-[10px] font-bold text-slate-500">
                           {isUnlocked ? secret.name : secret.hint}
-                        </div>
+                        </p>
                       </div>
                     );
                   })}
@@ -382,72 +371,65 @@ export const RewardsBackpack: React.FC = () => {
         </AnimatePresence>
       </div>
 
-      {/* Exchange Modal */}
+      {/* ═══ Modal: Canje ═══ */}
       <AnimatePresence>
         {showExchange && (
           <m.div
-            className="modal-overlay"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowExchange(false)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 1100,
-              background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(10px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
-            }}
+            className="fixed inset-0 z-[1100] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
           >
             <m.div
-              className="modal-content"
-              onClick={e => e.stopPropagation()}
-              initial={{ scale: 0.9, y: 20 }}
+              initial={reduceMotion ? {} : { scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
-              style={{
-                width: '100%', maxWidth: 400, background: 'white',
-                borderRadius: 32, padding: 32, textAlign: 'center'
-              }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-3xl border border-white/50 bg-white p-6 text-center shadow-2xl sm:p-8"
             >
-              <div style={{ fontSize: 60, marginBottom: 16 }}>🔄</div>
-              <h2 style={{ fontSize: 24, fontWeight: 900, color: '#1E1B4B', margin: '0 0 8px' }}>Puesto de Canje</h2>
-              <p style={{ fontSize: 14, color: '#64748B', fontWeight: 500, marginBottom: 24 }}>
+              <div className="mb-4 text-5xl">🔄</div>
+              <h2 className="text-xl font-black text-slate-900">Puesto de Canje</h2>
+              <p className="mt-1 text-xs font-bold text-slate-500">
                 Usa tus cromos repetidos para obtener tesoros nuevos.
               </p>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <button 
+              <div className="mt-6 flex flex-col gap-3">
+                <button
                   disabled={totalDuplicates < 3}
                   onClick={() => handleExchange(3, 'random')}
-                  style={{
-                    padding: 16, borderRadius: 16, border: 'none',
-                    background: totalDuplicates >= 3 ? '#F3F4F6' : '#F9FAFB',
-                    color: totalDuplicates >= 3 ? '#1E1B4B' : '#9CA3AF',
-                    fontWeight: 800, cursor: totalDuplicates >= 3 ? 'pointer' : 'not-allowed',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                  }}
+                  className={way(
+                    'flex items-center justify-between rounded-2xl border-2 p-4 text-sm font-bold transition-all',
+                    totalDuplicates >= 3
+                      ? 'border-slate-100 bg-slate-50 text-slate-900 hover:bg-slate-100 active:scale-[0.98]'
+                      : 'cursor-not-allowed border-slate-50 bg-slate-50 text-slate-300'
+                  )}
                 >
                   <span>3 Duplicados</span>
-                  <span style={{ background: '#4F46E5', color: 'white', padding: '4px 8px', borderRadius: 8, fontSize: 10 }}>1 Nuevo</span>
+                  <span className="rounded-lg bg-indigo-600 px-2 py-1 text-[10px] font-bold text-white">
+                    1 Nuevo
+                  </span>
                 </button>
 
-                <button 
+                <button
                   disabled={totalDuplicates < 5}
                   onClick={() => handleExchange(5, 'shiny')}
-                  style={{
-                    padding: 16, borderRadius: 16, border: 'none',
-                    background: totalDuplicates >= 5 ? '#EEF2FF' : '#F9FAFB',
-                    color: totalDuplicates >= 5 ? '#4F46E5' : '#9CA3AF',
-                    fontWeight: 800, cursor: totalDuplicates >= 5 ? 'pointer' : 'not-allowed',
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-                  }}
+                  className={way(
+                    'flex items-center justify-between rounded-2xl border-2 p-4 text-sm font-bold transition-all',
+                    totalDuplicates >= 5
+                      ? 'border-indigo-100 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 active:scale-[0.98]'
+                      : 'cursor-not-allowed border-slate-50 bg-slate-50 text-slate-300'
+                  )}
                 >
                   <span>5 Duplicados</span>
-                  <span style={{ background: '#8B5CF6', color: 'white', padding: '4px 8px', borderRadius: 8, fontSize: 10 }}>✨ Brillante</span>
+                  <span className="rounded-lg bg-purple-600 px-2 py-1 text-[10px] font-bold text-white">
+                    ✨ Brillante
+                  </span>
                 </button>
               </div>
 
-              <button 
+              <button
                 onClick={() => setShowExchange(false)}
-                style={{ marginTop: 24, background: 'transparent', border: 'none', color: '#64748B', fontWeight: 700, cursor: 'pointer' }}
+                className="mt-6 text-xs font-bold text-slate-400 transition-colors hover:text-slate-600"
               >
                 Cerrar
               </button>
@@ -456,7 +438,7 @@ export const RewardsBackpack: React.FC = () => {
         )}
       </AnimatePresence>
 
-      {/* Sticker Detail Modal */}
+      {/* ═══ Modal: Detalle cromo ═══ */}
       <AnimatePresence>
         {selectedSticker && (
           <m.div
@@ -464,50 +446,26 @@ export const RewardsBackpack: React.FC = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setSelectedSticker(null)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 1200,
-              background: 'rgba(30, 27, 75, 0.8)', backdropFilter: 'blur(12px)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20
-            }}
+            className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-sm"
           >
             <m.div
-              initial={{ scale: 0.8, y: 50 }}
+              initial={reduceMotion ? {} : { scale: 0.85, y: 30 }}
               animate={{ scale: 1, y: 0 }}
-              onClick={e => e.stopPropagation()}
-              style={{
-                width: '100%', maxWidth: 340, backgroundColor: 'white',
-                borderRadius: 40, padding: 32, textAlign: 'center',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-                border: '4px solid white'
-              }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-xs rounded-[2rem] border-4 border-white bg-white p-6 text-center shadow-2xl sm:max-w-sm sm:p-8"
             >
-              <div style={{ fontSize: 100, marginBottom: 24, filter: 'drop-shadow(0 10px 15px rgba(0,0,0,0.1))' }}>
-                {selectedSticker.icon}
-              </div>
-              <h2 style={{ fontSize: 28, fontWeight: 900, color: '#1E1B4B', margin: '0 0 8px' }}>
-                {selectedSticker.name}
-              </h2>
-              <div style={{ 
-                display: 'inline-block', padding: '6px 16px', borderRadius: 12, 
-                backgroundColor: '#F3F4F6', color: '#6B7280', fontWeight: 800, 
-                fontSize: 12, textTransform: 'uppercase', letterSpacing: 1,
-                marginBottom: 20
-              }}>
+              <div className="mb-4 text-7xl sm:text-8xl">{selectedSticker.icon}</div>
+              <h2 className="text-xl font-black text-slate-900">{selectedSticker.name}</h2>
+              <span className="mt-2 inline-block rounded-xl bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500">
                 {selectedSticker.rarity}
-              </div>
-              <p style={{ fontSize: 18, color: '#4B5563', lineHeight: 1.5, margin: '0 0 32px', fontWeight: 500 }}>
+              </span>
+              <p className="mt-4 text-sm font-medium leading-relaxed text-slate-600">
                 {selectedSticker.description}
               </p>
               <m.button
-                whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setSelectedSticker(null)}
-                style={{
-                  width: '100%', padding: '16px', borderRadius: 20,
-                  backgroundColor: '#4F46E5', color: 'white', fontWeight: 900,
-                  fontSize: 16, border: 'none', cursor: 'pointer',
-                  boxShadow: '0 8px 16px rgba(79,70,229,0.3)'
-                }}
+                className="mt-6 w-full rounded-2xl bg-indigo-600 py-3.5 text-sm font-black text-white shadow-lg transition-colors hover:bg-indigo-700"
               >
                 ¡Genial!
               </m.button>
@@ -518,3 +476,5 @@ export const RewardsBackpack: React.FC = () => {
     </div>
   );
 };
+
+export default RewardsBackpack;

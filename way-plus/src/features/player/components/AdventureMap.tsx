@@ -1,10 +1,15 @@
-// src/features/player/components/AdventureMap.tsx
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * AdventureMap v2 — Responsive, animado, sin descuadres
+ * ═══════════════════════════════════════════════════════════════
+ */
+
 import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import type { Step, Way } from '@/core/engine/types';
 import { normalizeWayText } from '@/shared/lib/way-text-utils';
-import './AdventureMap.css';
+import { useReduceMotion } from '@/core/stores/configStore';
 
 interface FlatWay extends Way {
   stepId: string;
@@ -18,39 +23,6 @@ interface Props {
 }
 
 const NODES_PER_ROW = 3;
-const H_GAP = 110;
-const V_GAP = 110;
-const START_X = 80;
-const START_Y = 80;
-const SVG_WIDTH = 400;
-
-function generateNodes(total: number) {
-  return Array.from({ length: total }, (_, i) => {
-    const row = Math.floor(i / NODES_PER_ROW);
-    const col = i % NODES_PER_ROW;
-    const isEvenRow = row % 2 === 0;
-    return {
-      x: isEvenRow
-        ? START_X + col * H_GAP
-        : START_X + (NODES_PER_ROW - 1 - col) * H_GAP,
-      y: START_Y + row * V_GAP,
-    };
-  });
-}
-
-function generateConnectorPath(nodes: { x: number; y: number }[]): string {
-  if (!nodes || nodes.length < 2) return '';
-  return nodes
-    .slice(0, -1)
-    .map((node, i) => {
-      const next = nodes[i + 1];
-      if (!node || !next) return '';
-      const mx = (node.x + next.x) / 2;
-      const my = (node.y + next.y) / 2;
-      return `M ${node.x} ${node.y} Q ${mx} ${node.y} ${mx} ${my} Q ${mx} ${next.y} ${next.x} ${next.y}`;
-    })
-    .join(' ');
-}
 
 export const AdventureMap: React.FC<Props> = ({
   steps = [],
@@ -58,19 +30,16 @@ export const AdventureMap: React.FC<Props> = ({
   currentLevelId = '',
 }) => {
   const navigate = useNavigate();
+  const reduceMotion = useReduceMotion();
 
   const allWays = useMemo<FlatWay[]>(() => {
     if (!Array.isArray(steps)) return [];
     const flat: FlatWay[] = [];
-    steps.forEach(step => {
+    steps.forEach((step) => {
       if (step && Array.isArray(step.ways)) {
-        step.ways.forEach(way => {
+        step.ways.forEach((way) => {
           if (way && way.id) {
-            flat.push({
-              ...way,
-              stepId: step.id,
-              stepTitle: step.title,
-            });
+            flat.push({ ...way, stepId: step.id, stepTitle: step.title });
           }
         });
       }
@@ -78,13 +47,7 @@ export const AdventureMap: React.FC<Props> = ({
     return flat;
   }, [steps]);
 
-  const nodes = useMemo(() => generateNodes(allWays.length), [allWays.length]);
-
-  const svgHeight = START_Y
-    + Math.ceil(allWays.length / NODES_PER_ROW) * V_GAP
-    + 80;
-
-  const connectorPath = useMemo(() => generateConnectorPath(nodes), [nodes]);
+  const totalRows = Math.ceil(allWays.length / NODES_PER_ROW);
 
   const isUnlocked = (index: number) => {
     if (index === 0) return true;
@@ -101,79 +64,74 @@ export const AdventureMap: React.FC<Props> = ({
   };
 
   if (allWays.length === 0) {
-    return <div className="adventure-map-empty">Cargando retos...</div>;
+    return (
+      <div className="flex min-h-[300px] items-center justify-center text-sm text-slate-400">
+        Cargando retos...
+      </div>
+    );
   }
 
   return (
-    <div className="adventure-map-container">
-      <div className="map-scroll-area">
-        <svg
-          className="map-path-svg"
-          viewBox={`0 0 ${SVG_WIDTH} ${svgHeight}`}
-          style={{ height: svgHeight }}
-        >
-          {connectorPath && (
-            <path
-              d={connectorPath}
-              fill="none"
-              stroke="#E8E9FF"
-              strokeWidth="12"
-              strokeLinecap="round"
-              strokeDasharray="20 20"
-            />
-          )}
-          {nodes.map((pos, i) => {
-            const way = allWays[i];
-            if (!way || !way.id) return null;
-            const unlocked = isUnlocked(i);
-            const completed = isCompleted(way.id);
-            return (
-              <circle
-                key={`path-node-${way.id}-${i}`}
-                cx={pos.x}
-                cy={pos.y}
-                r={completed ? 22 : unlocked ? 20 : 16}
-                fill={completed ? '#1D9E75' : unlocked ? '#7F77DD' : '#D3D1C7'}
-                stroke={completed ? '#085041' : unlocked ? '#534AB7' : '#B4B2A9'}
-                strokeWidth="2"
-              />
-            );
-          })}
-        </svg>
+    <div className="mx-auto max-w-md px-4 py-6">
+      <div className="relative">
+        {/* Línea de conexión vertical (serpentina) */}
+        <div className="absolute left-1/2 top-0 bottom-0 w-1 -translate-x-1/2 bg-slate-100 rounded-full" />
 
-        <div className="nodes-container" style={{ height: svgHeight }}>
-          {allWays.map((way, index) => {
-            if (!way || !way.id) return null;
-            const pos = nodes[index];
-            const unlocked = isUnlocked(index);
-            const completed = isCompleted(way.id);
+        {/* Nodos */}
+        <div className="relative space-y-8">
+          {Array.from({ length: totalRows }).map((_, rowIndex) => {
+            const startIdx = rowIndex * NODES_PER_ROW;
+            const rowWays = allWays.slice(startIdx, startIdx + NODES_PER_ROW);
+            const isEvenRow = rowIndex % 2 === 0;
 
             return (
-              <motion.div
-                key={`node-${way.id}-${index}`}
-                className={`map-node ${unlocked ? 'unlocked' : 'locked'} ${completed ? 'completed' : ''}`}
-                style={{
-                  left: pos.x,
-                  top: pos.y,
-                  transform: 'translate(-50%, -50%)',
-                  position: 'absolute',
-                }}
-                whileHover={unlocked ? { scale: 1.1 } : {}}
-                whileTap={unlocked ? { scale: 0.9 } : {}}
-                onClick={() =>
-                  unlocked && way.id &&
-                  navigate(`/play/${currentLevelId}/${way.stepId}/${way.id}`)
-                }
+              <div
+                key={rowIndex}
+                className={cn(
+                  'flex items-center gap-4',
+                  isEvenRow ? 'flex-row' : 'flex-row-reverse'
+                )}
               >
-                <div className="node-bubble">
-                  <div className="node-icon">
-                    {completed ? '✅' : unlocked ? '⭐' : '🔒'}
-                  </div>
-                </div>
-                <div className="node-label">
-                  <span className="step-title">{normalizeWayText(way.title ?? way.stepTitle)}</span>
-                </div>
-              </motion.div>
+                {rowWays.map((way, colIndex) => {
+                  const globalIndex = startIdx + colIndex;
+                  const unlocked = isUnlocked(globalIndex);
+                  const completed = isCompleted(way.id);
+
+                  return (
+                    <motion.div
+                      key={way.id}
+                      initial={reduceMotion ? {} : { opacity: 0, scale: 0.5 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: globalIndex * 0.05, duration: 0.3 }}
+                      className="flex-1"
+                    >
+                      <button
+                        onClick={() =>
+                          unlocked &&
+                          way.id &&
+                          navigate(`/play/${currentLevelId}/${way.stepId}/${way.id}`)
+                        }
+                        disabled={!unlocked}
+                        className={cn(
+                          'mx-auto flex h-16 w-16 flex-col items-center justify-center rounded-2xl border-2 text-xl transition-all sm:h-20 sm:w-20',
+                          completed
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-600 shadow-sm'
+                            : unlocked
+                            ? 'border-indigo-200 bg-indigo-50 text-indigo-600 shadow-sm hover:scale-105 hover:border-indigo-300 active:scale-95'
+                            : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed'
+                        )}
+                      >
+                        <span className="text-lg sm:text-xl">
+                          {completed ? '✅' : unlocked ? '⭐' : '🔒'}
+                        </span>
+                      </button>
+                      <p className="mt-2 text-center text-[10px] font-bold text-slate-600 line-clamp-2 sm:text-xs">
+                        {normalizeWayText(way.title ?? way.stepTitle)}
+                      </p>
+                    </motion.div>
+                  );
+                })}
+              </div>
             );
           })}
         </div>
@@ -181,3 +139,10 @@ export const AdventureMap: React.FC<Props> = ({
     </div>
   );
 };
+
+/* cn helper local si no está importado */
+function cn(...classes: (string | false | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
+}
+
+export default AdventureMap;

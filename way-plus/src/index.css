@@ -1,7 +1,5 @@
 /* 1. Tailwind Directives */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   /* 2. Reset base */
@@ -155,16 +153,26 @@
 @layer components {
   /* 15. Glassmorphism utilities */
   .way-glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
   }
   .way-glass-dark {
-    @apply bg-black/40 backdrop-blur-lg border border-white/10;
+    background-color: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
   .way-glass-solid {
-    @apply bg-white dark:bg-zinc-900 shadow-lg border border-zinc-200 dark:border-zinc-800;
+    @apply bg-white shadow-lg border border-zinc-200;
+  }
+  .dark .way-glass-solid {
+    @apply bg-zinc-900 border-zinc-800;
   }
   .way-card {
-    @apply bg-white/5 backdrop-blur-sm border border-white/10 shadow-xl rounded-2xl;
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    @apply shadow-xl rounded-2xl;
   }
   .way-btn-base {
     @apply transition-all duration-200 ease-in-out cursor-pointer hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95;
