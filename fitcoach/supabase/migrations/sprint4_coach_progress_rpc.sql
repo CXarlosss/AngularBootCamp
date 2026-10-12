@@ -63,14 +63,14 @@ BEGIN
       ) ORDER BY achieved_at DESC)
       FROM (
         SELECT 
-          exercise_name,
+          TRIM(exercise_name) as exercise_name,
           MAX(weight_kg) as max_weight,
           MAX(completed_at) as achieved_at
         FROM set_logs sl
         JOIN workout_logs wl ON wl.id = sl.workout_log_id
         WHERE wl.client_id = target_client_id
           AND sl.completed_at >= now() - interval '14 days'
-        GROUP BY exercise_name
+        GROUP BY TRIM(LOWER(exercise_name)), TRIM(exercise_name)
       ) prs
     ),
     'volume_trend', (

@@ -391,16 +391,18 @@ export const WorkoutStore = signalStore(
       // 1. Mirar en la sesión activa primero (por si ya hizo una serie antes)
       const activeSets = store.activeLog()?.sets ?? [];
       const lastActive = activeSets.filter(s => 
-        s.exerciseId === exerciseId || 
-        (name && s.exerciseName.trim().toLowerCase() === name)
+        (s.weightKg > 0 || s.repsDone > 0) &&
+        (s.exerciseId === exerciseId || 
+        (name && s.exerciseName.trim().toLowerCase() === name))
       ).slice(-1)[0];
       if (lastActive) return lastActive;
 
       // 2. Si no, mirar en el historial
       for (const log of store.history()) {
         const set = log.sets.find(s => 
-          s.exerciseId === exerciseId || 
-          (name && s.exerciseName.trim().toLowerCase() === name)
+          (s.weightKg > 0 || s.repsDone > 0) &&
+          (s.exerciseId === exerciseId || 
+          (name && s.exerciseName.trim().toLowerCase() === name))
         );
         if (set) return set;
       }

@@ -43,27 +43,33 @@ export class ExerciseHistoryService {
     let prDate = new Date();
     
     // Group by week (roughly by workout session for simplicity or actual ISO week)
-    // Here we'll treat each workout session as a "week" or group to compare last vs this
-    const sessions = sortedLogs.map(log => {
-      const maxWeight = Math.max(...log.sets.map(s => s.weightKg || 0));
-      const totalVolume = log.sets.reduce((acc, s) => acc + ((s.weightKg || 0) * (s.repsDone || 0)), 0);
-      
-      const bestSet = log.sets.reduce((best, current) => {
-        if (!best) return current;
-        if ((current.weightKg || 0) > (best.weightKg || 0)) return current;
-        if ((current.weightKg || 0) === (best.weightKg || 0) && (current.repsDone || 0) > (best.repsDone || 0)) return current;
-        return best;
-      }, null as SetLog | null);
+    // Filter out dummy/empty sessions (like feedback-only sets with 0kg)
+    const sessions = sortedLogs
+      .map(log => {
+        // Filtrar series reales (ignorar series ficticias de notas con 0kg o 0 reps)
+        const realSets = log.sets.filter(s => (s.weightKg ?? 0) > 0 || (s.repsDone ?? 0) > 0);
+        if (realSets.length === 0) return null;
 
-      return {
-        weekLabel: log.date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
-        maxWeight,
-        totalVolume,
-        bestSet,
-        date: log.date,
-        sets: log.sets
-      };
-    });
+        const maxWeight = Math.max(...realSets.map(s => s.weightKg || 0));
+        const totalVolume = realSets.reduce((acc, s) => acc + ((s.weightKg || 0) * (s.repsDone || 0)), 0);
+        
+        const bestSet = realSets.reduce((best, current) => {
+          if (!best) return current;
+          if ((current.weightKg || 0) > (best.weightKg || 0)) return current;
+          if ((current.weightKg || 0) === (best.weightKg || 0) && (current.repsDone || 0) > (best.repsDone || 0)) return current;
+          return best;
+        }, null as SetLog | null);
+
+        return {
+          weekLabel: log.date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' }),
+          maxWeight,
+          totalVolume,
+          bestSet,
+          date: log.date,
+          sets: realSets
+        };
+      })
+      .filter((s): s is WeeklyStats => s !== null);
 
     // Calculate PR over all history
     sessions.forEach(session => {
@@ -76,8 +82,26 @@ export class ExerciseHistoryService {
       }
     });
 
-    const thisWeek = sessions.length > 0 ? sessions[0] : null;
-    const lastWeek = sessions.length > 1 ? sessions[1] : null;
+    const activeLog = this.workoutStore.activeLog();
+    const activeSets = activeLog?.sets.filter(s => 
+      s.exerciseId === exerciseId || (exerciseName && s.exerciseName.trim().toLowerCase() === exerciseName.trim().toLowerCase())
+    ) || [];
+
+    let thisWeek: WeeklyStats | null = null;
+    let lastWeek: WeeklyStats | null = null;
+
+    if (activeSets.length > 0) {
+      // Si el usuario ya está registrando series en la sesión de hoy:
+      // sessions[0] es la sesión activa de hoy (thisWeek), y sessions[1] es la sesión anterior histórica (lastWeek)
+      thisWeek = sessions.length > 0 ? sessions[0] : null;
+      lastWeek = sessions.length > 1 ? sessions[1] : null;
+    } else {
+      // Si el usuario aún no ha registrado series hoy:
+      // sessions[0] es su última sesión realizada histórica.
+      // Debe mostrarse como "Anterior" (lastWeek) para que el atleta vea qué hizo la última vez mientras entrena hoy.
+      thisWeek = null;
+      lastWeek = sessions.length > 0 ? sessions[0] : null;
+    }
     
     // Last 4 sessions max weights for sparkline
     const sparklineData = sessions.slice(0, 4).map(s => s.maxWeight).reverse();

@@ -398,14 +398,14 @@ export class TodayWorkoutComponent implements OnInit, OnDestroy {
     const states = this.exerciseStates();
     const i = this.activeExerciseIndex();
     const ex = states[i]?.exercise;
-    return ex ? this.suggestionSvc.getSuggestion(ex.id, ex.reps) : null;
+    return ex ? this.suggestionSvc.getSuggestion(ex.id, ex.reps, ex.name) : null;
   });
 
   activePrediction = computed(() => {
     const states = this.exerciseStates();
     const i = this.activeExerciseIndex();
     const ex = states[i]?.exercise;
-    return ex ? this.suggestionSvc.predictPR(ex.id) : null;
+    return ex ? this.suggestionSvc.predictPR(ex.id, ex.name) : null;
   });
 
   // Map de notas por exerciseId (en memoria durante el workout)

@@ -160,13 +160,17 @@ export class CoachClientService {
         }>();
 
         for (const row of data as any[]) {
+          const w = Number(row.weight_kg ?? 0);
+          const r = Number(row.reps_done ?? 0);
+          if (w <= 0 && r <= 0) continue; // Ignorar registros ficticios de 0kg
+
           const name: string = row.exercise_name || 'Sin nombre';
           if (!byExercise.has(name)) {
             byExercise.set(name, { name, sets: [] });
           }
           byExercise.get(name)!.sets.push({
-            weight: Number(row.weight_kg ?? 0),
-            reps: Number(row.reps_done ?? 0),
+            weight: w,
+            reps: r,
             created_at: row.created_at,
           });
         }

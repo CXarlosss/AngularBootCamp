@@ -30,9 +30,9 @@ export interface PRPrediction {
 export class WeightSuggestionService {
   private workoutStore = inject(WorkoutStore);
 
-  getSuggestion(exerciseId: string, targetReps: number = 8): WeightSuggestion | null {
-    const rawLogs = this.workoutStore.allLogsForExercise(exerciseId);
-    if (!rawLogs || rawLogs.length < 2) return null; // Need at least last week
+  getSuggestion(exerciseId: string, targetReps: number = 8, exerciseName?: string): WeightSuggestion | null {
+    const rawLogs = this.workoutStore.allLogsForExercise(exerciseId, exerciseName);
+    if (!rawLogs || rawLogs.length < 1) return null; // Need at least last week
 
     const sortedLogs = [...rawLogs].sort((a, b) => b.date.getTime() - a.date.getTime());
     
@@ -122,8 +122,8 @@ export class WeightSuggestionService {
     };
   }
 
-  predictPR(exerciseId: string): PRPrediction | null {
-    const rawLogs = this.workoutStore.allLogsForExercise(exerciseId);
+  predictPR(exerciseId: string, exerciseName?: string): PRPrediction | null {
+    const rawLogs = this.workoutStore.allLogsForExercise(exerciseId, exerciseName);
     if (!rawLogs) return null;
 
     const validLogs = rawLogs.filter(log => log.sets && log.sets.length > 0)
